@@ -4,7 +4,8 @@
   "description": "Simple, expressive, mobx-based routing state management. Routers all the way down",
   "main": "dist/index.js",
   "scripts": {
-    "test": "npm run lint && jest"
+    "test": "npm run lint && jest",
+    "build": "rollup -c"
   },
   "repository": {
     "type": "git",
@@ -26,5 +27,12 @@
   "bugs": {
     "url": "https://github.com/erhathaway/recursive-router/issues"
   },
-  "homepage": "https://github.com/erhathaway/recursive-router#readme"
+  "homepage": "https://github.com/erhathaway/recursive-router#readme",
+  "devDependencies": {
+    "rollup": "^0.64.1"
+  },
+  "dependencies": {
+    "mobx": "^5.0.3",
+    "mobx-state-tree": "^3.2.2"
+  }
 }
