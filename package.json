@@ -1,0 +1,30 @@
+{
+  "name": "recursive-router",
+  "version": "0.0.1",
+  "description": "Simple, expressive, mobx-based routing state management. Routers all the way down",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "npm run lint && jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erhathaway/recursive-router.git"
+  },
+  "keywords": [
+    "mobx",
+    "mst",
+    "mobx-state-tree",
+    "router",
+    "router-state",
+    "router-management",
+    "react",
+    "react-state",
+    "declarative-routing"
+  ],
+  "author": "Ethan Hathaway",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/erhathaway/recursive-router/issues"
+  },
+  "homepage": "https://github.com/erhathaway/recursive-router#readme"
+}
