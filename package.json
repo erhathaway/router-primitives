@@ -39,8 +39,10 @@
     "rollup-plugin-node-resolve": "^3.3.0"
   },
   "dependencies": {
-    "mobx": "^5.0.3",
-    "mobx-state-tree": "^3.2.2",
     "query-string": "^5.1.1"
+  },
+  "peerDependencies": {
+    "mobx": "^5.0.3",
+    "mobx-state-tree": "^3.2.2"
   }
 }

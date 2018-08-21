@@ -2,7 +2,10 @@ import babel from 'rollup-plugin-babel';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 
-const dependencies = Object.keys(require('./package.json').dependencies);
+const dependencies = Object.keys({
+  ...require('./package.json').dependencies,
+  ...require('./package.json').peerDependencies,
+});
 const include = 'query-string';
 console.log(dependencies)
 export default {
@@ -13,7 +16,10 @@ export default {
   },
   plugins: [
     resolve({
-      only: 'query-string'
+      // only: 'query-string'
+      customResolveOptions: {
+  moduleDirectory: 'node_modules'
+}
     }),
     commonjs({
       include: 'node_modules/**'
