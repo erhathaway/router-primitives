@@ -11,11 +11,20 @@ const include = 'query-string';
 console.log(dependencies)
 export default {
   input: 'src/index.js',
-  output: {
-    file: 'dist/index.js',
-    format: 'cjs'
-  },
+  output: [
+    {
+      file: 'dist/index.cjs.js',
+      format: 'cjs',
+    },
+    {
+      file: 'dist/index.es.js',
+      format: 'es',
+    }
+  ],
   plugins: [
+    babel({
+      babelrc: true,
+    }),
     eslint({}),
     resolve({
       // only: 'query-string'
@@ -25,9 +34,6 @@ export default {
     }),
     commonjs({
       include: 'node_modules/**'
-    }),
-    babel({
-      babelrc: true,
     }),
   ],
   external: dependencies.filter(d => d !== 'query-string'),
