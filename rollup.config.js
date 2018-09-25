@@ -22,9 +22,6 @@ export default {
     }
   ],
   plugins: [
-    babel({
-      babelrc: true,
-    }),
     eslint({}),
     resolve({
       // only: 'query-string'
@@ -34,6 +31,9 @@ export default {
     }),
     commonjs({
       include: 'node_modules/**'
+    }),
+    babel({
+      babelrc: true,
     }),
   ],
   external: dependencies.filter(d => d !== 'query-string'),

@@ -1,8 +1,3 @@
-import {
-  types,
-  getRoot,
-  clone,
-} from 'mobx-state-tree';
 
 import queryString from 'query-string';
 
@@ -29,7 +24,8 @@ const updateLocation = ({ pathname, search, state }, routerHistory, self) => {
     const url = `${pathname}?${search}`;
     window.history.pushState(state, 'Cell AF', url)
   }
-  getRoot(self).updateLocation({ pathname, search, state })
+  // TODO rewrite not using MST
+  // getRoot(self).updateLocation({ pathname, search, state })
   // routerHistory.push({ pathname, search, state });
 }
 
@@ -45,15 +41,18 @@ const extractScene = (location, routeKey) => {
   }
 
   const index = splitPath.findIndex(p => p === routeKey);
+
   if (index) {
-    const thisPath = splitPath[index + 1];
+    const thisPath = splitPath[index];
     return thisPath;
   }
+
   return undefined;
 };
 
 const extractModal = (location, routeKey) => {
   const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
+  console.log(parsedQuery, '###')
   return parsedQuery[`${routeKey}${STACK_NAME}`];
 };
 
