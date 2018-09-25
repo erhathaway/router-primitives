@@ -3,8 +3,53 @@ import logo from './logo.svg';
 import './App.css';
 import Router, { registerRouter } from 'recursive-router';
 
-// const root = new Router('root');
-const modal = new Router('modal');
+const docModal = new Router({
+  name: 'docModal',
+  routeKey: 'docModal',
+})
+
+const docPage = new Router({
+  name: 'docPage',
+  routeKey: 'docPage',
+  routers: {
+    stack: [docModal],
+  },
+})
+
+const docMenu = new Router({
+  name: 'docMenu',
+  routeKey: 'docMenu',
+})
+
+const doc = new Router({
+  name: 'doc',
+  routeKey: 'doc',
+  routers: {
+    stack: [docMenu],
+    page: [docPage],
+  },
+})
+
+
+
+
+const intro = new Router({
+  name: 'intro',
+  routeKey: 'intro',
+})
+
+const share = new Router({
+  name: 'share',
+  routeKey: 'share',
+})
+
+const view = new Router({
+  name: 'view',
+  routeKey: 'view',
+  routers: {
+    feature: [share]
+  }
+})
 
 const root = new Router({
   name: 'root',
@@ -30,48 +75,13 @@ console.log('root', root)
 
 registerRouter(root)
 
-// const root = () => ({
-//   name: 'root',
-//   stack: [doc, intro],
-//   switch: [view],
-// });
-
-const doc = () => ({
-  stack: [{ name: 'docMenu' }],
-  page: [{ name: 'docPage', pageRender: () => {} }],
-})
-
-const docMenu = () => ({
-
-})
-
-const docPage = () => ({
-  stack: [modal]
-})
-
-const intro = () => ({
-
-})
-
-const view = () => ({
-
-})
-
-
-
-// initializeRouter(rootSubject, window);
-
-// console.log(root)
-
-// console.log(new Router())
-
 const navA = () => {
   const pathname = 'home';
   const search = 'a@';
   const url = `${pathname}?${search}`;
   const state = {};
   window.history.pushState(state, 'Cell AF', url)
-  console.log(window.location)
+  // console.log(window.location)
 }
 
 const navB = () => {

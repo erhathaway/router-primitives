@@ -8,7 +8,7 @@ import {
   // dynamicallyGenerateToggleVisibleFeaturesMethods,
   // dynamicallyGeneratePageNavMethods,
   extractScene,
-  // extractFeatures,
+  extractFeatures,
   extractModal,
   // extractPage,
 } from './utils';
@@ -43,20 +43,44 @@ class Router {
     after: []
   };
 
-  constructor(config = {routeKey: undefined }) {
+  _parent = undefined;
+  _routerType = undefined;
+
+  constructor(config = { routeKey: undefined }) {
     const { name, routeKey, routers, hooks, visible, order } = config;
     console.log('routers', routers)
-    if (routers) this.routers = routers;
-    if (hooks) this.hooks = hooks;
 
     this.visible = visible || false;
     this.order = order;
     this.name = name;
     this.routeKey = routeKey || createUniqueKey();
+    if (hooks) this.hooks = hooks;
+    if (routers) this.routers = routers;
   }
+
+  set parent(parentRouter) {
+    this._parent = parentRouter;
+  }
+
+  get parent() { return this._parent };
+
+  set routerType(routerType) {
+    this._routerType = routerType;
+  }
+
+  get routerType() { return this._routerType };
 
   set routers(routers = {}) {
     this._routers = { ...this.routers, ...routers };
+
+    const routerTypes = Object.keys(this.routers);
+    routerTypes.forEach(type => {
+      this.routers[type].forEach(r => {
+        console.log('r', r, type, this.routers, this.name)
+        r.parent = this;
+        r.routerType = type;
+      });
+    })
   }
 
   get routers() { return this._routers; }
@@ -67,8 +91,16 @@ class Router {
 
   get hooks() { return this._hooks; }
 
+  show() {
+
+  }
+
+  hide() {
+
+  }
+
   _update(newLocation) {
-    console.log('updating stuff', newLocation)
+    console.log('running #_update', newLocation, this.name)
     // hook(location, context)
     let location = newLocation;
     let context = { visible: this.visible, order: this.order, history: this.history};
@@ -77,7 +109,7 @@ class Router {
 
     const routerKeys = Object.keys(this.routers);
     routerKeys.forEach(key => {
-      // call child routers type update function
+      // reduce state for each child router type
       this[key](location, context);
 
       // pass new location to child routers
@@ -102,11 +134,14 @@ class Router {
   }
 
   stack(newLocation, context) {
-    const stackOrder = extractModal(newLocation, this.routeKey);
+    console.log('running stack', this.name)
+
+    const stackOrder = extractModal(newLocation, this.routeKey) || {};
     const visibleRouteKeys = Object.keys(stackOrder);
 
     this.routers.stack.forEach(r => {
       if (!r) return;
+      console.log('stack', this.name, r.name, stackOrder)
 
       const atSamePlace = r.at === stackOrder;
       const hasSameVisibility = r.visible === visibleRouteKeys.includes(r.routeKey);
@@ -118,30 +153,57 @@ class Router {
           order: stackOrder[r.routeKey],
           at: stackOrder,
         });
+        console.log('stack triggered', r.name, r.visible, r.order)
+
       }
     })
-
-    console.log('visibleRouteKeyskkk', visibleRouteKeys)
   }
 
   switch(newLocation, context) {
+    console.log('running switch', this.name);
     const visibleRouteKey = extractScene(newLocation, this.routeKey);
 
     this.routers.switch.forEach(r => {
       if (!r) return;
+
+      console.log('switch', this.name, r.name, visibleRouteKey)
+
 
       if (r._setState && r.at !== visibleRouteKey && r.visible !== r.routeKey === visibleRouteKey) {
         r._setState({
           visible: r.routeKey === visibleRouteKey,
           at: visibleRouteKey,
         });
+        console.log('switch triggered', r.name, r.visible)
       }
     });
 
-    console.log('switch', visibleRouteKey)
   }
 
   feature(newLocation, context) {
+    console.log('running feature', this.name)
+
+    const visibleFeatures = extractFeatures(newLocation, this.routeKey) || {};
+    const visibleFeatureRouteKeyNames = Object.keys(visibleFeatures);
+
+    this.routers.feature.forEach(r => {
+      if (!r) return;
+
+      console.log('feature', this.name, r.name, visibleFeatures)
+
+      const featureVisible = visibleFeatureRouteKeyNames.includes(r.routeKey)
+
+      const atSamePlace = r.at === visibleFeatures;
+      const hasSameVisibility = r.visible === featureVisible;
+
+      if (r._setState && !atSamePlace && !hasSameVisibility) {
+        r._setState({
+          visible: featureVisible,
+          at: visibleFeatures,
+        });
+        console.log('feature triggered', r.name, r.visible)
+      }
+    })
 
   }
 
