@@ -2,8 +2,8 @@ import React from 'react';
 
 export default ({ name, onClick, isVisible }) => {
   const style = (isVisible) => ({
-    width: '50px',
-    height: '25px',
+    width: '60px',
+    height: '20px',
     backgroundColor: 'green',
     margin: '5px',
     borderRadius: '4px',

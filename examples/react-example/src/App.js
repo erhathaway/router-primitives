@@ -125,7 +125,78 @@ const navB = () => {
 }
 
 
+const calcCoordinates = (row, column) => {
+  return ({
+    top: row * 150,
+    left: column * 170,
+  })
+}
 
+const generateStyle = (coordinates) => {
+  return ({
+    position: 'absolute',
+    ...coordinates,
+  })
+}
+
+const addPiece = (pieces, row, column, router) => {
+  pieces.push({
+    style: generateStyle(calcCoordinates(row, column)),
+    router,
+  });
+}
+
+const addChildRoutersToPieces = (pieces, row, column, childRouters) => {
+  let newChildRouters = [];
+  const types = Object.keys(childRouters)
+  types.forEach(type => {
+    const routers = childRouters[type];
+    if (Array.isArray(routers)) {
+      routers.forEach(r => {
+        addPiece(pieces, row, column, r);
+        if (r.routers) {
+          newChildRouters.push(r.routers);
+        }
+        column += 1;
+      })
+    } else {
+      addPiece(pieces, row, column, routers);
+      if (routers.routers) {
+        newChildRouters.push(routers.routers);
+      }
+      column += 1;
+    }
+  })
+
+  let newRow = row + 1;
+  let newColumn = 0;
+  newChildRouters.forEach(c => {
+    addChildRoutersToPieces(pieces, newRow, newColumn, c)
+    if (Array.isArray(c)) {
+      newColumn += c.length;
+    } else {
+      newColumn += 1;
+    }
+  })
+}
+
+const generateRouterDiagram = (router) => {
+  let row = 0;
+  let column = 0;
+  const pieces = [];
+  addPiece(pieces, row, column, router);
+  row += 1;
+  addChildRoutersToPieces(pieces, row, column, router.routers)
+  return pieces.map((p, i) => {
+    // if (p.router.type === 'stack') {
+      return <RouterCard key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
+    // }
+  })
+  // return pieces;
+}
+
+const p = generateRouterDiagram(root)
+console.log('!!!!!!', p)
 
 class App extends Component {
   render() {
@@ -133,6 +204,8 @@ class App extends Component {
       display: 'flex',
       alignItems: 'center',
       flexDirection: 'column',
+      position: 'absolute',
+      left: '20%'
     }
 
     return (
@@ -145,15 +218,7 @@ class App extends Component {
           An opinionated, reactive, and super simple router. Used on a daily basis, Ramen Router is delicious!
         </p>
         <div style={routerStyles}>
-          {"Scenes"}
-          <RouterScene name={'view'} router={view}/>
-          <RouterScene name={'home'} router={home}/>
-          {"Cards"}
-          <RouterCard name={'view'} router={view}/>
-          <RouterCard name={'home'} router={home}/>
-          {"Features"}
-          <RouterFeature name={'view'} router={view}/>
-          <RouterFeature name={'home'} router={home}/>
+          { generateRouterDiagram(root) }
         </div>
       </div>
     );

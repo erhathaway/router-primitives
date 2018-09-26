@@ -1,7 +1,7 @@
 import React from 'react';
 
-export default ({ children }) => {
-  const style = {
+export default ({ children, style }) => {
+  const defaultStyle = {
     width: '150px',
     display: 'flex',
     flexDirection: 'column',
@@ -14,7 +14,7 @@ export default ({ children }) => {
   }
 
   return (
-    <div style={style}>
+    <div style={{ ...defaultStyle, ...style }}>
       { children }
     </div>
   )
