@@ -56,6 +56,9 @@ class Router {
     this.routeKey = routeKey || createUniqueKey();
     if (hooks) this.hooks = hooks;
     if (routers) this.routers = routers;
+
+    this.show = this.show.bind(this);
+    this.hide = this.hide.bind(this);
   }
 
   set parent(parentRouter) {
@@ -92,11 +95,11 @@ class Router {
   get hooks() { return this._hooks; }
 
   show() {
-
+    this.visible = true;
   }
 
   hide() {
-
+    this.visible = false;
   }
 
   _update(newLocation) {
