@@ -19,7 +19,7 @@ const PAGE_NAME = '^'; // used in the query string to reference this data <self.
 /* ------------------------ */
 /* UPDATE ADDRESS STRING
 /* ------------------------ */
-const updateLocation = ({ pathname, search, state }, routerHistory, self) => {
+const updateLocation = ({ pathname, search }) => {
   if (window && window.history) {
     const url = `${pathname}?${search}`;
     window.history.pushState(state, 'Cell AF', url)
@@ -29,43 +29,6 @@ const updateLocation = ({ pathname, search, state }, routerHistory, self) => {
   // routerHistory.push({ pathname, search, state });
 }
 
-/* ------------------------ */
-/* STATE EXTRACTION FROM Location OBJ (react-router lib)*/
-/* ------------------------ */
-const extractScene = (location, routeKey) => {
-  const path = location.pathname;
-  const splitPath = path.split('/');
-
-  if (routeKey === '' || !routeKey) {
-    return splitPath[1];
-  }
-
-  const index = splitPath.findIndex(p => p === routeKey);
-
-  if (index) {
-    const thisPath = splitPath[index];
-    return thisPath;
-  }
-
-  return undefined;
-};
-
-const extractModal = (location, routeKey) => {
-  const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
-  console.log(parsedQuery, '###')
-  return parsedQuery[`${routeKey}${STACK_NAME}`];
-};
-
-const extractFeatures = (location, routeKey) => {
-  const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
-  return parsedQuery[`${routeKey}${FEATURE_NAME}`];
-};
-
-const extractPage = (location, routeKey) => {
-  const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
-  return parsedQuery[`${routeKey}${PAGE_NAME}`];
-};
-/* ------------------------ */
 /* Query String Manipulation */
 /* ------------------------ */
 // removes all items associated with a key in the query string
@@ -217,8 +180,4 @@ export {
   dynamicallyGenerateToggleModalMethods,
   dynamicallyGenerateToggleVisibleFeaturesMethods,
   dynamicallyGeneratePageNavMethods,
-  extractScene,
-  extractFeatures,
-  extractModal,
-  extractPage,
 };

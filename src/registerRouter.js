@@ -2,7 +2,6 @@ let existingLocation;
 
 const registerRouter = (router) => {
   router.visible = true;
-  console.log('registering router')
 
   window.setInterval(() => {
     if (existingLocation !== window.location.href) {

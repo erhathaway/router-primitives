@@ -90,9 +90,7 @@ const config =
         ]
       }}
     ],
-  }}
-
-console.log('root', root)
+  }};
 
 const routers = initalizeRouter(config)
 const root = routers['root'];

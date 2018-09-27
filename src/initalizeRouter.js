@@ -27,7 +27,7 @@ const addChildRoutersToParentRouter = (childRouterInfo, parentRouter, existingRo
 const initalizeRouter = RouterClass => (routerInfo) => {
   const existingRouters = {};
 
-  const { parentRouter, childRouterInfo } = createRouter(routerInfo, existingRouters, RouterClass);
+  const { parentRouter, childRouterInfo } = createRouter({ ...routerInfo, name: 'root' }, existingRouters, RouterClass);
   addChildRoutersToParentRouter(childRouterInfo, parentRouter, existingRouters, RouterClass);
 
   return existingRouters;
