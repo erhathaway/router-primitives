@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import Router, { registerRouter } from 'recursive-router';
 import { observer } from 'mobx-react';
+
+import { root } from './router';
 
 import logo from './logo.svg';
 import './App.css';
@@ -10,101 +11,6 @@ import {
   RouterCard,
   RouterFeature,
 } from './Visualizer';
-
-const docModal = new Router({
-  name: 'docModal',
-  routeKey: 'docModal',
-})
-
-const docPage = new Router({
-  name: 'docPage',
-  routeKey: 'docPage',
-  routers: {
-    stack: [docModal],
-  },
-})
-
-const docMenu = new Router({
-  name: 'docMenu',
-  routeKey: 'docMenu',
-})
-
-const doc = new Router({
-  name: 'doc',
-  routeKey: 'doc',
-  routers: {
-    stack: [docMenu],
-    page: [docPage],
-  },
-})
-
-
-
-
-const intro = new Router({
-  name: 'intro',
-  routeKey: 'intro',
-})
-
-const share = new Router({
-  name: 'share',
-  routeKey: 'share',
-})
-
-const view = new Router({
-  name: 'view',
-  routeKey: 'view',
-  routers: {
-    feature: [share]
-  }
-})
-
-
-const home = new Router({
-  name: 'home',
-  routeKey: 'home',
-})
-
-const root = new Router({
-  name: 'root',
-  routeKey: 'home',
-  routers: {
-    stack: [doc, intro],
-    switch: [view, home],
-    feature: [],
-    page: [],
-  },
-  // defaultRouters: {
-  //   stack: doc,
-  //   switch: view,
-  // },
-  hooks: {
-    before: [() => console.log('before hook hit')],
-    after: [(loc, ctx) => console.log('after hook hit', loc, ctx)],
-  },
-  error: [],
-})
-
-// { name: 'root', routers: {
-//   stack: [
-//     { name: 'doc' routers: {
-//       stack: [],
-//       page: [],
-//     }},
-//     { name: 'intro' }
-//   ],
-//   switch: [
-//     { name: 'view' routers: {
-//       feature: [
-//         { name: 'share' }
-//       ]
-//     }}
-//   ],
-// }}
-
-console.log('root', root)
-
-registerRouter(root)
 
 const navA = () => {
   const pathname = 'home';

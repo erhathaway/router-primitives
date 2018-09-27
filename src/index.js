@@ -13,6 +13,9 @@ import {
   // extractPage,
 } from './utils';
 
+import registerRouter from './register';
+import buildInitalizeRouterFn from './initalize';
+
 const routeKeys = [];
 
 const randomKey = (keySize = 1) => {
@@ -44,7 +47,7 @@ class Router {
   };
 
   _parent = undefined;
-  _routerType = undefined;
+  _type = undefined;
 
   constructor(config = { routeKey: undefined }) {
     const { name, routeKey, routers, hooks, visible, order } = config;
@@ -67,11 +70,11 @@ class Router {
 
   get parent() { return this._parent };
 
-  set routerType(routerType) {
-    this._routerType = routerType;
+  set type(routerType) {
+    this._type = routerType;
   }
 
-  get routerType() { return this._routerType };
+  get type() { return this._type };
 
   set routers(routers = {}) {
     this._routers = { ...this.routers, ...routers };
@@ -81,7 +84,7 @@ class Router {
       this.routers[type].forEach(r => {
         console.log('r', r, type, this.routers, this.name)
         r.parent = this;
-        r.routerType = type;
+        r.type = type;
       });
     })
   }
@@ -162,14 +165,14 @@ class Router {
     })
   }
 
-  switch(newLocation, context) {
-    console.log('running switch', this.name);
+  scene(newLocation, context) {
+    console.log('running scene', this.name);
     const visibleRouteKey = extractScene(newLocation, this.routeKey);
 
-    this.routers.switch.forEach(r => {
+    this.routers.scene.forEach(r => {
       if (!r) return;
 
-      console.log('switch', this.name, r.name, visibleRouteKey)
+      console.log('scene', this.name, r.name, visibleRouteKey)
 
 
       if (r._setState && r.at !== visibleRouteKey && r.visible !== r.routeKey === visibleRouteKey) {
@@ -177,7 +180,7 @@ class Router {
           visible: r.routeKey === visibleRouteKey,
           at: visibleRouteKey,
         });
-        console.log('switch triggered', r.name, r.visible)
+        console.log('scene triggered', r.name, r.visible)
       }
     });
 
@@ -216,18 +219,7 @@ class Router {
 }
 
 
-let existingLocation = undefined;
-const registerRouter = (router) => {
-  router.visible = true;
-  console.log('registering router')
 
-  window.setInterval(() => {
-    if (existingLocation !== window.location.href) {
-      existingLocation = window.location.href;
-      const { pathname, search } = window.location;
-      router._update({ pathname, search });
-    }
-  }, 100)
-}
-
-export { Router as default, registerRouter }
+const initalizeRouter = buildInitalizeRouterFn(Router);
+console.log('initalizeRouter', initalizeRouter)
+export { Router as default, initalizeRouter, registerRouter }
