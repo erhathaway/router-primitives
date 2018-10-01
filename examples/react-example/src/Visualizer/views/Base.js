@@ -2,7 +2,7 @@ import React from 'react';
 
 export default ({ children, style }) => {
   const defaultStyle = {
-    width: '150px',
+    width: '165px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',

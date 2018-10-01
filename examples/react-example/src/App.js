@@ -94,9 +94,16 @@ const generateRouterDiagram = (router) => {
   row += 1;
   addChildRoutersToPieces(pieces, row, column, router.routers)
   return pieces.map((p, i) => {
-    // if (p.router.type === 'stack') {
-      return <RouterCard key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
-    // }
+    switch(p.router.type) {
+      case 'scene':
+        return <RouterScene key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
+      case 'stack':
+        return <RouterCard key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
+      case 'feature':
+        return <RouterFeature key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
+      default:
+        return <RouterScene key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
+    }
   })
   // return pieces;
 }

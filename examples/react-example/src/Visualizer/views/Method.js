@@ -2,7 +2,7 @@ import React from 'react';
 
 export default ({ name, onClick, isVisible }) => {
   const style = (isVisible) => ({
-    width: '60px',
+    width: '70px',
     height: '20px',
     backgroundColor: 'green',
     margin: '5px',

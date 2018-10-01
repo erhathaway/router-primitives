@@ -23,6 +23,7 @@ const AttributeContainer = ({ children }) => {
 const MethodContainer = ({ children }) => {
   const style = {
     display: 'flex',
+    flexWrap: 'wrap',
   }
 
   return (
@@ -59,6 +60,10 @@ const RouterCard = observer(({ name, router, style }) => (
     <MethodContainer>
       <Method key={`${name}-show`} isVisible={!router.visible} name="show" onClick={router.show} />
       <Method key={`${name}-hide`} isVisible={router.visible} name="hide" onClick={router.hide} />
+      <Method key={`${name}-bringToFront`} isVisible={true} name="to front" onClick={router.bringToFront} />
+      <Method key={`${name}-sendToBack`} isVisible={router.visible} name="to back" onClick={router.sendToBack} />
+      <Method key={`${name}-moveForward`} isVisible={true} name="forward" onClick={router.moveForward} />
+      <Method key={`${name}-moveBackward`} isVisible={router.visible} name="backward" onClick={router.moveBackward} />
     </MethodContainer>
   </RouterType>
 ))

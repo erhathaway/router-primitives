@@ -81,14 +81,16 @@ const config =
         stack: [],
         page: [],
       }},
-      { name: 'intro' }
+      { name: 'intro' },
+      { name: 'otherFeature' },
     ],
     scene: [
       { name: 'view', routers: {
         feature: [
           { name: 'share' }
         ]
-      }}
+      }},
+      { name: 'otherView' }
     ],
   }};
 

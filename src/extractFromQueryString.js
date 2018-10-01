@@ -27,10 +27,16 @@ const extractScene = (location, routeKey) => {
   return undefined;
 };
 
-const extractStack = (location, routeKey) => {
+const extractStack = (location, routeKeys) => {
+  // const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
+  // console.log('extracting stack &&', parsedQuery)
+  // return parsedQuery[`${routeKey}${STACK_NAME}`];
   const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
-  console.log('extracting stack &&', parsedQuery)
-  return parsedQuery[`${routeKey}${STACK_NAME}`];
+  const obj = {};
+  routeKeys.forEach(key => {
+    obj[key] = +parsedQuery[key];
+  });
+  return obj;
 };
 
 const extractFeature = (location, routeKey) => {
@@ -43,9 +49,19 @@ const extractPage = (location, routeKey) => {
   return parsedQuery[`${routeKey}${PAGE_NAME}`];
 };
 
+const extractObject = (location, routeKeys) => {
+  const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
+  const obj = {};
+  routeKeys.forEach(key => {
+    obj[key] = parsedQuery[key];
+  });
+  return obj;
+}
+
 export {
   extractScene,
   extractFeature,
   extractStack,
   extractPage,
+  extractObject,
 }
