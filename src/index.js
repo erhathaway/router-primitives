@@ -333,7 +333,7 @@ class Router {
     return this.showStack(location)
   }
 
-  sendToBackStack() {
+  sendToBackStack(location) {
     // get routeKeys that belong to this router type
     const typeRouterRouteKeys = this.parent.routers[this.type].map(t => t.routeKey);
     // get current order for all routeKeys via the location state
@@ -356,6 +356,15 @@ class Router {
       acc[key] = i + 1;
       return acc;
     }, {})
+  }
+
+  /* FEATURE SPECIFIC */
+  showFeature() {
+    return { [this.routeKey]: true };
+  }
+
+  hideFeature() {
+    return { [this.routeKey]: undefined };
   }
 
   _update(newLocation) {
@@ -441,27 +450,27 @@ class Router {
   feature(newLocation, context) {
     // console.log('running feature', this.name)
 
-    const visibleFeatures = extractFeature(newLocation, this.routeKey) || {};
-    const visibleFeatureRouteKeyNames = Object.keys(visibleFeatures);
-
-    this.routers.feature.forEach(r => {
-      if (!r) return;
-
-      // console.log('feature', this.name, r.name, visibleFeatures)
-
-      const featureVisible = visibleFeatureRouteKeyNames.includes(r.routeKey)
-
-      const atSamePlace = r.at === visibleFeatures;
-      const hasSameVisibility = r.visible === featureVisible;
-
-      if (r._setState && !atSamePlace && !hasSameVisibility) {
-        r._setState({
-          visible: featureVisible,
-          at: visibleFeatures,
-        });
-        // console.log('feature triggered', r.name, r.visible)
-      }
-    })
+    // const visibleFeatures = extractFeature(newLocation, this.routeKey) || {};
+    // const visibleFeatureRouteKeyNames = Object.keys(visibleFeatures);
+    //
+    // this.routers.feature.forEach(r => {
+    //   if (!r) return;
+    //
+    //   // console.log('feature', this.name, r.name, visibleFeatures)
+    //
+    //   const featureVisible = visibleFeatureRouteKeyNames.includes(r.routeKey)
+    //
+    //   const atSamePlace = r.at === visibleFeatures;
+    //   const hasSameVisibility = r.visible === featureVisible;
+    //
+    //   if (r._setState && !atSamePlace && !hasSameVisibility) {
+    //     r._setState({
+    //       visible: featureVisible,
+    //       at: visibleFeatures,
+    //     });
+    //     // console.log('feature triggered', r.name, r.visible)
+    //   }
+    // })
 
   }
 

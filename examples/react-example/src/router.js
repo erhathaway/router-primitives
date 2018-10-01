@@ -82,12 +82,13 @@ const config =
         page: [],
       }},
       { name: 'intro' },
-      { name: 'otherFeature' },
+      { name: 'otherStack' },
     ],
     scene: [
       { name: 'view', routers: {
         feature: [
-          { name: 'share' }
+          { name: 'share' },
+          { name: 'otherFeature'}
         ]
       }},
       { name: 'otherView' }

@@ -39,9 +39,15 @@ const extractStack = (location, routeKeys) => {
   return obj;
 };
 
-const extractFeature = (location, routeKey) => {
+const extractFeature = (location, routeKeys) => {
   const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
-  return parsedQuery[`${routeKey}${FEATURE_NAME}`];
+
+  const extractedData = routeKeys.reduce((acc, key) => {
+    acc[key] = parsedQuery[key] === 'show';
+    return acc;
+  }, {});
+
+  return extractedData;
 };
 
 const extractPage = (location, routeKey) => {
