@@ -78,7 +78,7 @@ const config =
   { name: 'root', routers: {
     stack: [
       { name: 'doc', routers: {
-        stack: [],
+        scene: [{ name: 'hi' }, { name: 'hello' }],
         page: [],
       }},
       { name: 'intro' },
@@ -89,6 +89,9 @@ const config =
         feature: [
           { name: 'share' },
           { name: 'otherFeature'}
+        ],
+        scene: [
+          { name: 'oScene', routeKey: 'a'}
         ]
       }},
       { name: 'otherView' }

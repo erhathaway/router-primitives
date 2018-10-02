@@ -30,16 +30,19 @@ const updateLocation = ({ pathname, search }) => {
 }
 
 // (routerType, { routerName: value })
-const updateRouterTypeObject = (routerType, routerTypeObject, { pathname, search }) => {
-  const parsedQuery = queryString.parse(search, { decode: true, arrayFormat: 'bracket' });
-  const newQuery = { ...parsedQuery, ...routerTypeObject };
+const updateLocationByRouterType = (routerType, newLocation, oldLocation) => {
+  const { pathname: newPathname, search: newSearchObj } = newLocation;
+  const { pathname: oldPathname, search: oldSearchString } = oldLocation;
+
+  const parsedQuery = queryString.parse(oldSearchString, { decode: true, arrayFormat: 'bracket' });
+  const newQuery = { ...parsedQuery, ...newSearchObj };
   Object.keys(newQuery).forEach(key => (newQuery[key] == null) && delete newQuery[key]);
 
   const newSearch = queryString.stringify(newQuery, { arrayFormat: 'bracket' });
-
+  const pathname = newLocation.pathname ? newLocation.pathname : oldLocation.pathname;
   updateLocation({ pathname, search: newSearch });
 }
 
 export {
-  updateRouterTypeObject
+  updateLocationByRouterType
 }
