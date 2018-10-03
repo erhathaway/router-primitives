@@ -79,12 +79,12 @@ const extractFeature = (location, routeKeys) => {
   return extractedData;
 };
 
-const extractPage = (location, routeKey) => {
-  const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
-  return parsedQuery[`${routeKey}${PAGE_NAME}`];
-};
+// const extractPage = (location, routeKey) => {
+//   const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
+//   return parsedQuery[`${routeKey}${PAGE_NAME}`];
+// };
 
-const extractObject = (location, routeKeys) => {
+const extractData = (location, routeKeys) => {
   const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
   const obj = {};
   routeKeys.forEach(key => {
@@ -97,6 +97,6 @@ export {
   extractScene,
   extractFeature,
   extractStack,
-  extractPage,
-  extractObject,
+  // extractPage,
+  extractData,
 }

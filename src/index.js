@@ -4,9 +4,8 @@ import {
   extractScene,
   extractFeature,
   extractStack,
-  extractPage,
-  extractObject,
-} from './extractFromQueryString';
+  extractData,
+} from './extractLocation';
 
 import {
   updateLocationByRouterType,
@@ -49,6 +48,8 @@ class Router {
   _parent = undefined;
   _type = undefined;
 
+  _isPathRouter = undefined;
+
   static searchString() {
     return window.location.search || '';
   }
@@ -66,12 +67,13 @@ class Router {
   }
 
   constructor(config = { routeKey: undefined }) {
-    const { name, routeKey, routers, hooks, visible, order } = config;
+    const { name, routeKey, routers, hooks, visible, order, isPathRouter } = config;
 
     this.visible = visible || false;
     this.order = order;
     this.name = name;
     this.routeKey = routeKey || this.name; //createUniqueKey();
+    this._isPathRouter = isPathRouter;
     if (hooks) this.hooks = hooks;
     if (routers) this.routers = routers;
 
@@ -118,7 +120,34 @@ class Router {
 
   get isPathRouter() {
     if (this.name === 'root') return true;
-    return (this.type === 'scene' || this.type === 'page') && (this.parent.isPathRouter);
+
+    // if this router was explicitly set to be a path router
+    if (this._isPathRouter && this.parent.isPathRouter) { return true; }
+    else if (this._isPathRouter) {
+      throw `${this.type} router: ${this.name} is explicitly set to modify the pathname
+        but one of its parent routers doesnt have this permission.
+        Make sure all parents have 'isPathRouter' attribute set to 'true' in the router config OR
+        Make sure all parents are of router type 'scene' or 'data'.
+        If the routers parents have siblings of both 'scene' and 'data' the 'scene' router will always be used for the pathname
+      `
+    }
+
+    if (this.type === 'scene' && this.parent.isPathRouter) {
+      // check to make sure sibling data routers arent explicitly set to modify the pathname
+      const siblingRouters = Object.keys(this.parent.routers['data'] || {});
+      const isSiblingRouterExplictlyAPathRouter = siblingRouters.reduce((acc, r) => {
+        // check all data router siblings and make sure none of been explicitly set to be a path router
+        return acc && r._isPathRouter;
+      }, false)
+      if (isSiblingRouterExplictlyAPathRouter === false) return true;
+    } else if (this.type === 'data' && this.parent.isPathRouter) {
+      // check to make sure sibling scene routers aren't present
+      const siblingRouters = Object.keys(this.parent.routers['scene' || {}]);
+
+      if (siblingRouters.length === 0) return true;
+    } else {
+      return false;
+    };
   }
 
   get routerLevel() {
@@ -143,7 +172,7 @@ class Router {
       updateLocationByRouterType(this.type, newLocationForRouterType, location);
     } catch (e) {
       if (e.message === 'this[methodName] is not a function') {
-        throw `#show method is not implemented for router type: ${this.type}`;
+        throw `#${methodNamePrefix} method is not implemented for router type: ${this.type}`;
       } else {
         throw e;
       }
@@ -503,8 +532,15 @@ class Router {
     }
   }
 
-  updatePage(newLocation, context) {
+  updateData(parentState, parentContext, newLocation) {
+    const routerTypeData = extractData(location, parentContext.routeKeys);
+    const visible = Object.values(routerTypeData).length > 0;
 
+    return {
+      visible,
+      order: undefined,
+      at: routerTypeData,
+    }
   }
 }
 
