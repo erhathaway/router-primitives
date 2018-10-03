@@ -67,7 +67,7 @@ class Router {
   }
 
   constructor(config = { routeKey: undefined }) {
-    const { name, routeKey, routers, hooks, visible, order, isPathRouter } = config;
+    const { name, routeKey, routers, hooks, visible, order, isPathRouter, state } = config;
 
     this.visible = visible || false;
     this.order = order;
@@ -76,6 +76,13 @@ class Router {
     this._isPathRouter = isPathRouter;
     if (hooks) this.hooks = hooks;
     if (routers) this.routers = routers;
+
+    if (state && typeof state === 'object') {
+      this.state = state;
+      console.log(`set router ${this.name} to state:`, this.state)
+    } else if (state) {
+      throw 'The initial state object passed to a router constructor must be an object';
+    }
 
     this.show = this.show.bind(this);
     this.hide = this.hide.bind(this);
@@ -120,7 +127,6 @@ class Router {
 
   get isPathRouter() {
     if (this.name === 'root') return true;
-
     // if this router was explicitly set to be a path router
     if (this._isPathRouter && this.parent.isPathRouter) { return true; }
     else if (this._isPathRouter) {
@@ -133,21 +139,24 @@ class Router {
     }
 
     if (this.type === 'scene' && this.parent.isPathRouter) {
+
       // check to make sure sibling data routers arent explicitly set to modify the pathname
       const siblingRouters = Object.keys(this.parent.routers['data'] || {});
       const isSiblingRouterExplictlyAPathRouter = siblingRouters.reduce((acc, r) => {
         // check all data router siblings and make sure none of been explicitly set to be a path router
-        return acc && r._isPathRouter;
+        return acc || r._isPathRouter === true;
       }, false)
       if (isSiblingRouterExplictlyAPathRouter === false) return true;
     } else if (this.type === 'data' && this.parent.isPathRouter) {
+      if (this._isPathRouter === false) return false;
       // check to make sure sibling scene routers aren't present
-      const siblingRouters = Object.keys(this.parent.routers['scene' || {}]);
+      const siblingRouters = Object.keys(this.parent.routers['scene'] || {});
 
       if (siblingRouters.length === 0) return true;
-    } else {
+    }
+    // else {
       return false;
-    };
+    // };
   }
 
   get routerLevel() {
@@ -166,7 +175,6 @@ class Router {
       // an object with { pathname, search }
       // where pathname is a string
       // and search is an object of routeKeys belonging to a routerType and their value (usually boolean | int)
-      console.log('this is the location', location)
       const newLocationForRouterType = this[methodName](location);
 
       updateLocationByRouterType(this.type, newLocationForRouterType, location);
@@ -439,7 +447,7 @@ class Router {
     return { search };
   }
 
-  /* FEATURE SPECIFIC */
+  /* FEATURE ROUTER SPECIFIC */
   showFeature() {
     const search = { [this.routeKey]: true };
     return { search };
@@ -448,6 +456,50 @@ class Router {
   hideFeature() {
     const search = { [this.routeKey]: undefined };
     return { search };
+  }
+
+  /* DATA ROUTER SPECIFIC */
+  showData() {
+    const search = {};
+
+    if (this.isPathRouter) {
+      console.log('showing data apth router', this.name)
+      // dont update pathname if parent isn't visible
+      if (!this.parent.visible) return { search }
+
+      const pathNameArr = location.pathname.split('/');
+      pathNameArr[this.routerLevel] = this.state.data;
+      const pathname = pathNameArr.join('/');
+
+      return { pathname, search }
+    } else {
+      console.log('showing data NOT apth router', this.name)
+
+      const search = { [this.routeKey]: this.state ? this.state.data : undefined };
+      return { search };
+    }
+  }
+
+  hideData() {
+    const search = { [this.routeKey]: undefined };
+
+    if (this.isPathRouter) {
+      const pathNameArr = location.pathname.split('/');
+
+      const newArr = pathNameArr.slice(0, this.routerLevel);
+
+      const tempPathname = newArr.join('/');
+      const pathname = tempPathname === '' ? '/' : tempPathname;
+
+      return { pathname, search }
+    } else {
+      return { search };
+    }
+  }
+
+  setData(data) {
+    this.state.data = data;
+    this.show();
   }
 
   _update(newLocation) {
@@ -486,20 +538,19 @@ class Router {
   }
 
   _setState(state = {}) {
-    const { visible, at, order, ...otherState } = state;
+    const { visible, at, order, data, ...otherState } = state;
     if (at) {
       this.history.from = this.history.at;
       this.history.at = at;
     }
     this.order = order ? order : undefined;
     this.visible = visible ? visible : false;
+    this.data = data ? state : undefined;
 
-    this.state = state;
+    this.state = { ...this.state, ...state };
   }
 
   updateStack(parentState, parentContext, newLocation) {
-    // console.log(this.name, this.isPathRouter, this.routerLevel, 'ispathrouter')
-
     const routerTypeData = extractStack(location, parentContext.routeKeys);
     const order = routerTypeData[this.routeKey];
 
@@ -511,7 +562,6 @@ class Router {
   }
 
   updateScene(parentState, parentContext, newLocation) {
-    // console.log(this.name, this.isPathRouter, this.routerLevel, 'ispathrouter')
     const routerTypeData = extractScene(location, parentContext.routeKeys, this.isPathRouter, this.routerLevel);
     const visible = routerTypeData[this.routeKey];
 
@@ -525,6 +575,7 @@ class Router {
   updateFeature(parentState, parentContext, newLocation) {
     const routerTypeData = extractFeature(location, parentContext.routeKeys);
     const visible = routerTypeData[this.routeKey];
+
     return {
       visible,
       order: undefined,
@@ -533,8 +584,9 @@ class Router {
   }
 
   updateData(parentState, parentContext, newLocation) {
-    const routerTypeData = extractData(location, parentContext.routeKeys);
-    const visible = Object.values(routerTypeData).length > 0;
+    const routerTypeData = extractData(location, parentContext.routeKeys, this.isPathRouter, this.routerLevel, this);
+    const visible = Object.values(routerTypeData).filter(i => i != null).length > 0;
+    console.log(routerTypeData, this.name, visible)
 
     return {
       visible,
