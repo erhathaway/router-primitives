@@ -75,14 +75,32 @@ import Router, { registerRouter, initalizeRouter } from 'recursive-router';
 // })
 
 const config =
-  { name: 'root', routers: {
+  { name: 'root',
+    // beforeLocationUpdate: fn,
+    // afterLocationUpdate: fn,
+    // beforeStateUpdate: fn,
+    // afterStateUpdate: fn,
+    routers: {
     stack: [
-      { name: 'doc', routers: {
+      { name: 'doc', default: { visible: true }, routers: {
         scene: [{ name: 'hi' }, { name: 'hello' }],
         page: [],
       }},
       { name: 'intro' },
       { name: 'otherStack' },
+    ],
+    data: [
+      { name: 'imData',
+        state: { data: 'hello-im-some-data'},
+        routers: {
+          data: [
+            { name: 'imData2',
+              state: { data: 'moar data'},
+              isPathRouter: false,
+            }
+          ],
+        }
+      }
     ],
     scene: [
       { name: 'view', routers: {

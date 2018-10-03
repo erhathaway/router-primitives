@@ -7,10 +7,7 @@ import {
   extractData,
 } from './extractLocation';
 
-import {
-  updateLocationByRouterType,
-} from './setLocation';
-
+import setLocation from './setLocation';
 import registerRouter from './registerRouter';
 import buildInitalizeRouterFn from './initalizeRouter';
 
@@ -79,7 +76,6 @@ class Router {
 
     if (state && typeof state === 'object') {
       this.state = state;
-      console.log(`set router ${this.name} to state:`, this.state)
     } else if (state) {
       throw 'The initial state object passed to a router constructor must be an object';
     }
@@ -110,7 +106,6 @@ class Router {
     const routerTypes = Object.keys(this.routers);
     routerTypes.forEach(type => {
       this.routers[type].forEach(r => {
-        // console.log('r', r, type, this.routers, this.name)
         r.parent = this;
         r.type = type;
       });
@@ -139,7 +134,6 @@ class Router {
     }
 
     if (this.type === 'scene' && this.parent.isPathRouter) {
-
       // check to make sure sibling data routers arent explicitly set to modify the pathname
       const siblingRouters = Object.keys(this.parent.routers['data'] || {});
       const isSiblingRouterExplictlyAPathRouter = siblingRouters.reduce((acc, r) => {
@@ -175,9 +169,9 @@ class Router {
       // an object with { pathname, search }
       // where pathname is a string
       // and search is an object of routeKeys belonging to a routerType and their value (usually boolean | int)
-      const newLocationForRouterType = this[methodName](location);
-
-      updateLocationByRouterType(this.type, newLocationForRouterType, location);
+      const newLocation = this[methodName](location);
+      return newLocation;
+      // setLocation(newLocation, location);
     } catch (e) {
       if (e.message === 'this[methodName] is not a function') {
         throw `#${methodNamePrefix} method is not implemented for router type: ${this.type}`;
@@ -186,47 +180,114 @@ class Router {
       }
     }
   }
+
+  get hasHistory() {
+    return true
+  }
+
+  get hasDefault() {
+    return true
+  }
+
+  isParent() {
+    return true;
+  }
+
+  rollBackToMostRecentState(location) {
+    return location;
+  }
+
+  useDefault(location) {
+    return location;
+  }
+
+  // repopulate tree state
+  updateLocationFnShow(newLocation, router, ctx) {
+    if (router.name === ctx.originNodeName) { return router.show(false, newLocation); }
+    if (router.isParent(ctx.originNodeName)) {
+      if (router.hasHistory) {
+        return router.rollBackToMostRecentState(newLocation)
+      } else if (router.hasDefault){
+        return router.useDefault(newLocation)
+      }
+    }
+    return newLocation;
+  }
+
+  // fold a fn over a node and all its child nodes
+  reduceStateTree(location, router, fn, ctx) {
+      const newLocation = fn(location, router, ctx);
+      const childRouterTypes = Object.keys(router.routers || {});
+      return childRouterTypes.reduce((locationA, type) => {
+        return router.routers[type].reduce((locationB, childRouter) => {
+          return this.reduceStateTree(locationB, childRouter, fn, ctx);
+        }, locationA);
+      }, newLocation);
+  }
+
   // all routers implement this method
-  show() {
+  show(isOriginalCall = true, existingLocation) {
     const METHOD_NAME_PREFIX = 'show';
-    const location = Router.location();
-    this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    const location = existingLocation ? existingLocation : Router.location();
+    // const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    if (isOriginalCall && !this.visible) {
+      const ctx = { originNodeName: this.name };
+      const newLocation = this.reduceStateTree(location, this, this.updateLocationFnShow, ctx);
+      setLocation(newLocation, location);
+    } else {
+      const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+      return newLocation
+    }
   }
 
   // all routers implement this method
   hide() {
     const METHOD_NAME_PREFIX = 'hide';
     const location = Router.location();
-    this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    // this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    setLocation(newLocation, location);
   }
 
   // only stack router implements this method
   moveForward() {
     const METHOD_NAME_PREFIX = 'moveForward';
     const location = Router.location();
-    this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    // this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    setLocation(newLocation, location);
   }
 
   // only stack router implements this method
   moveBackward() {
     const METHOD_NAME_PREFIX = 'moveBackward';
     const location = Router.location();
-    this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    // this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    setLocation(newLocation, location);
   }
 
   // only stack router implements this method
   bringToFront() {
     const METHOD_NAME_PREFIX = 'bringToFront';
     const location = Router.location();
-    this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    // this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    setLocation(newLocation, location);
   }
 
   // only stack router implements this method
   sendToBack() {
     const METHOD_NAME_PREFIX = 'sendToBack';
     const location = Router.location();
-    this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    // this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    setLocation(newLocation, location);
   }
+
+  /* -------------------------------------
+  ROUTER SPECIFIC METHODS FOR LOCATION UPDATING
+  ----------------------------------------*/
 
   /* SCENE SPECIFIC */
   showScene(location) {
@@ -239,8 +300,26 @@ class Router {
       // dont update pathname if parent isn't visible
       if (!this.parent.visible) return { search }
 
-      const childScenes = this.routers['scene'];
+      // const childScenes = this.routers['scene'];
 
+
+      // hide state tree
+      // const updateLocationFn = (newLocation, router) => {
+      //   if (router.name === 'view') { return router.show(newLocation); }
+      //   if (router.isParent('view')) {
+      //     if (router.hideWithParent) {
+      //       return router.hide(newLocation)
+      //     }
+      //   }
+      //   return newLocation;
+      // }
+      //
+      //
+      // // an update should reduce over the child branches starting at the node called
+      // // it should return a new location object that can be used to update the URL
+      // const newLocation = routerTree.reduce((newLocation, routerState) => {
+      //   return updateLocationFn(newLocation);
+      // }, existingLocation)
       // if (childScenes && childScenes[0]) {
       //   const childHistory = childScenes[0].history.from || {};
       //   const keys = Object.keys(childHistory);
@@ -463,7 +542,6 @@ class Router {
     const search = {};
 
     if (this.isPathRouter) {
-      console.log('showing data apth router', this.name)
       // dont update pathname if parent isn't visible
       if (!this.parent.visible) return { search }
 
@@ -473,8 +551,6 @@ class Router {
 
       return { pathname, search }
     } else {
-      console.log('showing data NOT apth router', this.name)
-
       const search = { [this.routeKey]: this.state ? this.state.data : undefined };
       return { search };
     }
@@ -586,7 +662,6 @@ class Router {
   updateData(parentState, parentContext, newLocation) {
     const routerTypeData = extractData(location, parentContext.routeKeys, this.isPathRouter, this.routerLevel, this);
     const visible = Object.values(routerTypeData).filter(i => i != null).length > 0;
-    console.log(routerTypeData, this.name, visible)
 
     return {
       visible,
@@ -599,5 +674,5 @@ class Router {
 
 
 const initalizeRouter = buildInitalizeRouterFn(Router);
-// console.log('initalizeRouter', initalizeRouter)
+
 export { Router as default, initalizeRouter, registerRouter }
