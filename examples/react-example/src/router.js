@@ -92,26 +92,30 @@ const config =
     data: [
       { name: 'imData',
         state: { data: 'hello-im-some-data'},
+        isPathRouter: true,
+
         routers: {
           data: [
             { name: 'imData2',
-              state: { data: 'moar data'},
-              isPathRouter: false,
+              state: { data: 'moar-data'},
+              isPathRouter: true,
             }
           ],
         }
       }
     ],
     scene: [
-      { name: 'view', routers: {
-        feature: [
-          { name: 'share' },
-          { name: 'otherFeature'}
-        ],
-        scene: [
-          { name: 'oScene', routeKey: 'a'}
-        ]
-      }},
+      { name: 'view',
+        rehydrateChildRoutersState: true,
+        routers: {
+          feature: [
+            { name: 'share' },
+            { name: 'otherFeature'}
+          ],
+          scene: [
+            { name: 'oScene'}
+          ]
+        }},
       { name: 'otherView' }
     ],
   }};
