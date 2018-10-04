@@ -16,9 +16,19 @@ export type RouterHooks = {|
   afterStateUpdate: HookFn,
 |};
 
+export type TypeHistory = {
+  [string]: number | string | boolean,
+};
+
+export type RouterHistory = {
+  at?: TypeHistory,
+  from?: TypeHistory
+}
+
 export type RouterState = {|
   visible?: boolean,
-  at?: Object,
+  at?: TypeHistory,
+  from?: TypeHistory,
   order?: ?number,
   data?: ?string,
 |};
@@ -34,3 +44,27 @@ export type RouterConfig = {|
   state?: RouterState,
   rehydrateChildRoutersState?: boolean,
 |};
+
+// export interface RouterInterface {
+//   visible: ?boolean;
+//   order: ?number;
+//   data: ?string;
+//   history: RouterHistory;
+//   state: RouterState;
+//
+//   routeKey: string;
+//   name: string;
+//
+//   parent: ?RouterInterface;
+//   routers: { [RouterType]: Array<RouterInterface> };
+//   isPathRouter: boolean;
+//   type: RouterType;
+//   routerLevel: number;
+//
+//   +constructor: (config: RouterConfig) => void;
+//   +rollBackToMostRecentState: (existingLocation: Location) => Location;
+// }
+
+export type Routers<T> = {
+  [RouterType]: Array<T>
+}
