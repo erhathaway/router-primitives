@@ -1,6 +1,6 @@
 // @flow
 
-import { observable } from "mobx";
+import { observable } from 'mobx';
 
 import {
   extractScene,
@@ -13,6 +13,15 @@ import setLocation from './setLocation';
 import registerRouter from './registerRouter';
 import buildInitalizeRouterFn from './initalizeRouter';
 
+import type {
+  HookFn,
+  RouterType,
+  RouterHooks,
+  Location,
+  RouterState,
+  RouterConfig
+} from './types';
+
 class Router {
   @observable visible = undefined;
 
@@ -22,16 +31,19 @@ class Router {
 
   @observable state = {};
 
+  routeKey: string;
+
+  name: string;
+
+  data = undefined;
+
   _routers = {};
 
-  _hooks = {
-    before: [],
-    after: [],
-  };
+  _hooks: RouterHooks;
 
   _parent = undefined;
 
-  _type = undefined;
+  _type: RouterType;
 
   _isPathRouter = undefined;
 
@@ -50,11 +62,11 @@ class Router {
     return { pathname: Router.pathnameString(), search: Router.searchString() };
   }
 
-  static capitalize(string = '') {
+  static capitalize(string: string = '') {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
-  constructor(config = { routeKey: undefined }) {
+  constructor(config: RouterConfig) {
     const {
       name,
       routeKey,
@@ -96,7 +108,7 @@ class Router {
 
   get parent() { return this._parent; }
 
-  set type(routerType) {
+  set type(routerType: RouterType) {
     this._type = routerType;
   }
 
@@ -111,12 +123,12 @@ class Router {
         r.parent = this;
         r.type = type;
       });
-    })
+    });
   }
 
   get routers() { return this._routers; }
 
-  set hooks(hooks = {}) {
+  set hooks(hooks: RouterHooks) {
     this._hooks = { ...this.hooks, ...hooks };
   }
 
@@ -125,7 +137,7 @@ class Router {
   get isPathRouter() {
     if (this.name === 'root') return true;
     // if this router was explicitly set to be a path router
-    if (this._isPathRouter && this.parent.isPathRouter) { return true; }
+    if (this._isPathRouter && this.parent && this.parent.isPathRouter) { return true; }
     if (this._isPathRouter) {
       throw `${this.type} router: ${this.name} is explicitly set to modify the pathname
         but one of its parent routers doesnt have this permission.
@@ -135,7 +147,7 @@ class Router {
       `;
     }
 
-    if (this.type === 'scene' && this.parent.isPathRouter) {
+    if (this.type === 'scene' && this.parent && this.parent.isPathRouter) {
       // check to make sure sibling data routers arent explicitly set to modify the pathname
       const siblingRouters = Object.keys(this.parent.routers.data || {});
       const isSiblingRouterExplictlyAPathRouter = siblingRouters.reduce((acc, r) => {
@@ -146,7 +158,7 @@ class Router {
       }, false);
 
       if (isSiblingRouterExplictlyAPathRouter === false) return true;
-    } else if (this.type === 'data' && this.parent.isPathRouter) {
+    } else if (this.type === 'data' && this.parent && this.parent.isPathRouter) {
       if (this._isPathRouter === false) return false;
       // check to make sure sibling scene routers aren't present
       const siblingRouters = Object.keys(this.parent.routers.scene || {});
@@ -157,8 +169,8 @@ class Router {
     return false;
   }
 
-  get routerLevel() {
-    if (this.name === 'root') return 0;
+  get routerLevel(): number {
+    if (!this.parent) return 0;
     return 1 + this.parent.routerLevel;
   }
 
@@ -232,38 +244,31 @@ class Router {
   }
 
   // repopulate tree state
-  updateLocationFnShow(newLocation, router, ctx) {
+  updateLocationFnShow(newLocation: Location, router, ctx) {
     if (router.routeKey === ctx.originRouteKey) { return router.show(false, newLocation); }
     if (router.isDescendentOf(ctx.originRouteKey)) {
       if ((router._rehydrateChildRoutersState !== false) && (router._rehydrateChildRoutersState || ctx.rehydrateChildRoutersState)) {
-        return router.rollBackToMostRecentState(newLocation)
+        return router.rollBackToMostRecentState(newLocation);
       } else if (router.hasDefault){
-        return router.useDefault(newLocation)
+        return router.useDefault(newLocation);
       }
     }
     return newLocation;
   }
 
-  updateLocationFnHide(location, router, ctx) {
-    // if (router.routeKey === ctx.originRouteKey) { return router.hide(false, location); }
-    // if (router.isDescendentOf(ctx.originRouteKey)) {
-      // if (router.hideWithParent) {
+  updateLocationFnHide(location: Location, router, ctx) {
     const locationToUseOnChild = { pathname: location.pathname, search: ctx.originalLocation.search }
-    // console.log('location to use on child', locationToUseOnChild)
-    const updatedLocation = router.hide(false, locationToUseOnChild)
-    // console.log('new location &&:', location, updatedLocation)
+    const updatedLocation = router.hide(false, locationToUseOnChild);
     const existingSearch = typeof(location.search) === 'object' ? location.search : {}
-    return { pathname: updatedLocation.pathname, search: { ...existingSearch, ...updatedLocation.search }}
-      // }
-    // }
-    // return newLocation;
+
+    return { pathname: updatedLocation.pathname, search: { ...existingSearch, ...updatedLocation.search } }
   }
 
   // fold a fn over a node and all its child nodes
-  reduceStateTree(location, router, fn, ctx) {
+  reduceStateTree(location: Location, router, fn, ctx) {
       const newLocation = fn(location, router, ctx);
-      // console.log('hurrr', newLocation)
       const childRouterTypes = Object.keys(router.routers || {});
+
       return childRouterTypes.reduce((locationA, type) => {
         return router.routers[type].reduce((locationB, childRouter) => {
           const newCtx = { ...ctx, rehydrateChildRoutersState: childRouter.rehydrateChildRoutersState || ctx.rehydrateChildRoutersState }
@@ -273,7 +278,7 @@ class Router {
   }
 
   // all routers implement this method
-  show(isOriginalCall = true, existingLocation) {
+  show(isOriginalCall: boolean = true, existingLocation: Location) {
     const METHOD_NAME_PREFIX = 'show';
     const location = existingLocation || Router.routerLocation();
     // const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
@@ -292,7 +297,7 @@ class Router {
   }
 
   // all routers implement this method
-  hide(isOriginalCall = true, existingLocation) {
+  hide(isOriginalCall: boolean = true, existingLocation: Location) {
     const METHOD_NAME_PREFIX = 'hide';
     const location = existingLocation || Router.routerLocation();
     // console.log(location, 'init hide')
@@ -355,7 +360,7 @@ class Router {
   ----------------------------------------*/
 
   /* SCENE SPECIFIC */
-  showScene(location) {
+  showScene(location: Location) {
     const search = {};
     if (this.parent) {
       this.parent.routers[this.type].forEach((r) => {
@@ -366,41 +371,8 @@ class Router {
 
     if (this.isPathRouter) {
       // dont update pathname if parent isn't visible
-      if (!this.parent.visible) return { search };
+      if (this.parent && !this.parent.visible) return { search };
 
-      // const childScenes = this.routers['scene'];
-
-
-      // hide state tree
-      // const updateLocationFn = (newLocation, router) => {
-      //   if (router.name === 'view') { return router.show(newLocation); }
-      //   if (router.isDescendentOf('view')) {
-      //     if (router.hideWithParent) {
-      //       return router.hide(newLocation)
-      //     }
-      //   }
-      //   return newLocation;
-      // }
-      //
-      //
-      // // an update should reduce over the child branches starting at the node called
-      // // it should return a new location object that can be used to update the URL
-      // const newLocation = routerTree.reduce((newLocation, routerState) => {
-      //   return updateLocationFn(newLocation);
-      // }, existingLocation)
-      // if (childScenes && childScenes[0]) {
-      //   const childHistory = childScenes[0].history.from || {};
-      //   const keys = Object.keys(childHistory);
-      //   const lastVisibleChildScene = keys.find(k => childHistory[k] === true);
-      //
-      //   if (lastVisibleChildScene) {
-      //     console.log('childrouters', childScenes)
-      //     const router = childScenes.find(r => r.routeKey === lastVisibleChildScene)
-      //     console.log('found router', router)
-      //     // if (router) setTimeout( () => router.show(), 1000);
-      //   }
-      //   console.log('last visible child scene', lastVisibleChildScene)
-      // }
       const pathNameArr = location.pathname.split('/');
       pathNameArr[this.routerLevel] = this.routeKey;
       const pathname = pathNameArr.join('/');
@@ -411,7 +383,7 @@ class Router {
     return { search };
   }
 
-  hideScene(location) {
+  hideScene(location: Location) {
     const search = {};
     if (this.parent) {
       this.parent.routers[this.type].forEach((r) => { search[r.routeKey] = undefined; });
@@ -443,7 +415,7 @@ class Router {
       ex: { <order>: <routeKeyName> }
     */
     const orderAsKey = routerRouteKeys.reduce((acc, key) => {
-      const value = routeKeyOrderObj[key]
+      const value = routeKeyOrderObj[key];
       if (value != null && !isNaN(value)) {
         acc[routeKeyOrderObj[key]] = key;
       }
@@ -456,7 +428,7 @@ class Router {
     return sortedKeys;
   }
 
-  showStack(location) {
+  showStack(location: Location) {
     // get routeKeys that belong to this router type
     const typeRouterRouteKeys = this.parent.routers[this.type].map(t => t.routeKey);
     // get current order for all routeKeys via the location state
@@ -482,7 +454,7 @@ class Router {
     return { search };
   }
 
-  hideStack(location) {
+  hideStack(location: Location): Location {
     // get routeKeys that belong to this router type
     const typeRouterRouteKeys = this.parent.routers[this.type].map(t => t.routeKey);
     // get current order for all routeKeys via the location state
@@ -506,7 +478,7 @@ class Router {
     return { search };
   }
 
-  moveForwardStack(location) {
+  moveForwardStack(location: Location): Location {
     // get routeKeys that belong to this router type
     const typeRouterRouteKeys = this.parent.routers[this.type].map(t => t.routeKey);
     // get current order for all routeKeys via the location state
@@ -534,7 +506,7 @@ class Router {
     return { search };
   }
 
-  moveBackwardStack(location) {
+  moveBackwardStack(location: Location): Location {
     // get routeKeys that belong to this router type
     const typeRouterRouteKeys = this.parent.routers[this.type].map(t => t.routeKey);
     // get current order for all routeKeys via the location state
@@ -562,11 +534,11 @@ class Router {
     return { search };
   }
 
-  bringToFrontStack(location) {
+  bringToFrontStack(location: Location): Location {
     return this.showStack(location);
   }
 
-  sendToBackStack(location) {
+  sendToBackStack(location: Location): Location {
     // get routeKeys that belong to this router type
     const typeRouterRouteKeys = this.parent.routers[this.type].map(t => t.routeKey);
     // get current order for all routeKeys via the location state
@@ -598,13 +570,13 @@ class Router {
     return { search };
   }
 
-  hideFeature(location) {
+  hideFeature(location: Location) {
     const search = { [this.routeKey]: undefined };
     return { pathname: location.pathname, search };
   }
 
   /* DATA ROUTER SPECIFIC */
-  showData(location) {
+  showData(location: Location) {
     if (this.isPathRouter) {
       const search = {};
       // dont update pathname if parent isn't visible
@@ -621,7 +593,7 @@ class Router {
     return { search };
   }
 
-  hideData(location) {
+  hideData(location: Location) {
     const search = { [this.routeKey]: undefined };
 
     if (this.isPathRouter) {
@@ -638,12 +610,12 @@ class Router {
     return { pathname: location.pathname, search };
   }
 
-  setData(data) {
+  setData(data: string) {
     this.state.data = data;
     this.show();
   }
 
-  _update(newLocation) {
+  _update(newLocation: Location) {
     const location = newLocation;
     const context = { visible: this.visible, order: this.order, history: this.history };
     // this.hooks.before.forEach(hook => hook(location, context));
@@ -674,10 +646,10 @@ class Router {
       }
     })
 
-    this.hooks.after.forEach(hook => hook(location, context));
+    // this.hooks.after.forEach(hook => hook(location, context));
   }
 
-  _setState(state = {}) {
+  _setState(state: RouterState) {
     const {
       visible,
       at,
@@ -691,7 +663,7 @@ class Router {
     }
     this.order = order;
     this.visible = visible || false;
-    this.data = data ? state : undefined;
+    this.data = data;
 
     this.state = { ...this.state, ...state };
   }
