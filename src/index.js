@@ -35,8 +35,10 @@ class Router {
   @observable history: RouterHistory = { at: undefined, from: undefined };
 
   @observable state: RouterState = {
-    at: undefined, from: undefined, data: undefined, visible: false, order: undefined,
+    at: undefined, from: undefined, data: undefined, visible: false, order: undefined
   };
+
+  childTreeVisibilityOnHide: {}
 
   routeKey: string;
 
@@ -222,29 +224,19 @@ class Router {
     return this.routeKey === parentKey;
   }
 
-  rollBackToMostRecentState(existingLocation: Location): Location {
-    if (!this.history || !this.history.from) return existingLocation;
-    const historicalRouteValue = this.history.from[this.routeKey];
-    // const pathname = { ...existingLocation.pathname, ...oldPathname };
-    // const pathname = existingLocation.pathname;
-    let pathname;
-    let search;
-    if (this.isPathRouter) {
-      const splitPath = existingLocation.pathname.split('/');
-      // const presentRouter = splitPath[this.routerLevel];
-      if (this.type === 'data' && historicalRouteValue != null) {
-        splitPath[this.routerLevel] = historicalRouteValue.toString();
-      } else if (historicalRouteValue) {
-        splitPath[this.routerLevel] = this.routeKey;
-      }
-      pathname = splitPath.join('/');
-      search = existingLocation.search; // eslint-disable-line prefer-destructuring
-    } else {
-      pathname = existingLocation.pathname; // eslint-disable-line prefer-destructuring
-      search = { ...existingLocation.search, [this.routeKey]: historicalRouteValue };
-    }
+  rollBackToMostRecentState({ pathname, search }: Location, router: Router, ctx: { previousVisibility: Object }): Location {
+    const { previousVisibility } = ctx;
+    if (previousVisibility[router.routeKey] === false) return { pathname, search };
 
-    // const search = { ...existingLocation.search, ...oldSearch };
+    if (this.isPathRouter && router.type === 'data') {
+      pathname[router.routerLevel] = router.state ? router.state.data : router.data;
+    } else if (this.isPathRouter) {
+      pathname[router.routerLevel] = previousVisibility[router.routeKey];
+    } else if (router.type === 'data') {
+      search[router.routeKey] = router.state ? router.state.data : router.data;
+    } else {
+      search[router.routeKey] = previousVisibility[router.routeKey];
+    }
     return { pathname, search };
   }
 
@@ -257,7 +249,7 @@ class Router {
     if (router.routeKey === ctx.originRouteKey) { return router.show(false, newLocation); }
     if (router.isDescendentOf(ctx.originRouteKey)) {
       if ((router._rehydrateChildRoutersState !== false) && (router._rehydrateChildRoutersState || ctx.rehydrateChildRoutersState)) {
-        return router.rollBackToMostRecentState(newLocation);
+        return router.rollBackToMostRecentState(newLocation, router, ctx);
       }
       if (router.hasDefault) {
         return router.useDefault(newLocation);
@@ -267,11 +259,25 @@ class Router {
   }
 
   static updateLocationFnHide(location: Location, router: Router, ctx: Object): Location {
-    const locationToUseOnChild = { pathname: location.pathname, search: ctx.originalLocation.search };
+    const locationToUseOnChild = { pathname: location.pathname, search: location.search }; //ctx.originalLocation.search };
     const updatedLocation = (router.hide(false, locationToUseOnChild): Location);
-    const existingSearch = typeof (location.search) === 'object' ? location.search : {};
 
+    const existingSearch = typeof (location.search) === 'object' ? location.search : {};
     return { pathname: updatedLocation.pathname, search: { ...existingSearch, ...updatedLocation.search } };
+  }
+
+  static getChildTreeVisibility(router: Router): Object {
+    const childRouterTypes = (Object.keys(router.routers): Array<RouterType>);
+    return childRouterTypes.reduce((acc, type) => {
+      router.routers[type].forEach((childRouter) => {
+        if (childRouter.visible && childRouter.type === 'stack') {
+          acc[childRouter.routeKey] = childRouter.order;
+        } else {
+          acc[childRouter.routeKey] = childRouter.visible;
+        }
+      });
+      return acc;
+    }, {});
   }
 
   // fold a fn over a node and all its child nodes
@@ -298,7 +304,9 @@ class Router {
       const ctx = {
         originRouteKey: this.routeKey,
         rehydrateChildRoutersState: this._rehydrateChildRoutersState,
+        previousVisibility: { ...this.childTreeVisibilityOnHide },
       };
+      this.childTreeVisibilityOnHide = {};
 
       const newLocation = Router.reduceStateTree(location, this, Router.updateLocationFnShow, ctx);
       setLocation(newLocation, location);
@@ -316,6 +324,8 @@ class Router {
     const location = existingLocation || Router.routerLocation();
 
     if (isOriginalCall && this.visible) {
+      // capture stte of sub tree so on show we can repopulate it correctly
+      this.childTreeVisibilityOnHide = Router.getChildTreeVisibility(this);
       const ctx = {
         originRouteKey: this.routeKey,
         rehydrateChildRoutersState: this._rehydrateChildRoutersState,

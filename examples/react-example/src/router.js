@@ -82,7 +82,7 @@ const config =
     // afterStateUpdate: fn,
     routers: {
     stack: [
-      { name: 'doc', default: { visible: true }, routers: {
+      { name: 'doc', default: { visible: true }, rehydrateChildRoutersState: true, routers: {
         scene: [{ name: 'hi' }, { name: 'hello' }],
         page: [],
       }},
@@ -93,8 +93,11 @@ const config =
       { name: 'imData',
         state: { data: 'hello-im-some-data'},
         isPathRouter: true,
-
+        rehydrateChildRoutersState: true,
         routers: {
+          stack: [
+            // { name: 'd1' },
+          ],
           data: [
             { name: 'imData2',
               state: { data: 'moar-data'},
