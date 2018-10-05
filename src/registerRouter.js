@@ -1,13 +1,14 @@
+import Router from './index';
+
 let existingLocation;
 
 const registerRouter = (router) => {
-  router.visible = true;
+  router.setState({ visible: true });
 
   window.setInterval(() => {
     if (existingLocation !== window.location.href) {
       existingLocation = window.location.href;
-      const { pathname, search } = window.location;
-      router._update({ pathname, search });
+      router._update(Router.routerLocation());
     }
   }, 100);
 };

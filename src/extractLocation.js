@@ -10,12 +10,12 @@ import type {
 /* Extract state from location (pathname and search)
 /* ------------------------ */
 
-const extractScene = (location, routeKeys, isPathRouter, routerLevel) => {
-  const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
+const extractScene = ({ pathname, search }: Location, routeKeys, isPathRouter, routerLevel) => {
+  // const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
 
   if (isPathRouter) {
-    const splitPath = location.pathname.split('/');
-    const scenePresent = splitPath[routerLevel];
+    // const splitPath = location.pathname.split('/');
+    const scenePresent = pathname[routerLevel];
 
     const data = {};
     routeKeys.forEach((key) => { data[key] = false; });
@@ -25,19 +25,20 @@ const extractScene = (location, routeKeys, isPathRouter, routerLevel) => {
     return data;
   }
 
-  const extractedSearchData = routeKeys.reduce((acc, key) => {
-    acc[key] = parsedQuery[key] != null;
+  const extractedScenes = routeKeys.reduce((acc, key) => {
+    acc[key] = search[key] != null;
     return acc;
   }, {});
 
-  return (extractedSearchData: { [string]: boolean });
+  return (extractedScenes: { [string]: boolean });
 };
 
-const extractStack = (location, routeKeys) => {
-  const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
+const extractStack = ({ search }: Location, routeKeys) => {
+  // const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
+  // obj representes the extracted stack data
   const obj = {};
   routeKeys.forEach((key) => {
-    const order = +parsedQuery[key];
+    const order = +search[key];
     obj[key] = order != null && !Number.isNaN(order) ? order : undefined;
   });
 
@@ -47,24 +48,24 @@ const extractStack = (location, routeKeys) => {
   return (obj: { [string]: number });
 };
 
-const extractFeature = (location, routeKeys) => {
-  const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
+const extractFeature = ({ pathname, search }: Location, routeKeys) => {
+  // const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
 
-  const extractedData = routeKeys.reduce((acc, key) => {
-    acc[key] = parsedQuery[key] != null;
+  const obj = routeKeys.reduce((acc, key) => {
+    acc[key] = search[key] != null;
 
     return acc;
   }, {});
 
-  return (extractedData: { [string]: boolean });
+  return (obj: { [string]: boolean });
 };
 
-const extractData = (location, routeKeys, isPathRouter, routerLevel, router) => {
-  const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
+const extractData = ({ pathname, search }: Location, routeKeys, isPathRouter, routerLevel, router) => {
+  // const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
 
   if (isPathRouter) {
-    const splitPath = location.pathname.split('/');
-    const dataPresent = splitPath[routerLevel];
+    // const splitPath = location.pathname.split('/');
+    const dataPresent = pathname[routerLevel];
 
     const data = {};
     routeKeys.forEach((key) => { data[key] = undefined; });
@@ -76,7 +77,7 @@ const extractData = (location, routeKeys, isPathRouter, routerLevel, router) => 
 
   const obj = {};
   routeKeys.forEach((key) => {
-    obj[key] = parsedQuery[key];
+    obj[key] = search[key];
   });
   return obj;
 };

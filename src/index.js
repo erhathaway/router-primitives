@@ -2,6 +2,8 @@
 
 import { observable } from 'mobx';
 
+import queryString from 'query-string';
+
 import {
   extractScene,
   extractFeature,
@@ -63,8 +65,11 @@ class Router {
     return window.location.pathname || '';
   }
 
-  static routerLocation(): { pathname: string, search: string } {
-    return { pathname: Router.pathnameString(), search: Router.searchString() };
+  static routerLocation(): Location {
+    const search = (queryString.parse(Router.searchString(), { decode: true, arrayFormat: 'bracket' }): Object);
+    const pathname = (Router.pathnameString().split('/'): Array<string>);
+    // return { pathname: Router.pathnameString(), search: Router.searchString() };
+    return { search, pathname };
   }
 
   static capitalize(string: string = ''): string {
@@ -158,7 +163,7 @@ class Router {
       const isSiblingRouterExplictlyAPathRouter = siblingRouters.reduce((acc, r) => {
         // check all data router siblings and
         // make sure none have been explicitly set to be a path router
-        const childRouter = this.parent.routers.data[r];
+        const childRouter = (((this: Router).parent: Router).routers.data[r]: Router);
         return acc || childRouter._isPathRouter === true;
       }, false);
 
@@ -263,7 +268,7 @@ class Router {
 
   static updateLocationFnHide(location: Location, router: Router, ctx: Object): Location {
     const locationToUseOnChild = { pathname: location.pathname, search: ctx.originalLocation.search };
-    const updatedLocation = router.hide(false, locationToUseOnChild);
+    const updatedLocation = (router.hide(false, locationToUseOnChild): Location);
     const existingSearch = typeof (location.search) === 'object' ? location.search : {};
 
     return { pathname: updatedLocation.pathname, search: { ...existingSearch, ...updatedLocation.search } };
@@ -332,6 +337,7 @@ class Router {
   moveForward() {
     const METHOD_NAME_PREFIX = 'moveForward';
     const location = Router.routerLocation();
+
     const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
     setLocation(newLocation, location);
   }
@@ -342,7 +348,7 @@ class Router {
   moveBackward() {
     const METHOD_NAME_PREFIX = 'moveBackward';
     const location = Router.routerLocation();
-    // this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+
     const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
     setLocation(newLocation, location);
   }
@@ -353,7 +359,7 @@ class Router {
   bringToFront() {
     const METHOD_NAME_PREFIX = 'bringToFront';
     const location = Router.routerLocation();
-    // this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+
     const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
     setLocation(newLocation, location);
   }
@@ -364,7 +370,7 @@ class Router {
   sendToBack() {
     const METHOD_NAME_PREFIX = 'sendToBack';
     const location = Router.routerLocation();
-    // this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+
     const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
     setLocation(newLocation, location);
   }
@@ -376,42 +382,48 @@ class Router {
   /* SCENE SPECIFIC */
   showScene(location: Location): Location {
     const search = {};
+
+    // if router has a parent, get sibling router types and set visiblity to false
+    // also used to clear existing search state related to router type which is useful for debuging
     if (this.parent) {
       this.parent.routers[this.type].forEach((r) => {
         search[r.routeKey] = undefined;
-        // if (r.routeKey !== this.routeKey) r.hide(location);
       });
     }
 
+    // if router is a pathrouter update the pathname
     if (this.isPathRouter) {
       // dont update pathname if parent isn't visible
-      if (this.parent && !this.parent.visible) return { pathname: location.pathname, search };
+      if (this.parent && !this.parent.visible) return location; //{ pathname: location.pathname, search };
 
-      const pathNameArr = location.pathname.split('/');
-      pathNameArr[this.routerLevel] = this.routeKey;
-      const pathname = pathNameArr.join('/');
+      // const pathNameArr = location.pathname.split('/');
+
+      const { pathname } = location;
+      pathname[this.routerLevel] = this.routeKey;
+      // const updatedPathname = pathname.join('/');
 
       return { pathname, search };
     }
+
     search[this.routeKey] = true;
     return { pathname: location.pathname, search };
   }
 
   hideScene(location: Location): Location {
     const search = {};
+
+    // if router has a parent, get sibling router types and set visiblity to false
+    // also used to clear existing search state related to router type which is useful for debuging
     if (this.parent) {
       this.parent.routers[this.type].forEach((r) => { search[r.routeKey] = undefined; });
     }
 
     if (this.isPathRouter) {
-      const pathNameArr = location.pathname.split('/');
+      // const pathNameArr = location.pathname.split('/');
+      const { pathname } = location;
+      const newPathname = pathname.slice(0, this.routerLevel);
 
-      const newArr = pathNameArr.slice(0, this.routerLevel);
-
-      const tempPathname = newArr.join('/');
-      const pathname = tempPathname === '' ? '/' : tempPathname;
-
-      return { pathname, search };
+      return { pathname: newPathname, search };
     }
     return { pathname: location.pathname, search };
   }
@@ -591,49 +603,41 @@ class Router {
   }
 
   /* FEATURE ROUTER SPECIFIC */
-  showFeature() {
+  showFeature(location: Location): Location {
     const search = { [this.routeKey]: true };
-    return { search };
+    return { pathname: location.pathname, search };
   }
 
-  hideFeature(location: Location) {
+  hideFeature(location: Location): Location {
     const search = { [this.routeKey]: undefined };
     return { pathname: location.pathname, search };
   }
 
   /* DATA ROUTER SPECIFIC */
-  showData(location: Location) {
+  showData(location: Location): Location {
     if (!this.parent) return location;
 
     if (this.isPathRouter) {
       const search = {};
       // dont update pathname if parent isn't visible
-      if (!this.parent.visible) return { search };
+      if (!this.parent.visible) return { pathname: location.pathname, search };
 
-      const pathNameArr = location.pathname.split('/');
-      pathNameArr[this.routerLevel] = this.state.data;
-      const pathname = pathNameArr.join('/');
-
+      const { pathname } = location;
+      pathname[this.routerLevel] = this.state.data;
       return { pathname, search };
     }
 
     const search = { [this.routeKey]: this.state ? this.state.data : undefined };
-    return { search };
+    return { pathname: location.pathname, search };
   }
 
-  hideData(location: Location) {
+  hideData(location: Location): Location {
     const search = { [this.routeKey]: undefined };
 
     if (this.isPathRouter) {
-      const pathNameArr = location.pathname.split('/');
-
-      const newArr = pathNameArr.slice(0, this.routerLevel);
-
-      const tempPathname = newArr.join('/');
-      const pathname = tempPathname === '' ? '/' : tempPathname;
-
-      // console.log('hiding data', this.name, pathname, search)
-      return { pathname, search };
+      const { pathname } = location;
+      const newPathname = pathname.slice(0, this.routerLevel);
+      return { pathname: newPathname, search };
     }
     return { pathname: location.pathname, search };
   }
@@ -657,7 +661,7 @@ class Router {
           try {
             // get new state for specific router
             const newRouterState = (r[`update${Router.capitalize(type)}`](r.state, context, location): RouterState);
-            if (newRouterState) r._setState(newRouterState);
+            if (newRouterState) r.setState(newRouterState);
             if (r && r._update) r._update(location);
           } catch (e) {
             if (e.message === '_this[("update" + Router.capitalize(...))] is not a function') {
@@ -673,7 +677,7 @@ class Router {
     });
   }
 
-  _setState(state: RouterState): void {
+  setState(state: RouterState): void {
     const {
       visible,
       at,

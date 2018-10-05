@@ -6,7 +6,7 @@ export type RouterContext = {|
 export type RouterType = 'scene' | 'feature' | 'stack' | 'data';
 
 export type Location = {|
-  pathname: string,
+  pathname: Array<string>,
   search: Object,
 |};
 

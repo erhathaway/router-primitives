@@ -21,15 +21,17 @@ const updateLocation = ({ pathname, search }: { pathname: string, search: string
 
 const setLocation = (newLocation: Location, oldLocation: Location) => {
   const { pathname: newPathname, search: newSearchObj } = newLocation;
-  const { pathname: oldPathname, search: oldSearchString } = oldLocation;
+  const { search: oldSearchObj } = oldLocation;
 
-  const parsedQuery = queryString.parse(oldSearchString, { decode: true, arrayFormat: 'bracket' });
-  const newQuery = { ...parsedQuery, ...newSearchObj };
-  Object.keys(newQuery).forEach(key => (newQuery[key] == null) && delete newQuery[key]);
+  const combinedSearchObj = { ...oldSearchObj, ...newSearchObj };
+  Object.keys(combinedSearchObj).forEach(key => (combinedSearchObj[key] == null) && delete combinedSearchObj[key]);
 
-  const newSearch = queryString.stringify(newQuery, { arrayFormat: 'bracket' });
-  const pathname = newPathname || oldPathname;
-  updateLocation({ pathname, search: newSearch });
+  const search = queryString.stringify(combinedSearchObj, { arrayFormat: 'bracket' });
+  const pathname = newPathname.join('/');
+
+  const cleansedPathname = pathname === '' ? '/' : pathname;
+
+  updateLocation({ pathname: cleansedPathname, search });
 };
 
 export default setLocation;
