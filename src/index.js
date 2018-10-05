@@ -35,7 +35,7 @@ class Router {
   @observable history: RouterHistory = { at: undefined, from: undefined };
 
   @observable state: RouterState = {
-    at: undefined, from: undefined, data: undefined, visible: false, order: undefined
+    at: undefined, from: undefined, data: undefined, visible: false, order: undefined,
   };
 
   childTreeVisibilityOnHide: {}
@@ -259,7 +259,7 @@ class Router {
   }
 
   static updateLocationFnHide(location: Location, router: Router, ctx: Object): Location {
-    const locationToUseOnChild = { pathname: location.pathname, search: location.search }; //ctx.originalLocation.search };
+    const locationToUseOnChild = { pathname: location.pathname, search: location.search };
     const updatedLocation = (router.hide(false, locationToUseOnChild): Location);
 
     const existingSearch = typeof (location.search) === 'object' ? location.search : {};
@@ -312,6 +312,8 @@ class Router {
       setLocation(newLocation, location);
       return newLocation;
     }
+    this.childTreeVisibilityOnHide = {};
+
     const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
     return newLocation;
   }
@@ -398,20 +400,17 @@ class Router {
     if (this.parent) {
       this.parent.routers[this.type].forEach((r) => {
         search[r.routeKey] = undefined;
+        // if (r.routeKey !== this.routeKey) r.hide();
       });
     }
 
     // if router is a pathrouter update the pathname
     if (this.isPathRouter) {
       // dont update pathname if parent isn't visible
-      if (this.parent && !this.parent.visible) return location; //{ pathname: location.pathname, search };
-
-      // const pathNameArr = location.pathname.split('/');
+      if (this.parent && !this.parent.visible) return location;
 
       const { pathname } = location;
       pathname[this.routerLevel] = this.routeKey;
-      // const updatedPathname = pathname.join('/');
-
       return { pathname, search };
     }
 
@@ -429,7 +428,6 @@ class Router {
     }
 
     if (this.isPathRouter) {
-      // const pathNameArr = location.pathname.split('/');
       const { pathname } = location;
       const newPathname = pathname.slice(0, this.routerLevel);
 
