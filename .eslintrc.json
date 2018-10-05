@@ -4,6 +4,10 @@
     "rules": {
       "no-underscore-dangle": "off",
       "consistent-return": "off",
+      "no-throw-literal": "off",
       "max-len": [2, {"code": 150, "ignoreComments": true}]
+    },
+    "env": {
+      "browser": true
     }
 }

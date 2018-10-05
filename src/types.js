@@ -1,5 +1,8 @@
 // @flow
 
+export type RouterContext = {|
+  routeKeys: Array<string>,
+|}
 export type RouterType = 'scene' | 'feature' | 'stack' | 'data';
 
 export type Location = {|
@@ -26,7 +29,7 @@ export type RouterHistory = {
 }
 
 export type RouterState = {|
-  visible?: boolean,
+  visible: boolean,
   at?: TypeHistory,
   from?: TypeHistory,
   order?: ?number,

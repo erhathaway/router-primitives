@@ -1,19 +1,25 @@
+// @flow
+
 import queryString from 'query-string';
+
+import type {
+  Location,
+} from './types';
 
 /* ------------------------ */
 /* UPDATE ADDRESS STRING
 /* ------------------------ */
-const updateLocation = ({ pathname, search }) => {
+const updateLocation = ({ pathname, search }: { pathname: string, search: string}) => {
   if (window && window.history) {
     const url = `${pathname}?${search}`;
-    window.history.pushState('', '', url);
+    window.history.replaceState({ url }, '', url);
   }
   // TODO rewrite not using MST
   // getRoot(self).updateLocation({ pathname, search, state })
   // routerHistory.push({ pathname, search, state });
 };
 
-const setLocation = (newLocation, oldLocation) => {
+const setLocation = (newLocation: Location, oldLocation: Location) => {
   const { pathname: newPathname, search: newSearchObj } = newLocation;
   const { pathname: oldPathname, search: oldSearchString } = oldLocation;
 
@@ -22,7 +28,7 @@ const setLocation = (newLocation, oldLocation) => {
   Object.keys(newQuery).forEach(key => (newQuery[key] == null) && delete newQuery[key]);
 
   const newSearch = queryString.stringify(newQuery, { arrayFormat: 'bracket' });
-  const pathname = newLocation.pathname ? newLocation.pathname : oldLocation.pathname;
+  const pathname = newPathname || oldPathname;
   updateLocation({ pathname, search: newSearch });
 };
 
