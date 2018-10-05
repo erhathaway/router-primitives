@@ -32,19 +32,55 @@ class Router {
 
   @observable order: ?number = undefined;
 
-  @observable history: RouterHistory = { at: undefined, from: undefined };
+  @observable history: RouterHistory = { at: {}, from: {} };
 
   @observable state: RouterState = {
     at: undefined, from: undefined, data: undefined, visible: false, order: undefined,
   };
 
-  childTreeVisibilityOnHide: {}
+
+  _childTreeVisibilityOnHide: Object = {};
+
+  _root: Router;
+
+  set root(_: void) {
+    throw 'Cannot set root router';
+  }
+
+  get root(): Router {
+    if (this.parent) return this.parent.root;
+    return this;
+  }
+
+  set childTreeVisibilityOnHide(childVisiblity: Object) {
+    this.root._childTreeVisibilityOnHide[this.routeKey] = childVisiblity;
+  }
+
+  get childTreeVisibilityOnHide() {
+    return this.root._childTreeVisibilityOnHide[this.routeKey];
+  }
+
+  removeRouteKeyFromChildTreeVisibilityOnHide(routeKeyToDelete: string) {
+    const allRecordings = this.root._childTreeVisibilityOnHide;
+    const allRoutersWithVisibilityRecordings = Object.keys(allRecordings);
+    allRoutersWithVisibilityRecordings.forEach((rK) => {
+      const recording = allRecordings[rK];
+      if (recording && recording[routeKeyToDelete] != null) {
+        delete recording[routeKeyToDelete];
+        allRecordings[rK] = recording;
+      }
+    });
+
+    this.root._childTreeVisibilityOnHide = allRecordings;
+  }
 
   routeKey: string;
 
   name: string;
 
   data = undefined;
+
+  // root: ?Router = undefined;
 
   _routers: Routers<Router> = {};
 
@@ -226,7 +262,7 @@ class Router {
 
   rollBackToMostRecentState({ pathname, search }: Location, router: Router, ctx: { previousVisibility: Object }): Location {
     const { previousVisibility } = ctx;
-    if (previousVisibility[router.routeKey] === false) return { pathname, search };
+    if (previousVisibility[router.routeKey] === false || previousVisibility[router.routeKey] == null) return { pathname, search };
 
     if (this.isPathRouter && router.type === 'data') {
       pathname[router.routerLevel] = router.state ? router.state.data : router.data;
@@ -301,11 +337,16 @@ class Router {
     const location = existingLocation || Router.routerLocation();
 
     if (isOriginalCall && !this.visible) {
+      // if a direct call was made to a show method, make sure some other router cant later
+      // change the state by rehydrating from the cached child tree visiblity
+      this.removeRouteKeyFromChildTreeVisibilityOnHide(this.routeKey);
+
       const ctx = {
         originRouteKey: this.routeKey,
         rehydrateChildRoutersState: this._rehydrateChildRoutersState,
         previousVisibility: { ...this.childTreeVisibilityOnHide },
       };
+
       this.childTreeVisibilityOnHide = {};
 
       const newLocation = Router.reduceStateTree(location, this, Router.updateLocationFnShow, ctx);
@@ -400,7 +441,7 @@ class Router {
     if (this.parent) {
       this.parent.routers[this.type].forEach((r) => {
         search[r.routeKey] = undefined;
-        // if (r.routeKey !== this.routeKey) r.hide();
+        if (r.routeKey !== this.routeKey) r.hide();
       });
     }
 

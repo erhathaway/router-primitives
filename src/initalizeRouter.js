@@ -5,10 +5,15 @@ const createRouter = (routerInfo, existingRouters, RouterClass) => {
   delete routerInfo.routers;
 
   const parentRouter = new RouterClass(params);
+  // add a reference to the root router
+  // if (parentRouter.parent) {
+  //   console.log('hereee')
+  //   parentRouter.root = parentRouter.parent.root;
+  // }
   existingRouters[routerInfo.name] = parentRouter;
 
   return { parentRouter, childRouterInfo };
-}
+};
 
 const addChildRoutersToParentRouter = (childRouterInfo, parentRouter, existingRouters, RouterClass) => {
   const routerTypes = Object.keys(childRouterInfo || {});

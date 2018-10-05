@@ -24,8 +24,8 @@ export type TypeHistory = {
 };
 
 export type RouterHistory = {
-  at?: TypeHistory,
-  from?: TypeHistory
+  at: TypeHistory,
+  from: TypeHistory
 }
 
 export type RouterState = {|
