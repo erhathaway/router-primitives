@@ -51,6 +51,10 @@ export type RouterConfig = {|
   isPathRouter?: boolean,
   state?: RouterState,
   rehydrateChildRoutersState?: boolean,
+  mutateLocationOnSceneUpdate?: boolean,
+  mutateLocationOnStackUpdate?: boolean,
+  mutateLocationOnDataUpdate?: boolean,
+  mutateLocationOnFeatureUpdate?: boolean,
 |};
 
 // export interface RouterInterface {

@@ -56,7 +56,7 @@ class Router {
     this.root._childTreeVisibilityOnHide[this.routeKey] = childVisiblity;
   }
 
-  get childTreeVisibilityOnHide() {
+  get childTreeVisibilityOnHide(): Object {
     return this.root._childTreeVisibilityOnHide[this.routeKey];
   }
 
@@ -64,7 +64,7 @@ class Router {
     const allRecordings = this.root._childTreeVisibilityOnHide;
     const allRoutersWithVisibilityRecordings = Object.keys(allRecordings);
     allRoutersWithVisibilityRecordings.forEach((rK) => {
-      const recording = allRecordings[rK];
+      const recording: Object = allRecordings[rK];
       if (recording && recording[routeKeyToDelete] != null) {
         delete recording[routeKeyToDelete];
         allRecordings[rK] = recording;
@@ -89,6 +89,46 @@ class Router {
   _type: RouterType;
 
   _isPathRouter = undefined;
+
+  _mutateLocationOnSceneUpdate: boolean = false;
+
+  _mutateLocationOnStackUpdate: boolean = true;
+
+  _mutateLocationOnDataUpdate: boolean = false;
+
+  _mutateLocationOnFeatureUpdate: boolean = false;
+
+  set mutateLocationOnSceneUpdate(shouldMutate: boolean) {
+    this.root._mutateLocationOnSceneUpdate = shouldMutate;
+  }
+
+  get mutateLocationOnSceneUpdate() {
+    return this.root._mutateLocationOnSceneUpdate;
+  }
+
+  set mutateLocationOnStackUpdate(shouldMutate: boolean) {
+    this.root._mutateLocationOnStackUpdate = shouldMutate;
+  }
+
+  get mutateLocationOnStackUpdate() {
+    return this.root._mutateLocationOnStackUpdate;
+  }
+
+  set mutateLocationOnDataUpdate(shouldMutate: boolean) {
+    this.root._mutateLocationOnDataUpdate = shouldMutate;
+  }
+
+  get mutateLocationOnDataUpdate() {
+    return this.root._mutateLocationOnDataUpdate;
+  }
+
+  set mutateLocationOnFeatureUpdate(shouldMutate: boolean) {
+    this.root._mutateLocationOnFeatureUpdate = shouldMutate;
+  }
+
+  get mutateLocationOnFeatureUpdate() {
+    return this.root._mutateLocationOnFeatureUpdate;
+  }
 
   // undefined so it can be explicitly set to true or false to override parent settings
   _rehydrateChildRoutersState: ?boolean = undefined;
@@ -137,6 +177,10 @@ class Router {
       isPathRouter,
       state,
       rehydrateChildRoutersState,
+      mutateLocationOnSceneUpdate,
+      mutateLocationOnStackUpdate,
+      mutateLocationOnDataUpdate,
+      mutateLocationOnFeatureUpdate,
     } = config;
 
     this.visible = visible || false;
@@ -153,6 +197,11 @@ class Router {
     } else if (state) {
       throw 'The initial state object passed to a router constructor must be an object';
     }
+
+    if (mutateLocationOnSceneUpdate) this.mutateLocationOnSceneUpdate = mutateLocationOnSceneUpdate;
+    if (mutateLocationOnStackUpdate) this.mutateLocationOnStackUpdate = mutateLocationOnStackUpdate;
+    if (mutateLocationOnDataUpdate) this.mutateLocationOnDataUpdate = mutateLocationOnDataUpdate;
+    if (mutateLocationOnFeatureUpdate) this.mutateLocationOnFeatureUpdate = mutateLocationOnFeatureUpdate;
 
     this.show = this.show.bind(this);
     this.hide = this.hide.bind(this);
@@ -278,7 +327,7 @@ class Router {
     if (previousVisibility[router.routeKey] === false || previousVisibility[router.routeKey] == null) return { pathname, search, options };
 
     if (this.isPathRouter && router.type === 'data') {
-      pathname[router.routerLevel] = router.state ? router.state.data : router.data;
+      pathname[router.routerLevel] = router.state && router.state.data ? router.state.data : undefined;
     } else if (this.isPathRouter) {
       pathname[router.routerLevel] = previousVisibility[router.routeKey];
     } else if (router.type === 'data') {
@@ -308,7 +357,7 @@ class Router {
   }
 
   static updateLocationFnHide(location: Location, router: Router, ctx: Object): Location {
-    const locationToUseOnChild = { pathname: location.pathname, search: location.search };
+    const locationToUseOnChild: Location = { pathname: location.pathname, search: location.search, options: location.options };
     const updatedLocation = (router.hide(false, locationToUseOnChild): Location);
 
     const existingSearch = typeof (location.search) === 'object' ? location.search : {};
@@ -449,7 +498,7 @@ class Router {
 
   /* SCENE SPECIFIC */
   showScene(location: Location): Location {
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: false });
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnSceneUpdate });
     let search = {};
 
     // if router has a parent, get sibling router types and set visiblity to false
@@ -483,7 +532,7 @@ class Router {
   }
 
   hideScene(location: Location): Location {
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: false });
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnSceneUpdate });
     const search = {};
 
     // if router has a parent, get sibling router types and set visiblity to false
@@ -554,7 +603,7 @@ class Router {
       return acc;
     }, {});
 
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: true });
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
     return { pathname: location.pathname, search, options };
   }
@@ -582,7 +631,7 @@ class Router {
     }, {});
     // remove this routeKey from the router type search
     search[this.routeKey] = undefined;
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: true });
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
     return { pathname: location.pathname, search, options };
   }
@@ -614,7 +663,7 @@ class Router {
       return acc;
     }, {});
 
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: true });
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
 
     return { pathname: location.pathname, search, options };
@@ -647,13 +696,13 @@ class Router {
       return acc;
     }, {});
 
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: true });
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
     return { pathname: location.pathname, search, options };
   }
 
   bringToFrontStack(location: Location): Location {
-    const newLocation = Router.updateSetLocationOptions(location, { mutateExistingLocation: true });
+    const newLocation = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
     return this.showStack(newLocation);
   }
@@ -683,7 +732,7 @@ class Router {
       return acc;
     }, {});
 
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: true });
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
     return { pathname: location.pathname, search, options };
   }
@@ -691,14 +740,14 @@ class Router {
   /* FEATURE ROUTER SPECIFIC */
   showFeature(location: Location): Location {
     const search = { [this.routeKey]: true };
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: false });
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnFeatureUpdate });
 
     return { pathname: location.pathname, search, options };
   }
 
   hideFeature(location: Location): Location {
     const search = { [this.routeKey]: undefined };
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: false });
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnFeatureUpdate });
 
     return { pathname: location.pathname, search, options };
   }
@@ -707,7 +756,7 @@ class Router {
   showData(location: Location): Location {
     if (!this.parent) return location;
 
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: false });
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnDataUpdate });
 
     if (this.isPathRouter) {
       const search = {};
@@ -726,7 +775,7 @@ class Router {
 
   hideData(location: Location): Location {
     const search = { [this.routeKey]: undefined };
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: false });
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnDataUpdate });
 
     if (this.isPathRouter) {
       const { pathname } = location;
