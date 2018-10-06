@@ -17,6 +17,7 @@ import buildInitalizeRouterFn from './initalizeRouter';
 
 import type {
   // RouterInterface,
+  UpdateLocationOptions,
   Routers,
   RouterContext,
   RouterHistory,
@@ -37,7 +38,6 @@ class Router {
   @observable state: RouterState = {
     at: undefined, from: undefined, data: undefined, visible: false, order: undefined,
   };
-
 
   _childTreeVisibilityOnHide: Object = {};
 
@@ -80,8 +80,6 @@ class Router {
 
   data = undefined;
 
-  // root: ?Router = undefined;
-
   _routers: Routers<Router> = {};
 
   _hooks: RouterHooks;
@@ -95,6 +93,20 @@ class Router {
   // undefined so it can be explicitly set to true or false to override parent settings
   _rehydrateChildRoutersState: ?boolean = undefined;
 
+  static updateSetLocationOptions(location: Location, newOptions: UpdateLocationOptions): Location {
+    // only add the mutateExistingLocation if it hasn't already explicitly been set
+    // for example, if another router doesnt want the mutation, its important not to mutate interval
+    // so we still have route history
+    let { options } = location;
+    if (newOptions.mutateExistingLocation && location.options.mutateExistingLocation === undefined) {
+      options = { ...options, ...newOptions };
+    }
+    delete newOptions.mutateExistingLocation;
+    options = { ...options, ...newOptions };
+
+    return { pathname: location.pathname, search: location.search, options };
+  }
+
   static searchString() {
     return window.location.search || '';
   }
@@ -107,7 +119,7 @@ class Router {
     const search = (queryString.parse(Router.searchString(), { decode: true, arrayFormat: 'bracket' }): Object);
     const pathname = (Router.pathnameString().split('/'): Array<string>);
     // return { pathname: Router.pathnameString(), search: Router.searchString() };
-    return { search, pathname };
+    return { search, pathname, options: { mutateExistingLocation: undefined } };
   }
 
   static capitalize(string: string = ''): string {
@@ -197,19 +209,21 @@ class Router {
 
     if (this.type === 'scene' && this.parent.isPathRouter) {
       // check to make sure sibling data routers arent explicitly set to modify the pathname
-      const siblingRouters = Object.keys(this.parent.routers.data || {});
+      // const siblingRouters = Object.keys(this.parent.routers.data || {});
+      const siblingRouters = this.parent.routers.data || [];
       const isSiblingRouterExplictlyAPathRouter = siblingRouters.reduce((acc, r) => {
         // check all data router siblings and
         // make sure none have been explicitly set to be a path router
-        const childRouter = (((this: Router).parent: Router).routers.data[r]: Router);
-        return acc || childRouter._isPathRouter === true;
+        return acc || r._isPathRouter === true;
+        // const childRouter = (((this: Router).parent: Router).routers.data[r]: Router);
       }, false);
 
       if (isSiblingRouterExplictlyAPathRouter === false) return true;
     } else if (this.type === 'data' && this.parent && this.parent.isPathRouter) {
       if (this._isPathRouter === false) return false;
       // check to make sure sibling scene routers aren't present
-      const siblingRouters = Object.keys(this.parent.routers.scene || {});
+      // const siblingRouters = Object.keys(this.parent.routers.scene || {});
+      const siblingRouters = this.parent.routers.scene || [];
 
       if (siblingRouters.length === 0) return true;
     }
@@ -235,7 +249,6 @@ class Router {
       // and their value (usually boolean | int)
       const newLocation = (this[methodName](location): Location);
       return newLocation;
-      // setLocation(newLocation, location);
     } catch (e) {
       if (e.message === 'this[methodName] is not a function') {
         throw `#${methodNamePrefix} method is not implemented for router type: ${this.type}`;
@@ -260,9 +273,9 @@ class Router {
     return this.routeKey === parentKey;
   }
 
-  rollBackToMostRecentState({ pathname, search }: Location, router: Router, ctx: { previousVisibility: Object }): Location {
+  rollBackToMostRecentState({ pathname, search, options }: Location, router: Router, ctx: { previousVisibility: Object }): Location {
     const { previousVisibility } = ctx;
-    if (previousVisibility[router.routeKey] === false || previousVisibility[router.routeKey] == null) return { pathname, search };
+    if (previousVisibility[router.routeKey] === false || previousVisibility[router.routeKey] == null) return { pathname, search, options };
 
     if (this.isPathRouter && router.type === 'data') {
       pathname[router.routerLevel] = router.state ? router.state.data : router.data;
@@ -273,7 +286,7 @@ class Router {
     } else {
       search[router.routeKey] = previousVisibility[router.routeKey];
     }
-    return { pathname, search };
+    return { pathname, search, options };
   }
 
   useDefault(location: Location) {
@@ -299,7 +312,7 @@ class Router {
     const updatedLocation = (router.hide(false, locationToUseOnChild): Location);
 
     const existingSearch = typeof (location.search) === 'object' ? location.search : {};
-    return { pathname: updatedLocation.pathname, search: { ...existingSearch, ...updatedLocation.search } };
+    return { pathname: updatedLocation.pathname, search: { ...existingSearch, ...updatedLocation.search }, options: location.options };
   }
 
   static getChildTreeVisibility(router: Router): Object {
@@ -336,7 +349,7 @@ class Router {
 
   show(isOriginalCall: boolean = true, existingLocation: Location): Location {
     const METHOD_NAME_PREFIX = 'show';
-    const location = existingLocation || Router.routerLocation();
+    const oldLocation = existingLocation || Router.routerLocation();
 
     if (isOriginalCall && !this.visible) {
       // if a direct call was made to a show method, make sure some other router cant later
@@ -348,16 +361,16 @@ class Router {
         rehydrateChildRoutersState: this._rehydrateChildRoutersState,
         previousVisibility: { ...this.childTreeVisibilityOnHide },
       };
-      console.log('previousVisibility', ctx.previousVisibility)
       this.childTreeVisibilityOnHide = {};
 
-      const newLocation = Router.reduceStateTree(location, this, Router.updateLocationFnShow, ctx);
-      setLocation(newLocation, location);
+      const newLocation = Router.reduceStateTree(oldLocation, this, Router.updateLocationFnShow, ctx);
+
+      setLocation(newLocation, oldLocation);
       return newLocation;
     }
     this.childTreeVisibilityOnHide = {};
 
-    const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    const newLocation = this.updateLocationViaMethod(oldLocation, METHOD_NAME_PREFIX);
     return newLocation;
   }
 
@@ -366,7 +379,7 @@ class Router {
   // all routers implement this method
   hide(isOriginalCall: boolean = true, existingLocation: Location): Location {
     const METHOD_NAME_PREFIX = 'hide';
-    const location = existingLocation || Router.routerLocation();
+    const oldLocation = existingLocation || Router.routerLocation();
 
     if (isOriginalCall && this.visible) {
       // capture stte of sub tree so on show we can repopulate it correctly
@@ -374,14 +387,15 @@ class Router {
       const ctx = {
         originRouteKey: this.routeKey,
         rehydrateChildRoutersState: this._rehydrateChildRoutersState,
-        originalLocation: location,
+        originalLocation: oldLocation,
       };
 
-      const newLocation = Router.reduceStateTree(location, this, Router.updateLocationFnHide, ctx);
-      setLocation(newLocation, location);
+      const newLocation = Router.reduceStateTree(oldLocation, this, Router.updateLocationFnHide, ctx);
+
+      setLocation(newLocation, oldLocation);
       return newLocation;
     }
-    const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
+    const newLocation = this.updateLocationViaMethod(oldLocation, METHOD_NAME_PREFIX);
     return newLocation;
   }
 
@@ -390,10 +404,10 @@ class Router {
   // only stack router implements this method
   moveForward() {
     const METHOD_NAME_PREFIX = 'moveForward';
-    const location = Router.routerLocation();
+    const oldLocation = Router.routerLocation();
+    const newLocation = this.updateLocationViaMethod(oldLocation, METHOD_NAME_PREFIX);
 
-    const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
-    setLocation(newLocation, location);
+    setLocation(newLocation, oldLocation);
   }
 
   moveBackward: Function;
@@ -401,10 +415,10 @@ class Router {
   // only stack router implements this method
   moveBackward() {
     const METHOD_NAME_PREFIX = 'moveBackward';
-    const location = Router.routerLocation();
+    const oldLocation = Router.routerLocation();
+    const newLocation = this.updateLocationViaMethod(oldLocation, METHOD_NAME_PREFIX);
 
-    const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
-    setLocation(newLocation, location);
+    setLocation(newLocation, oldLocation);
   }
 
   bringToFront: Function;
@@ -412,10 +426,10 @@ class Router {
   // only stack router implements this method
   bringToFront() {
     const METHOD_NAME_PREFIX = 'bringToFront';
-    const location = Router.routerLocation();
+    const oldLocation = Router.routerLocation();
+    const newLocation = this.updateLocationViaMethod(oldLocation, METHOD_NAME_PREFIX);
 
-    const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
-    setLocation(newLocation, location);
+    setLocation(newLocation, oldLocation);
   }
 
   sendToBack: Function;
@@ -423,10 +437,10 @@ class Router {
   // only stack router implements this method
   sendToBack() {
     const METHOD_NAME_PREFIX = 'sendToBack';
-    const location = Router.routerLocation();
+    const oldLocation = Router.routerLocation();
+    const newLocation = this.updateLocationViaMethod(oldLocation, METHOD_NAME_PREFIX);
 
-    const newLocation = this.updateLocationViaMethod(location, METHOD_NAME_PREFIX);
-    setLocation(newLocation, location);
+    setLocation(newLocation, oldLocation);
   }
 
   /* -------------------------------------
@@ -435,6 +449,7 @@ class Router {
 
   /* SCENE SPECIFIC */
   showScene(location: Location): Location {
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: false });
     let search = {};
 
     // if router has a parent, get sibling router types and set visiblity to false
@@ -459,14 +474,16 @@ class Router {
       pathname[this.routerLevel] = this.routeKey;
       const newPathname = pathname.slice(0, this.routerLevel + 1);
 
-      return { pathname: newPathname, search };
+      return { pathname: newPathname, search, options };
     }
 
     search[this.routeKey] = true;
-    return { pathname: location.pathname, search };
+
+    return { pathname: location.pathname, search, options };
   }
 
   hideScene(location: Location): Location {
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: false });
     const search = {};
 
     // if router has a parent, get sibling router types and set visiblity to false
@@ -479,9 +496,9 @@ class Router {
       const { pathname } = location;
       const newPathname = pathname.slice(0, this.routerLevel);
 
-      return { pathname: newPathname, search };
+      return { pathname: newPathname, search, options };
     }
-    return { pathname: location.pathname, search };
+    return { pathname: location.pathname, search, options };
   }
 
   /* STACK SPECIFIC */
@@ -537,7 +554,9 @@ class Router {
       return acc;
     }, {});
 
-    return { pathname: location.pathname, search };
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: true });
+
+    return { pathname: location.pathname, search, options };
   }
 
   hideStack(location: Location): Location {
@@ -563,7 +582,9 @@ class Router {
     }, {});
     // remove this routeKey from the router type search
     search[this.routeKey] = undefined;
-    return { pathname: location.pathname, search };
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: true });
+
+    return { pathname: location.pathname, search, options };
   }
 
   moveForwardStack(location: Location): Location {
@@ -593,7 +614,10 @@ class Router {
       return acc;
     }, {});
 
-    return { pathname: location.pathname, search };
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: true });
+
+
+    return { pathname: location.pathname, search, options };
   }
 
   moveBackwardStack(location: Location): Location {
@@ -623,11 +647,15 @@ class Router {
       return acc;
     }, {});
 
-    return { pathname: location.pathname, search };
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: true });
+
+    return { pathname: location.pathname, search, options };
   }
 
   bringToFrontStack(location: Location): Location {
-    return this.showStack(location);
+    const newLocation = Router.updateSetLocationOptions(location, { mutateExistingLocation: true });
+
+    return this.showStack(newLocation);
   }
 
   sendToBackStack(location: Location): Location {
@@ -655,47 +683,58 @@ class Router {
       return acc;
     }, {});
 
-    return { pathname: location.pathname, search };
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: true });
+
+    return { pathname: location.pathname, search, options };
   }
 
   /* FEATURE ROUTER SPECIFIC */
   showFeature(location: Location): Location {
     const search = { [this.routeKey]: true };
-    return { pathname: location.pathname, search };
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: false });
+
+    return { pathname: location.pathname, search, options };
   }
 
   hideFeature(location: Location): Location {
     const search = { [this.routeKey]: undefined };
-    return { pathname: location.pathname, search };
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: false });
+
+    return { pathname: location.pathname, search, options };
   }
 
   /* DATA ROUTER SPECIFIC */
   showData(location: Location): Location {
     if (!this.parent) return location;
 
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: false });
+
     if (this.isPathRouter) {
       const search = {};
       // dont update pathname if parent isn't visible
-      if (!this.parent.visible) return { pathname: location.pathname, search };
+      if (!this.parent.visible) return { pathname: location.pathname, search, options: location.options };
 
       const { pathname } = location;
       pathname[this.routerLevel] = this.state.data;
-      return { pathname, search };
+      return { pathname, search, options };
     }
 
     const search = { [this.routeKey]: this.state ? this.state.data : undefined };
-    return { pathname: location.pathname, search };
+
+    return { pathname: location.pathname, search, options };
   }
 
   hideData(location: Location): Location {
     const search = { [this.routeKey]: undefined };
+    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: false });
 
     if (this.isPathRouter) {
       const { pathname } = location;
       const newPathname = pathname.slice(0, this.routerLevel);
-      return { pathname: newPathname, search };
+      return { pathname: newPathname, search, options };
     }
-    return { pathname: location.pathname, search };
+
+    return { pathname: location.pathname, search, options };
   }
 
   setData(data: string) {

@@ -1,5 +1,9 @@
 // @flow
 
+export type UpdateLocationOptions = {|
+  mutateExistingLocation: ?boolean,
+|};
+
 export type RouterContext = {|
   routeKeys: Array<string>,
 |}
@@ -8,6 +12,7 @@ export type RouterType = 'scene' | 'feature' | 'stack' | 'data';
 export type Location = {|
   pathname: Array<string>,
   search: Object,
+  options: UpdateLocationOptions,
 |};
 
 export type HookFn = Location => Location;

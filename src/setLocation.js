@@ -4,15 +4,23 @@ import queryString from 'query-string';
 
 import type {
   Location,
+  UpdateLocationOptions,
 } from './types';
 
 /* ------------------------ */
 /* UPDATE ADDRESS STRING
 /* ------------------------ */
-const updateLocation = ({ pathname, search }: { pathname: string, search: string}) => {
+
+const defaultOptions: UpdateLocationOptions = { mutateExistingLocation: false};
+const updateLocation = ({ pathname, search }: { pathname: string, search: string}, options: UpdateLocationOptions = defaultOptions) => {
   if (window && window.history) {
     const url = `${pathname}?${search}`;
-    window.history.replaceState({ url }, '', url);
+    if (options.mutateExistingLocation) {
+      window.history.replaceState({ url }, '', url);
+    } else {
+      window.history.pushState({ url }, '', url);
+    }
+
   }
   // TODO rewrite not using MST
   // getRoot(self).updateLocation({ pathname, search, state })
@@ -31,7 +39,7 @@ const setLocation = (newLocation: Location, oldLocation: Location) => {
 
   const cleansedPathname = pathname === '' ? '/' : pathname;
 
-  updateLocation({ pathname: cleansedPathname, search });
+  updateLocation({ pathname: cleansedPathname, search }, newLocation.options);
 };
 
 export default setLocation;
