@@ -92,7 +92,7 @@ const config =
     data: [
       { name: 'imData',
         state: { data: 'hello-im-some-data'},
-        isPathRouter: true,
+        isPathRouter: false,
         rehydrateChildRoutersState: true,
         routers: {
           stack: [
@@ -101,7 +101,7 @@ const config =
           data: [
             { name: 'imData2',
               state: { data: 'moar-data'},
-              isPathRouter: true,
+              isPathRouter: false,
             }
           ],
         }

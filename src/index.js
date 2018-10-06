@@ -306,7 +306,9 @@ class Router {
     const childRouterTypes = (Object.keys(router.routers): Array<RouterType>);
     return childRouterTypes.reduce((acc, type) => {
       router.routers[type].forEach((childRouter) => {
-        if (childRouter.visible && childRouter.type === 'stack') {
+        if (childRouter.visible && childRouter.type === 'scene' && childRouter.isPathRouter) {
+          acc[childRouter.routeKey] = childRouter.routeKey;
+        } else if (childRouter.visible && childRouter.type === 'stack') {
           acc[childRouter.routeKey] = childRouter.order;
         } else {
           acc[childRouter.routeKey] = childRouter.visible;
@@ -346,7 +348,7 @@ class Router {
         rehydrateChildRoutersState: this._rehydrateChildRoutersState,
         previousVisibility: { ...this.childTreeVisibilityOnHide },
       };
-
+      console.log('previousVisibility', ctx.previousVisibility)
       this.childTreeVisibilityOnHide = {};
 
       const newLocation = Router.reduceStateTree(location, this, Router.updateLocationFnShow, ctx);
@@ -376,7 +378,6 @@ class Router {
       };
 
       const newLocation = Router.reduceStateTree(location, this, Router.updateLocationFnHide, ctx);
-
       setLocation(newLocation, location);
       return newLocation;
     }
@@ -434,14 +435,18 @@ class Router {
 
   /* SCENE SPECIFIC */
   showScene(location: Location): Location {
-    const search = {};
+    let search = {};
 
     // if router has a parent, get sibling router types and set visiblity to false
     // also used to clear existing search state related to router type which is useful for debuging
     if (this.parent) {
       this.parent.routers[this.type].forEach((r) => {
-        search[r.routeKey] = undefined;
-        if (r.routeKey !== this.routeKey) r.hide();
+        if (r.routeKey !== this.routeKey) {
+          const updatedLocation = r.hide();
+          search = { ...search, ...updatedLocation.search };
+        } else {
+          search[r.routeKey] = undefined;
+        }
       });
     }
 
@@ -452,7 +457,9 @@ class Router {
 
       const { pathname } = location;
       pathname[this.routerLevel] = this.routeKey;
-      return { pathname, search };
+      const newPathname = pathname.slice(0, this.routerLevel + 1);
+
+      return { pathname: newPathname, search };
     }
 
     search[this.routeKey] = true;

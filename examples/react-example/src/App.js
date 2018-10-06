@@ -109,7 +109,7 @@ const generateRouterDiagram = (router) => {
 }
 
 const p = generateRouterDiagram(root)
-console.log('!!!!!!', p)
+// console.log('!!!!!!', p)
 
 class App extends Component {
   render() {
