@@ -430,6 +430,9 @@ class Router {
     const METHOD_NAME_PREFIX = 'hide';
     const oldLocation = existingLocation || Router.routerLocation();
 
+    if (isOriginalCall) {
+      this.removeRouteKeyFromChildTreeVisibilityOnHide(this.routeKey);
+    }
     if (isOriginalCall && this.visible) {
       // capture stte of sub tree so on show we can repopulate it correctly
       this.childTreeVisibilityOnHide = Router.getChildTreeVisibility(this);
@@ -507,6 +510,7 @@ class Router {
       this.parent.routers[this.type].forEach((r) => {
         if (r.routeKey !== this.routeKey) {
           const updatedLocation = r.hide();
+          // this.removeRouteKeyFromChildTreeVisibilityOnHide(r.routeKey)
           search = { ...search, ...updatedLocation.search };
         } else {
           search[r.routeKey] = undefined;
