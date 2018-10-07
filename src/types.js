@@ -10,7 +10,7 @@ export type RouterContext = {|
 export type RouterType = 'scene' | 'feature' | 'stack' | 'data';
 
 export type Location = {|
-  pathname: Array<string>,
+  pathname: Array<?string>,
   search: Object,
   options: UpdateLocationOptions,
 |};
@@ -24,19 +24,19 @@ export type RouterHooks = {|
   afterStateUpdate: HookFn,
 |};
 
-export type TypeHistory = {
-  [string]: number | string | boolean,
-};
+// export type TypeHistory = {
+//   [string]: number | string | boolean,
+// };
 
 export type RouterHistory = {
-  at: TypeHistory,
-  from: TypeHistory
+  at: Object,
+  from: Object
 }
 
 export type RouterState = {|
   visible: boolean,
-  at?: TypeHistory,
-  from?: TypeHistory,
+  at?: Object,
+  from?: Object,
   order?: ?number,
   data?: ?string,
 |};
