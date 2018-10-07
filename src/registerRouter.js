@@ -1,13 +1,16 @@
+// @flow
+
 import Router from './index';
 
-let existingLocation;
+let existingLocation: string;
 
-const registerRouter = (router) => {
+const registerRouter = (router: Router) => {
   router.setState({ visible: true });
 
   window.setInterval(() => {
-    if (existingLocation !== window.location.href) {
-      existingLocation = window.location.href;
+    const newLocation = (window.location.href: string);
+    if (existingLocation !== newLocation) {
+      existingLocation = newLocation;
       router._update(Router.routerLocation());
     }
   }, 100);

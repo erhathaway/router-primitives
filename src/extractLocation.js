@@ -1,16 +1,16 @@
 // @flow
 
-import queryString from 'query-string';
-
 import type {
   Location,
 } from './types';
+
+import type Router from './index';
 
 /* ------------------------ */
 /* Extract state from location (pathname and search)
 /* ------------------------ */
 
-const extractScene = ({ pathname, search }: Location, routeKeys, isPathRouter, routerLevel) => {
+const extractScene = ({ pathname, search }: Location, routeKeys: Array<string>, isPathRouter: boolean, routerLevel: number) => {
   // const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
 
   if (isPathRouter) {
@@ -33,7 +33,7 @@ const extractScene = ({ pathname, search }: Location, routeKeys, isPathRouter, r
   return (extractedScenes: { [string]: boolean });
 };
 
-const extractStack = ({ search }: Location, routeKeys) => {
+const extractStack = ({ search }: Location, routeKeys: Array<string>) => {
   // const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
   // obj representes the extracted stack data
   const obj = {};
@@ -48,9 +48,7 @@ const extractStack = ({ search }: Location, routeKeys) => {
   return (obj: { [string]: number });
 };
 
-const extractFeature = ({ pathname, search }: Location, routeKeys) => {
-  // const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
-
+const extractFeature = ({ search }: Location, routeKeys: Array<string>) => {
   const obj = routeKeys.reduce((acc, key) => {
     acc[key] = search[key] != null;
 
@@ -60,11 +58,8 @@ const extractFeature = ({ pathname, search }: Location, routeKeys) => {
   return (obj: { [string]: boolean });
 };
 
-const extractData = ({ pathname, search }: Location, routeKeys, isPathRouter, routerLevel, router) => {
-  // const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
-
+const extractData = ({ pathname, search }: Location, routeKeys: Array<string>, isPathRouter: boolean, routerLevel: number, router: Router) => {
   if (isPathRouter) {
-    // const splitPath = location.pathname.split('/');
     const dataPresent = pathname[routerLevel];
 
     const data = {};

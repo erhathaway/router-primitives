@@ -57,26 +57,20 @@ export type RouterConfig = {|
   mutateLocationOnFeatureUpdate?: boolean,
 |};
 
-// export interface RouterInterface {
-//   visible: ?boolean;
-//   order: ?number;
-//   data: ?string;
-//   history: RouterHistory;
-//   state: RouterState;
-//
-//   routeKey: string;
-//   name: string;
-//
-//   parent: ?RouterInterface;
-//   routers: { [RouterType]: Array<RouterInterface> };
-//   isPathRouter: boolean;
-//   type: RouterType;
-//   routerLevel: number;
-//
-//   +constructor: (config: RouterConfig) => void;
-//   +rollBackToMostRecentState: (existingLocation: Location) => Location;
-// }
 
 export type Routers<T> = {
   [RouterType]: Array<T>
+}
+
+export type RouterInfoForCreation = {
+  name: string,
+  routeKey?: string,
+  ...?RouterConfig,
+  default?: RouterConfig,
+  routers?: {
+    stack?: [Array<RouterInfoForCreation>],
+    scene?: [Array<RouterInfoForCreation>],
+    feature?: [Array<RouterInfoForCreation>],
+    data?: [Array<RouterInfoForCreation>],
+  }
 }

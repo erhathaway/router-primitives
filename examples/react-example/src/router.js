@@ -76,10 +76,6 @@ import Router, { registerRouter, initalizeRouter } from 'recursive-router';
 
 const config =
   { name: 'root',
-    // beforeLocationUpdate: fn,
-    // afterLocationUpdate: fn,
-    // beforeStateUpdate: fn,
-    // afterStateUpdate: fn,
     routers: {
     stack: [
       { name: 'doc', default: { visible: true }, rehydrateChildRoutersState: true, routers: {
