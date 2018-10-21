@@ -83,8 +83,25 @@ const RouterFeature = observer(({ name, router, style }) => (
   </RouterType>
 ))
 
+const RouterData = observer(({ name, router, style }) => (
+  <RouterType style={style}>
+    <RouterName>
+      { name.toUpperCase() }
+    </RouterName>
+    <AttributeContainer>
+      <Attribute name={'visible'} value={router.visible.toString()} />
+      <Attribute name={'data'} value={(router.state.data || '').toString()} />
+    </AttributeContainer>
+    <MethodContainer>
+      <Method key={`${name}-show`} isVisible={!router.visible} name="show" onClick={router.show} />
+      <Method key={`${name}-hide`} isVisible={router.visible} name="hide" onClick={router.hide} />
+    </MethodContainer>
+  </RouterType>
+))
+
 export {
   RouterScene,
   RouterCard,
   RouterFeature,
+  RouterData,
 }

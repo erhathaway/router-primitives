@@ -884,7 +884,7 @@ class Router {
     // only set data if there is data to set
     const data = routerTypeData[this.routeKey]
       ? { data: routerTypeData[this.routeKey] }
-      : {}
+      : {};
     return {
       visible,
       order: undefined,

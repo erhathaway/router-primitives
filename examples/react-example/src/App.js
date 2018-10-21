@@ -10,26 +10,8 @@ import {
   RouterScene,
   RouterCard,
   RouterFeature,
+  RouterData,
 } from './Visualizer';
-
-const navA = () => {
-  const pathname = 'home';
-  const search = 'a@';
-  const url = `${pathname}?${search}`;
-  const state = {};
-  window.history.pushState(state, 'Cell AF', url)
-  // console.log(window.location)
-}
-
-const navB = () => {
-  const pathname = 'nothome';
-  const search = 'b';
-  const url = `${pathname}?${search}`;
-  const state = {};
-
-  window.history.pushState(state, 'Cell AF', url)
-}
-
 
 const calcCoordinates = (row, column) => {
   return ({
@@ -101,15 +83,15 @@ const generateRouterDiagram = (router) => {
         return <RouterCard key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
       case 'feature':
         return <RouterFeature key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
+      case 'data':
+        return <RouterData key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
       default:
         return <RouterScene key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
     }
-  })
-  // return pieces;
+  });
 }
 
-const p = generateRouterDiagram(root)
-// console.log('!!!!!!', p)
+const p = generateRouterDiagram(root);
 
 class App extends Component {
   render() {
@@ -125,9 +107,9 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <div className="App-logo">{ "🍜" }</div>
-          <h1 className="App-title" onClick={navB}>Ramen Router</h1>
+          <h1 className="App-title">Ramen Router</h1>
         </header>
-        <p className="App-intro" onClick={navA}>
+        <p className="App-intro">
           An opinionated, reactive, and super simple router. Used on a daily basis, Ramen Router is delicious!
         </p>
         <div style={routerStyles}>
