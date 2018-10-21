@@ -5,7 +5,7 @@ import Router from './index';
 let existingLocation: string;
 
 const registerRouter = (router: Router) => {
-  router.setState({ visible: true });
+  router.state = { visible: true };
 
   window.setInterval(() => {
     const newLocation = (window.location.href: string);

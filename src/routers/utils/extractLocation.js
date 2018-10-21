@@ -2,9 +2,9 @@
 
 import type {
   Location,
-} from './types';
+} from '../../types';
 
-import type Router from './index';
+import type Router from '../../index';
 
 /**
  * Extract state from location (pathname and search)

@@ -35,13 +35,12 @@ function orderStackRouteKeys(routeKeyOrderObj: { [string]: number }): Array<stri
 }
 
 /**
- * Mixins that give the base router FeatureRouting functionality
- * Notably, a feature router needs specific #showFeature, #hideFeature, and #updateFeature methods
+ * Mixins that give the base router StackRouting functionality
+ * Notably, a stack router needs specific #showStack, #hideStack,
+ * #moveForwardStack, #moveBackwardStack, #bringToFrontStack, #sendToBackStack,
+ * and #updateStack methods
 */
 export default {
-
-  /* STACK SPECIFIC */
-
   showStack(location: Location): Location {
     if (!this.parent) return location;
 
