@@ -119,7 +119,7 @@ const config =
     ],
   }};
 
-const routers = initalizeRouter(config)
+const routers = initalizeRouter(config);
 const root = routers['root'];
 registerRouter(root);
 

@@ -90,7 +90,7 @@ const RouterData = observer(({ name, router, style }) => (
     </RouterName>
     <AttributeContainer>
       <Attribute name={'visible'} value={router.visible.toString()} />
-      <Attribute name={'data'} value={(router.state.data || '').toString()} />
+      <Attribute name={'data'} value={(router.data || '').toString()} />
     </AttributeContainer>
     <MethodContainer>
       <Method key={`${name}-show`} isVisible={!router.visible} name="show" onClick={router.show} />

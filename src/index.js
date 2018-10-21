@@ -495,7 +495,6 @@ class Router {
     setLocation(newLocation, oldLocation);
   }
 
-
   _update(newLocation: Location): void {
     const location = newLocation;
 

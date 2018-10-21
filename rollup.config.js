@@ -36,10 +36,10 @@ export default {
     babel({
       babelrc: true,
     }),
-    minify({
-      comments: false,
-      sourceMap: false,
-    }),
+    // minify({
+    //   comments: false,
+    //   sourceMap: false,
+    // }),
   ],
   external: dependencies.filter(d => d !== 'query-string'),
 };
