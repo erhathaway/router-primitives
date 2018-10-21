@@ -4,13 +4,6 @@ import { observable } from 'mobx';
 
 import queryString from 'query-string';
 
-import {
-  extractScene,
-  extractFeature,
-  extractStack,
-  extractData,
-} from './extractLocation';
-
 import setLocation from './setLocation';
 import registerRouter from './registerRouter';
 import buildInitalizeRouterFn from './initalizeRouter';
@@ -18,7 +11,6 @@ import buildInitalizeRouterFn from './initalizeRouter';
 import type {
   UpdateLocationOptions,
   Routers,
-  RouterContext,
   RouterHistory,
   RouterType,
   RouterHooks,
@@ -27,22 +19,21 @@ import type {
   RouterConfig,
 } from './types';
 
+import SceneRouter from './routers/scene';
+import DataRouter from './routers/data';
+import FeatureRouter from './routers/feature';
+import StackRouter from './routers/stack';
+
 class Router {
   @observable visible: boolean = false;
-
   @observable order: ?number = undefined;
-
   @observable history: RouterHistory = { at: {}, from: {} };
-
   @observable state: RouterState = {
     at: undefined, from: undefined, data: undefined, visible: false, order: undefined,
   };
-
-  // TODO fix me - observable doesn't work
   data = undefined;
 
   _childTreeVisibilityOnHide: Object = {};
-
   _root: Router;
 
   set root(router: Router) {
@@ -78,25 +69,17 @@ class Router {
   }
 
   routeKey: string;
-
   name: string;
 
   _routers: Routers<Router> = {};
-
   _hooks: RouterHooks;
-
   _parent: ?Router = undefined;
-
   _type: RouterType;
-
   _isPathRouter = undefined;
 
   _mutateLocationOnSceneUpdate: boolean = false;
-
   _mutateLocationOnStackUpdate: boolean = true;
-
   _mutateLocationOnDataUpdate: boolean = false;
-
   _mutateLocationOnFeatureUpdate: boolean = false;
 
   set mutateLocationOnSceneUpdate(shouldMutate: boolean) {
@@ -168,6 +151,9 @@ class Router {
   }
 
   constructor(config: RouterConfig) {
+    // add router mixins that imbue various router types
+    Object.assign(this, SceneRouter, DataRouter, FeatureRouter, StackRouter);
+
     const {
       name,
       routeKey,
@@ -499,301 +485,6 @@ class Router {
   ROUTER SPECIFIC METHODS FOR LOCATION UPDATING
   ----------------------------------------*/
 
-  /* SCENE SPECIFIC */
-  showScene(location: Location): Location {
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnSceneUpdate });
-    let search = {};
-
-    // if router has a parent, get sibling router types and set visiblity to false
-    // also used to clear existing search state related to router type which is useful for debuging
-    if (this.parent) {
-      this.parent.routers[this.type].forEach((r) => {
-        if (r.routeKey !== this.routeKey) {
-          const updatedLocation = r.hide();
-          search = { ...search, ...updatedLocation.search };
-        } else {
-          search[r.routeKey] = undefined;
-        }
-      });
-    }
-
-    // if router is a pathrouter update the pathname
-    if (this.isPathRouter) {
-      // dont update pathname if parent isn't visible
-      if (this.parent && !this.parent.visible) return location;
-
-      const { pathname } = location;
-      pathname[this.routerLevel] = this.routeKey;
-      const newPathname = pathname.slice(0, this.routerLevel + 1);
-
-      return { pathname: newPathname, search, options };
-    }
-
-    search[this.routeKey] = true;
-
-    return { pathname: location.pathname, search, options };
-  }
-
-  hideScene(location: Location): Location {
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnSceneUpdate });
-    const search = {};
-
-    // if router has a parent, get sibling router types and set visiblity to false
-    // also used to clear existing search state related to router type which is useful for debuging
-    if (this.parent) {
-      this.parent.routers[this.type].forEach((r) => { search[r.routeKey] = undefined; });
-    }
-
-    if (this.isPathRouter) {
-      const { pathname } = location;
-      const newPathname = pathname.slice(0, this.routerLevel);
-
-      return { pathname: newPathname, search, options };
-    }
-    return { pathname: location.pathname, search, options };
-  }
-
-  /* STACK SPECIFIC */
-  // takes an object of keys where the value's
-  // represent order and turns it into an array of ordered keys
-  static orderStackRouteKeys(routeKeyOrderObj: { [string]: number }): Array<string> {
-    /*
-      { <routeKeyName>: <order> }
-    */
-
-    // reduce the order object to the array of sorted keys
-    const routerRouteKeys = Object.keys(routeKeyOrderObj);
-    /* reorder routeKeyOrderObj by order
-      ex: { <order>: <routeKeyName> }
-    */
-    const orderAsKey = routerRouteKeys.reduce((acc, key) => {
-      const value = routeKeyOrderObj[key];
-      if (value != null && !Number.isNaN(value)) {
-        acc[routeKeyOrderObj[key]] = key;
-      }
-      return acc;
-    }, {});
-
-    const orders = Object.values(routeKeyOrderObj);
-    const filteredOrders = ((orders.filter(n => n != null && !Number.isNaN(n)): any): Array<number>);
-    const sortedOrders = filteredOrders.sort((a, b) => a - b);
-    const sortedKeys = sortedOrders.map(order => orderAsKey[order]);
-    return sortedKeys;
-  }
-
-  showStack(location: Location): Location {
-    if (!this.parent) return location;
-
-    // get routeKeys that belong to this router type
-    const typeRouterRouteKeys = this.parent.routers[this.type].map(t => t.routeKey);
-    // get current order for all routeKeys via the location state
-    const routerTypeData = extractStack(location, typeRouterRouteKeys);
-    const sortedKeys = Router.orderStackRouteKeys(routerTypeData);
-
-
-    // find index of this routers routeKey
-    const index = sortedKeys.indexOf(this.routeKey);
-    if (index > -1) {
-      // remove routeKey if it exists
-      sortedKeys.splice(index, 1);
-    }
-    // add route key to front of sorted keys
-    sortedKeys.unshift(this.routeKey);
-
-    // create router type data obj
-    const search = sortedKeys.reduce((acc, key, i) => {
-      acc[key] = i + 1;
-      return acc;
-    }, {});
-
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-
-    return { pathname: location.pathname, search, options };
-  }
-
-  hideStack(location: Location): Location {
-    if (!this.parent) return location;
-
-    // get routeKeys that belong to this router type
-    const typeRouterRouteKeys = this.parent.routers[this.type].map(t => t.routeKey);
-    // get current order for all routeKeys via the location state
-    const routerTypeData = extractStack(location, typeRouterRouteKeys);
-    const sortedKeys = Router.orderStackRouteKeys(routerTypeData);
-
-    // find index of this routers routeKey
-    const index = sortedKeys.indexOf(this.routeKey);
-    if (index > -1) {
-      // remove routeKey if it exists
-      sortedKeys.splice(index, 1);
-    }
-
-    // create router type data obj
-    const search = sortedKeys.reduce((acc, key, i) => {
-      acc[key] = i + 1;
-      return acc;
-    }, {});
-    // remove this routeKey from the router type search
-    search[this.routeKey] = undefined;
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-
-    return { pathname: location.pathname, search, options };
-  }
-
-  moveForwardStack(location: Location): Location {
-    if (!this.parent) return location;
-
-    // get routeKeys that belong to this router type
-    const typeRouterRouteKeys = this.parent.routers[this.type].map(t => t.routeKey);
-    // get current order for all routeKeys via the location state
-    const routerTypeData = extractStack(location, typeRouterRouteKeys);
-    const sortedKeys = Router.orderStackRouteKeys(routerTypeData);
-
-
-    // find index of this routers routeKey
-    const index = sortedKeys.indexOf(this.routeKey);
-    if (index > -1) {
-      // remove routeKey if it exists
-      sortedKeys.splice(index, 1);
-    }
-
-    // move routeKey router forward by one in the ordered routeKey list
-    const newIndex = index >= 1 ? index - 1 : 0;
-    sortedKeys.splice(newIndex, 0, this.routeKey);
-
-    // create router type data obj
-    const search = sortedKeys.reduce((acc, key, i) => {
-      acc[key] = i + 1;
-      return acc;
-    }, {});
-
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-
-
-    return { pathname: location.pathname, search, options };
-  }
-
-  moveBackwardStack(location: Location): Location {
-    if (!this.parent) return location;
-
-    // get routeKeys that belong to this router type
-    const typeRouterRouteKeys = this.parent.routers[this.type].map(t => t.routeKey);
-    // get current order for all routeKeys via the location state
-    const routerTypeData = extractStack(location, typeRouterRouteKeys);
-    const sortedKeys = Router.orderStackRouteKeys(routerTypeData);
-
-
-    // find index of this routers routeKey
-    const index = sortedKeys.indexOf(this.routeKey);
-    if (index > -1) {
-      // remove routeKey if it exists
-      sortedKeys.splice(index, 1);
-    }
-
-    // move routeKey router backward by one in the ordered routeKey list
-    const newIndex = index + 1;
-    sortedKeys.splice(newIndex, 0, this.routeKey);
-
-    // create router type data obj
-    const search = sortedKeys.reduce((acc, key, i) => {
-      acc[key] = i + 1;
-      return acc;
-    }, {});
-
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-
-    return { pathname: location.pathname, search, options };
-  }
-
-  bringToFrontStack(location: Location): Location {
-    const newLocation = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-
-    return this.showStack(newLocation);
-  }
-
-  sendToBackStack(location: Location): Location {
-    if (!this.parent) return location;
-
-    // get routeKeys that belong to this router type
-    const typeRouterRouteKeys = this.parent.routers[this.type].map(t => t.routeKey);
-    // get current order for all routeKeys via the location state
-    const routerTypeData = extractStack(location, typeRouterRouteKeys);
-    const sortedKeys = Router.orderStackRouteKeys(routerTypeData);
-
-    // find index of this routers routeKey
-    const index = sortedKeys.indexOf(this.routeKey);
-    if (index > -1) {
-      // remove routeKey if it exists
-      sortedKeys.splice(index, 1);
-    }
-
-    // add to back of stack
-    sortedKeys.push(this.routeKey);
-
-    // create router type data obj
-    const search = sortedKeys.reduce((acc, key, i) => {
-      acc[key] = i + 1;
-      return acc;
-    }, {});
-
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-
-    return { pathname: location.pathname, search, options };
-  }
-
-  /* FEATURE ROUTER SPECIFIC */
-  showFeature(location: Location): Location {
-    const search = { [this.routeKey]: true };
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnFeatureUpdate });
-
-    return { pathname: location.pathname, search, options };
-  }
-
-  hideFeature(location: Location): Location {
-    const search = { [this.routeKey]: undefined };
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnFeatureUpdate });
-
-    return { pathname: location.pathname, search, options };
-  }
-
-  /* DATA ROUTER SPECIFIC */
-  showData(location: Location): Location {
-    if (!this.parent) return location;
-
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnDataUpdate });
-
-    if (this.isPathRouter) {
-      const search = {};
-      // dont update pathname if it has a parent and parent isn't visible
-      if (this.parent && !this.parent.visible) return { pathname: location.pathname, search, options: location.options };
-
-      const { pathname } = location;
-      pathname[this.routerLevel] = this.state.data;
-      return { pathname, search, options };
-    }
-
-    const search = { [this.routeKey]: this.state ? this.state.data : undefined };
-
-    return { pathname: location.pathname, search, options };
-  }
-
-  hideData(location: Location): Location {
-    const search = { [this.routeKey]: undefined };
-    const { options } = Router.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnDataUpdate });
-
-    if (this.isPathRouter) {
-      const { pathname } = location;
-      const newPathname = pathname.slice(0, this.routerLevel);
-      return { pathname: newPathname, search, options };
-    }
-
-    return { pathname: location.pathname, search, options };
-  }
-
-  setData(data: string) {
-    this.state.data = data;
-    this.show();
-  }
-
   _update(newLocation: Location): void {
     const location = newLocation;
 
@@ -843,57 +534,7 @@ class Router {
 
     this.state = { ...this.state, ...state };
   }
-
-  updateStack(parentState: RouterState, parentContext: RouterContext, location: Location): RouterState {
-    const routerTypeData = extractStack(location, parentContext.routeKeys);
-    const order = routerTypeData[this.routeKey];
-
-    return {
-      visible: order != null,
-      order,
-      at: routerTypeData,
-    };
-  }
-
-  updateScene(parentState: RouterState, parentContext: RouterContext, location: Location): RouterState {
-    const routerTypeData = extractScene(location, parentContext.routeKeys, this.isPathRouter, this.routerLevel);
-    const visible = routerTypeData[this.routeKey];
-
-    return {
-      visible,
-      order: undefined,
-      at: routerTypeData,
-    };
-  }
-
-  updateFeature(parentState: RouterState, parentContext: RouterContext, location: Location): RouterState {
-    const routerTypeData = extractFeature(location, parentContext.routeKeys);
-    const visible = routerTypeData[this.routeKey];
-
-    return {
-      visible,
-      order: undefined,
-      at: routerTypeData,
-    };
-  }
-
-  updateData(parentState: RouterState, parentContext: RouterContext, location: Location): RouterState {
-    const routerTypeData = extractData(location, parentContext.routeKeys, this.isPathRouter, this.routerLevel, this);
-    const visible = Object.values(routerTypeData).filter(i => i != null).length > 0;
-
-    // only set data if there is data to set
-    const data = routerTypeData[this.routeKey]
-      ? { data: routerTypeData[this.routeKey] }
-      : {};
-    return {
-      visible,
-      order: undefined,
-      at: routerTypeData,
-      ...data,
-    };
-  }
 }
-
 
 const initalizeRouter = buildInitalizeRouterFn(Router);
 
