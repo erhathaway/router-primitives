@@ -7,7 +7,7 @@
   "scripts": {
     "test": "jest",
     "build": "rollup -c",
-    "start": "rollup -c w",
+    "start": "rollup -c -w",
     "flow": "flow"
   },
   "repository": {
@@ -46,6 +46,7 @@
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
     "flow-bin": "^0.82.0",
+    "mobx": "^5.5.0",
     "rollup": "^0.64.1",
     "rollup-plugin-babel": "^3.0.7",
     "rollup-plugin-commonjs": "^9.1.5",
