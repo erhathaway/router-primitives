@@ -6,21 +6,17 @@ import type {
 
 import type Router from './index';
 
-/* ------------------------ */
-/* Extract state from location (pathname and search)
-/* ------------------------ */
-
+/**
+ * Extract state from location (pathname and search)
+ */
 const extractScene = ({ pathname, search }: Location, routeKeys: Array<string>, isPathRouter: boolean, routerLevel: number) => {
-  // const parsedQuery = queryString.parse(location.search, { decode: true, arrayFormat: 'bracket' });
-
   if (isPathRouter) {
-    // const splitPath = location.pathname.split('/');
     const scenePresent = pathname[routerLevel];
 
     const data = {};
     routeKeys.forEach((key) => { data[key] = false; });
     if (routeKeys.includes(scenePresent)) {
-      data[scenePresent] = true;
+      if (scenePresent) data[scenePresent] = true;
     }
     return data;
   }

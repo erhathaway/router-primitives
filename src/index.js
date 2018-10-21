@@ -38,6 +38,9 @@ class Router {
     at: undefined, from: undefined, data: undefined, visible: false, order: undefined,
   };
 
+  // TODO fix me - observable doesn't work
+  data = undefined;
+
   _childTreeVisibilityOnHide: Object = {};
 
   _root: Router;
@@ -77,8 +80,6 @@ class Router {
   routeKey: string;
 
   name: string;
-
-  data = undefined;
 
   _routers: Routers<Router> = {};
 
@@ -807,6 +808,7 @@ class Router {
           try {
             // get new state for specific router
             const newRouterState = ((r: any)[`update${Router.capitalize(type)}`](r.state, context, location): RouterState);
+
             if (newRouterState) r.setState(newRouterState);
             if (r && r._update) r._update(location);
           } catch (e) {
@@ -879,10 +881,15 @@ class Router {
     const routerTypeData = extractData(location, parentContext.routeKeys, this.isPathRouter, this.routerLevel, this);
     const visible = Object.values(routerTypeData).filter(i => i != null).length > 0;
 
+    // only set data if there is data to set
+    const data = routerTypeData[this.routeKey]
+      ? { data: routerTypeData[this.routeKey] }
+      : {}
     return {
       visible,
       order: undefined,
       at: routerTypeData,
+      ...data,
     };
   }
 }
