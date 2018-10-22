@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
+import styled from 'styled-components';
 
 import { root } from './router';
-
-import logo from './logo.svg';
-import './App.css';
 
 import {
   RouterScene,
@@ -91,33 +89,28 @@ const generateRouterDiagram = (router) => {
   });
 }
 
-const p = generateRouterDiagram(root);
+const Container = styled.div`
+  height: calc(100% - 50px);
+  width: 100%;
+  background-color: orange;
+  display: flex;
+  position: relative;
+`;
 
-class App extends Component {
-  render() {
-    const routerStyles = {
-      display: 'flex',
-      alignItems: 'center',
-      flexDirection: 'column',
-      position: 'absolute',
-      left: '20%'
-    }
+const Content = styled.div`
+  height: calc(100%);
+  width: 100%;
+  background-color: green;
+  display: flex;
+  bottom: 0px;
+  position: absolute;
+  overflow-x: auto;
+`;
 
-    return (
-      <div className="App">
-        <header className="App-header">
-          <div className="App-logo">{ "🍜" }</div>
-          <h1 className="App-title">Ramen Router</h1>
-        </header>
-        <p className="App-intro">
-          An opinionated, reactive, and super simple router. Used on a daily basis, Ramen Router is delicious!
-        </p>
-        <div style={routerStyles}>
-          { generateRouterDiagram(root) }
-        </div>
-      </div>
-    );
-  }
-}
 
-export default App;
+export default () =>
+  <Container>
+    <Content>
+    { generateRouterDiagram(root) }
+    </Content>
+  </Container>
