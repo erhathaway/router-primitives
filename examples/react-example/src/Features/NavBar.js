@@ -4,7 +4,7 @@ import styled from 'styled-components';
 const Container = styled.div`
   height: 50px;
   width: 100%;
-  background-color: black;
+  // background-color: black;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -15,7 +15,7 @@ const Name = styled.div`
   font-size: 15px;
   width: 300px;
   text-align: center;
-  color: white;
+  // color: white;
   letter-spacing: 1.5px;
 `;
 
