@@ -1,8 +1,11 @@
 import React from 'react';
 import styled from 'styled-components';
+import { Provider } from 'mobx-react';
 
 import PlaygroundConsole from '../Features/PlaygroundConsole';
 import PlaygroundRoutes from '../Features/PlaygroundRoutes';
+
+import consoleInput from '../state/PlaygroundConsoleInput';
 
 const Container = styled.div`
   // height: calc(100% - 50px);
@@ -16,8 +19,10 @@ const Container = styled.div`
 `;
 
 export default () => (
-  <Container>
-    <PlaygroundConsole />
-    <PlaygroundRoutes />
-  </Container>
+  <Provider consoleInput={consoleInput}>
+    <Container>
+      <PlaygroundConsole />
+      <PlaygroundRoutes />
+    </Container>
+  </Provider>
 );

@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { inject, observer } from 'mobx-react';
 import AceEditor from 'react-ace';
 import brace from 'brace';
 import 'brace/mode/javascript';
@@ -8,7 +9,6 @@ import 'brace/ext/language_tools';
 import 'brace/snippets/javascript';
 import 'brace/theme/kuroir';
 
-import ConsoleInput from '../state/PlaygroundConsoleInput';
 
 const Container = styled.div`
   height: calc(100% - 50px);
@@ -26,24 +26,27 @@ const Inner = styled.div`
   display: flex;
 `;
 
-export default () => (
+const PlaygroundConsoleInput = ({ consoleInput }) => (
   <Container>
   <Inner>
     <AceEditor
       mode="javascript"
       theme="kuroir"
-      defaultValue={ConsoleInput.input}
-      onChange={(change) => { ConsoleInput.hi; ConsoleInput.input = change }}
-      name="UNIQUE_ID_OF_DIV"
+      defaultValue={consoleInput.input}
+      onChange={(change) => { consoleInput.hi; consoleInput.input = change }}
+      name="playground-console-input"
       showGutter={false}
       height={'100%'}
       fontSize="16px"
       editorProps={{$blockScrolling: true}}
-      enableBasicAutocompletion={true}
-      enableLiveAutocompletion
+      enableBasicAutocompletion={false}
+      enableLiveAutocompletion={false}
+      // enableEmmet
       tabSize={2}
       highlightActiveLine={true}
     />
   </Inner>
   </Container>
 );
+
+export default inject('consoleInput')(PlaygroundConsoleInput)

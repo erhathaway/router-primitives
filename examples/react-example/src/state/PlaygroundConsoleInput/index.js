@@ -2,7 +2,12 @@ import { decorate, computed, observable, autorun } from 'mobx';
 import JSstringify from 'javascript-stringify';
 import defaultConfig from './defaultConfig';
 import beautify from 'js-beautify';
+import { create, persist } from 'mobx-persist'
 
+/**
+ * model for capturing user input in the playground
+ * and generating a router config object off of it
+ */
 class RouterConfigModel {
   input = '';
   config = { name: 'root' };
@@ -15,18 +20,23 @@ class RouterConfigModel {
       eval_code: true
     };
     this.input = params.input || beautify(JSstringify(defaultConfig), beautifyOpts)
-      // .split('"routers:"').join('"routers":\n')
-      // .split('"name":').join('\n"name":');
-    this.code = params.code || defaultConfig;
+    this.config = params.config || defaultConfig;
   }
 }
 
+/**
+ * create a mobx
+ */
 const RouterConfig = decorate(RouterConfigModel, {
   input: observable,
+  config: observable,
 })
 
 const routerConfigInstance = new RouterConfig();
 
+/**
+ * evaluate the input into a valid config object
+ */
 autorun(() => {
   try {
     const code = eval(`(${routerConfigInstance.input})`);
@@ -41,5 +51,18 @@ autorun(() => {
     routerConfigInstance.error = name ? name : '';
   }
 }, true)
+
+/**
+ * adds persistance to mobx model
+ */
+ export const hydratedRouterConfigInstance = persist({ input: true })(routerConfigInstance);
+
+ const hydrate = create({
+    jsonify: false  // if you use AsyncStorage, here shoud be true
+});
+
+hydrate('some', hydratedRouterConfigInstance)
+  .then(() => console.log('someStore has been hydrated'))
+
 
 export default routerConfigInstance;

@@ -7,7 +7,7 @@
     "js-beautify": "^1.8.8",
     "mobx": "^5.0.3",
     "mobx-persist": "^0.4.1",
-    "mobx-react": "^5.2.8",
+    "mobx-react": "^5.3.5",
     "react": "^16.5.2",
     "react-ace": "^6.2.0",
     "react-dom": "^16.5.2",

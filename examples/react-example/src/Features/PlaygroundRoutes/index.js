@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import { observer } from 'mobx-react';
+import { inject, observer } from 'mobx-react';
+import { toJS } from 'mobx';
+import Router, { registerRouter, initalizeRouter } from 'recursive-router';
 import styled from 'styled-components';
-
-import { root } from './router';
 
 import {
   RouterScene,
@@ -112,10 +112,49 @@ const Content = styled.div`
 
 `;
 
+class Visualizer extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      rootRouter: undefined,
+      config: undefined,
+    };
+  }
 
-export default () =>
-  <Container>
-    <Content>
-    { generateRouterDiagram(root) }
-    </Content>
-  </Container>
+  componentDidMount() {
+    this.checkRouterConfig();
+  }
+  componentDidUpdate(prevProps) {
+    this.checkRouterConfig();
+  }
+
+  checkRouterConfig() {
+    const newConfig = toJS(this.props.consoleInput.config);
+    const newConfigString = JSON.stringify(newConfig);
+
+    if (newConfigString !== this.state.config) {
+      this.setRouterConfig(newConfig, newConfigString);
+    }
+  }
+
+  setRouterConfig(config, newConfigString) {
+    const routers = initalizeRouter(config);
+    const rootRouter = routers['root'];
+    registerRouter(rootRouter);
+    this.setState({ rootRouter, config: newConfigString });
+  }
+
+  render() {
+    if (this.state.rootRouter === undefined) return null;
+
+    return (
+      <Container input={this.props.consoleInput.config}>
+        <Content>
+          { generateRouterDiagram(this.state.rootRouter) }
+        </Content>
+      </Container>
+    )
+  }
+}
+
+export default inject('consoleInput')(observer(Visualizer))
