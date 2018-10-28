@@ -40,13 +40,13 @@ const routerConfigInstance = new RouterConfig();
 autorun(() => {
   try {
     const code = eval(`(${routerConfigInstance.input})`);
-    console.log('code eval', code)
+    console.log('evaluating code', code)
     if (code !== null && typeof code === 'object') {
       routerConfigInstance.config = code;
       console.log('added code', code)
     }
   } catch(e) {
-    console.log(this.input)
+    console.log('error adding code', this.input)
     const { name } = e;
     routerConfigInstance.error = name ? name : '';
   }

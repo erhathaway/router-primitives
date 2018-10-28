@@ -4,6 +4,7 @@ import { Provider } from 'mobx-react';
 
 import PlaygroundConsole from '../Features/PlaygroundConsole';
 import PlaygroundRoutes from '../Features/PlaygroundRoutes';
+import PlaygroundNav from '../Features/PlaygroundNav';
 
 import consoleInput from '../state/PlaygroundConsoleInput';
 
@@ -16,11 +17,13 @@ const Container = styled.div`
   // flex-direction: column;
   // background-color: yellow;
   position: fixed;
+  // justify-content: space-evenly;
 `;
 
 export default () => (
   <Provider consoleInput={consoleInput}>
     <Container>
+      <PlaygroundNav />
       <PlaygroundConsole />
       <PlaygroundRoutes />
     </Container>

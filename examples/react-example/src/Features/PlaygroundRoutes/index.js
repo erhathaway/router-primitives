@@ -11,6 +11,31 @@ import {
   RouterData,
 } from './Visualizer';
 
+const Container = styled.div`
+  height: calc(100% - 50px);
+  // width: 100%;
+  // background-color: orange;
+  display: flex;
+  position: relative;
+  border-radius: 5px;
+  flex-grow: 1;
+
+`;
+
+const Content = styled.div`
+  height: calc(100% - 40px);
+  width: calc(100% - 20px);
+  background-color: #e8e8e8;
+  display: flex;
+  bottom: 0px;
+  position: absolute;
+  overflow-x: auto;
+  margin: 20px;
+  margin-left: 0px;
+  border-radius: 6px;
+`;
+
+
 const calcCoordinates = (row, column) => {
   return ({
     top: row * 150,
@@ -89,28 +114,6 @@ const generateRouterDiagram = (router) => {
   });
 }
 
-const Container = styled.div`
-  height: calc(100% - 50px);
-  width: 100%;
-  // background-color: orange;
-  display: flex;
-  position: relative;
-  border-radius: 5px;
-`;
-
-const Content = styled.div`
-  height: calc(100% - 40px);
-  width: calc(100% - 20px);
-  background-color: #e8e8e8;
-  display: flex;
-  bottom: 0px;
-  position: absolute;
-  overflow-x: auto;
-  margin: 20px;
-  margin-left: 0px;
-  border-radius: 6px;
-
-`;
 
 class Visualizer extends React.Component {
   constructor() {

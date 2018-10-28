@@ -14,6 +14,8 @@ export default ({ name, onClick, isVisible }) => {
     justifyContent: 'center',
     opacity: isVisible ? 1 : 0.5,
     border: '1px solid #cccccc',
+    cursor: isVisible ? 'pointer' : 'not-allowed',
+
   })
 
   return (
