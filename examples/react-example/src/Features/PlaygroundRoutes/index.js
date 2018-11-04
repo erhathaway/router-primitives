@@ -91,27 +91,170 @@ const addChildRoutersToPieces = (pieces, row, column, childRouters) => {
   })
 }
 
-const generateRouterDiagram = (router) => {
-  let row = 0;
-  let column = 0;
-  const pieces = [];
-  addPiece(pieces, row, column, router);
-  row += 1;
-  addChildRoutersToPieces(pieces, row, column, router.routers)
-  return pieces.map((p, i) => {
-    switch(p.router.type) {
-      case 'scene':
-        return <RouterScene key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
-      case 'stack':
-        return <RouterCard key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
-      case 'feature':
-        return <RouterFeature key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
-      case 'data':
-        return <RouterData key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
-      default:
-        return <RouterScene key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
-    }
-  });
+// const generateRouterDiagram = (router) => {
+//   let row = 0;
+//   let column = 0;
+//   const pieces = [];
+//   addPiece(pieces, row, column, router);
+//   row += 1;
+//   addChildRoutersToPieces(pieces, row, column, router.routers)
+//   return pieces.map((p, i) => {
+//     switch(p.router.type) {
+//       case 'scene':
+//         return <RouterScene key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
+//       case 'stack':
+//         return <RouterCard key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
+//       case 'feature':
+//         return <RouterFeature key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
+//       case 'data':
+//         return <RouterData key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
+//       default:
+//         return <RouterScene key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
+//     }
+//   });
+// }
+
+const routerComponent = (router, i, style = {}) => {
+  switch(router.type) {
+    case 'scene':
+      return <RouterScene key={`${router.name}-${i}`} style={style} name={router.name} router={router} />
+    case 'stack':
+      return <RouterCard key={`${router.name}-${i}`} style={style} name={router.name} router={router} />
+    case 'feature':
+      return <RouterFeature key={`${router.name}-${i}`} style={style} name={router.name} router={router} />
+    case 'data':
+      return <RouterData key={`${router.name}-${i}`} style={style} name={router.name} router={router} />
+    default:
+      return <RouterScene key={`${router.name}-${i}`} style={style} name={router.name} router={router} />
+  }
+}
+
+
+// <div>
+//   <div> Name </name>
+//   <Router>
+//   <ChildContainer>
+//     <ChildTypeContainer>
+//       { repeat...}
+//     </ChildTypeContainer>
+//     <ChildTypeContainer>
+//       { repeat...}
+//     </ChildTypeContainer>
+//   </ChildContainer>
+// </div>
+// const generateRouterDiagram = (router, type = 'root') => {
+//   const childRouters = router.routers || {};
+//   const childRouterTypes = Object.keys(childRouters);
+//
+//   const childRouterComponents = childRouterTypes.map(type => {
+//     const children = childRouters[type];
+//     return children.map(child => generateRouterDiagram(child, type));
+//   })
+//   return (
+//     <div>
+//       <div> { type } </div>
+//       { routerComponent(router) }
+//
+//       { router.routers.mapgenerateRouterDiagram(router)}
+//     </div>
+//   )
+// }
+
+const RouterParentContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  top: 0;
+  left: 0;
+  position: relative;
+  background-color: rgba(0,0,255,0.1);
+  padding: 8px;
+  padding-top: 10px;
+`;
+
+const RouterTypeContainer = styled.div`
+  display; flex;
+  flex-direction: row;
+  flex-grow: 1;
+  top: 0;
+  left: 0;
+  position: relative;
+`;
+
+const RouterChildrenContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+  top: 0;
+  left: 0;
+  position: relative;
+`;
+
+const RouterChildTypeContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  top: 0;
+  left: 0;
+  position: relative;
+  background-color: rgba(0,0,255,0.1);
+  padding: 8px;
+  padding-top: 10px;
+`;
+
+const TypeHeader = styled.div`
+
+`;
+
+const TypeContent = styled.div`
+display: flex;
+flex-direction: row;
+flex-grow: 1;
+top: 0;
+left: 0;
+`;
+
+const generateRouterDiagram = (router, i = 0) => {
+  const childrenTypes = Object.keys(router.routers).filter(t => router.routers[t].length > 0)
+
+  return (
+    <RouterParentContainer className='parent-container'>
+      <RouterTypeContainer className='type-container'>
+      { routerComponent(router, i) }
+      </RouterTypeContainer>
+      <RouterChildrenContainer className='child-container'>
+      { childrenTypes.map(type =>
+        <RouterChildTypeContainer className='child-type-container'>
+          <TypeHeader>
+            { type }
+          </TypeHeader>
+          <TypeContent>
+          { router.routers[type].map((r, i) => generateRouterDiagram(r, i)) }
+          </TypeContent>
+        </RouterChildTypeContainer>
+      )}
+      </RouterChildrenContainer>
+    </RouterParentContainer>
+  )
+  // let row = 0;
+  // let column = 0;
+  // const pieces = [];
+  // addPiece(pieces, row, column, router);
+  // // row += 1;
+  // addChildRoutersToPieces(pieces, row, column, router.routers)
+  // return pieces.map((p, i) => {
+  //   switch(p.router.type) {
+  //     case 'scene':
+  //       return <RouterScene key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
+  //     case 'stack':
+  //       return <RouterCard key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
+  //     case 'feature':
+  //       return <RouterFeature key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
+  //     case 'data':
+  //       return <RouterData key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
+  //     default:
+  //       return <RouterScene key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
+  //   }
+  // });
 }
 
 
@@ -149,7 +292,7 @@ class Visualizer extends React.Component {
 
   render() {
     if (this.state.rootRouter === undefined) return null;
-
+    // console.log('here', this.state.rootRouter)
     return (
       <Container input={this.props.consoleInput.config}>
         <Content>
