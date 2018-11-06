@@ -3,6 +3,8 @@ import { inject, observer } from 'mobx-react';
 import { toJS } from 'mobx';
 import Router, { registerRouter, initalizeRouter } from 'recursive-router';
 import styled from 'styled-components';
+import { SteppedLineTo } from 'react-lineto';
+import Graph from './Graph';
 
 import {
   RouterScene,
@@ -36,129 +38,20 @@ const Content = styled.div`
 `;
 
 
-const calcCoordinates = (row, column) => {
-  return ({
-    top: row * 150,
-    left: column * 170,
-  })
-}
-
-const generateStyle = (coordinates) => {
-  return ({
-    position: 'absolute',
-    ...coordinates,
-  })
-}
-
-const addPiece = (pieces, row, column, router) => {
-  pieces.push({
-    style: generateStyle(calcCoordinates(row, column)),
-    router,
-  });
-}
-
-const addChildRoutersToPieces = (pieces, row, column, childRouters) => {
-  let newChildRouters = [];
-  const types = Object.keys(childRouters)
-  types.forEach(type => {
-    const routers = childRouters[type];
-    if (Array.isArray(routers)) {
-      routers.forEach(r => {
-        addPiece(pieces, row, column, r);
-        if (r.routers) {
-          newChildRouters.push(r.routers);
-        }
-        column += 1;
-      })
-    } else {
-      addPiece(pieces, row, column, routers);
-      if (routers.routers) {
-        newChildRouters.push(routers.routers);
-      }
-      column += 1;
-    }
-  })
-
-  let newRow = row + 1;
-  let newColumn = 0;
-  newChildRouters.forEach(c => {
-    addChildRoutersToPieces(pieces, newRow, newColumn, c)
-    if (Array.isArray(c)) {
-      newColumn += c.length;
-    } else {
-      newColumn += 1;
-    }
-  })
-}
-
-// const generateRouterDiagram = (router) => {
-//   let row = 0;
-//   let column = 0;
-//   const pieces = [];
-//   addPiece(pieces, row, column, router);
-//   row += 1;
-//   addChildRoutersToPieces(pieces, row, column, router.routers)
-//   return pieces.map((p, i) => {
-//     switch(p.router.type) {
-//       case 'scene':
-//         return <RouterScene key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
-//       case 'stack':
-//         return <RouterCard key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
-//       case 'feature':
-//         return <RouterFeature key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
-//       case 'data':
-//         return <RouterData key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
-//       default:
-//         return <RouterScene key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
-//     }
-//   });
-// }
-
 const routerComponent = (router, i, style = {}) => {
   switch(router.type) {
     case 'scene':
-      return <RouterScene key={`${router.name}-${i}`} style={style} name={router.name} router={router} />
+      return <RouterScene id={i} key={`${router.name}-${i}`} style={style} name={router.name} router={router} />
     case 'stack':
-      return <RouterCard key={`${router.name}-${i}`} style={style} name={router.name} router={router} />
+      return <RouterCard id={i} key={`${router.name}-${i}`} style={style} name={router.name} router={router} />
     case 'feature':
-      return <RouterFeature key={`${router.name}-${i}`} style={style} name={router.name} router={router} />
+      return <RouterFeature id={i} key={`${router.name}-${i}`} style={style} name={router.name} router={router} />
     case 'data':
-      return <RouterData key={`${router.name}-${i}`} style={style} name={router.name} router={router} />
+      return <RouterData id={i} key={`${router.name}-${i}`} style={style} name={router.name} router={router} />
     default:
-      return <RouterScene key={`${router.name}-${i}`} style={style} name={router.name} router={router} />
+      return <RouterScene id={i} key={`${router.name}-${i}`} style={style} name={router.name} router={router} />
   }
 }
-
-
-// <div>
-//   <div> Name </name>
-//   <Router>
-//   <ChildContainer>
-//     <ChildTypeContainer>
-//       { repeat...}
-//     </ChildTypeContainer>
-//     <ChildTypeContainer>
-//       { repeat...}
-//     </ChildTypeContainer>
-//   </ChildContainer>
-// </div>
-// const generateRouterDiagram = (router, type = 'root') => {
-//   const childRouters = router.routers || {};
-//   const childRouterTypes = Object.keys(childRouters);
-//
-//   const childRouterComponents = childRouterTypes.map(type => {
-//     const children = childRouters[type];
-//     return children.map(child => generateRouterDiagram(child, type));
-//   })
-//   return (
-//     <div>
-//       <div> { type } </div>
-//       { routerComponent(router) }
-//
-//       { router.routers.mapgenerateRouterDiagram(router)}
-//     </div>
-//   )
-// }
 
 const RouterParentContainer = styled.div`
   display: flex;
@@ -169,6 +62,7 @@ const RouterParentContainer = styled.div`
   background-color: rgba(0,0,255,0.1);
   padding: 8px;
   padding-top: 10px;
+  z-index: 0;
 `;
 
 const RouterTypeContainer = styled.div`
@@ -196,13 +90,18 @@ const RouterChildTypeContainer = styled.div`
   top: 0;
   left: 0;
   position: relative;
-  background-color: rgba(0,0,255,0.1);
+  // background-color: rgba(0,0,255,0.04);
   padding: 8px;
   padding-top: 10px;
+  z-index: 0;
 `;
 
 const TypeHeader = styled.div`
-
+  margin-left: 20px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  letter-spacing: 2px;
+  z-index: 100;
 `;
 
 const TypeContent = styled.div`
@@ -213,48 +112,42 @@ top: 0;
 left: 0;
 `;
 
-const generateRouterDiagram = (router, i = 0) => {
+const generateRouterDiagram = (router, parentID = undefined) => {
   const childrenTypes = Object.keys(router.routers).filter(t => router.routers[t].length > 0)
+  const childID = `router-${router.name}`;
 
-  return (
-    <RouterParentContainer className='parent-container'>
-      <RouterTypeContainer className='type-container'>
-      { routerComponent(router, i) }
+   // Record pairings of children with parents via their class names
+  const pairings = [];
+  if (parentID) {
+    pairings.push({ to: childID, from: parentID });
+  }
+  const graph = (
+    <RouterParentContainer>
+      <RouterTypeContainer>
+      { /* generate router visualized component with class name */ }
+      { routerComponent(router, childID) }
       </RouterTypeContainer>
-      <RouterChildrenContainer className='child-container'>
+      <RouterChildrenContainer>
       { childrenTypes.map(type =>
-        <RouterChildTypeContainer className='child-type-container'>
+        <RouterChildTypeContainer>
           <TypeHeader>
             { type }
           </TypeHeader>
           <TypeContent>
-          { router.routers[type].map((r, i) => generateRouterDiagram(r, i)) }
+          { router.routers[type].map(r => {
+            const { graph, pairings: childPairings } = generateRouterDiagram(r, childID)
+            pairings.push(...childPairings)
+            return graph;
+          })}
           </TypeContent>
         </RouterChildTypeContainer>
       )}
+
       </RouterChildrenContainer>
     </RouterParentContainer>
   )
-  // let row = 0;
-  // let column = 0;
-  // const pieces = [];
-  // addPiece(pieces, row, column, router);
-  // // row += 1;
-  // addChildRoutersToPieces(pieces, row, column, router.routers)
-  // return pieces.map((p, i) => {
-  //   switch(p.router.type) {
-  //     case 'scene':
-  //       return <RouterScene key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
-  //     case 'stack':
-  //       return <RouterCard key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
-  //     case 'feature':
-  //       return <RouterFeature key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
-  //     case 'data':
-  //       return <RouterData key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
-  //     default:
-  //       return <RouterScene key={`${router.name}-${i}`} style={p.style} name={p.router.name} router={p.router} />
-  //   }
-  // });
+
+  return { graph, pairings }
 }
 
 
@@ -292,11 +185,13 @@ class Visualizer extends React.Component {
 
   render() {
     if (this.state.rootRouter === undefined) return null;
-    // console.log('here', this.state.rootRouter)
+    const { graph, pairings } = generateRouterDiagram(this.state.rootRouter);
+    // console.log('pairings', pairings)
     return (
-      <Container input={this.props.consoleInput.config}>
+      <Container className="playground-routes" input={this.props.consoleInput.config}>
         <Content>
-          { generateRouterDiagram(this.state.rootRouter) }
+          { graph }
+          <Graph edges={pairings} />
         </Content>
       </Container>
     )

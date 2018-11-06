@@ -5,7 +5,8 @@ const PlaygroundNav = styled.div`
   height: 100%;
   // width: 400px;
   background-color: blue;
-  // position: relative;
+  left: 0px;
+  // position: absolute;
   // flex-grow: 2;
   display: flex;
   flex-grow: 1;

@@ -33,8 +33,8 @@ const MethodContainer = ({ children }) => {
   )
 }
 
-const RouterScene = observer(({ name, router, style }) => (
-  <RouterType style={style}>
+const RouterScene = observer(({ name, router, style, id }) => (
+  <RouterType id={id} style={style}>
     <RouterName>
       { name.toUpperCase() }
     </RouterName>
@@ -48,8 +48,8 @@ const RouterScene = observer(({ name, router, style }) => (
   </RouterType>
 ))
 
-const RouterCard = observer(({ name, router, style }) => (
-  <RouterType style={style}>
+const RouterCard = observer(({ name, router, style, id }) => (
+  <RouterType id={id} style={style}>
     <RouterName>
       { name.toUpperCase() }
     </RouterName>
@@ -68,8 +68,8 @@ const RouterCard = observer(({ name, router, style }) => (
   </RouterType>
 ))
 
-const RouterFeature = observer(({ name, router, style }) => (
-  <RouterType style={style}>
+const RouterFeature = observer(({ name, router, style, id }) => (
+  <RouterType id={id} style={style}>
     <RouterName>
       { name.toUpperCase() }
     </RouterName>
@@ -83,8 +83,8 @@ const RouterFeature = observer(({ name, router, style }) => (
   </RouterType>
 ))
 
-const RouterData = observer(({ name, router, style }) => (
-  <RouterType style={style}>
+const RouterData = observer(({ name, router, style, id }) => (
+  <RouterType id={id} style={style}>
     <RouterName>
       { name.toUpperCase() }
     </RouterName>
