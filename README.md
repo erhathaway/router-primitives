@@ -1,100 +1,141 @@
 # recursive-router
-RouX - The saucy router.
 
-"The delicious carb and fat base for your well-roasted app's gravy."
+Simple cross platform reactive and declarative routing 
 
-Simple, Reactive, Platform Agnostic, and Opinionated ROUTING
-
-|   | Roux |
+|   | Recursive Router |
 | - | ------------ |
-|   | View library independent - works with Angular, Vue, React, or your favorite hacked together JS lib |
-|   | Router state as a direct function of location (URL) |
-|   | Lifecycle hooks - easily add a `before` Auth guard to a Router path |
-|   | Extensible - just subclass the main Router and add a new routing method describing how the location reduces to a new router state |
-|   | History is recorded - 1. transition a scene out or in differently depending on what other scene is coming or going 2. trivially persist router history outside the browser session and even send it along while deep linking |
-|   | Deep linking is trivial - since state is a function of location, you can use a URL to generate an identical router state tree on any platform |
-|   | Opinionated and automatic URL construction - There is no need to think about matching path names or constructing search params.  |
-|   | Small size - The only peer dependency is MobX |
-|   | Reactive - subscribe components to the state of a router |
-|   | Simple - declare the route tree using a small syntax set |
+| 😎 | View library agnostic - works with Angular, Vue, React, or your favorite hacked together JS lib |
+| ✨ | Router tree state as a direct function of location (URL) |
+| ⏱ | Built in history - Previous router state can be derived from the current state
+| 🔀 | One way data flow. Location -> Router State tree -> App |
+| 🔗 | Deep linking is trivial - Since state is a function of location, you can use a URL to generate an identical router state tree on any platform |
+| 😱 | Opinionated and automatic URL construction - There is no need to think about matching path names or constructing search params. The URL is simply a namespace for the state tree |
+| 🍬 | Small size - The only peer dependency is MobX and this will likely be removed in V1 release |
+| 🚀 | Reactive - Subscribe to the state of any router in the router state tree |
+| 👌 | Simple - Declare the route tree using a small but expressive syntax set |
 
-If you are like me, and dislike how much ceremony is around installing and setting up a router, then this library may be something that interests you.
+If you dislike how much ceremony is around configuring a router, then this library may be something that interests you!
 
-To get started, just layout the router state tree as a series of nested router objects. The type of nesting is defined using the keywords `Stack`, `Switch`, `Feature`, and `Page`. Upon creation you are returned subscribeable objects that you can use to observe each routers state. For example, you can have a component observe the order state of a modal in a `Stack` or the visibilty state of a scene in a `Switch`.
+## Here's how it works:
+1. Recursive router treats the URL as a namespace for the storage of a state tree which represents all routable state. 
+2. Writing to the URL is handled by the router
+3. Any changes to the URL are reduced over the router state tree
+4. Various types of routers in the router state tree exist. The differences are used to control how their state and their childrens state will get updated when the URL changes.
+5. Once the router state tree has been updated, observers of updated routers are notified.
 
-Simple, expressive, mobx-based routing state management. Routers all the way down
 
-This library aims to make complex, platform-independent, historically influenced, and context dependent routing simple!
+## How do I use this router?
 
-Simple API and small footprint.
+Simple! 
 
-## What makes this routing library different?
+#### 1. Define a router tree representing what the routing logic of your app should look like in terms of `Stack`, `Scene`, `Feature`, and `Data` routers.
+```
+const tree =
+  { name: 'root',
+    routers: {
+      scene: [
+        { name: 'doc' routers: { feature: [{ name: 'doc-nav' }], stack: [{ name: 'doc-intro' }], },
+        { name: 'main', default: { visible: true } }},
+      ],
+    },
+  }
+```
 
-#### Platform independent
+#### 2. Register the router tree
+```
+{ registerRouter } from 'recursive-router';
 
-This library only controls the routeable state, not the logic that renders components, elements, etc...
+const routers = registerRouter(tree);
+```
 
-This ensures platform independence and easy reuse of routing configuration across platform specific apps. For example, you can share the same routing configuration between a React app and it's sibling React Native app.
+#### 3. Observe when the routers have changed via the power of mobx
 
-#### State as a function of URL
+```
+<App>
+ { routers['doc-nav'] && <DocNav /> }
+</App>
+```
 
-Instead of having the routing state update the URL, the routing state is a function of the URL.
+## Router types
 
-Routers / Users / Browser API -> Url -> Routing state -> Component Renderings
+Almost all routeable and dynamic apps can be expressed in terms of the 4 main router types: `Stack`, `Scene`, `Feature`, and `Data`. Router types simply control how information is serialized into the URL and how their children respond when such corresponding information changes. 
 
-The routeable state is a state tree that maps directly from the URL. This state tree is updated as a function of the URL. Updates to the URL call the root router which calls its child routers, which call their child routers, etc... Each router controls how the URL state reduces its state.
-This is a very similar paradigm to redux.
 
-For example, a stack router could react to a URL query param such as `a_order=1&b_order=2`. This URL state could map to a router property called `order`, which could be used in the app to control the `z-index` of multiple modals, `a` and `b` using the `Stack router`. If a user shares the url with a friend, the correctly ordered modals should be rendered. Furthermore, if a user manually edits the URL, the app should respond correctly.
+#### `Stack` router
+`Stack` router is how you would control modals or multiple components that you want to exist at the same time but have some cardinality to them. You can use a stack router to control the immediate ordering of multiple child routers. 
 
-#### Observable Routers
+```
+  <StackRouter>
+  <Modal1><Modal2><Modal3>
+```
 
-Each router returns an observable subject upon initialization. These subjects are used in the app to allow components to react specifically to individual router state changes.
+In this case, a `Stack` router would control which modal was showing. If multiple modals were showing it would control the `ordering` of them via a data key. A url with this type of routing, where only `Modal1` and `Modal2` are visible may look like:  `http://<something>/stack1?modal1=1&modal2=0`
 
-By making routing state a function of the URL, and decoupling the routing state from the logic that controls rendering, it becomes trivial to share routing configuration cross platform, share application state with other users, and provide deep linking.
+##### Methods:
 
-#### Easily extendable
+```
+#show
+#hide
+#toFront
+#toBack
+#forward
+#backward
+```
 
-Each router type has a specific reducer that controls how URL state maps to router state.
+#### `Scene` router
+`Scene` router is how you make sure only one child is showing at a time, if at all. If a child becomes visible, the other children will be hidden.
 
-This library comes with three predefined routers: `Stack router`, `Switch router`, and `Feature router`. These three routers have unique reducers which allow for the creation of most types of complex transitions found in modern web and mobile apps.
+Ex URL: `http://<something>scene1/stack1/scene2?modal1=1&modal2=0`
 
-However, if you wish to write a custom router that controls how the URL reduces its state, all you need to do is extend the base router class and write a custom reducer method.
+##### Methods:
 
-#### Mobile friendly
+```
+#show
+#hide
+```
 
-If routing state is a function of the URL, how do mobile apps, which don't have a URL, work?
+#### `Feature` router
+`Feature` router is similar to a `Stack` router except there is no cardinality among the children. Either some of the children are showing or they are not. This is desireable if you want to control the presence of a feature in a boolean way. Ulitmately, this type of router can allow for more concise URL construction over what a `Stack` router would be capapble of.
 
-Simple! The URL is simply a representation of the routing state tree. A string is still used to represent this state tree. Although a user won't see it directly on native mobile, a state tree is still used to represent routing state, and each routers state is a function of this state tree.
+Ex URL: `http://<something>scene1/stack1/scene2?modal1=1&modal2=0&feature1&feature2`
 
-## Why not just use redux or mobx directly?
+##### Methods:
 
-You could! This library just abstracts away the mapping of URL state to a state tree. Plus, a few other niceties are provided :)
+```
+#show
+#hide
+```
 
-## How is this different from existing libraries?
+#### `Data` router
+`Data` router is how you store arbitrary data in the URL. Arguably, everything could be a `Data` router but you would loose out on all the convenience features that make each router unique and, thus, have to reimplement all the logic that this library is trying to abstract away. A data router primarily handles storing data like redirect URLs or page numbers.
 
-#### Control of rendering
+Ex URL: `http://<something>scene1/stack1/scene2/99?modal1=1&modal2=0&feature1=true` For when we are at page 99 of scene2.
 
-react-router, react-navigation, etc.. are usually implemented as a platform specific router. They abstract away the routing state in favor of directly controlling rendering of components. Although at first pass this might seem more idiomatic (since you can functionally compose routing of components into the app), it makes it much more difficult to do other things - such as sharing code cross platform, interacting with the routing components JSX, modifying the URL outside the routers API, trying to quickly throw a new router into the app without revisiting a relatively large API, etc...
+##### Methods:
 
-such as trying to control specific enter and exit transitions - because adding transition helpers like `react-transition-group` can be non-trivial with these libraries. Providing different enter and exit transitions based on historical routing state opens up a whole world of awesome UX-ness.
+```
+#show
+#hide
+#setData
+```
 
-Note: On React Native, react-navigation uses native components to increase the speed of rendering. Since, this library is only concerned with state, you would need a wrapper component that renders native components if you want this speed boost. However, for a lot of apps it may not be necessary.
+## Things to know:
 
-#### API size
+##### Pathname vs Search params
 
-With existing libraries, complex routing is very hard without digging into a lengthy API. This library has a very simple API.
+A given router will store its information in the pathname if all parent routers up to the root are either `Scene` or `Data` routers.
 
-#### URL construction
 
-Most libraries require you to define a `path` and/or `param`. These are used to match the URL to a router and trigger some routing logic. This library constructs the URL for you automatically, based on how you initialize the routers. This drastically simplifies things. No more Regex matching against a string to control state!
+##### Rehydration of state after visibility change
 
-## Downsides
+All routers will by default rehydrate their branch back to how it was when they were visible. The exception to this is if a child in the branch had their state updated while said router was hidden. This setting can be overridden on a case-by-case basis during the router tree declaration. 
 
-#### URL character limit
 
-The main downside is that some browsers place a limitation on the number of characters that can be found in a URL to about 2,000. However, 2,000 characters should be more than enough for most production applications if you manually set the routers `routing keys` to single characters or turn on `url minimization`.
+## V1 Roadmap
 
-#### Resolving initial state
-
-If the router state is persisted and a user pastes a link that changes the URL, there is a question of whether the link URL or the persisted URL should be used to update the router for the initial state construction. This library takes the opinion that the link URL should be used, but you can configure this on a per router, and context-dependent basis.  
+- Finish playground 
+- Demos of common apps built with `recursive-router`
+- Add `redux` and `react` bindings
+- Clean up code and remove dependency on mobx
+- Add tests
+- Add docs and a better README
