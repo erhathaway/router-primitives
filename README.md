@@ -1,4 +1,27 @@
 # recursive-router
+RouX - The saucy router.
+
+"The delicious carb and fat base for your well-roasted app's gravy."
+
+Simple, Reactive, Platform Agnostic, and Opinionated ROUTING
+
+|   | Roux |
+| - | ------------ |
+|   | View library independent - works with Angular, Vue, React, or your favorite hacked together JS lib |
+|   | Router state as a direct function of location (URL) |
+|   | Lifecycle hooks - easily add a `before` Auth guard to a Router path |
+|   | Extensible - just subclass the main Router and add a new routing method describing how the location reduces to a new router state |
+|   | History is recorded - 1. transition a scene out or in differently depending on what other scene is coming or going 2. trivially persist router history outside the browser session and even send it along while deep linking |
+|   | Deep linking is trivial - since state is a function of location, you can use a URL to generate an identical router state tree on any platform |
+|   | Opinionated and automatic URL construction - There is no need to think about matching path names or constructing search params.  |
+|   | Small size - The only peer dependency is MobX |
+|   | Reactive - subscribe components to the state of a router |
+|   | Simple - declare the route tree using a small syntax set |
+
+If you are like me, and dislike how much ceremony is around installing and setting up a router, then this library may be something that interests you.
+
+To get started, just layout the router state tree as a series of nested router objects. The type of nesting is defined using the keywords `Stack`, `Switch`, `Feature`, and `Page`. Upon creation you are returned subscribeable objects that you can use to observe each routers state. For example, you can have a component observe the order state of a modal in a `Stack` or the visibilty state of a scene in a `Switch`.
+
 Simple, expressive, mobx-based routing state management. Routers all the way down
 
 This library aims to make complex, platform-independent, historically influenced, and context dependent routing simple!
@@ -52,7 +75,9 @@ You could! This library just abstracts away the mapping of URL state to a state 
 
 #### Control of rendering
 
-react-router, react-navigation, etc.. are usually implemented as a platform specific router. They abstract away the routing state in favor of directly controlling rendering of components. Although at first pass this might seem more idiomatic (since you can functionally compose routing of components into the app), it makes it difficult to control specific enter and exit transitions - because adding transition helpers like `react-transition-group` can be non-trivial with these libraries. Providing different enter and exit transitions based on historical routing state opens up a whole world of awesome UX-ness.
+react-router, react-navigation, etc.. are usually implemented as a platform specific router. They abstract away the routing state in favor of directly controlling rendering of components. Although at first pass this might seem more idiomatic (since you can functionally compose routing of components into the app), it makes it much more difficult to do other things - such as sharing code cross platform, interacting with the routing components JSX, modifying the URL outside the routers API, trying to quickly throw a new router into the app without revisiting a relatively large API, etc...
+
+such as trying to control specific enter and exit transitions - because adding transition helpers like `react-transition-group` can be non-trivial with these libraries. Providing different enter and exit transitions based on historical routing state opens up a whole world of awesome UX-ness.
 
 Note: On React Native, react-navigation uses native components to increase the speed of rendering. Since, this library is only concerned with state, you would need a wrapper component that renders native components if you want this speed boost. However, for a lot of apps it may not be necessary.
 

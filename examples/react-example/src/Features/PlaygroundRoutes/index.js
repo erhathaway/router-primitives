@@ -3,7 +3,6 @@ import { inject, observer } from 'mobx-react';
 import { toJS } from 'mobx';
 import Router, { registerRouter, initalizeRouter } from 'recursive-router';
 import styled from 'styled-components';
-import { SteppedLineTo } from 'react-lineto';
 import Graph from './Graph';
 
 import {

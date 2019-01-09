@@ -17,7 +17,6 @@
   "keywords": [
     "mobx",
     "mst",
-    "mobx-state-tree",
     "router",
     "router-state",
     "router-management",
@@ -59,7 +58,6 @@
     "query-string": "^5.1.1"
   },
   "peerDependencies": {
-    "mobx": "^5.0.3",
-    "mobx-state-tree": "^3.2.2"
+    "mobx": "^5.0.3"
   }
 }
