@@ -1,0 +1,15 @@
+{
+  "extends": "airbnb-base",
+  "parser": "babel-eslint",
+  "rules": {
+    "no-underscore-dangle": "off",
+    "consistent-return": "off",
+    "no-throw-literal": "off",
+    "max-len": [2, {"code": 150, "ignoreComments": true}],
+    "no-param-reassign": "off",
+    "lines-between-class-members": "off"
+  },
+  "env": {
+    "browser": true
+  }
+}
