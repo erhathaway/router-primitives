@@ -1,7 +1,3 @@
-# recursive-router
-
-Simple cross platform reactive and declarative routing 
-
 |   | Recursive Router |
 | - | ------------ |
 | 😎 | View library agnostic - works with Angular, Vue, React, or your favorite hacked together JS lib |
