@@ -6,10 +6,10 @@ Most routing libraries ask you to describe how you want the URL to look and then
 |   | Recursive Router |
 | - | ------------ |
 | 😎 | View library agnostic - works with Angular, Vue, React, or your favorite hacked together JS lib |
-| ✨ | Router tree state as a direct function of location (URL) |
+| ✨ | Router state as a direct function of location (URL) |
 | ⏱ | Built in history - Previous router state can be derived from the current state
 | 🔀 | One way data flow. Location -> Router State tree -> App |
-| 🔗 | Deep linking is trivial - Since state is a function of location, you can use a URL to generate an identical router state tree on any platform |
+| 🔗 | Trivial Deep linking - Since state is a function of location, you can use a URL to generate an identical router state tree on any platform |
 | 😱 | Opinionated and automatic URL construction - There is no need to think about matching path names or constructing search params. The URL is simply a namespace for the state tree |
 | 🍬 | Small size - The only peer dependency is MobX and this will likely be removed in V1 release |
 | 🚀 | Reactive - Subscribe to the state of any router in the router state tree |
