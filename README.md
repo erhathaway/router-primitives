@@ -1,6 +1,4 @@
-## Recursive Router 
-
-![Router](router.svg)
+## Recursive Router ![Router](router.svg)
 
 
 
