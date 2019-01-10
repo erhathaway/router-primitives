@@ -1,10 +1,10 @@
-## ![Router](router.png)    Recursive Router     
+## ![Router](multi-router.png)    Recursive Router     
 
 
 
 ##### TL;DR
 
-Most routing libraries ask you to describe how you want the URL to look and then provide some convience features to help map parts of the URL to various logic throught your app. `Recursive Router` asks you to describe the layout of your app in terms of Scenes, Stacks, Features and Data. Once done, everything else is handled for you.
+Most routing libraries ask you to describe how your want the URL to look and then provide some convience features to help map parts of the URL to various logic throught your app. `Recursive Router` asks you to describe the layout of your app in terms of Scenes, Stacks, Features and Data. Once done, everything else is handled for you.
 
 
 |   | Recursive Router |
