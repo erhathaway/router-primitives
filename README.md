@@ -2,6 +2,7 @@
 
 Most routing libraries ask you to describe how you want the URL to look and then provide some convience features to help map parts of the URL to various logic throught your app. `Recursive Router` asks you to describe the layout of your app in terms of Scenes, Stacks, Features and Data. Once done, everything else is handled for you.
 
+
 |   | Recursive Router |
 | - | ------------ |
 | 😎 | View library agnostic - works with Angular, Vue, React, or your favorite hacked together JS lib |
@@ -14,28 +15,58 @@ Most routing libraries ask you to describe how you want the URL to look and then
 | 🚀 | Reactive - Subscribe to the state of any router in the router state tree |
 | 👌 | Simple - Declare the route tree using a small but expressive syntax set |
 
+
 If you dislike how much ceremony is around configuring a router, then this library may be something that interests you!
 
-## Here's how it works:
-1. Recursive router treats the URL as a namespace for the storage of a state tree which represents all routable state. 
-2. Writing to the URL is handled by the router
-3. Any changes to the URL are reduced over the router state tree
-4. Various types of routers in the router state tree exist. The differences are used to control how their state and their childrens state will get updated when the URL changes.
+## How it works:
+
+1. Recursive router treats the URL as a namespace for the storage of a state tree representing `all routable state`™. 
+2. Writing to the URL is handled by the router.
+3. Changes to the URL are reduced over the router state tree
+4. Various types of routers in the router state tree exist. The differences are used to control how their state and their children's state will get updated when the URL changes.
 5. Once the router state tree has been updated, observers of updated routers are notified.
 
 
-## How do I use this router?
+## How to use:
 
-Simple! 
 
-#### 1. Define a router tree representing what the routing logic of your app should look like in terms of `Stack`, `Scene`, `Feature`, and `Data` routers.
+#### 1. Describe the layout of your app in terms of multiple `Stack`, `Scene`, `Feature`, and `Data` routers.
+
+Each router is a javascript object with the keys: `name`, `routers`
+```
+  { 
+    name: 'user',
+    routers: {},
+  }
+```
+
+The `routers` key is used to specify other routers that are children of this router:
+```
+  { 
+    name: 'user',
+    routers: {
+      Scene: [SceneRouer1],
+      Feature: [FeatureRouter1, FeatureRouter2],
+      Stack: [StackRouter1, StackRouter2],
+      Data: [DataRouter1],
+    },
+  }
+```
+
+An example app layout might look like:
+
 ```
 const tree =
   { name: 'root',
     routers: {
       scene: [
-        { name: 'doc' routers: { feature: [{ name: 'doc-nav' }], stack: [{ name: 'doc-intro' }], },
-        { name: 'main', default: { visible: true } }},
+        { name: 'doc' 
+          routers: { 
+            feature: [{ name: 'doc-nav' }], 
+            stack: [{ name: 'doc-intro' }], 
+          }
+        },
+        { name: 'main', default: { visible: true } },
       ],
     },
   }
@@ -52,7 +83,7 @@ const routers = registerRouter(tree);
 
 ```
 <App>
- { routers['doc-nav'] && <DocNav /> }
+ { routers['doc-nav'].visible && <DocNav /> }
 </App>
 ```
 
