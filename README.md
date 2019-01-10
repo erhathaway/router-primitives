@@ -49,10 +49,10 @@ The `routers` key is used to specify other routers that are children of this rou
   { 
     name: 'user',
     routers: {
-      Scene: [SceneRouer1],
-      Feature: [FeatureRouter1, FeatureRouter2],
-      Stack: [StackRouter1, StackRouter2],
-      Data: [DataRouter1],
+      scene: [SceneRouer1],
+      feature: [FeatureRouter1, FeatureRouter2],
+      stack: [StackRouter1, StackRouter2],
+      data: [DataRouter1],
     },
   }
 ```
