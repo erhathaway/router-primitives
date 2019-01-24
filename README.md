@@ -5,17 +5,17 @@ Recursive router is both a library for defining routers and a library to run the
 
 # About
 
-In the context of this library, a router should be thought of as a feature of your application that responds in relation to actions of another feature. Thus, a router is simply an object that has state defined as a function of the state of other routers. 
+In the context of this library, a router should be thought of as a feature of your application that responds to actions of other application features. 
 
 For example, a router can be 'visible' when other routers are 'hidden'. This type of logic is what a scene router uses. Or, as another example, a router can be 'in front of' or 'behind' other routers. This type of logic is what a stack router uses. By defining your application in terms of visual elements like scene or stack (along with feature and data) you can implement variations of complex application routing. 
 
-The goal of this library is to create a common interface which features of an application can consume to control application routing in a declarative way. Furthermore, the goal of this library is to provide declarative ways to perform complex routing based on things like sibling router history, previous historical state, deep linking, serializing of arbitrary data into router path, etc.
+The goal of this library is to create a common interface for features of an application to consume such that they can control application routing in a declarative way. Furthermore, the goal of this library is to also provide declarative ways to perform complex routing, based on things like: sibling router history, previous historical state, deep linking, serialization of arbitrary data into router path, etc.
 
-This library has no dependencies and can be used directly in your app (in a framework agnostic way), as shown below. However, there also exist React bindings that provide a more convient, simple, and declarative way to compose all your routing logic.
+This library is framework agnostic, has no dependencies, and can be used directly in your app. However, there also exist React bindings that provide a more convient, simple, and declarative way to compose all your routing logic.
 
 React bindings: [github.com/erhathaway/recursive-router-react](https://github.com/erhathaway/recursive-router-react)
 
-Finally, this library provides you with a way to create your own routers!
+Finally, should the exiting router types not be enough, this library provides you with a way to create your own routers!
 
 |   | Recursive Router |
 | - | ------------ |
@@ -28,6 +28,8 @@ Finally, this library provides you with a way to create your own routers!
 | 🚀 | Reactive - Subscribe to the state of any router in the router state tree |
 | 👌 | Simple - Declare the route tree using a small but expressive syntax set |
 
+
+TL;DR
 
 If you dislike how much ceremony is around configuring a router and you also frequently find existing routing solutions coming up short, then this library may be something that interests you!
 
