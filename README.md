@@ -5,7 +5,9 @@ Recursive router is both a library for defining routers and a library to run the
 
 # About
 
-A router can be thought of as a feature of your application that responds in relation to another feature. Thus, a router is simply an object that has state defined as a function of the state of other routers. For example, a router can be 'visible' when other routers are 'hidden'. This type of logic is what a scene router uses. Or, as another example, a router can be 'in front of' or 'behind' other routers. This type of logic is what a stack router uses. By defining your application in terms of visual elements like scene or stack (along with feature and data) you can implement variations of complex application routing. 
+In the context of this library, a router should be thought of as a feature of your application that responds in relation to actions of another feature. Thus, a router is simply an object that has state defined as a function of the state of other routers. 
+
+For example, a router can be 'visible' when other routers are 'hidden'. This type of logic is what a scene router uses. Or, as another example, a router can be 'in front of' or 'behind' other routers. This type of logic is what a stack router uses. By defining your application in terms of visual elements like scene or stack (along with feature and data) you can implement variations of complex application routing. 
 
 The goal of this library is to create a common interface which features of an application can consume to control application routing in a declarative way. Furthermore, the goal of this library is to provide declarative ways to perform complex routing based on things like sibling router history, previous historical state, deep linking, serializing of arbitrary data into router path, etc.
 
@@ -104,60 +106,47 @@ Almost all routeable and dynamic apps can be expressed in terms of 4 predefined 
 
 
 ## `Scene` router
-
-**description** | show only one router at a time 
-
-**url access**  | write to both path and search parts of url
-
-**states**      | `visible hidden`
-
-**methods**     | `show hide`
-
-**example url** | `http://<something>/sceneA/2/sceneB`
-
-**example url** | `http://<something>/sceneA?sceneC`
+| | |
+|-|-|
+| **description** | show only one router at a time |
+| **url access**  | write to both path and search parts of url |
+| **states**      | `visible hidden` |
+| **methods**     | `show hide` |
+| **example url** | `http://<something>/sceneA/2/sceneB` |
+|**example url**  | `http://<something>/sceneA?sceneC` |
 
 ## `Stack` router
+| | |
+|-|-|
+| **description** | show multiple routers at a time with an ordering |
+| **url access**  | write to only search parts of url |
+| **states**      | `visible hidden order` |
+| **methods**     | `show hide toFront toBack forward backward` |
+|**example url**  | `http://<something>?modal1=1&modal2=0` |
 
-**description** | show multiple routers at a time with an ordering
-
-**url access**  | write to only search parts of url
-
-**states**      | `visible hidden order`
-
-**methods**     | `show hide toFront toBack forward backward`
-
-**example url** | `http://<something>?modal1=1&modal2=0`
 
 ## `Feature` router
-
-**description** | show multiple routers at a time with no sense of ordering
-
-**url access**  | write to only search parts of url
-
-**states**      | `visible hidden`
-
-**methods**     | `show hide toFront toBack forward backward`
-
-**example url** | `http://<something>?feature1&feature2`
+| | |
+|-|-|
+| **description** | show multiple routers at a time with no sense of ordering |
+| **url access**  | write to only search parts of url |
+| **states**      | `visible hidden` |
+| **methods**     | `show hide` |
+|**example url**  | `http://<something>?feature1&feature2` |
 
 ## `Data` router
-
-**description** | store string of data and allow
-
-**url access**  | write to both path and search parts of url
-
-**states**      | `visible hidden`
-
-**methods**     | `show hide setData`
-
-**example url** | `http://<something>?data1&data2`
-
-**example url** | `http://<something>/data3/?data1&data2`
+| | |
+|-|-|
+| **description** | show a string of data in the url to set things like page number, item ID, and callback urls |
+| **url access**  | write to both path and search parts of url |
+| **states**      | `visible hidden` |
+| **methods**     | `show hide` |
+| **example url** | `http://<something>?data1&data2` |
+|**example url**  | `http://<something>/data3/?data1&data2` |
 
 ## URL Construction 
 
-URL construction is automatic and handled for you. However, if you wish to manipulate how the URL pathname, simply arrange how `Scene` and `Data` routers are composed with respect to one another.
+URL construction is automatic and handled for you. However, if you wish to manipulate how the URL pathname is created, simply arrange how `Scene` and `Data` routers are composed with respect to one another.
 
 The pathname part of a url is the union of router names that make up the longest visibile path of scene and data routers from the root router.
 
@@ -167,7 +156,7 @@ All other router state is stored in the search params part of a url.
 
 ## Rehydration of state after visibility change
 
-All routers will by default rehydrate chidlren routers back to how the chidlren were when the parent state changed. The exception to this is if a child in the branch had their state updated while said router was hidden. This setting can be overridden on a case-by-case basis during the router tree declaration. 
+All routers will by default rehydrate children routers back to how the chidlren were when the parent state changed. The exception to this is if a child in the branch had their state updated while said router was hidden. This setting can be overridden on a case-by-case basis during the router tree declaration. 
 
 
 ## V1 Roadmap
