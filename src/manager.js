@@ -1,5 +1,6 @@
 import DefaultSerializedStateAdapter from './serializedState';
 import DefaultRouterStateAdapater from './routerState';
+import { getGlobalState } from 'mobx/lib/internal';
 
 export default class RouterManager {
   constructor({ routerTree, serializedStateAdapter, routersStateAdapter }) {
@@ -8,14 +9,11 @@ export default class RouterManager {
     this.routers = {};
     this.rootRouter = null;
 
-
     // add initial routers
     this.addRouters(routerTree);
-    // routers have default, config, routers, name, routeKey
-    // add routers from initial routerTree
 
-    // bind serialized tate
-    // bind routerState
+    // subscribe to URL changes and update the router state when this happens
+    this.serializedStateAdapter.subscribeToStateChanges(this.setNewRouterState.bind(this));
   }
 
   /**
@@ -38,7 +36,7 @@ export default class RouterManager {
   }
 
   // subscribe to serializedStateAdapter and call this when changes
-  setNewRouterState(existingPathObj) newPathObj {
+  setNewRouterState(existingPathObj) {
     const newRouterState = this.rootRouter && this.rootRouter.update(newLocationObject); // will recursively call all child routers
     this.routerStateAdapter.setNewRouterState(newRouterState);
   }
@@ -64,15 +62,33 @@ export default class RouterManager {
     this.routers[name] = router; 
   }
 
+  // wrapper around action function
+  createActionFunction(action) {
+    return () => {
+      action();
+    }
+  }
+
   createRouter({ name, routeKey, config, default, type, parent: parentName }) {
     // create new router
     const parent = this.routers[parentName];
-    const newRouter = { name, routeKey, config, type, parent, routers: {} };
+    const newRouter = { 
+      name, 
+      routeKey, 
+      config, 
+      type, 
+      parent, 
+      routers: {},
+      getState: this.routersStateAdapter.createStateGetter(name),
+      subscribe: this.routersStateAdapter.createStateSubscriber(name)  
+    };
     
     // add actions from template
     const template = this.templates[type];
     const { actions } = template;
-    Object.keys(actions).forEach(actionName => newRouter[actionName] = actions[actionName])
+    Object.keys(actions).forEach((actionName) => {
+      newRouter[actionName] = this.createActionFunction(actions[actionName]);
+    })
 
     // add reducer from template
     newRouter['reducer'] = template.reducer;
@@ -100,4 +116,37 @@ export default class RouterManager {
     // delete ref the manager stores
     delete this.routers[name];
   }
+
+  setNewRouterState(location) {
+    const newState = this.calcNewRouterState(location, this.rootRouter);
+    this.routersStateAdapter.setState(newState);
+  }
+
+  calcNewRouterState(location, router, existingState = {}, ctx = {}, newState = {}) {
+    if (!router) { return; }
+
+    // calc new router state from new location and existing state
+    newState[router.name] = router.reduce(location, existingState[router.name], ctx);
+
+    Object.keys(router.routers)
+      .forEach(type => {
+        router.routers[type]
+          .forEach(childRouter => this.calcNewRouterState(location, childRouter, existingState, ctx, newState))
+      });
+
+    return newState;
+  }
 }
+
+
+// manager type implements subscription
+
+// mobx router vs observable router
+// mobx is state store
+// mobx just has state values
+
+// observable router
+// -> getState
+// -> subscribe
+
+// routers have default, config, routers, name, routeKey
