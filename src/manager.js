@@ -1,6 +1,6 @@
 import DefaultSerializedStateAdapter from './serializedState';
 import DefaultRouterStateAdapater from './routerState';
-import { getGlobalState } from 'mobx/lib/internal';
+// import { getGlobalState } from 'mobx/lib/internal';
 
 export default class RouterManager {
   constructor({ routerTree, serializedStateAdapter, routersStateAdapter }) {
@@ -35,15 +35,15 @@ export default class RouterManager {
     });
   }
 
-  // subscribe to serializedStateAdapter and call this when changes
-  setNewRouterState(existingPathObj) {
-    const newRouterState = this.rootRouter && this.rootRouter.update(newLocationObject); // will recursively call all child routers
-    this.routerStateAdapter.setNewRouterState(newRouterState);
-  }
+  // // subscribe to serializedStateAdapter and call this when changes
+  // setNewRouterState(existingPathObj) {
+  //   const newRouterState = this.rootRouter && this.rootRouter.update(newLocationObject); // will recursively call all child routers
+  //   this.routerStateAdapter.setNewRouterState(newRouterState);
+  // }
 
-  addRouter({ name, routeKey, config, default, type, parent: parentName }) {
+  addRouter({ name, routeKey, config, defaults, type, parent: parentName }) {
     // create a router
-    const router = this.createRouter({ name, routeKey, config, default, type, parent: parentName });
+    const router = this.createRouter({ name, routeKey, config, defaults, type, parent: parentName });
     
     if (!parentName && !this.rootRouter) { 
       this.rootRouter = router;
@@ -63,13 +63,25 @@ export default class RouterManager {
   }
 
   // wrapper around action function
-  createActionFunction(action) {
+  createActionWrapperFunction(action) {
     return () => {
       action();
     }
   }
 
-  createRouter({ name, routeKey, config, default, type, parent: parentName }) {
+  // returns a closure with the router ref in scope
+  // uses this ref to map the updated state change of all routers to 1) state of just this router 2) state of sibling routers
+  // these two pices are used to call the subscription function when the router is subscribed to by an observer
+  // observer signature: (routerState, []siblingRouterState) => {}
+  // createStateUpdateWrapperFunction(router) {
+  //   return (fn) => {
+  //     const subscription = (newState) => fn(newState[router.name], router.siblingNames.map(n => newState[n]));
+  //     this.routersStateAdapter.createStateSubscriber(subscription)
+  //   }
+  // }
+
+  // create router :specify
+  createRouter({ name, routeKey, config, defaults, type, parent: parentName }) {
     // create new router
     const parent = this.routers[parentName];
     const newRouter = { 
@@ -79,15 +91,24 @@ export default class RouterManager {
       type, 
       parent, 
       routers: {},
-      getState: this.routersStateAdapter.createStateGetter(name),
-      subscribe: this.routersStateAdapter.createStateSubscriber(name)  
+      // siblingNames - getter
+      // parentName - getter
+      // neighborsNames - getter
+      // getStateByName: getter
+      root: this.rootRouter,
+      getState: this.routersStateAdapter.createRouterStateGetter(name),
+      // getAllRouterState: this.routersStateAdapter.getState,
+      subscribe: this.routersStateAdapter.createRouterStateSubscriber(name),
     };
+
+    newRouter['subscribe'] = this.createStateUpdateWrapperFunction(newRouter);
+
     
     // add actions from template
     const template = this.templates[type];
     const { actions } = template;
     Object.keys(actions).forEach((actionName) => {
-      newRouter[actionName] = this.createActionFunction(actions[actionName]);
+      newRouter[actionName] = this.createActionWrapperFunction(actions[actionName]);
     })
 
     // add reducer from template
@@ -113,10 +134,12 @@ export default class RouterManager {
       routers[type].forEach(childRouter => this.removeRouter(childRouter.name))
     })
 
-    // delete ref the manager stores
+    // delete ref the manager storess
     delete this.routers[name];
   }
 
+  // location -> newState
+  // newState -> routerStates :specify
   setNewRouterState(location) {
     const newState = this.calcNewRouterState(location, this.rootRouter);
     this.routersStateAdapter.setState(newState);

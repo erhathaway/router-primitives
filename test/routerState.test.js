@@ -70,8 +70,79 @@ describe('Router State', () => {
             { visible: true, order: 3 },
           ]
         }
-      })
-    })
+      });
+    });
+
+    test('Can can create individaul router state subscribers', () => {
+      const store = {};
+      const adp = new RouterStateAdapater(store);
+      const ownerObserver = jest.fn();
+      const ownerSubjectSubscriber = adp.createRouterStateSubscriber('owner-router');
+      ownerSubjectSubscriber(ownerObserver);
+
+      const infoObserver = jest.fn();
+      const infoSubjectSubscriber = adp.createRouterStateSubscriber('info-router');
+      infoSubjectSubscriber(infoObserver);
+
+      // set two different router states
+      adp.setState({
+        'owner-router': { visible: true },
+        'info-router': { visible: false }
+      });
+
+      expect(ownerObserver.mock.calls[0][0]).toEqual({ current: { visible: true }, historical: [{}] });
+      expect(infoObserver.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{}] });
+
+      // set one router state
+      adp.setState({
+        'info-router': { visible: true }
+      });
+
+      expect(ownerObserver.mock.calls[0][0]).toEqual({ current: { visible: true }, historical: [{}] });
+      expect(ownerObserver.mock.calls.length).toEqual(1);
+
+      expect(infoObserver.mock.calls[1][0]).toEqual({ current: { visible: true }, historical: [{ visible: false }, {}] });
+      expect(infoObserver.mock.calls.length).toEqual(2);
+
+      // set the other router state
+      adp.setState({
+        'owner-router': { visible: false }
+      });
+
+      expect(ownerObserver.mock.calls[1][0]).toEqual({ current: { visible: false }, historical: [{ visible: true }, {}] });
+      expect(ownerObserver.mock.calls.length).toEqual(2);
+
+      expect(infoObserver.mock.calls[1][0]).toEqual({ current: { visible: true }, historical: [{ visible: false }, {}] });
+      expect(infoObserver.mock.calls.length).toEqual(2);
+    });
+
+    test('Can create individual router state getters', () => {
+      const store = {};
+      const adp = new RouterStateAdapater(store);
+      // const ownerObserver = jest.fn();
+      const ownerGetter = adp.createRouterStateGetter('owner-router');
+      // ownerSubjectSubscriber(ownerObserver);
+
+      // const infoObserver = jest.fn();
+      const infoGetter = adp.createRouterStateGetter('info-router');
+      // infoSubjectSubscriber(infoObserver);
+
+      // set two different router states
+      adp.setState({
+        'owner-router': { visible: true },
+        'info-router': { visible: false }
+      });
+
+      expect(ownerGetter()).toEqual({ current: { visible: true }, historical: [{}] })
+      expect(infoGetter()).toEqual({ current: { visible: false }, historical: [{}] })
+
+      // set one router state
+      adp.setState({
+        'info-router': { visible: true }
+      });
+
+      expect(ownerGetter()).toEqual({ current: { visible: true }, historical: [{}] })
+      expect(infoGetter()).toEqual({ current: { visible: true }, historical: [{ visible: false } ,{}] })
+    });
   });
 });
-

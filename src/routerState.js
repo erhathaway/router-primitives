@@ -33,20 +33,28 @@ export default class DefaultRoutersStateAdapter {
     }, Object.assign(this.getState()));
 
     // call observers of all routers that have had state changes
+    
     hasUpdatedTracker.forEach((routerName) => {
-      (this.observers[routerName] || []).forEach(fn => fn(this.store[routerName]));
+      const observers = this.observers[routerName] || []
+      if (Array.isArray(observers)) {
+        observers.forEach(fn => fn(this.store[routerName]));
+      }
     });
   }
 
-  createStateGetter(routerName) {
+  createRouterStateGetter(routerName) {
     return () => {
       return this.store[routerName];
     };
   }
 
-  createStateSubscriber(routerName) {
+  createRouterStateSubscriber(routerName) {
     return (fn) => {
-      this.observers[routerName] = (this.observers[routerName] || []).push(fn)
+      if (Array.isArray(this.observers[routerName])) {
+        this.observers[routerName].push(fn)
+      } else {
+        this.observers[routerName] = [fn]
+      }
     }
   }
 
