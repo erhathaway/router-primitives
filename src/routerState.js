@@ -1,8 +1,8 @@
-export const defaultStore = {};
+// export const defaultStore = {};
 
 export default class DefaultRoutersStateAdapter {
   constructor(store, config = { historySize: 2 }) {
-    this.store = store || defaultStore;
+    this.store = store || {};
     this.config = config;
     this.observers = {}; // key is routerName
   }
