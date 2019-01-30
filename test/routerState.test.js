@@ -6,7 +6,6 @@ describe('Router State', () => {
     test('Uses a default object store', () => {
       const adapter = new RouterStateAdapater();
       expect(adapter.getState()).toEqual({});
-      // expect(adapter.getState()).not.toBe(defaultStore);
     });
 
     test('Can write to store', () => {

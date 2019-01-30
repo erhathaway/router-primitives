@@ -7,7 +7,6 @@ describe('Serialized State', () => {
 
     test('Uses a default string store', () => {
       expect(adapter.getState()).toBe('');
-      // expect(adapter.getState()).not.toBe(defaultStore);
     });
 
     test('Can write to store', () => {
