@@ -1,5 +1,13 @@
-const deserializer = (serializedLocation) => {
-  return { pathname: [], serach: {}, options: {} };
+import queryString from 'query-string';
+
+const deserializer = (serializedLocation = '') => {
+  // return { pathname: [], search: {}, options: {} };
+  const locationStringParts = serializedLocation.split('?');
+
+  const search = queryString.parse(locationStringParts[1], { decode: true, arrayFormat: 'bracket' });
+  const pathname = locationStringParts[0].split('/');
+
+  return { search, pathname, options: {} };
 };
 
 export default deserializer;

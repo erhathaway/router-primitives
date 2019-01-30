@@ -128,7 +128,8 @@ describe('Router Manager', () => {
         manager.routers['user'].subscribe(secondUserObserverFn);
         manager.routers['root'].subscribe(rootObserverFn);
 
-        manager.serializedStateStore.setState('new state!');
+        const location = { pathname: ['test'], search: { param1: '2', param2: 'testparam'}, options: {}}
+        manager.serializedStateStore.setState(location);
 
         expect(userObserverFn.mock.calls[0][0]).toEqual({ current: {}, historical: [{ visible: false, order: 1 }, {}] });
         expect(userObserverFn.mock.calls.length).toEqual(1);
