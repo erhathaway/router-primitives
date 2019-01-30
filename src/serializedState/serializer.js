@@ -10,11 +10,14 @@ import queryString from 'query-string';
 //     }
 //   }
 
-const serializer = (newLocation, oldLocation) => {
-  const { pathname: newPathname, search: newSearchObj } = newLocation;
+const serializer = (newLocation, oldLocation = {}) => {
+  const newPathname = newLocation.pathname || [];
+  const newSearchObj = newLocation.search || {};
+  
   // const { search: oldSearchObj } = oldLocation;
-  // const combinedSearchObj = { ...oldSearchObj, ...newSearchObj };
-  const combinedSearchObj = { ...newSearchObj };
+  const oldSearchObj = oldLocation.search || {};
+  const combinedSearchObj = { ...oldSearchObj, ...newSearchObj };
+  // const combinedSearchObj = { ...newSearchObj };
   
   Object.keys(combinedSearchObj).forEach(key => (combinedSearchObj[key] == null) && delete combinedSearchObj[key]);
 
@@ -22,7 +25,11 @@ const serializer = (newLocation, oldLocation) => {
   const pathname = newPathname.join('/');
   const pathnameString = pathname === '' ? '/' : pathname;
 
-  return { location: `${pathnameString}?${searchString}`, options: newLocation.options };
+  let location;
+  if (searchString === '') { location = pathnameString; }
+  else { location = `${pathnameString}?${searchString}`; }
+
+  return { location, options: newLocation.options };
 };
 
 export default serializer;

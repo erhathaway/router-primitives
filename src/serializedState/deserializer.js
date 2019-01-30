@@ -5,7 +5,7 @@ const deserializer = (serializedLocation = '') => {
   const locationStringParts = serializedLocation.split('?');
 
   const search = queryString.parse(locationStringParts[1], { decode: true, arrayFormat: 'bracket' });
-  const pathname = locationStringParts[0].split('/');
+  const pathname = locationStringParts[0].split('/').filter(s => s !== '');
 
   return { search, pathname, options: {} };
 };

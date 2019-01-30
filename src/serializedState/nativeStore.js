@@ -24,8 +24,9 @@ export default class DefaultSerializedStateStore {
 
   // unserialized state = { pathname: [], search: {}, options: {} }
   // options = { updateHistory }
-  setState(unserializedState, options = {}) { 
-    const { location: newState, options: serializerOptions } = this.config.serializer(unserializedState);
+  setState(unserializedState, options = {}) {
+    const oldUnserializedState = this.getState();
+    const { location: newState, options: serializerOptions } = this.config.serializer(unserializedState, oldUnserializedState);
     // this.state = newState;
 
     if (options.updateHistory !== false) {
