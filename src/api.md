@@ -133,6 +133,8 @@ router tree state to store
 
 mamanger subscribes to store
 -> iterates over all updates via the tree shape, notifying of updates
+each router calls siblings
+or returns the location object to end traversal
 
 
 
@@ -173,3 +175,21 @@ SerializedStateStore - url location
 SerializedStateAdapter
 RouterStateStore - router location
 RouterStateAdapter
+
+
+create-rotuer -> router
+
+types extend router
+
+router
+handles actions with methdods
+
+serializedState
+  -> adapter
+  -> serializer
+  -> deserailzer
+  -> index.js exports default adapter, { serializer, deseralizer }
+
+
+routerState
+  -> adapter

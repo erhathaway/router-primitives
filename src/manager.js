@@ -1,11 +1,12 @@
-import DefaultSerializedStateStore from './serializedState';
+import { NativeSerializedStore } from './serializedState';
 import DefaultRouterStateStore from './routerState';
 
 const defaultReducer = () => ({}); // TODO REMOVE and default to Scene template
+const defaultAction = () => ({ pathname: 'user1', search: ['hello', 'world'] }); // TODO REMOVE and default to Scene template
 
 export default class RouterManager {
   constructor({ routerTree, serializedStateStore, routerStateStore } = {}) {
-    this.serializedStateStore = serializedStateStore || new DefaultSerializedStateStore();
+    this.serializedStateStore = serializedStateStore || new NativeSerializedStore();
     this.routerStateStore = routerStateStore || new DefaultRouterStateStore();
     this.routers = {};
     this.rootRouter = null;
@@ -18,6 +19,12 @@ export default class RouterManager {
 
     // subscribe to URL changes and update the router state when this happens
     this.serializedStateStore.subscribeToStateChanges(this.setNewRouterState.bind(this));
+
+
+    // childStateCache is used to store the state of a child tree of routers. 
+    // Thus, when a router hides it can perseve the child state for proper rehydration
+    // { [name] = this.state } // the current state
+    this.childStateCache = {};
   }
 
   /**
@@ -55,9 +62,10 @@ export default class RouterManager {
     } else if (!parentName && this.rootRouter) {
       throw new Error('Root router already exists. You likely forgot to specify a parentName');
     } else {
-      // console.log(name)
       // fetch the parent, and assign a ref of it to this router
       const parent = this.routers[parentName];
+
+      // TODO migrate code over to use <router>.addChildRouter method instead
       router.parent = parent;
   
       // add ref of new router to the parent
@@ -72,7 +80,8 @@ export default class RouterManager {
   // wrapper around action function
   createActionWrapperFunction(action) {
     return () => {
-      action();
+      const newLocation = action();
+      this.serializedStateStore.setState(newLocation);
     }
   }
 
@@ -88,12 +97,18 @@ export default class RouterManager {
   // }
 
   // create router :specify
-  createRouter({ name, routeKey, config, defaults, type, parentName }) {
+  // config = {
+  //   routeKey: 'overrides name
+  //   mutateExistingLocation: boolean, default: false
+  //   cacheState: boolean, default: null, is equal to true
+  // }
+  createRouter({ name, config, defaults, type, parentName }) {
     // create new router
+
     const parent = this.routers[parentName];
     const newRouter = {
       name,
-      routeKey,
+      // routeKey,
       config,
       type,
       parent,
@@ -106,10 +121,12 @@ export default class RouterManager {
       getState: this.routerStateStore.createRouterStateGetter(name),
       // getAllRouterState: this.routerStateStore.getState,
       subscribe: this.routerStateStore.createRouterStateSubscriber(name),
+      
+      childCacheStore: this.childCacheStore,
     };
-
+    
     // newRouter['subscribe'] = this.createStateUpdateWrapperFunction(newRouter);
-
+    
     
     // add actions from template
     const template = this.templates[type] || { reducer: defaultReducer, actions: {} };
@@ -117,6 +134,9 @@ export default class RouterManager {
     Object.keys(actions).forEach((actionName) => {
       newRouter[actionName] = this.createActionWrapperFunction(actions[actionName]);
     });
+    
+    // gets the value to be used for the cache
+    // newRouter['getCacheValue']: this.templates.getCacheValue;
 
     // add reducer from template
     newRouter['reducer'] = template.reducer;
@@ -141,7 +161,7 @@ export default class RouterManager {
       routers[childType].forEach(childRouter => this.removeRouter(childRouter.name));
     });
 
-    // delete ref the manager storess
+    // delete ref the manager stores
     delete this.routers[name];
   }
 

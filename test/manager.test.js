@@ -1,5 +1,5 @@
 import Manager from '../src/manager';
-import SerializedStore from '../src/serializedState';
+import { NativeSerializedStore } from '../src/serializedState';
 import RouterStore from '../src/routerState';
 
 describe('Router Manager', () => {
@@ -22,7 +22,7 @@ describe('Router Manager', () => {
     test('defaults to serialized and router stores', () => {
       const manager = new Manager();
       
-      expect(manager.serializedStateStore).toBeInstanceOf(SerializedStore);
+      expect(manager.serializedStateStore).toBeInstanceOf(NativeSerializedStore);
       expect(manager.routerStateStore).toBeInstanceOf(RouterStore);
     });
 

@@ -1,9 +1,9 @@
-import SerializedStateAdapter, { defaultStore } from '../src/serializedState';
+import { NativeSerializedStore } from '../src/serializedState';
 
 
 describe('Serialized State', () => {
   describe('Adapter', () => {
-    const adapter = new SerializedStateAdapter();
+    const adapter = new NativeSerializedStore();
 
     test('Uses a default string store', () => {
       expect(adapter.getState()).toBe('');
