@@ -161,13 +161,75 @@ Almost all routeable and dynamic apps can be expressed in terms of 4 predefined 
 
 ## URL Construction 
 
-URL construction is automatic and handled for you. However, if you wish to manipulate how the URL pathname is created, simply arrange how `Scene` and `Data` routers are composed with respect to one another.
+URL construction is automatically handled for you based on the router hierarchy you define.
 
-The pathname part of a url is the union of router names that make up the longest visibile path of scene and data routers from the root router.
+#### Pathname
+The pathname part of a url is the union of router names that make up the longest visibile path of `Scene` and `Data` routers from the root router.
 
-All other router state is stored in the search params part of a url.
+If there are both `Scene` and `Data` routers as siblings in a path, the `Scene` router is always used for the pathname unless the `Data` router explicitly sets the config option `isPathRouter = true`
 
+```
+{
+  name="my-router",
+  routers: <Routers Obj>,
+  config: { isPathRouter: true }
+}
+```
 
+Using the React bindings as an example, this might look like:
+
+```
+<Router type="scene" name="user">
+  <Router type="feature" name="admin-tray" />
+  <Router type="data" name="user-id">
+    <Router type="data" name="content-date" isPathRouter={true} />
+      <Router type="scene" name="content-overview" />
+      <Router type="scene" name="content-details" />
+    </Router>
+    <Router type="scene" name="user-options" />
+  </Router>
+<Router>
+```
+
+From this, the viable paths are:
+
+`/scene`
+`/scene?admin-tray=true`
+
+`/scene/:user-id`
+`/scene/:user-id?admin-tray=true`
+
+`/scene/:user-id/:content-date`
+`/scene/:user-id/:content-date?admin-tray=true`
+`/scene/:user-id/:content-date?admin-tray=true&user-options=true`
+`/scene/:user-id/:content-date?user-options=true`
+
+`/scene/:user-id/:content-date/content-overview`
+`/scene/:user-id/:content-date/content-overview?admin-tray=true`
+`/scene/:user-id/:content-date/content-overview?admin-tray=true&user-options=true`
+`/scene/:user-id/:content-date/content-overview?user-options=true`
+
+`/scene/:user-id/:content-date/content-details`
+`/scene/:user-id/:content-date/content-details?admin-tray=true`
+`/scene/:user-id/:content-date/content-details?admin-tray=true&user-options=true`
+`/scene/:user-id/:content-date/content-details?user-options=true`
+
+#### Route Key
+The `name` that is used in a pathname and the `key` that is used as a query param can be explicitly controlled by setting the `routeKey` parameter:
+
+```
+{
+  name="my-router",
+  routers: <Routers Obj>,
+  routeKey: 'a',
+}
+```
+
+Using the React-bindings, this would look like:
+
+```
+<Router name="my-router" type="scene" routeKey="a" />
+```
 
 ## Rehydration of state after visibility change
 
