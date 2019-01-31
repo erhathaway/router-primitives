@@ -166,6 +166,7 @@ Function: show only one router at a time
 ## `Stack` router
 
 Function: show multiple routers at a time with an ordering
+
 | | |
 |-|-|
 | **states**      | `visible order` |
@@ -188,6 +189,7 @@ Function: show multiple routers at a time with no sense of ordering
 ## `Data` router
 
 Function: show a string of data in the url to set things like page number, item ID, and callback urls 
+
 | | |
 |-|-|
 | **states**      | `visible` |
