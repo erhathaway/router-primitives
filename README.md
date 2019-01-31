@@ -163,6 +163,8 @@ Almost all routeable and dynamic apps can be expressed in terms of 4 predefined 
 
 URL construction is automatically handled for you based on the router hierarchy you define.
 
+`https://github.com/<pathname-part1><pathname-part2>?<query-params>`
+
 #### Pathname
 The pathname part of a url is the union of router names that make up the longest visibile path of `Scene` and `Data` routers from the root router.
 
@@ -193,49 +195,47 @@ Using the React bindings as an example, this might look like:
 
 From this, the viable paths are:
 
-`/scene`
+```
+/scene
+/scene?admin-tray=true
+```
+```
+/scene/:user-id
+/scene/:user-id?admin-tray=true
+```
+```
+/scene/:user-id/:content-date
+/scene/:user-id/:content-date?admin-tray=true
+/scene/:user-id/:content-date?admin-tray=true&user-options=true
+/scene/:user-id/:content-date?user-options=true
+```
+```
+/scene/:user-id/:content-date/content-overview
+/scene/:user-id/:content-date/content-overview?admin-tray=true
+/scene/:user-id/:content-date/content-overview?admin-tray=true&user-options=true
+/scene/:user-id/:content-date/content-overview?user-options=true
+```
+```
+/scene/:user-id/:content-date/content-details
+/scene/:user-id/:content-date/content-details?admin-tray=true
+/scene/:user-id/:content-date/content-details?admin-tray=true&user-options=true
+/scene/:user-id/:content-date/content-details?user-options=true
+```
 
-`/scene?admin-tray=true`
-
---
-
-`/scene/:user-id`
-
-`/scene/:user-id?admin-tray=true`
-
---
-
-`/scene/:user-id/:content-date`
-
-`/scene/:user-id/:content-date?admin-tray=true`
-
-`/scene/:user-id/:content-date?admin-tray=true&user-options=true`
-
-`/scene/:user-id/:content-date?user-options=true`
-
---
-
-`/scene/:user-id/:content-date/content-overview`
-
-`/scene/:user-id/:content-date/content-overview?admin-tray=true`
-
-`/scene/:user-id/:content-date/content-overview?admin-tray=true&user-options=true`
-
-`/scene/:user-id/:content-date/content-overview?user-options=true`
-
---
-
-`/scene/:user-id/:content-date/content-details`
-
-`/scene/:user-id/:content-date/content-details?admin-tray=true`
-
-`/scene/:user-id/:content-date/content-details?admin-tray=true&user-options=true`
-
-`/scene/:user-id/:content-date/content-details?user-options=true`
-
---
 
 #### Route Key
+
+Setting route keys allow you to minimize the characters used in the serialized state (the URL):
+
+Transfrom:
+
+`https://github.com/scene1RouteKey/scene2RouteKey?queryRouteKey1=1&queryRouteKey2=some-random-value`
+
+to
+
+`https://github.com/a/b?c=1&d=some-random-value`
+
+
 The `name` that is used in a pathname and the `key` that is used as a query param can be explicitly controlled by setting the `routeKey` parameter:
 
 ```
