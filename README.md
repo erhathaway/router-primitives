@@ -7,16 +7,16 @@ With Recursive, instead of defining how the URL is constructed you **define the 
 
 Bindings exist for Mobx, Redux, and [React](https://github.com/erhathaway/recursive-router-react).
 
-### Documentation
+# Intro
 
-- [Intro](#intro)
+#### Documentation Location
+
+- **[Intro](#intro)** :point_left:
 - [API](#api)
 - [Usage](#usage)
 - [Configuration](#configuration)
 - [Architecture](#architecture)
 - [Extensions](#extensions)
-
-# Intro
 
 ## About
 
@@ -79,6 +79,15 @@ Should the existing router types not be enough, this library provides you with a
 If you dislike how much ceremony is around configuring a router and you also frequently find existing routing solutions coming up short, then this library may be something that interests you!
 
 # API
+
+#### Documentation Location
+
+- [Intro](#intro)
+- **[API](#api)** :point_left:
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Architecture](#architecture)
+- [Extensions](#extensions)
 
 ## Router Tree Declaration
 
@@ -165,6 +174,15 @@ Function: show a string of data in the url to set things like page number, item 
 
 # Usage
 
+#### Documentation Location
+
+- [Intro](#intro)
+- [API](#api)
+- **[Usage](#usage)** :point_left:
+- [Configuration](#configuration)
+- [Architecture](#architecture)
+- [Extensions](#extensions)
+
 ## Example (with Mobx)
 
 ### 1. Describe the layout of your app in terms of multiple `Stack`, `Scene`, `Feature`, and `Data` routers.
@@ -238,6 +256,15 @@ const routers = registerRouter(tree);
 ```
 
 # Configuration 
+
+#### Documentation Location
+
+- [Intro](#intro) 
+- [API](#api)
+- [Usage](#usage)
+- **[Configuration](#configuration)** :point_left:
+- [Architecture](#architecture)
+- [Extensions](#extensions)
 
 ## URL Construction 
 
