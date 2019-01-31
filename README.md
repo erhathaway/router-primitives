@@ -51,7 +51,7 @@ If you dislike how much ceremony is around configuring a router and you also fre
 | `type` | The router type | YES | |
 | `routeKey` | The keys used to construct the URL (location) | NO | defaults to the `name` if none is specified |
 | `routers` | Child routers of this router | NO | |
-| `options.isPathRouter` | Normally only scene routers make up the pathname. This sets a router to be be part of the pathrouter instead of anyother neighboring routers. If there are scene neighbors their state will now be stored in the query params | NO | |
+| `options.isPathRouter` | If should forceibly be part of pathname. See [pathname](#pathname) | NO | False |
 
 ## Router Object
 
