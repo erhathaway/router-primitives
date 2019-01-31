@@ -99,12 +99,18 @@ const routers = registerRouter(tree);
 ```
 <App>
   <NavBar>
-    <Button onClick={routers['user'].show}>
-    <Button onClick={routers['docs'].show}>
+    <Button onClick={routers['user'].show} />
+    <Button onClick={routers['docs'].show} />
   </NavBar>
   <Scenes>
-    { routers['docs'].visible && <Docs /> }
-    { routers['user'].visible && <User /> }
+    <Docs visible={routers['docs'].visible}>
+      <DocsNav visible={routers['doc-nav'].visible} onClickHelp={routers['doc-help'].show} />
+      <MainContainer>
+        <DocsIntro visible={routers['doc-intro'].visible} />
+      </MainContainer>
+      <DocsHelp visible={routers['doc-help'].visible} />
+    </Docs>
+    <User visible={routers['user'].visible} />
   </Scenes>
 </App>
 ```
