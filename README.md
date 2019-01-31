@@ -194,25 +194,46 @@ Using the React bindings as an example, this might look like:
 From this, the viable paths are:
 
 `/scene`
+
 `/scene?admin-tray=true`
 
+--
+
 `/scene/:user-id`
+
 `/scene/:user-id?admin-tray=true`
 
+--
+
 `/scene/:user-id/:content-date`
+
 `/scene/:user-id/:content-date?admin-tray=true`
+
 `/scene/:user-id/:content-date?admin-tray=true&user-options=true`
+
 `/scene/:user-id/:content-date?user-options=true`
 
+--
+
 `/scene/:user-id/:content-date/content-overview`
+
 `/scene/:user-id/:content-date/content-overview?admin-tray=true`
+
 `/scene/:user-id/:content-date/content-overview?admin-tray=true&user-options=true`
+
 `/scene/:user-id/:content-date/content-overview?user-options=true`
 
+--
+
 `/scene/:user-id/:content-date/content-details`
+
 `/scene/:user-id/:content-date/content-details?admin-tray=true`
+
 `/scene/:user-id/:content-date/content-details?admin-tray=true&user-options=true`
+
 `/scene/:user-id/:content-date/content-details?user-options=true`
+
+--
 
 #### Route Key
 The `name` that is used in a pathname and the `key` that is used as a query param can be explicitly controlled by setting the `routeKey` parameter:
