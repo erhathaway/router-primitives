@@ -32,7 +32,7 @@ The goal of this library is to create a common interface for components of an ap
 
 Furthermore, the goal of this library is to also provide declarative ways to perform complex routing, based on things like: sibling router state, neighborhood router state, historical state, deep linking, serialization of arbitrary data into router path, etc. 
 
-Recurisve is modular, extensible, and  framework agnostic. Thus, it can work directly in your app or you can use bindings for Mobx, Redux, and/or React. 
+Recurisve tries to be modular, extensible, and  framework agnostic. Thus, it can work directly in your app or you can use bindings for Mobx, Redux, and/or React. 
 
 #### Bindings
 
@@ -41,8 +41,7 @@ React bindings: [github.com/erhathaway/recursive-router-react](https://github.co
 - Wrap components in `Routers` to get access to router methods and state via props passing and functions-as-children (FAC)
 
 Redux bindings: [github.com/erhathaway/recursive-router-redux](https://github.com/erhathaway/recursive-router-redux)
-- Dispatch URL changes (serialized state) through the redux bus
-- Dispatch Router state changes through the redux bus
+- Dispatch router state changes through the redux bus
 - Persist router state in the redux store
 
 Mobx bindings: [github.com/erhathaway/recursive-router-mobx](https://github.com/erhathaway/recursive-router-mobx)
