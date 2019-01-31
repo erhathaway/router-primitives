@@ -59,13 +59,34 @@ export default class DefaultSerializedStateStore {
   subscribeToStateChanges(fn) { this.observers.push(fn); }
 
   back() {
-    if (this.currentLocationInHistory === 0) { return; }
-    if (this.currentLocationInHistory > 0) { this.currentLocationInHistory -= 1; }
-    this.setState(this.getState(), { updateHistory: false });
+    this.go(-1);
   }
+  
   forward() {
-    if (this.currentLocationInHistory === 0) { return; }
-    if (this.currentLocationInHistory > 0) { this.currentLocationInHistory -= 1; }
-    this.setState(this.getState(), { updateHistory: false });
+    this.go(1);
   }
+
+  go(historyChange) {
+    if (historyChange === 0) {
+      throw new Error('No history size change specified')      
+    }
+
+    // calcuate request history location
+    const newLocation = this.currentLocationInHistory - historyChange;
+
+    // if within the range of recorded history, set as the new history location
+    if (newLocation + 1 <= this.history.length && newLocation >= 0) {
+      this.currentLocationInHistory = newLocation;
+    
+    // if too far in the future, set as the most recent history
+    } else if (newLocation + 1 <= this.history.length) {
+      this.currentLocationInHistory = 0;
+
+    // if too far in the past, set as the last recorded history
+    } else if (newLocation >= 0) {
+      this.currentLocationInHistory = this.history.length - 1;
+    }
+
+    this.setState(this.getState(), { updateHistory: false });
+  } 
 }

@@ -2,8 +2,8 @@ import { NativeSerializedStore } from '../../src/serializedState';
 
 
 describe('Native Serialized State', () => {
-  describe('Adapter', () => {
-    test('Uses a default string store', () => {
+  describe('Store state', () => {
+    test('Uses a default string for state', () => {
       const adapter = new NativeSerializedStore();
       expect(adapter.getState()).toEqual({ pathname: [], search: {}, options: {} });
     });
@@ -54,5 +54,117 @@ describe('Native Serialized State', () => {
       expect(subscription.mock.calls[1][0]).toEqual({ pathname: ['there'], search: { param1: '3', param2: 'testparam'}, options: {}});
     });
   });
+
+  describe('Store history', () => {
+    const locationOne = { pathname: ['home'], search: {}, options: {} };
+    const locationTwo = { pathname: ['user', '22'], search: { showNav: 'true' }, options: {}};
+    const locationThree = { pathname: ['docs', 'about'], search: { showNav: undefined, docId: '2' }, options: {}};
+    const locationFour = { pathname: ['admin'], search: { queryMenu: 'open', docId: undefined }, options: {}};
+    
+    it('Can move backward in history', () => {
+      const adapter = new NativeSerializedStore();
+      const subscription = jest.fn();
+      adapter.subscribeToStateChanges(subscription);
+  
+  
+      adapter.setState(locationOne);
+      adapter.setState(locationTwo);
+      adapter.setState(locationThree);
+      adapter.setState(locationFour);
+
+      expect(subscription.mock.calls[3][0]).toEqual(locationFour);
+      expect(adapter.history.length).toEqual(4);
+
+      adapter.back();
+
+      expect(subscription.mock.calls[4][0]).toEqual(locationThree);
+      expect(adapter.history.length).toEqual(4);
+
+      adapter.back();
+      
+      expect(subscription.mock.calls[5][0]).toEqual(locationTwo);
+      expect(adapter.history.length).toEqual(4);
+    });
+
+    it('Can jump in history', () => {
+      const adapter = new NativeSerializedStore();
+      const subscription = jest.fn();
+      adapter.subscribeToStateChanges(subscription);
+  
+  
+      adapter.setState(locationOne);
+      adapter.setState(locationTwo);
+      adapter.setState(locationThree);
+      adapter.setState(locationFour);
+
+      expect(subscription.mock.calls[3][0]).toEqual(locationFour);
+      expect(adapter.history.length).toEqual(4);
+
+      adapter.go(-3);
+
+      expect(subscription.mock.calls[4][0]).toEqual(locationOne);
+      expect(adapter.history.length).toEqual(4);
+
+      adapter.go(2);
+
+      expect(subscription.mock.calls[5][0]).toEqual(locationThree);
+      expect(adapter.history.length).toEqual(4);
+    });
+
+    it('Moving is bounded to history scope', () => {
+      const adapter = new NativeSerializedStore();
+      const subscription = jest.fn();
+      adapter.subscribeToStateChanges(subscription);
+  
+  
+      adapter.setState(locationOne);
+      adapter.setState(locationTwo);
+      adapter.setState(locationThree);
+      adapter.setState(locationFour);
+
+      expect(subscription.mock.calls[3][0]).toEqual(locationFour);
+      expect(adapter.history.length).toEqual(4);
+
+      adapter.go(-30); // go too far in the past
+
+      expect(subscription.mock.calls[4][0]).toEqual(locationOne);
+      expect(adapter.history.length).toEqual(4);
+
+      adapter.go(20); // go too far in the future
+
+      expect(subscription.mock.calls[5][0]).toEqual(locationFour);
+      expect(adapter.history.length).toEqual(4);
+    });
+
+    it('Can move forward in history', () => {
+      const adapter = new NativeSerializedStore();
+      const subscription = jest.fn();
+      adapter.subscribeToStateChanges(subscription);
+  
+  
+      adapter.setState(locationOne);
+      adapter.setState(locationTwo);
+      adapter.setState(locationThree);
+      adapter.setState(locationFour);
+
+      expect(subscription.mock.calls[3][0]).toEqual(locationFour);
+      expect(adapter.history.length).toEqual(4);
+
+      adapter.go(-30); // go to farthest recorded history
+
+      expect(subscription.mock.calls[4][0]).toEqual(locationOne);
+      expect(adapter.history.length).toEqual(4);
+
+      adapter.forward(); // forward 1 in history
+
+      expect(subscription.mock.calls[5][0]).toEqual(locationTwo);
+      expect(adapter.history.length).toEqual(4);
+
+      adapter.forward(); // forward 1 in history
+
+      expect(subscription.mock.calls[6][0]).toEqual(locationThree);
+      expect(adapter.history.length).toEqual(4);
+    });
+  })
 });
 
