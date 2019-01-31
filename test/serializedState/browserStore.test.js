@@ -1,5 +1,13 @@
 import { BrowserSerializedStore } from '../../src/serializedState';
 
+beforeAll(() => {
+  global.window = { history: {}, location: {}, setInterval: jest.fn() };
+});
+
+afterAll(() => {
+  delete global.window;
+});
+
 describe('Browser Serialized State', () => {
   describe('Store', () => {
     test('Setting state can mutate history ', () => {
@@ -11,6 +19,7 @@ describe('Browser Serialized State', () => {
 
       const location = { pathname: ['test'], search: { param1: '2', param2: 'testparam' }, options: {}}
 
+      expect(window.history.pushState).not.toBeCalled();
       store.setState(location);
       expect(window.history.pushState).toBeCalled();
     });
@@ -24,6 +33,7 @@ describe('Browser Serialized State', () => {
 
       const location = { pathname: ['test'], search: { param1: '2', param2: 'testparam' }, options: { replaceLocation: true }}
 
+      expect(window.history.replaceState).not.toBeCalled();
       store.setState(location);
       expect(window.history.replaceState).toBeCalled();
     });
@@ -93,6 +103,7 @@ describe('Browser Serialized State', () => {
   });
 
   describe('History', () => {
+    global.window = {}; // TODO Figure out why this is required?? The beforeAll should take care of it, but doesn't
     window.setInterval = jest.fn();
     // window.history.pushState = jest.fn();
     // window.history.replaceState = jest.fn();
@@ -100,18 +111,24 @@ describe('Browser Serialized State', () => {
     
     it('Can move forward', () => {
       window.history.forward = jest.fn();
+
+      expect(window.history.forward).not.toBeCalled();
       store.forward();
       expect(window.history.forward).toBeCalled();
     });
 
     it('Can move backward', () => {
       window.history.back = jest.fn();
+
+      expect(window.history.back).not.toBeCalled();
       store.back();
       expect(window.history.back).toBeCalled();
     });
 
     it('Can move to a specific point in history', () => {
       window.history.go = jest.fn();
+
+      expect(window.history.go).not.toBeCalledWith(-1);
       store.go(-1);
       expect(window.history.go).toBeCalledWith(-1);
     });

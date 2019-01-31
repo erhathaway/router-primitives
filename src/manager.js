@@ -1,4 +1,4 @@
-import { NativeSerializedStore } from './serializedState';
+import { NativeSerializedStore, BrowserSerializedStore } from './serializedState';
 import DefaultRouterStateStore from './routerState';
 
 const defaultReducer = () => ({}); // TODO REMOVE and default to Scene template
@@ -6,10 +6,16 @@ const defaultAction = () => ({ pathname: 'user1', search: ['hello', 'world'] });
 
 export default class RouterManager {
   constructor({ routerTree, serializedStateStore, routerStateStore } = {}) {
-    this.serializedStateStore = serializedStateStore || new NativeSerializedStore();
     this.routerStateStore = routerStateStore || new DefaultRouterStateStore();
     this.routers = {};
     this.rootRouter = null;
+
+    // check if window 
+    if (typeof window === 'undefined') {
+      this.serializedStateStore = serializedStateStore || new NativeSerializedStore();
+    } else {
+      this.serializedStateStore = serializedStateStore || new BrowserSerializedStore();
+    }
 
     // router types
     this.templates = {};

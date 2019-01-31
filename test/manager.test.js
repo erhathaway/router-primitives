@@ -1,5 +1,5 @@
 import Manager from '../src/manager';
-import { NativeSerializedStore } from '../src/serializedState';
+import { NativeSerializedStore, BrowserSerializedStore } from '../src/serializedState';
 import RouterStore from '../src/routerState';
 
 describe('Router Manager', () => {
@@ -19,7 +19,7 @@ describe('Router Manager', () => {
   };
 
   describe('Initialization', () => {
-    test('defaults to serialized and router stores', () => {
+    test('Defaults to serialized and router stores', () => {
       const manager = new Manager();
       
       expect(manager.serializedStateStore).toBeInstanceOf(NativeSerializedStore);
@@ -34,6 +34,27 @@ describe('Router Manager', () => {
       expect(manager.routers['info'].name).toBe('info');
       expect(manager.routers['events'].parent.name).toBe('user');
       expect(manager.routers['root'].routers['scene'].length).toBe(2);
+    });
+
+    describe('Serialized Store defaults', () => {
+      describe('No window object (Non broser env)', () => {
+        it('uses nativeStore', () => {
+          const manager = new Manager({ routerTree });
+          
+          expect(manager.serializedStateStore).toBeInstanceOf(NativeSerializedStore);
+        });
+      });
+
+      describe('With window object (Browser env)', () => {
+        it('uses browserStore', () => {
+          global.window = { setInterval: jest.fn(), history: {}, location: {} };
+          const manager = new Manager({ routerTree });
+
+          expect(manager.serializedStateStore).toBeInstanceOf(BrowserSerializedStore);
+
+          delete global.window;
+        });
+      })
     });
   });
 
