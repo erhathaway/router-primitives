@@ -20,11 +20,13 @@ Bindings exist for Mobx, Redux, and [React](https://github.com/erhathaway/recurs
 
 ## About
 
+#### Paradigm 
+
 In the context of this library, a router should be thought of as a feature of your application that responds to actions of other application features. 
 
 For example, a router can be 'visible' when other routers are 'hidden'. This type of logic is what a scene router uses. Or, as another example, a router can be 'in front of' or 'behind' other routers. This type of logic is what a stack router uses. By defining your application in terms of visual elements like `scene` or `stack` (along with `feature` and `data`) you can implement variations of complex application routing. 
 
-### Goals 
+#### Goals 
 
 The goal of this library is to create a common interface for components of an application to consume such that they can control application routing in a declarative way and not have to worry about implementing boilerplate logic that most routing libraries require. 
 
@@ -32,7 +34,7 @@ Furthermore, the goal of this library is to also provide declarative ways to per
 
 Recurisve is modular, extensible, and  framework agnostic. Thus, it can work directly in your app or you can use bindings for Mobx, Redux, and/or React. 
 
-### Bindings
+#### Bindings
 
 React bindings: [github.com/erhathaway/recursive-router-react](https://github.com/erhathaway/recursive-router-react)
 - Skip outside router config and manager initialization. Configure and initialize everything from within the components.
@@ -47,9 +49,9 @@ Mobx bindings: [github.com/erhathaway/recursive-router-mobx](https://github.com/
 - The router instance is now a Mobx instance. 
 - All observable state is accessible directly as attributes on the router. No need to call `getState` or `getHistory`.
 
-### Custom Router Logic
+#### Custom Router Logic
 
-Finally, should the existing router types not be enough, this library provides you with a way to create your own routers!
+Should the existing router types not be enough, this library provides you with a way to create your own routers!
 
 ## How it works
 
@@ -73,7 +75,7 @@ Finally, should the existing router types not be enough, this library provides y
 | 👌 | Simple - Declare the route tree using a small but expressive syntax set |
 
 
-### TL;DR
+#### TL;DR
 
 If you dislike how much ceremony is around configuring a router and you also frequently find existing routing solutions coming up short, then this library may be something that interests you!
 
