@@ -156,19 +156,19 @@ Almost all routeable and dynamic apps can be expressed in terms of 4 predefined 
 |-|-|
 | **description** | show only one router at a time |
 | **url access**  | write to both path and search parts of url |
-| **states**      | `visible hidden` |
-| **methods**     | `show hide` |
+| **states**      | `visible` |
+| **actions**     | `show hide` |
 | **example url** | `http://<something>/sceneA/2/sceneB` |
-|**example url**  | `http://<something>/sceneA?sceneC` |
+| **example url** | `http://<something>/sceneA?sceneC` |
 
 ## `Stack` router
 | | |
 |-|-|
 | **description** | show multiple routers at a time with an ordering |
 | **url access**  | write to only search parts of url |
-| **states**      | `visible hidden order` |
-| **methods**     | `show hide toFront toBack forward backward` |
-|**example url**  | `http://<something>?modal1=1&modal2=0` |
+| **states**      | `visible order` |
+| **actions**     | `show hide toFront toBack forward backward` |
+| **example url** | `http://<something>?modal1=1&modal2=0` |
 
 
 ## `Feature` router
@@ -176,19 +176,19 @@ Almost all routeable and dynamic apps can be expressed in terms of 4 predefined 
 |-|-|
 | **description** | show multiple routers at a time with no sense of ordering |
 | **url access**  | write to only search parts of url |
-| **states**      | `visible hidden` |
-| **methods**     | `show hide` |
-|**example url**  | `http://<something>?feature1&feature2` |
+| **states**      | `visible` |
+| **actions**     | `show hide` |
+| **example url** | `http://<something>?feature1&feature2` |
 
 ## `Data` router
 | | |
 |-|-|
 | **description** | show a string of data in the url to set things like page number, item ID, and callback urls |
 | **url access**  | write to both path and search parts of url |
-| **states**      | `visible hidden` |
-| **methods**     | `show hide` |
+| **states**      | `visible` |
+| **actions**     | `show hide` |
 | **example url** | `http://<something>?data1&data2` |
-|**example url**  | `http://<something>/data3/?data1&data2` |
+| **example url** | `http://<something>/data3/?data1&data2` |
 
 ## URL Construction 
 
