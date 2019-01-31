@@ -41,9 +41,40 @@ If you dislike how much ceremony is around configuring a router and you also fre
 4. Various types of routers in the router state tree exist. The differences are used to control how their state will get updated when the URL changes.
 5. Once the router state tree has been updated, observers of updated routers are notified.
 
+# API
+
+## Initalization
+
+| Name | Description | Requried | Default |
+| ---- | ----------- | -------- | ------- |
+| `name` | The router name | YES | |
+| `type` | The router type | YES | |
+| `routeKey` | The keys used to construct the URL (location) | NO | defaults to the `name` if none is specified |
+| `routers` | Child routers of this router | NO | |
+| `options.isPathRouter` | Normally only scene routers make up the pathname. This sets a router to be be part of the pathrouter instead of anyother neighboring routers. If there are scene neighbors their state will now be stored in the query params | NO | |
+
+## Router Object
+
+### Methods 
+
+| Name | Description |
+| ---- | ----------- | 
+| `show` | Shows the router |
+| `hide` | Hides the router |
+| `subscribe` | Subscribes an observer to changes in the router state |
+| `<actions>` | Other actions may exist depending on the router type. See [Router Types](#Router-Types) |
+
+### Attributes
+
+| Name | Type | Description |
+| ---- | ---- | ----------- | 
+| `manager` | Manager Instance | Returns the current manager overseeing the routers | 
+| `siblings` | Array | Other routers in the same neighborhood and of the same type |
+| `neighbors` | Object | Other routers in the same neighborhood and **Not** of the same type |
+| `state` | Object | Router state. See [Router Types](#Router-Types) for specific attributes |
+| `history` | Array | An array of previous router states |
 
 # How to use:
-
 
 ### 1. Describe the layout of your app in terms of multiple `Stack`, `Scene`, `Feature`, and `Data` routers.
 
@@ -163,12 +194,16 @@ Almost all routeable and dynamic apps can be expressed in terms of 4 predefined 
 
 URL construction is automatically handled for you based on the router hierarchy you define.
 
-`https://github.com/<pathname-part1><pathname-part2>?<query-params>`
+The URL represents the routing state of an app, known as the `location`. The location consists of two parts, the pathname and query params. The ordering of names in the pathname can be configured, and the names of keys that make up the pathname and query params can be set.
+
+URL breakdown:
+
+`https://github.com/ <pathname-part1> / <pathname-part2> ? <query-params>`
 
 #### Pathname
 The pathname part of a url is the union of router names that make up the longest visibile path of `Scene` and `Data` routers from the root router.
 
-If there are both `Scene` and `Data` routers as siblings in a path, the `Scene` router is always used for the pathname unless the `Data` router explicitly sets the config option `isPathRouter = true`
+If there are both `Scene` and `Data` routers are neighbors (same level in router tree) in a path, the `Scene` router is always used for the pathname, unless the `Data` router explicitly sets the config option `isPathRouter = true`
 
 ```
 {
@@ -178,7 +213,7 @@ If there are both `Scene` and `Data` routers as siblings in a path, the `Scene` 
 }
 ```
 
-Using the React bindings as an example, this might look like:
+Example using [React bindings](https://github.com/erhathaway/recursive-router-react):
 
 ```
 <Router type="scene" name="user">
@@ -193,41 +228,47 @@ Using the React bindings as an example, this might look like:
 <Router>
 ```
 
-From this, the viable paths are:
+In this example, the viable paths are:
 
 ```
-/scene
-/scene?admin-tray=true
+/user
+/user?admin-tray=true
 ```
 ```
-/scene/:user-id
-/scene/:user-id?admin-tray=true
+/user/:user-id
+/user/:user-id?admin-tray=true
 ```
 ```
-/scene/:user-id/:content-date
-/scene/:user-id/:content-date?admin-tray=true
-/scene/:user-id/:content-date?admin-tray=true&user-options=true
-/scene/:user-id/:content-date?user-options=true
+/user/:user-id/:content-date
+/user/:user-id/:content-date?admin-tray=true
+/user/:user-id/:content-date?admin-tray=true&user-options=true
+/user/:user-id/:content-date?user-options=true
 ```
 ```
-/scene/:user-id/:content-date/content-overview
-/scene/:user-id/:content-date/content-overview?admin-tray=true
-/scene/:user-id/:content-date/content-overview?admin-tray=true&user-options=true
-/scene/:user-id/:content-date/content-overview?user-options=true
+/user/:user-id/:content-date/content-overview
+/user/:user-id/:content-date/content-overview?admin-tray=true
+/user/:user-id/:content-date/content-overview?admin-tray=true&user-options=true
+/user/:user-id/:content-date/content-overview?user-options=true
 ```
 ```
-/scene/:user-id/:content-date/content-details
-/scene/:user-id/:content-date/content-details?admin-tray=true
-/scene/:user-id/:content-date/content-details?admin-tray=true&user-options=true
-/scene/:user-id/:content-date/content-details?user-options=true
+/user/:user-id/:content-date/content-details
+/user/:user-id/:content-date/content-details?admin-tray=true
+/user/:user-id/:content-date/content-details?admin-tray=true&user-options=true
+/user/:user-id/:content-date/content-details?user-options=true
 ```
+
+Notice two things:
+
+- `user-id` is a `Data` router and is part of the pathname but **doesn't** have `isPathRouter=true`. This is becuase, explicitly setting `isPathRouter` is not not needed if the data router has no `Scene` routers as neighbors.
+
+- `user-options` is a `Scene` router but isn't being used in the pathname. This is because it has a `Data` router as a neighbor that is explicitly set with `isPathRouter=true`.
 
 
 #### Route Key
 
-Setting route keys allow you to minimize the characters used in the serialized state (the URL):
+The `routeKey` option allows you to alias router names to another value used in the URL (location).
 
-Transfrom:
+For example, setting the `routeKey` could allow you to transform:
 
 `https://github.com/scene1RouteKey/scene2RouteKey?queryRouteKey1=1&queryRouteKey2=some-random-value`
 
@@ -236,17 +277,17 @@ to
 `https://github.com/a/b?c=1&d=some-random-value`
 
 
-The `name` that is used in a pathname and the `key` that is used as a query param can be explicitly controlled by setting the `routeKey` parameter:
+You can set the route key with the `routeKey` parameter:
 
 ```
 {
-  name="my-router",
+  name='my-router',
   routers: <Routers Obj>,
   routeKey: 'a',
 }
 ```
 
-Using the React-bindings, this would look like:
+With the [React bindings](https://github.com/erhathaway/recursive-router-react), this would look like:
 
 ```
 <Router name="my-router" type="scene" routeKey="a" />
