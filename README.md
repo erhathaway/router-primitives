@@ -1,7 +1,9 @@
 # Recursive Router     
 
 
-Recursive router is both a library for defining routers and a library to run them. Instead of defining how the URL is constructed you define the visual elements of your app and URL construction is automatically handled. Plus, if you work on a platform where there is no concept of a URL, you can still use this library!
+Recursive router is a differnt take on routing that hopefully increases developer productivity and allows for the easier creation and maintaince of complex routing. 
+
+With Recursive, instead of defining how the URL is constructed you **define the visual elements of your app** and URL construction is automatically handled! Plus, if you work on a platform where there is no concept of a URL, you can still use this library!
 
 # About
 
