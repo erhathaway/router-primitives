@@ -2,6 +2,8 @@ import { NativeSerializedStore } from '../../src/serializedState';
 
 
 describe('Native Serialized State', () => {
+  window.setInterval = jest.fn();
+
   describe('Store state', () => {
     test('Uses a default string for state', () => {
       const adapter = new NativeSerializedStore();

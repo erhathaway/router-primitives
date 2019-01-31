@@ -2,18 +2,12 @@ import deserializer from './deserializer';
 import serializer from './serializer';
 
 /**
- * Default serialized state store is a string
- * TODO make this platform dependent or configerable via config
- *   - If on web, use web URL
- *   - If not on web (ex react native), use string
- */
-// export let defaultStore = ''; // eslint-disable-line
-
-/**
- * The adapter that the router manager uses to write and read from the serialized state store
+ * The store that the router manager uses to write and read from the serialized state
  * The serialized state store is what, on the web, holds the URL - aka the serilaized state of the router tree
+ * For non web, or when manager.config.serializedStateStore === 'native' this store is used
+ * The default serialized state is a string for this store
  */
-export default class DefaultSerializedStateStore {
+export default class NativeStore {
   constructor(state = '', config) {
     // this.state = state;
     this.observers = [];
@@ -24,9 +18,9 @@ export default class DefaultSerializedStateStore {
 
   // unserialized state = { pathname: [], search: {}, options: {} }
   // options = { updateHistory }
-  setState(unserializedState, options = {}) {
-    const oldUnserializedState = this.getState();
-    const { location: newState, options: serializerOptions } = this.config.serializer(unserializedState, oldUnserializedState);
+  setState(unserializedLocation, options = {}) {
+    const oldUnserializedLocation = this.getState();
+    const { location: newState } = this.config.serializer(unserializedLocation, oldUnserializedLocation);
     // this.state = newState;
 
     if (options.updateHistory !== false) {
@@ -37,7 +31,7 @@ export default class DefaultSerializedStateStore {
       // thus, there will be no history of it
       // this is useful when you use modals and other elements that dont have a concept of 'back'
       // b/c once you close a modal it shouldn't reappear if you click 'back'
-      if (unserializedState.options && unserializedState.options.mutateLocation === false) {
+      if (unserializedLocation.options && unserializedLocation.options.replaceLocation === true) {
         // remove previous location
         newHistory.shift();
       }
@@ -50,18 +44,22 @@ export default class DefaultSerializedStateStore {
       this.history = newHistory;
     }
 
-    const deserializedState = this.getState();
-    this.observers.forEach(fn => fn(deserializedState));
+    this.notifyObservers();
   }
 
   getState() { return this.config.deserializer(this.history[this.currentLocationInHistory]); }
 
   subscribeToStateChanges(fn) { this.observers.push(fn); }
 
+  notifyObservers() {
+    const deserializedState = this.getState();
+    this.observers.forEach(fn => fn(deserializedState));
+  }
+
   back() {
     this.go(-1);
   }
-  
+
   forward() {
     this.go(1);
   }
