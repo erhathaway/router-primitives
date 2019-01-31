@@ -5,17 +5,38 @@ Recursive router is a different take on routing that hopefully increases develop
 
 With Recursive, instead of defining how the URL is constructed you **define the visual elements of your app** and URL construction is automatically handled! Plus, if you work on a platform where there is no concept of a URL, you can still use this library!
 
+Bindings exist for Mobx, Redux, and [React](https://github.com/erhathaway/recursive-router-react).
+
 # About
 
 In the context of this library, a router should be thought of as a feature of your application that responds to actions of other application features. 
 
 For example, a router can be 'visible' when other routers are 'hidden'. This type of logic is what a scene router uses. Or, as another example, a router can be 'in front of' or 'behind' other routers. This type of logic is what a stack router uses. By defining your application in terms of visual elements like scene or stack (along with feature and data) you can implement variations of complex application routing. 
 
-The goal of this library is to create a common interface for components of an application to consume such that they can control application routing in a declarative way and not have to worry about implementing boilerplate logic that most routing libraries require. Furthermore, the goal of this library is to also provide declarative ways to perform complex routing, based on things like: sibling router state, neighborhood router state, historical state, deep linking, serialization of arbitrary data into router path, etc. This library is also modular asnd extensible, thus easily supporting bindings to various app paradigms and state managers. 
+### Goals 
 
-Recursive router is framework agnostic, has no dependencies, and can be used directly in your app. However, there also exist React bindings that provide a more convient, simple, and declarative way to compose all your routing logic.
+The goal of this library is to create a common interface for components of an application to consume such that they can control application routing in a declarative way and not have to worry about implementing boilerplate logic that most routing libraries require. 
+
+Furthermore, the goal of this library is to also provide declarative ways to perform complex routing, based on things like: sibling router state, neighborhood router state, historical state, deep linking, serialization of arbitrary data into router path, etc. 
+
+Recurisve is modular, extensible, and  framework agnostic. Thus, it can work directly in your app or you can use bindings for Mobx, Redux, and/or React. 
+
+### Bindings
 
 React bindings: [github.com/erhathaway/recursive-router-react](https://github.com/erhathaway/recursive-router-react)
+- Skip outside router config and manager initialization. Configure and initialize everything from within the components.
+- Wrap components in `Routers` to get access to router methods and state via props passing and functions-as-children (FAC)
+
+Redux bindings: [github.com/erhathaway/recursive-router-redux](https://github.com/erhathaway/recursive-router-redux)
+- Dispatch URL changes (serialized state) through the redux bus
+- Dispatch Router state changes through the redux bus
+- Persist router state in the redux store
+
+Mobx bindings: [github.com/erhathaway/recursive-router-mobx](https://github.com/erhathaway/recursive-router-mobx)
+- The router instance is now a Mobx instance. 
+- All observable state is accessible directly as attributes on the router. No need to call `getState` or `getHistory`.
+
+### Custom Router Logic
 
 Finally, should the existing router types not be enough, this library provides you with a way to create your own routers!
 
@@ -31,7 +52,7 @@ Finally, should the existing router types not be enough, this library provides y
 | 👌 | Simple - Declare the route tree using a small but expressive syntax set |
 
 
-TL;DR
+### TL;DR
 
 If you dislike how much ceremony is around configuring a router and you also frequently find existing routing solutions coming up short, then this library may be something that interests you!
 
