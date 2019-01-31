@@ -7,11 +7,22 @@ With Recursive, instead of defining how the URL is constructed you **define the 
 
 Bindings exist for Mobx, Redux, and [React](https://github.com/erhathaway/recursive-router-react).
 
-# About
+### Documentation
+
+- [Intro](#intro)
+- [API](#api)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Architecture](#architecture)
+- [Extensions](#extensions)
+
+# Intro
+
+## About
 
 In the context of this library, a router should be thought of as a feature of your application that responds to actions of other application features. 
 
-For example, a router can be 'visible' when other routers are 'hidden'. This type of logic is what a scene router uses. Or, as another example, a router can be 'in front of' or 'behind' other routers. This type of logic is what a stack router uses. By defining your application in terms of visual elements like scene or stack (along with feature and data) you can implement variations of complex application routing. 
+For example, a router can be 'visible' when other routers are 'hidden'. This type of logic is what a scene router uses. Or, as another example, a router can be 'in front of' or 'behind' other routers. This type of logic is what a stack router uses. By defining your application in terms of visual elements like `scene` or `stack` (along with `feature` and `data`) you can implement variations of complex application routing. 
 
 ### Goals 
 
@@ -40,6 +51,16 @@ Mobx bindings: [github.com/erhathaway/recursive-router-mobx](https://github.com/
 
 Finally, should the existing router types not be enough, this library provides you with a way to create your own routers!
 
+## How it works
+
+1. Recursive router treats the URL as a namespace for the storage of a state tree representing `all routable state`™. 
+2. Writing to the URL is handled by the router.
+3. Changes to the URL are reduced over the router state tree
+4. Various types of routers in the router state tree exist. The differences are used to control how their state will get updated when the URL changes.
+5. Once the router state tree has been updated, observers of updated routers are notified.
+
+## Summary
+
 |   | Recursive Router |
 | - | ------------ |
 | 😎 | View library agnostic - with bindings for React |
@@ -56,17 +77,9 @@ Finally, should the existing router types not be enough, this library provides y
 
 If you dislike how much ceremony is around configuring a router and you also frequently find existing routing solutions coming up short, then this library may be something that interests you!
 
-# How it works:
-
-1. Recursive router treats the URL as a namespace for the storage of a state tree representing `all routable state`™. 
-2. Writing to the URL is handled by the router.
-3. Changes to the URL are reduced over the router state tree
-4. Various types of routers in the router state tree exist. The differences are used to control how their state will get updated when the URL changes.
-5. Once the router state tree has been updated, observers of updated routers are notified.
-
 # API
 
-## Initalization
+## Router Tree Declaration
 
 | Name | Description | Requried | Default |
 | ---- | ----------- | -------- | ------- |
@@ -76,7 +89,7 @@ If you dislike how much ceremony is around configuring a router and you also fre
 | `routers` | Child routers of this router | NO | |
 | `options.isPathRouter` | If should forceibly be part of pathname. See [pathname](#pathname) | NO | False |
 
-## Router Object
+## Router Instance
 
 ### Methods 
 
@@ -97,7 +110,61 @@ If you dislike how much ceremony is around configuring a router and you also fre
 | `state` | Object | Router state. See [Router Types](#Router-Types) for specific attributes |
 | `history` | Array | An array of previous router states |
 
-# How to use:
+## Router types
+
+Almost all routeable and dynamic apps can be expressed in terms of 4 predefined router types: `Stack`, `Scene`, `Feature`, and `Data`. If these routers don't suit your needs, see below for how to create your own router type.
+
+
+### `Scene` router
+
+Function: show only one router at a time 
+
+| | |
+|-|-|
+| **states**      | `visible` |
+| **actions**     | `show hide` |
+| url access  | write to both path and search parts of url |
+| example url | `http://<something>/sceneA/2/sceneB` |
+| example url | `http://<something>/sceneA?sceneC` |
+
+### `Stack` router
+
+Function: show multiple routers at a time with an ordering
+
+| | |
+|-|-|
+| **states**      | `visible order` |
+| **actions**     | `show hide toFront toBack forward backward` |
+| url access  | write to only search parts of url |
+| example url | `http://<something>?modal1=1&modal2=0` |
+
+
+### `Feature` router
+
+Function: show multiple routers at a time with no sense of ordering 
+
+| | |
+|-|-|
+| **states**      | `visible` |
+| **actions**     | `show hide` |
+| url access  | write to only search parts of url |
+| example url | `http://<something>?feature1&feature2` |
+
+### `Data` router
+
+Function: show a string of data in the url to set things like page number, item ID, and callback urls 
+
+| | |
+|-|-|
+| **states**      | `visible` |
+| **actions**     | `show hide` |
+| url access  | write to both path and search parts of url |
+| example url | `http://<something>?data1&data2` |
+| example url | `http://<something>/data3/?data1&data2` |
+
+# Usage
+
+## Example (with Mobx)
 
 ### 1. Describe the layout of your app in terms of multiple `Stack`, `Scene`, `Feature`, and `Data` routers.
 
@@ -169,57 +236,7 @@ const routers = registerRouter(tree);
 </App>
 ```
 
-# Router types
-
-Almost all routeable and dynamic apps can be expressed in terms of 4 predefined router types: `Stack`, `Scene`, `Feature`, and `Data`. If these routers don't suit your needs, see below for how to create your own router type.
-
-
-## `Scene` router
-
-Function: show only one router at a time 
-
-| | |
-|-|-|
-| **states**      | `visible` |
-| **actions**     | `show hide` |
-| url access  | write to both path and search parts of url |
-| example url | `http://<something>/sceneA/2/sceneB` |
-| example url | `http://<something>/sceneA?sceneC` |
-
-## `Stack` router
-
-Function: show multiple routers at a time with an ordering
-
-| | |
-|-|-|
-| **states**      | `visible order` |
-| **actions**     | `show hide toFront toBack forward backward` |
-| url access  | write to only search parts of url |
-| example url | `http://<something>?modal1=1&modal2=0` |
-
-
-## `Feature` router
-
-Function: show multiple routers at a time with no sense of ordering 
-
-| | |
-|-|-|
-| **states**      | `visible` |
-| **actions**     | `show hide` |
-| url access  | write to only search parts of url |
-| example url | `http://<something>?feature1&feature2` |
-
-## `Data` router
-
-Function: show a string of data in the url to set things like page number, item ID, and callback urls 
-
-| | |
-|-|-|
-| **states**      | `visible` |
-| **actions**     | `show hide` |
-| url access  | write to both path and search parts of url |
-| example url | `http://<something>?data1&data2` |
-| example url | `http://<something>/data3/?data1&data2` |
+# Configuration 
 
 ## URL Construction 
 
