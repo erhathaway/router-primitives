@@ -37,8 +37,8 @@ Recurisve tries to be modular, extensible, and  framework agnostic. Thus, it can
 #### Bindings
 
 React bindings: [github.com/erhathaway/recursive-router-react](https://github.com/erhathaway/recursive-router-react)
-- Skip outside router config and manager initialization. Configure and initialize everything from within the components.
-- Wrap components in `Routers` to get access to router methods and state via props passing and functions-as-children (FAC)
+- Skip outside router config and manager initialization. Configure and initialize everything from within `Router` components.
+- Wrap app components in `Router` components to get access to router methods and state - via props passing and functions-as-children (FAC)
 
 Redux bindings: [github.com/erhathaway/recursive-router-redux](https://github.com/erhathaway/recursive-router-redux)
 - Dispatch router state changes through the redux bus
@@ -58,7 +58,7 @@ Should the existing router types not be enough, this library provides you with a
 2. Writing to the URL is handled by the router.
 3. Changes to the URL are reduced over the router state tree
 4. Various types of routers in the router state tree exist. The differences are used to control how their state will get updated when the URL changes.
-5. Once the router state tree has been updated, observers of updated routers are notified.
+5. Once the router state tree has been updated, observers of only updated routers are notified.
 
 ## Summary
 
