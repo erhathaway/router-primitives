@@ -20,12 +20,16 @@ export default class DefaultRoutersStateAdapter {
       // Object.keys(newCurrent).forEach((key) => (newCurrent[key] == null) && delete newCurrent[key]);
       
       // skip routers who haven't been updated
-      if (newCurrent === prevCurrent) { return routerStates; }
+      if (JSON.stringify(newCurrent) === JSON.stringify(prevCurrent)) { return routerStates; }
 
       // clone historical states
       let newHistorical = historical.slice();
-      // add current to historical states
-      newHistorical.unshift(prevCurrent);
+
+      // check to make sure there is state to record into history
+      if (Object.keys(prevCurrent).length > 0) {
+        // add current to historical states
+        newHistorical.unshift(prevCurrent);
+      }
       // enforce history size
       if (newHistorical.length > this.config.historySize) { newHistorical = newHistorical.slice(0, this.config.historySize); }
       // update state to include new router state
@@ -38,7 +42,6 @@ export default class DefaultRoutersStateAdapter {
     }, Object.assign(this.getState()));
 
     // call observers of all routers that have had state changes
-    
     hasUpdatedTracker.forEach((routerName) => {
       const observers = this.observers[routerName] || []
       if (Array.isArray(observers)) {

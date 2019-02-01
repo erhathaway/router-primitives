@@ -43,19 +43,25 @@ describe('Integration', () => {
 
     
     describe('Show action', () => {
-      it('On pathRouter child of rootRouter', () => {
+      it('PathRouter child of rootRouter', () => {
         userRouter.show();
         userRouter.show();
 
-        expect(userObserver.mock.calls[0][0]).toEqual({ current: { visible: true }, historical: [{}] });
+        expect(userRouter.isPathRouter).toBe(true);
+        expect(userObserver.mock.calls[0][0]).toEqual({ current: { visible: true }, historical: [] });
+
+        // second action call should do nothing since its idential to the first
+        expect(userObserver.mock.calls[1]).toBe(undefined);
       });
 
-      // it('On non pathRouter child of rootRouter', () => {
-      //   toolbarRouter.show();
-      //   expect(toolbarObserver.mock.calls[0][0]).toEqual({ current: { visible: true }, historical: [{}] });
-      // })
+      it('On non pathRouter child of rootRouter', () => {
+        toolbarRouter.show();
+        expect(toolbarRouter.isPathRouter).toBe(false);
+
+        // should have a history of 1 b/c the userRouter.show() caused the router tree to reduce state when toolbar wasn't visible
+        expect(toolbarObserver.mock.calls[0][0]).toEqual({ current: { visible: true }, historical: [{ visible: false }] });
+      })
     });
 
-  })
-  
+  });
 });

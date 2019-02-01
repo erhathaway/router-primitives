@@ -152,13 +152,13 @@ describe('Router Manager', () => {
         const location = { pathname: ['test'], search: { param1: '2', param2: 'testparam'}, options: {}}
         manager.serializedStateStore.setState(location);
 
-        expect(userObserverFn.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{ visible: false, order: 1 }, {}] });
+        expect(userObserverFn.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{ visible: false, order: 1 }] });
         expect(userObserverFn.mock.calls.length).toEqual(1);
 
-        expect(secondUserObserverFn.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{ visible: false, order: 1 }, {}] });
+        expect(secondUserObserverFn.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{ visible: false, order: 1 }] });
         expect(secondUserObserverFn.mock.calls.length).toEqual(1);
 
-        expect(rootObserverFn.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{ visible: true, order: 22 }, {}] });
+        expect(rootObserverFn.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{ visible: true, order: 22 }] });
         expect(rootObserverFn.mock.calls.length).toEqual(1);
       });
     });
@@ -174,7 +174,7 @@ describe('Router Manager', () => {
 
         manager.routerStateStore.setState(initialRoutersState);
         
-        expect(manager.routers['user'].getState()).toEqual({ current: { visible: false, order: 1 }, historical: [{}] });
+        expect(manager.routers['user'].getState()).toEqual({ current: { visible: false, order: 1 }, historical: [] });
       })
     })
   });

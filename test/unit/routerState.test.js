@@ -21,8 +21,8 @@ describe('Router State', () => {
 
       adapter.setState(routers);
       expect(adapter.getState()).toEqual({
-        root: { current: rootState, historical: [{}] },
-        firstScene: { current: firstSceneState, historical: [{}] },
+        root: { current: rootState, historical: [] },
+        firstScene: { current: firstSceneState, historical: [] },
       });
     });
 
@@ -47,8 +47,8 @@ describe('Router State', () => {
       });
 
       expect(adp.getState()).toEqual({
-        root: { current: rootState_two, historical: [rootState_one, {}] },
-        firstScene: { current: firstSceneState_two, historical: [firstSceneState_one, {}] },
+        root: { current: rootState_two, historical: [rootState_one] },
+        firstScene: { current: firstSceneState_two, historical: [firstSceneState_one] },
       });
     });
 
@@ -89,18 +89,18 @@ describe('Router State', () => {
         'info-router': { visible: false }
       });
 
-      expect(ownerObserver.mock.calls[0][0]).toEqual({ current: { visible: true }, historical: [{}] });
-      expect(infoObserver.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{}] });
+      expect(ownerObserver.mock.calls[0][0]).toEqual({ current: { visible: true }, historical: [] });
+      expect(infoObserver.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [] });
 
       // set one router state
       adp.setState({
         'info-router': { visible: true }
       });
 
-      expect(ownerObserver.mock.calls[0][0]).toEqual({ current: { visible: true }, historical: [{}] });
+      expect(ownerObserver.mock.calls[0][0]).toEqual({ current: { visible: true }, historical: [] });
       expect(ownerObserver.mock.calls.length).toEqual(1);
 
-      expect(infoObserver.mock.calls[1][0]).toEqual({ current: { visible: true }, historical: [{ visible: false }, {}] });
+      expect(infoObserver.mock.calls[1][0]).toEqual({ current: { visible: true }, historical: [{ visible: false }] });
       expect(infoObserver.mock.calls.length).toEqual(2);
 
       // set the other router state
@@ -108,23 +108,18 @@ describe('Router State', () => {
         'owner-router': { visible: false }
       });
 
-      expect(ownerObserver.mock.calls[1][0]).toEqual({ current: { visible: false }, historical: [{ visible: true }, {}] });
+      expect(ownerObserver.mock.calls[1][0]).toEqual({ current: { visible: false }, historical: [{ visible: true }] });
       expect(ownerObserver.mock.calls.length).toEqual(2);
 
-      expect(infoObserver.mock.calls[1][0]).toEqual({ current: { visible: true }, historical: [{ visible: false }, {}] });
+      expect(infoObserver.mock.calls[1][0]).toEqual({ current: { visible: true }, historical: [{ visible: false }] });
       expect(infoObserver.mock.calls.length).toEqual(2);
     });
 
     test('Can create individual router state getters', () => {
       const store = {};
       const adp = new RouterStateAdapater(store);
-      // const ownerObserver = jest.fn();
       const ownerGetter = adp.createRouterStateGetter('owner-router');
-      // ownerSubjectSubscriber(ownerObserver);
-
-      // const infoObserver = jest.fn();
       const infoGetter = adp.createRouterStateGetter('info-router');
-      // infoSubjectSubscriber(infoObserver);
 
       // set two different router states
       adp.setState({
@@ -132,16 +127,16 @@ describe('Router State', () => {
         'info-router': { visible: false }
       });
 
-      expect(ownerGetter()).toEqual({ current: { visible: true }, historical: [{}] })
-      expect(infoGetter()).toEqual({ current: { visible: false }, historical: [{}] })
+      expect(ownerGetter()).toEqual({ current: { visible: true }, historical: [] })
+      expect(infoGetter()).toEqual({ current: { visible: false }, historical: [] })
 
       // set one router state
       adp.setState({
         'info-router': { visible: true }
       });
 
-      expect(ownerGetter()).toEqual({ current: { visible: true }, historical: [{}] })
-      expect(infoGetter()).toEqual({ current: { visible: true }, historical: [{ visible: false } ,{}] })
+      expect(ownerGetter()).toEqual({ current: { visible: true }, historical: [] })
+      expect(infoGetter()).toEqual({ current: { visible: true }, historical: [{ visible: false }] })
     });
   });
 });
