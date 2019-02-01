@@ -9,7 +9,7 @@ Bindings exist for Mobx, Redux, and [React](https://github.com/erhathaway/recurs
 
 # Intro
 
-#### Documentation Location
+#### Documentation
 
 - **[Intro](#intro)** :point_left:
 - [API](#api)
@@ -80,7 +80,7 @@ If you dislike how much ceremony is around configuring a router and you also fre
 
 # API
 
-#### Documentation Location
+#### Documentation
 
 - [Intro](#intro)
 - **[API](#api)** :point_left:
@@ -174,7 +174,7 @@ Function: show a string of data in the url to set things like page number, item 
 
 # Usage
 
-#### Documentation Location
+#### Documentation
 
 - [Intro](#intro)
 - [API](#api)
@@ -257,7 +257,7 @@ const routers = registerRouter(tree);
 
 # Configuration 
 
-#### Documentation Location
+#### Documentation
 
 - [Intro](#intro) 
 - [API](#api)
