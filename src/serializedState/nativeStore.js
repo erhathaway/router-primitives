@@ -51,6 +51,8 @@ export default class NativeStore {
 
   subscribeToStateChanges(fn) { this.observers.push(fn); }
 
+  // unsubscribeToStateChanges // TODO fill me in!
+  
   notifyObservers() {
     const deserializedState = this.getState();
     this.observers.forEach(fn => fn(deserializedState));

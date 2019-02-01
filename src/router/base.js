@@ -1,8 +1,9 @@
-export default class Router {
+export default class RouterBase {
   constructor(init = {}) {
-    const { name, config, type, manager, parent, routers, root, getState } = init;
+    const { name, config, type, manager, parent, routers, root, getState, subscribe } = init;
 
-    if (!name || !config || !type || !manager) { throw new Error('Missing required kwargs: name, config, type, and/or manager'); }
+    // console.log(name, config, type, manager)
+    if (!name  || !type || !manager) { throw new Error('Missing required kwargs: name, type, and/or manager'); }
     // required
     this.name = name;
     this.config = config || {};
@@ -14,7 +15,12 @@ export default class Router {
     this.parent = parent;
     this.routers = routers || {};
     this.root = root;
-    this._getState = getState;
+
+    // methods customized for instance from manager
+    this.getState = getState;
+    this.subscribe = subscribe;
+
+    // this.show = this.show(this);
   }
 
   get routeKey() {
@@ -37,10 +43,16 @@ export default class Router {
   }
 
   get pathLocation() {
-    if (!this.parent) return 0;
+    if (!this.parent) return -1;
     return 1 + this.parent.pathLocation;
   }
 
+  get isRootRouter() {
+    return !this.parent;
+  }
+
+  // TODO Remove testing dependency - this shouldn't be used since it bypasses the manager
+  // Create utility function instead to orchestrate relationships between routers
   _addChildRouter(router) {
     if (!router.type) { throw new Error('Router is missing type'); }
 
@@ -94,15 +106,15 @@ export default class Router {
   }
 
   get state() {
-    if (!this._getState) { throw new Error('no getState function specified by the manager') }
-    const { current } = this._getState();
-    return current
+    if (!this.getState) { throw new Error('no getState function specified by the manager') }
+    const { current } = this.getState();
+    return current || {};
   }
 
   get history() {
-    if (!this._getState) { throw new Error('no getState function specified by the manager') }
-    const { history } = this._getState();
-    return history
+    if (!this.getState) { throw new Error('no getState function specified by the manager') }
+    const { historical } = this.getState();
+    return historical || [];
   }
   // the write location is set by setting the 'options.writeLocation' in location to 'path' or 'query'
   // const options = {

@@ -1,4 +1,4 @@
-import Router from '../src/router';
+import Router from '../../../src/router/base';
 
 const generateMockInit = (requiredInits = {}, optionalInits = {}) => {
   return {
@@ -155,7 +155,7 @@ describe('Router', () => {
           const parentRouter = new Router(generateMockInit());
     
           parentRouter._addChildRouter(childRouter);
-          expect(childRouter.calcCachedLocation()).toEqual({ isPathData: true, pathLocation: 1, value: 'here' });
+          expect(childRouter.calcCachedLocation()).toEqual({ isPathData: true, pathLocation: 0, value: 'here' });
         });
 
         it('All other path types return path location and visibility', () => {
@@ -164,7 +164,7 @@ describe('Router', () => {
           const parentRouter = new Router(generateMockInit());
     
           parentRouter._addChildRouter(childRouter);
-          expect(childRouter.calcCachedLocation()).toEqual({ isPathData: true, pathLocation: 1, value: true });
+          expect(childRouter.calcCachedLocation()).toEqual({ isPathData: true, pathLocation: 0, value: true });
         });
       });
 

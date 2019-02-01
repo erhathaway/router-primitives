@@ -1,4 +1,4 @@
-import { BrowserSerializedStore } from '../../src/serializedState';
+import { BrowserSerializedStore } from '../../../src/serializedState';
 
 beforeAll(() => {
   global.window = { history: {}, location: {}, setInterval: jest.fn() };

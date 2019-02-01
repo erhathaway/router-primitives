@@ -1,4 +1,4 @@
-import { serializer } from '../../src/serializedState';
+import { serializer } from '../../../src/serializedState';
 
 describe('Serializer', () => {
   it('serializes pathname', () => {

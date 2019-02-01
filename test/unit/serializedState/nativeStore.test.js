@@ -1,4 +1,4 @@
-import { NativeSerializedStore } from '../../src/serializedState';
+import { NativeSerializedStore } from '../../../src/serializedState';
 
 describe('Native Serialized State', () => {
   describe('Store state', () => {

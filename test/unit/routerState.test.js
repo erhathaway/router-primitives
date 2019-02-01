@@ -1,4 +1,4 @@
-import RouterStateAdapater, { defaultStore } from '../src/routerState';
+import RouterStateAdapater, { defaultStore } from '../../src/routerState';
 
 
 describe('Router State', () => {

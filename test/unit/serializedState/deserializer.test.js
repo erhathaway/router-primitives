@@ -1,4 +1,4 @@
-import { deserializer } from '../../src/serializedState';
+import { deserializer } from '../../../src/serializedState';
 
 describe('deserializer', () => {
   it('deserializes a string with only a pathname', () => {

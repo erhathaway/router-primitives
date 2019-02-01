@@ -1,5 +1,7 @@
 import { NativeSerializedStore, BrowserSerializedStore } from './serializedState';
 import DefaultRouterStateStore from './routerState';
+import Router from './router/base';
+import { scene } from './router/template';
 
 const defaultReducer = () => ({}); // TODO REMOVE and default to Scene template
 const defaultAction = () => ({ pathname: 'user1', search: ['hello', 'world'] }); // TODO REMOVE and default to Scene template
@@ -16,9 +18,37 @@ export default class RouterManager {
     } else {
       this.serializedStateStore = serializedStateStore || new BrowserSerializedStore();
     }
-
+    
     // router types
-    this.templates = {};
+    // TODO change to local variable
+    this.templates = { scene };
+    this.routerTypes = {};
+
+    // TODO implement
+    // RouterManager.validateTemplates(templates);
+    // validation should make sure action names dont collide with any Router method names
+
+    Object.keys(this.templates).forEach((templateName) => {
+      // create a RouterType off the base Router
+      const RouterType = Router //{ ...Router } //. Router. Object.assign({}, Router);
+      
+      // fetch template
+      const selectedTemplate = this.templates[templateName];
+
+      // add actions to RouterType
+      Object.keys(selectedTemplate.actions).forEach((actionName) => {
+        RouterType.prototype[actionName] = RouterManager.createActionWrapperFunction(selectedTemplate.actions[actionName]);
+      });
+
+      // add reducer to RouterType
+      RouterType.prototype.reducer = selectedTemplate.reducer;
+
+      // add parser to RouterType
+      RouterType.prototype.parser = selectedTemplate.parser;
+
+      this.routerTypes[templateName] = RouterType;
+    });
+
 
     // add initial routers
     this.addRouters(routerTree);
@@ -52,11 +82,6 @@ export default class RouterManager {
     });
   }
 
-  // // subscribe to serializedStateStore and call this when changes
-  // setNewRouterState(existingPathObj) {
-  //   const newRouterState = this.rootRouter && this.rootRouter.update(newLocationObject); // will recursively call all child routers
-  //   this.routerStateStore.setNewRouterState(newRouterState);
-  // }
 
   addRouter({ name, routeKey, config, defaults, type, parentName }) {
     // create a router
@@ -84,23 +109,22 @@ export default class RouterManager {
   }
 
   // wrapper around action function
-  createActionWrapperFunction(action) {
-    return () => {
-      const newLocation = action();
-      this.serializedStateStore.setState(newLocation);
-    }
-  }
+  static createActionWrapperFunction(action) {
+    function actionWrapper(existingLocation, routerInstance = this, ctx = {}) {
+      // if called from another action wrapper
+      if (existingLocation) {
+        return action(existingLocation, routerInstance, ctx);
+      } 
 
-  // returns a closure with the router ref in scope
-  // uses this ref to map the updated state change of all routers to 1) state of just this router 2) state of sibling routers
-  // these two pices are used to call the subscription function when the router is subscribed to by an observer
-  // observer signature: (routerState, []siblingRouterState) => {}
-  // createStateUpdateWrapperFunction(router) {
-  //   return (fn) => {
-  //     const subscription = (newState) => fn(newState[router.name], router.siblingNames.map(n => newState[n]));
-  //     this.routerStateStore.createStateSubscriber(subscription)
-  //   }
-  // }
+      // if called directly
+      const location = this.manager.serializedStateStore.getState();
+      const newLocation = action(location, routerInstance, ctx);
+
+      // set serialized state
+      this.manager.serializedStateStore.setState(newLocation);
+    }
+    return actionWrapper;
+  }
 
   // create router :specify
   // config = {
@@ -109,45 +133,26 @@ export default class RouterManager {
   //   cacheState: boolean, default: null, is equal to true
   // }
   createRouter({ name, config, defaults, type, parentName }) {
-    // create new router
-
     const parent = this.routers[parentName];
-    const newRouter = {
+
+    const initalParams = {
       name,
       // routeKey,
       config,
-      type,
+      type: type || 'scene', // make root routers a scene router TODO make root router an empty template
       parent,
       routers: {},
-      // siblingNames - getter
-      // parentName - getter
-      // neighborsNames - getter
-      // getStateByName: getter
+      manager: this,
       root: this.rootRouter,
       getState: this.routerStateStore.createRouterStateGetter(name),
-      // getAllRouterState: this.routerStateStore.getState,
       subscribe: this.routerStateStore.createRouterStateSubscriber(name),
       
       childCacheStore: this.childCacheStore,
     };
     
-    // newRouter['subscribe'] = this.createStateUpdateWrapperFunction(newRouter);
-    
-    
-    // add actions from template
-    const template = this.templates[type] || { reducer: defaultReducer, actions: {} };
-    const { actions } = template;
-    Object.keys(actions).forEach((actionName) => {
-      newRouter[actionName] = this.createActionWrapperFunction(actions[actionName]);
-    });
-    
-    // gets the value to be used for the cache
-    // newRouter['getCacheValue']: this.templates.getCacheValue;
+    const RouterType = this.routerTypes[type] || this.routerTypes['scene'];
 
-    // add reducer from template
-    newRouter['reducer'] = template.reducer;
-
-    return newRouter;
+    return new RouterType(initalParams);
   }
 
   // removing a router will also unset all of its children
@@ -174,36 +179,25 @@ export default class RouterManager {
   // location -> newState
   // newState -> routerStates :specify
   setNewRouterState(location) {
-    const existingRouterState = this.routerStateStore.getState();
-    const newState = this.calcNewRouterState(location, this.rootRouter, existingRouterState);
+    // console.log('location', location)
+    const newState = this.calcNewRouterState(location, this.rootRouter);
+    // console.log('STATE', newState)
     this.routerStateStore.setState(newState);
   }
 
-  calcNewRouterState(location, router, existingState = {}, ctx = {}, newState = {}) {
+  calcNewRouterState(location, router, ctx = {}, newState = {}) {
     if (!router) { return; }
 
     // calc new router state from new location and existing state
-    newState[router.name] = router.reducer(location, existingState[router.name], ctx);
+    newState[router.name] = router.reducer(location, router, ctx);
 
+    // recursive call all children to add their state
     Object.keys(router.routers)
       .forEach(type => {
         router.routers[type]
-          .forEach(childRouter => this.calcNewRouterState(location, childRouter, existingState, ctx, newState))
+          .forEach(childRouter => this.calcNewRouterState(location, childRouter, ctx, newState))
       });
 
     return newState;
   }
 }
-
-
-// manager type implements subscription
-
-// mobx router vs observable router
-// mobx is state store
-// mobx just has state values
-
-// observable router
-// -> getState
-// -> subscribe
-
-// routers have default, config, routers, name, routeKey

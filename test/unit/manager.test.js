@@ -1,6 +1,6 @@
-import Manager from '../src/manager';
-import { NativeSerializedStore, BrowserSerializedStore } from '../src/serializedState';
-import RouterStore from '../src/routerState';
+import Manager from '../../src/manager';
+import { NativeSerializedStore, BrowserSerializedStore } from '../../src/serializedState';
+import RouterStore from '../../src/routerState';
 
 describe('Router Manager', () => {
   const routerTree = {
@@ -152,13 +152,13 @@ describe('Router Manager', () => {
         const location = { pathname: ['test'], search: { param1: '2', param2: 'testparam'}, options: {}}
         manager.serializedStateStore.setState(location);
 
-        expect(userObserverFn.mock.calls[0][0]).toEqual({ current: {}, historical: [{ visible: false, order: 1 }, {}] });
+        expect(userObserverFn.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{ visible: false, order: 1 }, {}] });
         expect(userObserverFn.mock.calls.length).toEqual(1);
 
-        expect(secondUserObserverFn.mock.calls[0][0]).toEqual({ current: {}, historical: [{ visible: false, order: 1 }, {}] });
+        expect(secondUserObserverFn.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{ visible: false, order: 1 }, {}] });
         expect(secondUserObserverFn.mock.calls.length).toEqual(1);
 
-        expect(rootObserverFn.mock.calls[0][0]).toEqual({ current: {}, historical: [{ visible: true, order: 22 }, {}] });
+        expect(rootObserverFn.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{ visible: true, order: 22 }, {}] });
         expect(rootObserverFn.mock.calls.length).toEqual(1);
       });
     });

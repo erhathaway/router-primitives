@@ -12,19 +12,24 @@ export default class DefaultRoutersStateAdapter {
     const hasUpdatedTracker = [];
 
     this.store = routerNames.reduce((routerStates, routerName) => {
-      // extract current and historical states
-      const { current, historical } = routerStates[routerName] || { current: {}, historical: [] };
+       // extract current and historical states
+      const { current: prevCurrent, historical } = routerStates[routerName] || { current: {}, historical: [] };
+      const newCurrent = desiredRouterStates[routerName];
+
+      // // remove null and undefined keys
+      // Object.keys(newCurrent).forEach((key) => (newCurrent[key] == null) && delete newCurrent[key]);
+      
       // skip routers who haven't been updated
-      if (desiredRouterStates[routerName] === current) { return routerStates; }
+      if (newCurrent === prevCurrent) { return routerStates; }
 
       // clone historical states
       let newHistorical = historical.slice();
       // add current to historical states
-      newHistorical.unshift(current);
+      newHistorical.unshift(prevCurrent);
       // enforce history size
       if (newHistorical.length > this.config.historySize) { newHistorical = newHistorical.slice(0, this.config.historySize); }
       // update state to include new router state
-      routerStates[routerName] = { current: desiredRouterStates[routerName], historical: newHistorical }
+      routerStates[routerName] = { current: newCurrent, historical: newHistorical }
 
       // record which routers have had a state change
       hasUpdatedTracker.push(routerName);
@@ -44,7 +49,7 @@ export default class DefaultRoutersStateAdapter {
 
   createRouterStateGetter(routerName) {
     return () => {
-      return this.store[routerName];
+      return this.store[routerName] || {};
     };
   }
 
