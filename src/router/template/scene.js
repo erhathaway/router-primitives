@@ -39,9 +39,11 @@ const reducer = (location, router, ctx) => {
   return newState;
 };
 
+
+// TODO figure out what to do about default states
 const defaultState = {
   visible: 'lala',
-}
+};
 
 const parser = () => {
   
@@ -52,6 +54,6 @@ const scene = {
   state: defaultState,
   reducer,
   parser,
-}
+};
 
 export default scene;
