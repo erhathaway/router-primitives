@@ -1,7 +1,7 @@
 // takes an object of keys where the value's
 // represent order and turns it into an array of ordered keys
 function getRouteKeyOrderings(router) {
-  const routeKeyOrderObj = routerouter.parent.routers[router.type].map(r => {
+  const routeKeyOrderObj = router.parent.routers[router.type].map(r => {
     if (r.state.visible === false) { return undefined; }
     return { [r.routeKey]: r.state.order }
   }).filter(obj => !!obj);
@@ -36,13 +36,13 @@ const show = (location, router, ctx) => {
   const sortedKeys = getRouteKeyOrderings(router);
 
   // find index of this routers routeKey
-  const index = sortedKeys.indexOf(this.routeKey);
+  const index = sortedKeys.indexOf(router.routeKey);
   if (index > -1) {
     // remove routeKey if it exists
     sortedKeys.splice(index, 1);
   }
   // add route key to front of sorted keys
-  sortedKeys.unshift(this.routeKey);
+  sortedKeys.unshift(router.routeKey);
 
   // create search object
   const search = sortedKeys.reduce((acc, key, i) => {
@@ -58,12 +58,12 @@ const show = (location, router, ctx) => {
 };
 
 const hide = (location, router, ctx) => {
-  if (!this.parent) return location;
+  if (!router.parent) return location;
 
   const sortedKeys = getRouteKeyOrderings(router);
 
   // find index of this routers routeKey
-  const index = sortedKeys.indexOf(this.routeKey);
+  const index = sortedKeys.indexOf(router.routeKey);
   if (index > -1) {
     // remove routeKey if it exists
     sortedKeys.splice(index, 1);
@@ -75,7 +75,7 @@ const hide = (location, router, ctx) => {
     return acc;
   }, {});
   // remove this routeKey from the router type search
-  search[this.routeKey] = undefined;
+  search[router.routeKey] = undefined;
 
   location.search = { ...location.search, ...search };
 
@@ -86,12 +86,12 @@ const hide = (location, router, ctx) => {
 };
 
 const moveForward = (location, router, ctx) => {
-  if (!this.parent) return location;
+  if (!router.parent) return location;
 
   const sortedKeys = getRouteKeyOrderings(router);
 
   // find index of this routers routeKey
-  const index = sortedKeys.indexOf(this.routeKey);
+  const index = sortedKeys.indexOf(router.routeKey);
   if (index > -1) {
     // remove routeKey if it exists
     sortedKeys.splice(index, 1);
@@ -99,7 +99,7 @@ const moveForward = (location, router, ctx) => {
 
   // move routeKey router forward by one in the ordered routeKey list
   const newIndex = index >= 1 ? index - 1 : 0;
-  sortedKeys.splice(newIndex, 0, this.routeKey);
+  sortedKeys.splice(newIndex, 0, router.routeKey);
 
   // create router type data obj
   const search = sortedKeys.reduce((acc, key, i) => {
@@ -120,12 +120,12 @@ const moveForward = (location, router, ctx) => {
 }
 
 const moveBackward = (location, router, ctx) => {
-  if (!this.parent) return location;
+  if (!router.parent) return location;
 
   const sortedKeys = getRouteKeyOrderings(router);
 
   // find index of this routers routeKey
-  const index = sortedKeys.indexOf(this.routeKey);
+  const index = sortedKeys.indexOf(router.routeKey);
   if (index > -1) {
     // remove routeKey if it exists
     sortedKeys.splice(index, 1);
@@ -133,7 +133,7 @@ const moveBackward = (location, router, ctx) => {
 
   // move routeKey router backward by one in the ordered routeKey list
   const newIndex = index + 1;
-  sortedKeys.splice(newIndex, 0, this.routeKey);
+  sortedKeys.splice(newIndex, 0, router.routeKey);
 
   // create router type data obj
   const search = sortedKeys.reduce((acc, key, i) => {
@@ -160,19 +160,19 @@ const bringToFront = (location, router, ctx) => {
 }
 
 const sendToBack = (location, router, ctx) => {
-  if (!this.parent) return location;
+  if (!router.parent) return location;
 
   const sortedKeys = getRouteKeyOrderings(router);
 
   // find index of this routers routeKey
-  const index = sortedKeys.indexOf(this.routeKey);
+  const index = sortedKeys.indexOf(router.routeKey);
   if (index > -1) {
     // remove routeKey if it exists
     sortedKeys.splice(index, 1);
   }
 
   // add to back of stack
-  sortedKeys.push(this.routeKey);
+  sortedKeys.push(router.routeKey);
 
   // create router type data obj
   const search = sortedKeys.reduce((acc, key, i) => {

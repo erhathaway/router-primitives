@@ -1,10 +1,14 @@
 import { NativeSerializedStore, BrowserSerializedStore } from './serializedState';
 import DefaultRouterStateStore from './routerState';
 import Router from './router/base';
-import { scene } from './router/template';
+import { scene, stack } from './router/template';
 
 const defaultReducer = () => ({}); // TODO REMOVE and default to Scene template
 const defaultAction = () => ({ pathname: 'user1', search: ['hello', 'world'] }); // TODO REMOVE and default to Scene template
+
+const capitalize = (string = '') => {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
 export default class RouterManager {
   constructor({ routerTree, serializedStateStore, routerStateStore } = {}) {
@@ -21,16 +25,21 @@ export default class RouterManager {
     
     // router types
     // TODO change to local variable
-    this.templates = { scene };
+    this.templates = { scene, stack };
     this.routerTypes = {};
 
     // TODO implement
     // RouterManager.validateTemplates(templates);
+    // validate all template names are unique
     // validation should make sure action names dont collide with any Router method names
 
     Object.keys(this.templates).forEach((templateName) => {
       // create a RouterType off the base Router
-      const RouterType = Router //{ ...Router } //. Router. Object.assign({}, Router);
+
+      class RouterType extends Router {}
+      // const RouterType = {[`${templateName}Router`]: class extends Router {
+      // }}[`${templateName}Router`];
+      Object.defineProperty (RouterType, 'name', {value: `${capitalize(templateName)}Router`});
       
       // fetch template
       const selectedTemplate = this.templates[templateName];
@@ -48,7 +57,6 @@ export default class RouterManager {
 
       this.routerTypes[templateName] = RouterType;
     });
-
 
     // add initial routers
     this.addRouters(routerTree);
@@ -151,7 +159,7 @@ export default class RouterManager {
     };
     
     const RouterType = this.routerTypes[type] || this.routerTypes['scene'];
-
+    
     return new RouterType(initalParams);
   }
 
