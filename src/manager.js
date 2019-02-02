@@ -3,9 +3,6 @@ import DefaultRouterStateStore from './routerState';
 import Router from './router/base';
 import { scene, stack } from './router/template';
 
-const defaultReducer = () => ({}); // TODO REMOVE and default to Scene template
-const defaultAction = () => ({ pathname: 'user1', search: ['hello', 'world'] }); // TODO REMOVE and default to Scene template
-
 const capitalize = (string = '') => {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -24,8 +21,7 @@ export default class RouterManager {
     }
     
     // router types
-    // TODO change to local variable
-    this.templates = { scene, stack };
+    const templates = { scene, stack };
     this.routerTypes = {};
 
     // TODO implement
@@ -33,16 +29,17 @@ export default class RouterManager {
     // validate all template names are unique
     // validation should make sure action names dont collide with any Router method names
 
-    Object.keys(this.templates).forEach((templateName) => {
+    Object.keys(templates).forEach((templateName) => {
       // create a RouterType off the base Router
 
+      // extend router base for specific type
       class RouterType extends Router {}
-      // const RouterType = {[`${templateName}Router`]: class extends Router {
-      // }}[`${templateName}Router`];
+
+      // change the router name to include the type
       Object.defineProperty (RouterType, 'name', {value: `${capitalize(templateName)}Router`});
       
       // fetch template
-      const selectedTemplate = this.templates[templateName];
+      const selectedTemplate = templates[templateName];
 
       // add actions to RouterType
       Object.keys(selectedTemplate.actions).forEach((actionName) => {

@@ -1,10 +1,11 @@
-// takes an object of keys where the value's
-// represent order and turns it into an array of ordered keys
+// returns the routeKey names of visible routers based on the ordering of their 'order' state
 function getRouteKeyOrderings(router) {
-  const routeKeyOrderObj = router.parent.routers[router.type].map(r => {
-    if (r.state.visible === false) { return undefined; }
-    return { [r.routeKey]: r.state.order }
-  }).filter(obj => !!obj);
+  // creates an object of { [visible router routeKey]: order }
+  const routeKeyOrderObj = router.parent.routers[router.type].reduce((acc, r) => {
+    if (r.state.visible === false) { return acc; }
+    acc[r.routeKey] =  r.state.order;
+    return acc;
+  }, {});
 
   /*
     { <routeKeyName>: <order> }
