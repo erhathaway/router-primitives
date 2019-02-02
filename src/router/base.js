@@ -1,6 +1,6 @@
 export default class RouterBase {
   constructor(init = {}) {
-    const { name, config, type, manager, parent, routers, root, getState, subscribe } = init;
+    const { name, config, type, manager, parent, routers, root, routeKey, getState, subscribe } = init;
 
     // console.log(name, config, type, manager)
     if (!name  || !type || !manager) { throw new Error('Missing required kwargs: name, type, and/or manager'); }
@@ -31,7 +31,7 @@ export default class RouterBase {
     return this.config.shouldStoreLocationMutationInHistory;
   }
 
-  get siblingRouters() {
+  get siblings() {
     return this.parent.routers[this.type].filter(r => r.name !== this.name);
   }
 
@@ -95,7 +95,7 @@ export default class RouterBase {
       const neighboringSceneRouters = this.getNeighborsByType('scene');
       // if (neighboringSceneRouters.length === 0) return true;
 
-      return (neighboringSceneRouters.length === 0) && !this.siblingRouters.reduce((acc, r) => (
+      return (neighboringSceneRouters.length === 0) && !this.siblings.reduce((acc, r) => (
         // check all data router siblings and
         // make sure none are path routers
         acc || r.config.isPathRouter === true

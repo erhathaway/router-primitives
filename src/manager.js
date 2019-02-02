@@ -132,13 +132,13 @@ export default class RouterManager {
   //   mutateExistingLocation: boolean, default: false
   //   cacheState: boolean, default: null, is equal to true
   // }
-  createRouter({ name, config, defaults, type, parentName }) {
+  createRouter({ name, routeKey, config, defaults, type, parentName }) {
     const parent = this.routers[parentName];
 
     const initalParams = {
       name,
       // routeKey,
-      config,
+      config: { ...config, routeKey },
       type: type || 'scene', // make root routers a scene router TODO make root router an empty template
       parent,
       routers: {},

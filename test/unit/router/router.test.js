@@ -20,6 +20,12 @@ describe('Router', () => {
       const initializeRight = () => new Router(mockInit);
       expect(initializeRight).not.toThrow(Error);
     });
+
+    it('Can set routeKey', () => {
+      const mockInit = generateMockInit({}, { config: { routeKey: 'hi' }} );
+      const router = new Router(mockInit);
+      expect(router.routeKey).toBe('hi');
+    })
   });
 
   describe('Is a path router', () => {
@@ -111,9 +117,9 @@ describe('Router', () => {
       parentRouter._addChildRouter(dataRouterTwo);
       parentRouter._addChildRouter(sceneRouter);
 
-      expect(sceneRouter.siblingRouters.length).toBe(0);
-      expect(dataRouterOne.siblingRouters.length).toBe(1);
-      expect(dataRouterTwo.siblingRouters.length).toBe(1);
+      expect(sceneRouter.siblings.length).toBe(0);
+      expect(dataRouterOne.siblings.length).toBe(1);
+      expect(dataRouterTwo.siblings.length).toBe(1);
     });
   });
 

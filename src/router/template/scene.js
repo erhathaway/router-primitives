@@ -1,10 +1,16 @@
 const show = (location, router, ctx) => {
+  // hide sibling routers
+  location = router.siblings.reduce((acc, s) => { 
+    return s.hide(acc, s, ctx);
+  }, location);
+
   if (router.isPathRouter) {
-    const parent = router.parent;
+    const { parent } = router;
     if (!parent || (!parent.state.visible && !parent.isRootRouter)) { return location; }
 
     location.pathname[router.pathLocation] = router.routeKey;
-
+    // drop pathname after this pathLocation
+    location.pathname = location.pathname.slice(0, router.pathLocation + 1);
   } else {
     location.search[router.routeKey] = true;
   }
@@ -13,26 +19,23 @@ const show = (location, router, ctx) => {
 };
 
 const hide = (location, router, ctx) => {
+  if (router.isPathRouter) {
+    location.pathname = location.pathname.slice(0, router.pathLocation);
+  } else {
+    location.search[router.routeKey] = undefined;
+  }
+
   return location;
 };
 
 const reducer = (location, router, ctx) => {
-  // console.log('-----------------------------')
   const newState = {};
   if (router.isPathRouter) {
-    location.pathname[router.pathLocation] === router.routeKey
-      ? newState['visible'] = true
-      : newState['visible'] = false
+    newState['visible'] = location.pathname[router.pathLocation] === router.routeKey;
   } else {
-    location.search[router.routeKey] === 'true'
-      ? newState['visible'] = true
-      : newState['visible'] = false
+    newState['visible'] = location.search[router.routeKey] === 'true';
   }
-  // console.log('new state', router.pathLocation, location, newState)
-  // if (router.routeKey === 'toolbar') {
-  //   console.log('newState', router.routeKey, newState, router.routeKey, router.pathLocation)
-  //   console.log('user location', location)
-  // }
+
   return newState;
 };
 
