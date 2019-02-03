@@ -64,7 +64,7 @@ describe('Integration', () => {
         expect(welcomeObserver.mock.calls[2]).toBe(undefined);
       });
 
-      it('"Show" and "Hide" with existing modal changes ordering', () => {
+      it('"Show" and "Hide" with existing stacks change ordering', () => {
         const manager = new Manager({ routerTree });
         const welcomeObserver = jest.fn();
         const cookiesObserver = jest.fn();
@@ -108,6 +108,68 @@ describe('Integration', () => {
         expect(welcomeObserver.mock.calls[4][0].current).toEqual({ order: undefined, visible: false });
         expect(cookiesObserver.mock.calls[3][0].current).toEqual({ order: '1', visible: true });
         expect(dataObserver.mock.calls[3][0].current).toEqual({ order: '2', visible: true });
+      });
+
+      it('Movement actions work - forward, backwards, toFront, toBack', () => {
+        const manager = new Manager({ routerTree });
+        const welcomeObserver = jest.fn();
+        const cookiesObserver = jest.fn();
+        const dataObserver = jest.fn();
+
+        const welcomeRouter = manager.routers['welcome-modal'];
+        const cookiesRouter = manager.routers['cookies-modal'];
+        const dataRouter = manager.routers['data-modal'];
+
+        welcomeRouter.subscribe(welcomeObserver);
+        cookiesRouter.subscribe(cookiesObserver);
+        dataRouter.subscribe(dataObserver);
+
+        dataRouter.show();
+        welcomeRouter.toFront();
+        cookiesRouter.toFront();
+
+        expect(dataObserver.mock.calls[0][0].current).toEqual({ order: '1', visible: true });
+        expect(dataObserver.mock.calls[1][0].current).toEqual({ order: '2', visible: true });
+        expect(dataObserver.mock.calls[2][0].current).toEqual({ order: '3', visible: true });
+
+        expect(welcomeObserver.mock.calls[2][0].current).toEqual({ order: '2', visible: true });
+        expect(cookiesObserver.mock.calls[1][0].current).toEqual({ order: '1', visible: true });
+
+        dataRouter.toFront();
+
+        expect(dataObserver.mock.calls[3][0].current).toEqual({ order: '1', visible: true });
+        expect(welcomeObserver.mock.calls[3][0].current).toEqual({ order: '3', visible: true });
+        expect(cookiesObserver.mock.calls[2][0].current).toEqual({ order: '2', visible: true });
+
+        dataRouter.toBack();
+
+        expect(dataObserver.mock.calls[4][0].current).toEqual({ order: '3', visible: true });
+        expect(welcomeObserver.mock.calls[4][0].current).toEqual({ order: '2', visible: true });
+        expect(cookiesObserver.mock.calls[3][0].current).toEqual({ order: '1', visible: true });
+
+        welcomeRouter.toBack();
+
+        expect(dataObserver.mock.calls[5][0].current).toEqual({ order: '2', visible: true });
+        expect(welcomeObserver.mock.calls[5][0].current).toEqual({ order: '3', visible: true });
+        expect(cookiesObserver.mock.calls[4]).toBe(undefined);
+
+        welcomeRouter.forward();
+
+        expect(dataObserver.mock.calls[6][0].current).toEqual({ order: '3', visible: true });
+        expect(welcomeObserver.mock.calls[6][0].current).toEqual({ order: '2', visible: true });
+        expect(cookiesObserver.mock.calls[4]).toBe(undefined);
+
+        welcomeRouter.backward();
+
+        expect(dataObserver.mock.calls[7][0].current).toEqual({ order: '2', visible: true });
+        expect(welcomeObserver.mock.calls[7][0].current).toEqual({ order: '3', visible: true });
+        expect(cookiesObserver.mock.calls[4]).toBe(undefined);
+
+        cookiesRouter.backward();
+
+        expect(dataObserver.mock.calls[8][0].current).toEqual({ order: '1', visible: true });
+        expect(welcomeObserver.mock.calls[8]).toBe(undefined);
+        expect(cookiesObserver.mock.calls[4][0].current).toEqual({ order: '2', visible: true });
       });
     });
   });

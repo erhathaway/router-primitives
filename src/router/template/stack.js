@@ -86,7 +86,7 @@ const hide = (location, router, ctx) => {
   return location;
 };
 
-const moveForward = (location, router, ctx) => {
+const forward = (location, router, ctx) => {
   if (!router.parent) return location;
 
   const sortedKeys = getRouteKeyOrderings(router);
@@ -120,7 +120,7 @@ const moveForward = (location, router, ctx) => {
   return location;
 }
 
-const moveBackward = (location, router, ctx) => {
+const backward = (location, router, ctx) => {
   if (!router.parent) return location;
 
   const sortedKeys = getRouteKeyOrderings(router);
@@ -154,13 +154,13 @@ const moveBackward = (location, router, ctx) => {
   return location;
 }
 
-const bringToFront = (location, router, ctx) => {
+const toFront = (location, router, ctx) => {
   // const newLocation = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
-  router.show(location, router, ctx);
+  return router.show(location, router, ctx);
 }
 
-const sendToBack = (location, router, ctx) => {
+const toBack = (location, router, ctx) => {
   if (!router.parent) return location;
 
   const sortedKeys = getRouteKeyOrderings(router);
@@ -230,7 +230,7 @@ const parser = () => {
 }
 
 const stack = {
-  actions: { show, hide, moveForward, moveBackward, bringToFront, sendToBack },
+  actions: { show, hide, forward, backward, toFront, toBack },
   state: defaultState,
   reducer,
   parser,
