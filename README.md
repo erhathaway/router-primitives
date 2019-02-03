@@ -3,7 +3,7 @@
 
 Recursive router is a different take on routing that hopefully increases developer productivity and allows for the easier creation and maintaince of complex routing. 
 
-With Recursive, instead of defining how the URL is constructed you **define the visual elements of your app** and URL construction is automatically handled for you - based on the hierarchical arrangement of routers! Plus, if you work on a platform where there is no concept of a URL, you can still use this library (since the URL is simiply serialized state managed by the `serializedStateStore` - which is platform aware and configurable)!
+With Recursive, instead of defining how the URL is constructed you **define the visual elements of your app** and URL construction is automatically handled for you - based on the hierarchical arrangement of routers! Plus, if you work on a platform where there is no concept of a URL, you can still use this library (since the URL is simiply managed serialized state - which is platform aware and configurable)!
 
 Bindings exist for Mobx, Redux, and [React](https://github.com/erhathaway/recursive-router-react).
 
@@ -32,7 +32,7 @@ The goal of this library is to create a common interface for components of an ap
 
 Furthermore, the goal of this library is to also provide declarative ways to perform complex routing, based on things like: sibling router state, neighborhood router state, historical state, deep linking, serialization of arbitrary data into router path, etc. 
 
-Recurisve tries to be modular, extensible, and  framework agnostic. Thus, it can work directly in your app or you can use bindings for Mobx, Redux, and/or React. 
+Recursive tries to be modular, extensible, and framework agnostic. Thus, it can work directly in your app or you can use bindings for Mobx, Redux, and/or React. 
 
 #### Bindings
 
@@ -46,16 +46,16 @@ Redux bindings: [github.com/erhathaway/recursive-router-redux](https://github.co
 
 Mobx bindings: [github.com/erhathaway/recursive-router-mobx](https://github.com/erhathaway/recursive-router-mobx)
 - The router instance is now a Mobx instance. 
-- All observable state is accessible directly as attributes on the router. No need to call `getState` or `getHistory`.
+- All observable state is accessible directly as attributes on the router. No need to call the `state` or `history` getters.
 
 #### Custom Router Logic
 
-Should the existing router types not be enough, this library provides you with a way to create your own routers!
+Should the existing router types not be enough, this library provides you with a way to create your own routers! See [Router templates](#extensions)
 
 ## How it works
 
-1. Recursive router treats the URL as a namespace for the storage of a state tree representing `all routable state`™. 
-2. Writing to the URL is handled by the router.
+1. Recursive treats the URL as a namespace for the storage of a state tree representing `all routable state`™. 
+2. Writing to the URL is handled by the router and via direct user modification.
 3. Changes to the URL are reduced over the router state tree
 4. Various types of routers in the router state tree exist. The differences are used to control how their state will get updated when the URL changes.
 5. Once the router state tree has been updated, observers of only updated routers are notified.
@@ -98,13 +98,13 @@ The manager is what you use to add routers to your app. You can either add a tre
 When you initialize the manager, you have the option of supplying an initial router tree. The router tree is how you describe the layout of your app in terms of routers:
 
 ```
-                  [root Rouer]
-                         |___________________________________________________________
-                         |                    |                                     |
-                [feature Router]       [sceneA Router]                       [sceneB Router]
-                         |                    |_________________                    |
-                         |                    |                |                    |
-                  [sceneF Router]     [sceneC Router]   [sceneD Router]      [dataA Router]
+                                                   [root Rouer]
+                         _______________________________|______________________________
+                         |                              |                             |
+                [feature Router]                 [sceneA Router]              [sceneB Router]
+                         |                    __________|_________                    |
+                         |                    |                  |                    |
+                  [sceneF Router]     [sceneC Router]     [sceneD Router]      [dataA Router]
                                               |
                                               |
                                        [dataB Router]
@@ -122,8 +122,7 @@ Each router in the router tree is simply a javascript object:
 
 ## Router Instance
 
-Once you have have added a router to the manager, using a declaration object or tree of declaration objects (see above),
-the manager will have created Router instances to represent each node in the tee. These router instances are the main way you will control routing in your app.
+Once you have have added a router to the manager, using a router declaration object or tree of router declaration objects (see above), the manager will have created Router instances to represent each node in the tee. These router instances are the main way you will control routing in your app.
 
 ### Methods 
 
@@ -131,6 +130,7 @@ the manager will have created Router instances to represent each node in the tee
 | ---- | ----------- | 
 | `show` | Shows the router |
 | `hide` | Hides the router |
+| `neighborsOfType` | Other routers in the same neighborhood and **Not** of the same type |
 | `subscribe` | Subscribes an observer to changes in the router state |
 | `<actions>` | Other actions may exist depending on the router type. See [Router Types](#Router-Types) |
 
@@ -140,13 +140,12 @@ the manager will have created Router instances to represent each node in the tee
 | ---- | ---- | ----------- | 
 | `manager` | Manager Instance | Returns the current manager overseeing the routers | 
 | `siblings` | Array | Other routers in the same neighborhood and of the same type |
-| `neighbors` | Object | Other routers in the same neighborhood and **Not** of the same type |
 | `state` | Object | Router state. See [Router Types](#Router-Types) for specific attributes |
 | `history` | Array | An array of previous router states |
 
 ## Router types
 
-Almost all routeable and dynamic apps can be expressed in terms of 4 predefined router types: `Stack`, `Scene`, `Feature`, and `Data`. If these routers don't suit your needs, see below for how to create your own router type.
+Almost all routeable and dynamic apps can be expressed in terms of 4 predefined router types: `Stack`, `Scene`, `Feature`, and `Data`. If these routers don't suit your needs, you can easily create your own router type via [Router Templates](#extensions).
 
 
 ### `Scene` router
