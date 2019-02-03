@@ -3,7 +3,7 @@
 
 Recursive router is a different take on routing that hopefully increases developer productivity and allows for the easier creation and maintaince of complex routing. 
 
-With Recursive, instead of defining how the URL is constructed you **define the visual elements of your app** and URL construction is automatically handled! Plus, if you work on a platform where there is no concept of a URL, you can still use this library (since the URL is simiply serialized state managed by the `serializedStateStore` which is platform aware and configurable)!
+With Recursive, instead of defining how the URL is constructed you **define the visual elements of your app** and URL construction is automatically handled! Plus, if you work on a platform where there is no concept of a URL, you can still use this library (since the URL is simiply serialized state managed by the `serializedStateStore` - which is platform aware and configurable)!
 
 Bindings exist for Mobx, Redux, and [React](https://github.com/erhathaway/recursive-router-react).
 
@@ -89,7 +89,28 @@ If you dislike how much ceremony is around configuring a router and you also fre
 - [Architecture](#architecture)
 - [Extensions](#extensions)
 
-## Router Tree Declaration
+## Manager
+
+The manager is what you use to add routers to your app. You can either add a tree of routers during initialization, or add them one at a time afterwards
+
+## Router Declaration
+
+When you initialize the manager, you have the option of supplying an initial router tree. The router tree is how you describe the layout of your app in terms of routers:
+
+```
+                  [root Rouer]
+                         |___________________________________________________________
+                         |                    |                                     |
+                [feature Router]       [sceneA Router]                       [sceneB Router]
+                         |                    |_________________                    |
+                         |                    |                |                    |
+                  [sceneF Router]     [sceneC Router]   [sceneD Router]      [dataA Router]
+                                              |
+                                              |
+                                       [dataB Router]
+
+```
+Each router in the router tree is simply a javascript object:
 
 | Name | Description | Requried | Default |
 | ---- | ----------- | -------- | ------- |
@@ -100,6 +121,9 @@ If you dislike how much ceremony is around configuring a router and you also fre
 | `options.isPathRouter` | If should forceibly be part of pathname. See [pathname](#pathname) | NO | False |
 
 ## Router Instance
+
+Once you have have added a router to the manager, using a declaration object or tree of declaration objects (see above),
+the manager will have created Router instances to represent each node in the tee. These router instances are the main way you will control routing in your app.
 
 ### Methods 
 
