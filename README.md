@@ -289,6 +289,24 @@ const routers = registerRouter(tree);
 - [Architecture](#architecture)
 - [Extensions](#extensions)
 
+## Default Visibility
+
+By default, all routers are hidden - aka `visible: false`.
+
+To have certain routers become visible when their immediate parent is visible, you can set the `defaultVisible` key to `true` in your router declaration object.
+
+```
+{ 
+  name: my-router
+  routers: {
+    scene: [<child-scene-router>, <other-child-scene-router>],
+    data: [<child-data-router>],
+  },
+  defaultVisible: true,
+}
+```
+    
+
 ## URL Construction 
 
 URL construction is automatically handled for you based on the router hierarchy you define.
