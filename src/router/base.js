@@ -1,8 +1,9 @@
+import Cache from './cache';
+
 export default class RouterBase {
   constructor(init = {}) {
-    const { name, config, type, manager, parent, routers, root, routeKey, getState, subscribe } = init;
+    const { name, config, type, manager, parent, routers, root, defaultShow, getState, subscribe } = init;
 
-    // console.log(name, config, type, manager)
     if (!name  || !type || !manager) { throw new Error('Missing required kwargs: name, type, and/or manager'); }
     // required
     this.name = name;
@@ -20,7 +21,11 @@ export default class RouterBase {
     this.getState = getState;
     this.subscribe = subscribe;
 
-    // this.show = this.show(this);
+    // default actions to call when immediate parent visibility changes from hidden -> visible
+    this.defaultShow = defaultShow || false;
+
+    // store the routers location data for rehydration
+    this.cache = new Cache();
   }
 
   get routeKey() {
@@ -134,6 +139,22 @@ export default class RouterBase {
   //   return this.reduceChildren('hide', location)
   // }
 
+  // modify location with default actions
+  // static addLocationDefaults(location, routerInstance, ctx = {}) {
+  //   // TODO validate default action names are on type
+  //   let locationWithDefaults = { ...location };
+
+  //   Object.keys(routerInstance.routers).forEach((type) => {
+  //     routerInstance.routers[type].forEach((router) => {
+  //       if (router.defaultShow || false) {
+  //         const newContext = { ...ctx, addingDefaults: true };
+  //         locationWithDefaults = router.show(locationWithDefaults, router, newContext);
+  //       }
+  //     });
+  //   });
+  //   return locationWithDefaults;
+  // }
+
   rehydrateLocationFromCache(newLocation) {
     let location = newLocation;
     if (newLocation && (this.config.cache === null || this.config.restoreFromCache === true) && this.parentsAllowLocationCache) {
@@ -161,7 +182,7 @@ export default class RouterBase {
     //   location = this._hide(location)
     // }
 
-    return location
+    return location;
   }
 
 
@@ -227,19 +248,19 @@ export default class RouterBase {
     return { pathname: location.pathname, search: location.search, options };
   }
 
-  actionHandler(action) {
-    return (location) => {
-      // if no location has been specified, b/c this is the primary action call
-      if (!location) {
-        let newLocation = this.manager.location
-        const updatedLocation = action(location);
-        this.manager.setLocation(updatedLocation);
-      } else {
-        // if a location has been specified, this isn't the primary action call
-        // the location should be returned such that the orignal action call can recieve it
-        const updatedLocation = action(location);
-        return updatedLocation;
-      }
-    }
-  }
+  // actionHandler(action) {
+  //   return (location) => {
+  //     // if no location has been specified, b/c this is the primary action call
+  //     if (!location) {
+  //       let newLocation = this.manager.location;
+  //       const updatedLocation = action(newLocation);
+  //       this.manager.setLocation(updatedLocation);
+  //     } else {
+  //       // if a location has been specified, this isn't the primary action call
+  //       // the location should be returned such that the orignal action call can recieve it
+  //       const updatedLocation = action(location);
+  //       return updatedLocation;
+  //     }
+  //   }
+  // }
 }
