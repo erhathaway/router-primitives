@@ -232,21 +232,21 @@ export default class RouterBase {
     return newLocation;
   }
   
-  updateLocation(Options, newOptions) {
-    // Only add the shouldStoreLocationMutationInHistory if it hasn't already explicitly been set.
-    // The shouldStoreLocationMutationInHistory option prevents location mutation.
-    // This prevents additional history from being added to location history.
-    // Ex: You have modal popups and want the back button to return to the previous scene not close the modal
-    // const { options } = location;
-    // if (newOptions.shouldStoreLocationMutationInHistory && location.options.shouldStoreLocationMutationInHistory === undefined) {
-    //   options = { ...options, ...newOptions };
-    // }
+  // updateLocation(Options, newOptions) {
+  //   // Only add the shouldStoreLocationMutationInHistory if it hasn't already explicitly been set.
+  //   // The shouldStoreLocationMutationInHistory option prevents location mutation.
+  //   // This prevents additional history from being added to location history.
+  //   // Ex: You have modal popups and want the back button to return to the previous scene not close the modal
+  //   // const { options } = location;
+  //   // if (newOptions.shouldStoreLocationMutationInHistory && location.options.shouldStoreLocationMutationInHistory === undefined) {
+  //   //   options = { ...options, ...newOptions };
+  //   // }
 
-    // delete newOptions.shouldStoreLocationMutationInHistory;
-    // options = { ...options, ...newOptions };
+  //   // delete newOptions.shouldStoreLocationMutationInHistory;
+  //   // options = { ...options, ...newOptions };
 
-    return { pathname: location.pathname, search: location.search, options };
-  }
+  //   return { pathname: location.pathname, search: location.search, options };
+  // }
 
   // actionHandler(action) {
   //   return (location) => {

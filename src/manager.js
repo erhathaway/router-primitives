@@ -7,7 +7,7 @@ const capitalize = (string = '') => {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-export default class RouterManager {
+export default class Manager {
   constructor({ routerTree, serializedStateStore, routerStateStore } = {}) {
     this.routerStateStore = routerStateStore || new DefaultRouterStateStore();
     this.routers = {};
@@ -25,7 +25,7 @@ export default class RouterManager {
     this.routerTypes = {};
 
     // TODO implement
-    // RouterManager.validateTemplates(templates);
+    // Manager.validateTemplates(templates);
     // validate all template names are unique
     // validation should make sure action names dont collide with any Router method names
 
@@ -43,7 +43,7 @@ export default class RouterManager {
 
       // add actions to RouterType
       Object.keys(selectedTemplate.actions).forEach((actionName) => {
-        RouterType.prototype[actionName] = RouterManager.createActionWrapperFunction(selectedTemplate.actions[actionName]);
+        RouterType.prototype[actionName] = Manager.createActionWrapperFunction(selectedTemplate.actions[actionName], actionName);
       });
 
       // add reducer to RouterType
@@ -88,9 +88,9 @@ export default class RouterManager {
   }
 
 
-  addRouter({ name, routeKey, config, defaults, type, parentName }) {
+  addRouter({ name, routeKey, config, defaultShow, type, parentName }) {
     // create a router
-    const router = this.createRouter({ name, routeKey, config, defaults, type, parentName });
+    const router = this.createRouter({ name, routeKey, config, defaultShow, type, parentName });
     
     // set as the parent router if this router has not parent and there is not yet a root
     if (!parentName && !this.rootRouter) { 
@@ -113,22 +113,70 @@ export default class RouterManager {
     this.routers[name] = router;
   }
 
+  static setChildrenDefaults(location, router, ctx) {
+    let newLocation = { ...location };
+    Object.keys(router.routers).forEach((routerType) => {
+      router.routers[routerType].forEach((child) => {
+        // const child = router.routers[childName]
+        // console.log('child show', child.name)
+        if (child.defaultShow) {
+          const newContext = { ...ctx, addingDefaults: true };
+          newLocation = child.show(newLocation, child, newContext);
+        }
+      });
+    });
+
+    return newLocation;
+  }
   // wrapper around action function
-  static createActionWrapperFunction(action) {
+  static createActionWrapperFunction(action, type) {
+    /* eslint-disable no-else-return */
     function actionWrapper(existingLocation, routerInstance = this, ctx = {}) {
       // if called from another action wrapper
       if (existingLocation) {
-        return action(existingLocation, routerInstance, ctx);
-      } 
+        // console.log('existing location found', existingLocation)
+        let updatedLocation = action(existingLocation, routerInstance, ctx);
 
-      // if called directly
-      const location = this.manager.serializedStateStore.getState();
-      const newLocation = action(location, routerInstance, ctx);
+        if (type === 'show') { // add location defaults from children
+          // console.log('calling show! at child level')
 
-      // set serialized state
-      this.manager.serializedStateStore.setState(newLocation);
+          updatedLocation = Manager.setChildrenDefaults(updatedLocation, routerInstance, ctx);
+        }
+
+        return updatedLocation;
+      } else {
+        // if called directly
+        const location = this.manager.serializedStateStore.getState();
+  
+        let newLocation = action(location, routerInstance, ctx);
+        if (type === 'show') { // add location defaults from children
+          // console.log('calling show! at top level')
+          newLocation = Manager.setChildrenDefaults(newLocation, routerInstance, ctx);
+        }
+        // console.log('new location found', newLocation)
+  
+        // set serialized state
+        this.manager.serializedStateStore.setState(newLocation);
+      }
     }
+    /* eslint-enable no-else-return */
+
     return actionWrapper;
+  }
+
+  static addLocationDefaults(location, routerInstance, ctx = {}) {
+    // TODO validate default action names are on type
+    let locationWithDefaults = { ...location };
+
+    Object.keys(routerInstance.routers).forEach((type) => {
+      routerInstance.routers[type].forEach((router) => {
+        if (router.defaultShow || false) {
+          const newContext = { ...ctx, addingDefaults: true };
+          locationWithDefaults = router.show(locationWithDefaults, router, newContext);
+        }
+      });
+    });
+    return locationWithDefaults;
   }
 
   // create router :specify
@@ -137,7 +185,7 @@ export default class RouterManager {
   //   mutateExistingLocation: boolean, default: false
   //   cacheState: boolean, default: null, is equal to true
   // }
-  createRouter({ name, routeKey, config, defaults, type, parentName }) {
+  createRouter({ name, routeKey, config, defaultShow, type, parentName }) {
     const parent = this.routers[parentName];
 
     const initalParams = {
@@ -149,6 +197,7 @@ export default class RouterManager {
       routers: {},
       manager: this,
       root: this.rootRouter,
+      defaultShow: defaultShow || false,
       getState: this.routerStateStore.createRouterStateGetter(name),
       subscribe: this.routerStateStore.createRouterStateSubscriber(name),
       

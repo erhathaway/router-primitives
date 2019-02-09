@@ -193,3 +193,38 @@ serializedState
 
 routerState
   -> adapter
+
+
+# ADD README: 
+
+template methods:
+routers should only call methods on siblings, if ever
+
+
+defaultState
+- 'show'
+
+- 'hide'
+
+-> played when a parent hits 'show'
+
+
+
+recursively calls all defaults
+
+then loads cache
+
+if cache state exists for any sibling
+
+your app is made up of a bunch of elements. like search, nav, main content, user page etc..
+each element is wrapped in a router. the router allows you to move elements around to compose various view. the state of the router arrangement is stored in the URL. to control the arrangmeent you can use the Router controller methods. 
+
+
+default actions are called when an immediate parent is 'shown'
+
+
+
+location reducer: { key: value } -> location
+actions: functions: router tree state -> { key: value }
+router state reducer: location -> router state
+

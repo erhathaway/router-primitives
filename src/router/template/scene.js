@@ -1,4 +1,4 @@
-const show = (location, router, ctx) => {
+const show = (location, router, ctx = {}) => {
   // hide sibling routers
   location = router.siblings.reduce((acc, s) => { 
     return s.hide(acc, s, ctx);
@@ -6,7 +6,8 @@ const show = (location, router, ctx) => {
 
   if (router.isPathRouter) {
     const { parent } = router;
-    if (!parent || (!parent.state.visible && !parent.isRootRouter)) { return location; }
+
+    if (!ctx.addingDefaults && (!parent || (!parent.state.visible && !parent.isRootRouter))) { return location; }
 
     location.pathname[router.pathLocation] = router.routeKey;
     // drop pathname after this pathLocation
@@ -14,6 +15,9 @@ const show = (location, router, ctx) => {
   } else {
     location.search[router.routeKey] = true;
   }
+
+  // add defaults for child routers
+  // location = router.constructor.addLocationDefaults(location, router, ctx);
 
   return location;
 };
