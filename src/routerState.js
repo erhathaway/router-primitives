@@ -1,14 +1,31 @@
-// export const defaultStore = {};
-
-export default class DefaultRoutersStateAdapter {
+/**
+ * The default router state store. 
+ * This store keeps track of each routers state which is derived from the current location
+ * This store can be swaped out in the manager with other stores. For example, a redux store.
+ * Stores must implement the methods:
+ *   setState
+ *   getState
+ *   createRouterStateGetter
+ *   createRouterStateSubscriber
+ */
+export default class DefaultRoutersStateStore {
   constructor(store, config = { historySize: 2 }) {
     this.store = store || {};
     this.config = config;
     this.observers = {}; // key is routerName
   }
 
+  /**
+   * Sets the state of the router state store by adding to the history.
+   * Adding state will completly overwrite existing state.
+   * If the new contains routers whose state is identical to old state
+   *   the router callbacks wont be called for this router. Otherwise, if the state
+   *   has changed in any way, callback will be fired off for the router.
+   */
   setState(desiredRouterStates) {
     const routerNames = Object.keys(desiredRouterStates);
+    // Keeps track of which routers have new state. 
+    // Used to notify observers of new state changes on a router by router level
     const hasUpdatedTracker = [];
 
     this.store = routerNames.reduce((routerStates, routerName) => {
@@ -17,6 +34,7 @@ export default class DefaultRoutersStateAdapter {
       const newCurrent = desiredRouterStates[routerName];
 
       // skip routers who haven't been updated
+      // TODO test performance of this JSON.stringify comparison
       if (JSON.stringify(newCurrent) === JSON.stringify(prevCurrent)) { return routerStates; }
 
       // clone historical states
@@ -27,6 +45,7 @@ export default class DefaultRoutersStateAdapter {
         // add current to historical states
         newHistorical.unshift(prevCurrent);
       }
+
       // enforce history size
       if (newHistorical.length > this.config.historySize) { newHistorical = newHistorical.slice(0, this.config.historySize); }
       // update state to include new router state
@@ -47,10 +66,19 @@ export default class DefaultRoutersStateAdapter {
     });
   }
 
+  /**
+   * Returns a function which has a router name in closure scope.
+   * The returned function is used for getting the router store state for a specific router.
+   */
   createRouterStateGetter(routerName) {
     return () => this.store[routerName] || {};
   }
 
+  /**
+   * Returns a function which as the router name in closure scope.
+   * The returned function is used subscribe observers to changes in 
+   *   a single routers state.
+   */
   createRouterStateSubscriber(routerName) {
     return (fn) => {
       if (Array.isArray(this.observers[routerName])) {
@@ -61,5 +89,8 @@ export default class DefaultRoutersStateAdapter {
     };
   }
 
+  /**
+   * Returns the stores state for all routers
+   */
   getState() { return this.store; }
 }
