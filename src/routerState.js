@@ -12,13 +12,10 @@ export default class DefaultRoutersStateAdapter {
     const hasUpdatedTracker = [];
 
     this.store = routerNames.reduce((routerStates, routerName) => {
-       // extract current and historical states
+      // extract current and historical states
       const { current: prevCurrent, historical } = routerStates[routerName] || { current: {}, historical: [] };
       const newCurrent = desiredRouterStates[routerName];
 
-      // // remove null and undefined keys
-      // Object.keys(newCurrent).forEach((key) => (newCurrent[key] == null) && delete newCurrent[key]);
-      
       // skip routers who haven't been updated
       if (JSON.stringify(newCurrent) === JSON.stringify(prevCurrent)) { return routerStates; }
 
@@ -33,7 +30,7 @@ export default class DefaultRoutersStateAdapter {
       // enforce history size
       if (newHistorical.length > this.config.historySize) { newHistorical = newHistorical.slice(0, this.config.historySize); }
       // update state to include new router state
-      routerStates[routerName] = { current: newCurrent, historical: newHistorical }
+      routerStates[routerName] = { current: newCurrent, historical: newHistorical };
 
       // record which routers have had a state change
       hasUpdatedTracker.push(routerName);
@@ -43,7 +40,7 @@ export default class DefaultRoutersStateAdapter {
 
     // call observers of all routers that have had state changes
     hasUpdatedTracker.forEach((routerName) => {
-      const observers = this.observers[routerName] || []
+      const observers = this.observers[routerName] || [];
       if (Array.isArray(observers)) {
         observers.forEach(fn => fn(this.store[routerName]));
       }
@@ -51,19 +48,17 @@ export default class DefaultRoutersStateAdapter {
   }
 
   createRouterStateGetter(routerName) {
-    return () => {
-      return this.store[routerName] || {};
-    };
+    return () => this.store[routerName] || {};
   }
 
   createRouterStateSubscriber(routerName) {
     return (fn) => {
       if (Array.isArray(this.observers[routerName])) {
-        this.observers[routerName].push(fn)
+        this.observers[routerName].push(fn);
       } else {
-        this.observers[routerName] = [fn]
+        this.observers[routerName] = [fn];
       }
-    }
+    };
   }
 
   getState() { return this.store; }

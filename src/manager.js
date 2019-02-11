@@ -3,9 +3,7 @@ import DefaultRouterStateStore from './routerState';
 import Router from './router/base';
 import { scene, stack } from './router/template';
 
-const capitalize = (string = '') => {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
+const capitalize = (string = '') => string.charAt(0).toUpperCase() + string.slice(1);
 
 export default class Manager {
   constructor({ routerTree, serializedStateStore, routerStateStore } = {}) {
@@ -13,7 +11,7 @@ export default class Manager {
     this.routers = {};
     this.rootRouter = null;
 
-    // check if window 
+    // check if window
     if (typeof window === 'undefined') {
       this.serializedStateStore = serializedStateStore || new NativeSerializedStore();
     } else {
@@ -36,8 +34,8 @@ export default class Manager {
       class RouterType extends Router {}
 
       // change the router name to include the type
-      Object.defineProperty (RouterType, 'name', {value: `${capitalize(templateName)}Router`});
-      
+      Object.defineProperty(RouterType, 'name', { value: `${capitalize(templateName)}Router` });
+
       // fetch template
       const selectedTemplate = templates[templateName];
 
@@ -64,30 +62,29 @@ export default class Manager {
 
   /**
    * Adds the initial routers defined during initialization
-   * @param {*} router 
-   * 
+   * @param {*} router
+   *
    */
   addRouters(router = null, type = null, parentName = null) {
     // If no router specified, there are no routers to add
     if (!router) { return; }
 
-    // The type is derived by the relationship with the parent. 
+    // The type is derived by the relationship with the parent.
     //   Or has none, as is the case with the root router in essence
     //   Below, we are deriving the type and calling the add function recursively by type
     this.addRouter({ ...router, type, parentName });
     const childRouters = router.routers || {};
     Object.keys(childRouters).forEach((childType) => {
-      childRouters[childType].forEach(child => this.addRouters(child, childType, router.name ));
+      childRouters[childType].forEach(child => this.addRouters(child, childType, router.name));
     });
   }
-
 
   addRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName }) {
     // create a router
     const router = this.createRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName });
-    
+
     // set as the parent router if this router has not parent and there is not yet a root
-    if (!parentName && !this.rootRouter) { 
+    if (!parentName && !this.rootRouter) {
       this.rootRouter = router;
     } else if (!parentName && this.rootRouter) {
       throw new Error('Root router already exists. You likely forgot to specify a parentName');
@@ -97,12 +94,12 @@ export default class Manager {
 
       // TODO migrate code over to use <router>.addChildRouter method instead
       router.parent = parent;
-  
+
       // add ref of new router to the parent
       const siblingTypes = parent.routers[type] || [];
       siblingTypes.push(router);
       parent.routers[type] = siblingTypes;
-    } 
+    }
     // add ref of new router to manager
     this.routers[name] = router;
   }
@@ -111,11 +108,8 @@ export default class Manager {
     let newLocation = { ...location };
     Object.keys(router.routers).forEach((routerType) => {
       router.routers[routerType].forEach((child) => {
-
         // if the cached visibility state if 'false' don't show on rehydration
-        if (child.cache.state === 'false') {
-          return;
-        } 
+        if (child.cache.state === 'false') { return; }
 
         // if there is a cache state or a default visibility, show the router
         if (child.defaultShow || child.cache.state === 'true') {
@@ -133,7 +127,7 @@ export default class Manager {
 
   static setCacheAndHide(location, router, ctx = {}) {
     let newLocation = location;
-    let disableCaching; 
+    let disableCaching;
 
     // figure out if caching should occur
     if (router.disableCaching !== undefined) {
@@ -141,17 +135,17 @@ export default class Manager {
     } else {
       disableCaching = ctx.disableCaching || false;
     }
-      
+
     Object.keys(router.routers).forEach((routerType) => {
       router.routers[routerType].forEach((child) => {
-        // update ctx object's caching attr for this branch 
+        // update ctx object's caching attr for this branch
         ctx.disableCaching = disableCaching;
 
         // call location action
         newLocation = child.hide(location, child, ctx);
       });
     });
-    
+
     // use caching figured out above b/c the ctx object might get mutate when
     // transversing the router tree
     if (!disableCaching) {
@@ -178,11 +172,11 @@ export default class Manager {
         }
 
         return updatedLocation;
-      } 
+      }
 
       // if called directly, fetch location
       updatedLocation = this.manager.serializedStateStore.getState();
-      
+
       // set cache before location changes b/c cache info is derived from location path
       if (type === 'hide') {
         updatedLocation = Manager.setCacheAndHide(updatedLocation, routerInstance, ctx);
@@ -245,7 +239,7 @@ export default class Manager {
       childCacheStore: this.childCacheStore,
     };
 
-    const RouterType = this.routerTypes[type] || this.routerTypes['scene'];
+    const RouterType = this.routerTypes[type] || this.routerTypes.scene;
 
     return new RouterType(initalParams);
   }
@@ -257,7 +251,7 @@ export default class Manager {
 
     // delete ref the parent (if any) stores
     if (parent) {
-      const routersToKeep = parent.routers[type].filter(router => router.name !== name);
+      const routersToKeep = parent.routers[type].filter(child => child.name !== name);
       parent.routers[type] = routersToKeep;
     }
 

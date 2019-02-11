@@ -9,7 +9,7 @@ import serializer from './serializer';
 export default class BrowserStore {
   constructor(state = '', config) {
     this.observers = [];
-    this.config = { serializer, deserializer };
+    this.config = config || { serializer, deserializer };
 
     // subscribe to location changes
     this.existingLocation = '';
@@ -46,10 +46,10 @@ export default class BrowserStore {
     this.observers.forEach(fn => fn(deserializedState));
   }
 
-  getState() { 
+  getState() {
     const searchString = window.location.search || '';
     const pathnameString = window.location.pathname || '';
-    return this.config.deserializer(pathnameString + searchString)
+    return this.config.deserializer(pathnameString + searchString);
   }
 
   subscribeToStateChanges(fn) { this.observers.push(fn); }
@@ -64,5 +64,5 @@ export default class BrowserStore {
 
   go(historyChange) {
     window.history.go(historyChange);
-  } 
+  }
 }

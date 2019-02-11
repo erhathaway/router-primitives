@@ -4,7 +4,7 @@ export default class RouterBase {
   constructor(init = {}) {
     const { name, config, type, manager, parent, routers, root, defaultShow, disableCaching, getState, subscribe } = init;
 
-    if (!name  || !type || !manager) { throw new Error('Missing required kwargs: name, type, and/or manager'); }
+    if (!name || !type || !manager) { throw new Error('Missing required kwargs: name, type, and/or manager'); }
     // required
     this.name = name;
     this.config = config || {};
@@ -32,7 +32,7 @@ export default class RouterBase {
   get routeKey() {
     return this.config.routeKey || this.name;
   }
-  
+
   get shouldStoreLocationMutationInHistory() {
     return this.config.shouldStoreLocationMutationInHistory;
   }
@@ -44,7 +44,7 @@ export default class RouterBase {
   getNeighborsByType(type) {
     if (this.parent && this.parent.routers) {
       return this.parent.routers[type] || [];
-    } 
+    }
     return [];
   }
 
@@ -88,7 +88,7 @@ export default class RouterBase {
 
     if (this.type === 'scene' && this.parent.isPathRouter) {
       // check to make sure neighboring data routers arent explicitly set to modify the pathname
-      const neighboringDataRouters = this.getNeighborsByType('data'); // this.parent.routers.data || [];
+      const neighboringDataRouters = this.getNeighborsByType('data');
       const isSiblingRouterExplictlyAPathRouter = neighboringDataRouters.reduce((acc, r) => (
         // check all data router neighbors and
         // make sure none have been explicitly set to be a path router
@@ -99,7 +99,6 @@ export default class RouterBase {
       if (this._isPathRouter === false) return false;
       // check to make sure neighboring scene routers aren't present
       const neighboringSceneRouters = this.getNeighborsByType('scene');
-      // if (neighboringSceneRouters.length === 0) return true;
 
       return (neighboringSceneRouters.length === 0) && !this.siblings.reduce((acc, r) => (
         // check all data router siblings and
@@ -112,13 +111,13 @@ export default class RouterBase {
   }
 
   get state() {
-    if (!this.getState) { throw new Error('no getState function specified by the manager') }
+    if (!this.getState) { throw new Error('no getState function specified by the manager'); }
     const { current } = this.getState();
     return current || {};
   }
 
   get history() {
-    if (!this.getState) { throw new Error('no getState function specified by the manager') }
+    if (!this.getState) { throw new Error('no getState function specified by the manager'); }
     const { historical } = this.getState();
     return historical || [];
   }
@@ -132,14 +131,14 @@ export default class RouterBase {
       : this.state;
 
     if (this.isPathRouter) {
-      if (this.type === 'data') { return { isPathData: true, pathLocation: this.pathLocation, value: routerState.data }}
-      return { isPathData: true, pathLocation: this.pathLocation, value: routerState.visible }
+      if (this.type === 'data') { return { isPathData: true, pathLocation: this.pathLocation, value: routerState.data }; }
+      return { isPathData: true, pathLocation: this.pathLocation, value: routerState.visible };
     }
 
     // return queryParam cached data types
     if (this.type === 'data') { return { queryParam: this.routeKey, value: routerState.data }; }
     if (this.type === 'stack') { return { queryParam: this.routeKey, value: routerState.order }; }
-    return { queryParam: this.routeKey, value: routerState.visible }
+    return { queryParam: this.routeKey, value: routerState.visible };
   }
 
   // TODO deprecate this function and remove tests

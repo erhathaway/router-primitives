@@ -30,7 +30,7 @@ class Cache {
       cache = location.search[routerInstance.routeKey];
     }
 
-    this.setCache(cache)
+    this.setCache(cache);
   }
 }
 

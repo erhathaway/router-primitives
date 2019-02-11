@@ -9,9 +9,8 @@ import serializer from './serializer';
  */
 export default class NativeStore {
   constructor(state = '', config) {
-    // this.state = state;
     this.observers = [];
-    this.config = { serializer, deserializer, historySize: 10 };
+    this.config = config || { serializer, deserializer, historySize: 10 };
     this.history = [];
     this.currentLocationInHistory = 0;
   }
@@ -21,12 +20,11 @@ export default class NativeStore {
   setState(unserializedLocation, options = {}) {
     const oldUnserializedLocation = this.getState();
     const { location: newState } = this.config.serializer(unserializedLocation, oldUnserializedLocation);
-    // this.state = newState;
 
     if (options.updateHistory !== false) {
       // clone history
       let newHistory = this.history.slice();
-  
+
       // not mutating the location causes the previous location to be replaced
       // thus, there will be no history of it
       // this is useful when you use modals and other elements that dont have a concept of 'back'
@@ -35,7 +33,7 @@ export default class NativeStore {
         // remove previous location
         newHistory.shift();
       }
-  
+
       // add current to history
       newHistory.unshift(newState.slice());
       // enforce history size
@@ -52,7 +50,7 @@ export default class NativeStore {
   subscribeToStateChanges(fn) { this.observers.push(fn); }
 
   // unsubscribeToStateChanges // TODO fill me in!
-  
+
   notifyObservers() {
     const deserializedState = this.getState();
     this.observers.forEach(fn => fn(deserializedState));
@@ -67,9 +65,7 @@ export default class NativeStore {
   }
 
   go(historyChange) {
-    if (historyChange === 0) {
-      throw new Error('No history size change specified')      
-    }
+    if (historyChange === 0) { throw new Error('No history size change specified'); }
 
     // calcuate request history location
     const newLocation = this.currentLocationInHistory - historyChange;
@@ -77,7 +73,7 @@ export default class NativeStore {
     // if within the range of recorded history, set as the new history location
     if (newLocation + 1 <= this.history.length && newLocation >= 0) {
       this.currentLocationInHistory = newLocation;
-    
+
     // if too far in the future, set as the most recent history
     } else if (newLocation + 1 <= this.history.length) {
       this.currentLocationInHistory = 0;
@@ -88,5 +84,5 @@ export default class NativeStore {
     }
 
     this.setState(this.getState(), { updateHistory: false });
-  } 
+  }
 }
