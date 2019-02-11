@@ -417,9 +417,17 @@ All routers will by default rehydrate children routers back to how the chidlren 
 
 ## V1 Roadmap
 
-- Finish playground 
-- Demos of common apps built with `recursive-router`
-- Add `redux` and `react` bindings
-- Clean up code and remove dependency on mobx
-- Add tests
-- Add docs and a better README
+Release canidate is in PR: `architecture-update`
+
+- Incrementally add Types using TypeScript
+- Add template validations
+- Add ability to clean up removed routers (subscriptions etc...)
+- Add tslint
+- Add CI
+- Add mobx bindings
+- Update playground to use new mobx bindings
+- Add react bindings
+  - add 'guards' to react bindings
+- Add redux bindings
+- Demo apps built with `recursive-router`
+
