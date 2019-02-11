@@ -1,13 +1,13 @@
 import Manager from '../../../src/manager';
 
 describe('Integration', () => {
-  const routerTree = {
+  const routerTreeForDefaultShowTest = {
     name: 'root',
     routers: {
       scene: [
         { name: 'user', // pathRouter scene
           routers: {
-            scene: [{ name: 'events' }, { name: 'details' }],
+            scene: [{ name: 'events', defaultShow: true }, { name: 'details' }],
           },
         },
         { name: 'info' }],
@@ -15,7 +15,12 @@ describe('Integration', () => {
         routers: {
           scene: [
             { name: 'main-tools' }, // non-pathRouter scene
-            { name: 'side-tools' },
+            { name: 'side-tools', 
+              defaultShow: true,
+              routers: {
+                feature: [{ name: 'side-tools-menu', defaultShow: true }]
+              },
+            },
           ]
         }
       }],
@@ -26,7 +31,7 @@ describe('Integration', () => {
   describe('Scene template', () => {
     describe('Actions', () => {
       describe('Show', () => {
-        const manager = new Manager({ routerTree });
+        const manager = new Manager({ routerTree: routerTreeForDefaultShowTest });
 
         const userObserver = jest.fn();
         const userRouter = manager.routers['user'];
@@ -64,7 +69,7 @@ describe('Integration', () => {
       });
 
       describe('Hide', () => {
-        const manager = new Manager({ routerTree });
+        const manager = new Manager({ routerTree: routerTreeForDefaultShowTest });
 
         const userObserver = jest.fn();
         const userRouter = manager.routers['user'];
@@ -103,5 +108,148 @@ describe('Integration', () => {
         });
       });
     });
-  })
+  });
+
+  describe('View Defaults', () => {
+    const manager = new Manager({ routerTree: routerTreeForDefaultShowTest });
+
+    it('Are set when a parent router is called', () => {
+      const userObserver = jest.fn();
+      const userRouter = manager.routers['user'];
+      userRouter.subscribe(userObserver);
+  
+      const eventsObserver = jest.fn();
+      const eventsRouter = manager.routers['events'];
+      eventsRouter.subscribe(eventsObserver);
+
+      userRouter.show();
+      
+      expect(manager.routers['info'].state.visible).toBe(false);
+      expect(eventsObserver.mock.calls[0][0].current).toEqual({ visible: true });
+    });
+
+    it('All default children are shown', () => {
+      const toolbarObserver = jest.fn();
+      const toolbarRouter = manager.routers['toolbar'];
+      toolbarRouter.subscribe(toolbarObserver);
+  
+      const sideToolsObserver = jest.fn();
+      const sideToolsRouter = manager.routers['side-tools'];
+      sideToolsRouter.subscribe(sideToolsObserver);
+  
+      const sideToolsMenuObserver = jest.fn();
+      const sideToolsMenuRouter = manager.routers['side-tools-menu'];
+      sideToolsMenuRouter.subscribe(sideToolsMenuObserver);
+
+      expect(sideToolsRouter.state.visible).toEqual(false);
+      expect(sideToolsMenuRouter.state.visible).toEqual(false);
+
+      toolbarRouter.show();
+
+      expect(manager.routers['main-tools'].state.visible).toBe(false);
+      expect(sideToolsObserver.mock.calls[0][0].current).toEqual({ visible: true });
+      expect(sideToolsMenuObserver.mock.calls[0][0].current).toEqual({ visible: true });
+    });
+  });
+
+  describe('Caching', () => {
+    const routerTreeForCacheTest = {
+      name: 'root',
+      routers: {
+        scene: [{ name: 'user' }],
+        feature: [{ 
+          name: 'toolbar', 
+          routers: {
+            scene: [
+              { name: 'main-tools' }, // non-pathRouter scene
+              { name: 'side-tools', 
+                defaultShow: true,
+                disableCaching: true, // disable caching
+                routers: {
+                  feature: [{ 
+                    name: 'side-tools-menu', 
+                    defaultShow: true,
+                    routers: {
+                      scene: [{
+                        name: 'side-tools-menu-scene',
+                        defaultShow: false,
+                        disableCaching: false, // enable caching
+                        routers: {
+                          scene: [{ name: 'final-router', defaultShow: false }]
+                        }
+                      }]
+                    }
+                  }],
+                },
+              },
+            ]
+          }
+        }],
+        stack: [{ name: 'notification-modal', routeKey: 'short' }],
+      }
+    };
+    const manager = new Manager({ routerTree: routerTreeForCacheTest });
+
+    it('Caching of children on hide', () => {
+      // caches children but avoids children between disable cache levels
+      expect(manager.routers['side-tools-menu'].cache.state).toBe(undefined);
+      expect(manager.routers['side-tools-menu-scene'].cache.state).toBe(undefined);
+      expect(manager.routers['final-router'].cache.state).toBe(undefined);
+
+      manager.routers['toolbar'].show();
+
+      expect(manager.routers['side-tools-menu'].state.visible).toBe(true);
+      expect(manager.routers['side-tools-menu-scene'].state.visible).toBe(false);
+      expect(manager.routers['final-router'].state.visible).toBe(false);
+
+      manager.routers['side-tools-menu-scene'].show();
+      manager.routers['final-router'].show();
+
+      expect(manager.routers['side-tools-menu'].cache.state).toBe(undefined);
+      expect(manager.routers['side-tools-menu-scene'].cache.state).toBe(undefined);
+      expect(manager.routers['final-router'].cache.state).toBe(undefined);
+
+      expect(manager.routers['side-tools-menu'].state.visible).toBe(true);
+      expect(manager.routers['side-tools-menu-scene'].state.visible).toBe(true);
+      expect(manager.routers['final-router'].state.visible).toBe(true);
+
+      manager.routers['toolbar'].hide();
+
+      expect(manager.routers['side-tools-menu'].cache.state).toBe(undefined);
+      expect(manager.routers['side-tools-menu-scene'].cache.state).toBe('true');
+      expect(manager.routers['final-router'].cache.state).toBe('true');
+
+      expect(manager.routers['side-tools-menu'].state.visible).toBe(false);
+      expect(manager.routers['side-tools-menu-scene'].state.visible).toBe(false);
+      expect(manager.routers['final-router'].state.visible).toBe(false);
+    });
+
+    it('uses cache to restore visibility', () => {
+      manager.routers['side-tools-menu'].show();
+
+      expect(manager.routers['side-tools-menu'].state.visible).toBe(true);
+      expect(manager.routers['side-tools-menu-scene'].state.visible).toBe(true);
+      expect(manager.routers['final-router'].state.visible).toBe(true);
+
+      expect(manager.routers['side-tools-menu'].cache.state).toBe(undefined);
+      expect(manager.routers['side-tools-menu-scene'].cache.state).toBe(undefined);
+      expect(manager.routers['final-router'].cache.state).toBe(undefined);
+
+      manager.routers['side-tools-menu'].hide();
+
+      expect(manager.routers['side-tools-menu'].cache.state).toBe('false');
+      expect(manager.routers['side-tools-menu-scene'].cache.state).toBe('true');
+      expect(manager.routers['final-router'].cache.state).toBe('true');
+
+      manager.routers['side-tools'].hide();
+
+      expect(manager.routers['side-tools-menu'].cache.state).toBe('false');
+      expect(manager.routers['side-tools-menu-scene'].cache.state).toBe('true');
+      expect(manager.routers['final-router'].cache.state).toBe('true');
+
+      manager.routers['side-tools'].hide();
+
+      expect(manager.routers['side-tools-menu'].state.visible).toBe(false);
+    })
+  });
 });

@@ -28,6 +28,22 @@ describe('Router', () => {
     })
   });
 
+  describe('Default action', () => {
+    it('Can be set', () => {
+      const mockInit = generateMockInit({}, { defaultShow: true });
+      const router = new Router(mockInit);
+      expect(router.defaultShow).toBe(true);
+    });
+  });
+
+  describe('Caching', () => {
+    it('Can be disabled', () => {
+      const mockInit = generateMockInit({}, { disableCaching: true });
+      const router = new Router(mockInit);
+      expect(router.disableCaching).toBe(true);
+    });
+  });
+
   describe('Is a path router', () => {
     describe('True', () => {
       it('Has no parent', () => {

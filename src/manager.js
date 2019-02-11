@@ -19,7 +19,7 @@ export default class Manager {
     } else {
       this.serializedStateStore = serializedStateStore || new BrowserSerializedStore();
     }
-    
+
     // router types
     const templates = { scene, stack };
     this.routerTypes = {};
@@ -60,12 +60,6 @@ export default class Manager {
 
     // subscribe to URL changes and update the router state when this happens
     this.serializedStateStore.subscribeToStateChanges(this.setNewRouterState.bind(this));
-
-
-    // childStateCache is used to store the state of a child tree of routers. 
-    // Thus, when a router hides it can perseve the child state for proper rehydration
-    // { [name] = this.state } // the current state
-    // this.childStateCache = {};
   }
 
   /**
