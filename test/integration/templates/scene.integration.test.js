@@ -216,8 +216,8 @@ describe('Integration', () => {
       manager.routers['toolbar'].hide();
 
       expect(manager.routers['side-tools-menu'].cache.state).toBe(undefined);
-      expect(manager.routers['side-tools-menu-scene'].cache.state).toBe('true');
-      expect(manager.routers['final-router'].cache.state).toBe('true');
+      expect(manager.routers['side-tools-menu-scene'].cache.state).toBe(true);
+      expect(manager.routers['final-router'].cache.state).toBe(true);
 
       expect(manager.routers['side-tools-menu'].state.visible).toBe(false);
       expect(manager.routers['side-tools-menu-scene'].state.visible).toBe(false);
@@ -237,15 +237,15 @@ describe('Integration', () => {
 
       manager.routers['side-tools-menu'].hide();
 
-      expect(manager.routers['side-tools-menu'].cache.state).toBe('false');
-      expect(manager.routers['side-tools-menu-scene'].cache.state).toBe('true');
-      expect(manager.routers['final-router'].cache.state).toBe('true');
+      expect(manager.routers['side-tools-menu'].cache.state).toBe(false);
+      expect(manager.routers['side-tools-menu-scene'].cache.state).toBe(true);
+      expect(manager.routers['final-router'].cache.state).toBe(true);
 
       manager.routers['side-tools'].hide();
 
-      expect(manager.routers['side-tools-menu'].cache.state).toBe('false');
-      expect(manager.routers['side-tools-menu-scene'].cache.state).toBe('true');
-      expect(manager.routers['final-router'].cache.state).toBe('true');
+      expect(manager.routers['side-tools-menu'].cache.state).toBe(false);
+      expect(manager.routers['side-tools-menu-scene'].cache.state).toBe(true);
+      expect(manager.routers['final-router'].cache.state).toBe(true);
 
       manager.routers['side-tools'].hide();
 

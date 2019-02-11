@@ -27,7 +27,7 @@ class Cache {
     if (routerInstance.isPathRouter) {
       cache = location.pathname[routerInstance.pathLocation];
     } else {
-      cache = location.search[routerInstance.routeKey];
+      cache = !!location.search[routerInstance.routeKey];
     }
 
     this.setCache(cache);

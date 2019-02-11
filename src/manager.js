@@ -109,10 +109,10 @@ export default class Manager {
     Object.keys(router.routers).forEach((routerType) => {
       router.routers[routerType].forEach((child) => {
         // if the cached visibility state if 'false' don't show on rehydration
-        if (child.cache.state === 'false') { return; }
+        if (child.cache.state === false) { return; }
 
         // if there is a cache state or a default visibility, show the router
-        if (child.defaultShow || child.cache.state === 'true') {
+        if (child.defaultShow || child.cache.state === true) {
           // the cache has been 'used' so remove it
           child.cache.removeCache();
 
@@ -185,7 +185,7 @@ export default class Manager {
       updatedLocation = action(updatedLocation, routerInstance, ctx);
 
       if (type === 'hide' && routerInstance.state.visible === true) {
-        routerInstance.cache.setCache('false');
+        routerInstance.cache.setCache(false);
       }
 
       if (type === 'show') { // add location defaults from children
