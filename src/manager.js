@@ -65,7 +65,7 @@ export default class Manager {
     // childStateCache is used to store the state of a child tree of routers. 
     // Thus, when a router hides it can perseve the child state for proper rehydration
     // { [name] = this.state } // the current state
-    this.childStateCache = {};
+    // this.childStateCache = {};
   }
 
   /**
@@ -88,9 +88,9 @@ export default class Manager {
   }
 
 
-  addRouter({ name, routeKey, config, defaultShow, type, parentName }) {
+  addRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName }) {
     // create a router
-    const router = this.createRouter({ name, routeKey, config, defaultShow, type, parentName });
+    const router = this.createRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName });
     
     // set as the parent router if this router has not parent and there is not yet a root
     if (!parentName && !this.rootRouter) { 
@@ -117,9 +117,17 @@ export default class Manager {
     let newLocation = { ...location };
     Object.keys(router.routers).forEach((routerType) => {
       router.routers[routerType].forEach((child) => {
-        // const child = router.routers[childName]
-        // console.log('child show', child.name)
-        if (child.defaultShow) {
+
+        // if the cached visibility state if 'false' don't show on rehydration
+        if (child.cache.state === 'false') {
+          return;
+        } 
+
+        // if there is a cache state or a default visibility, show the router
+        if (child.defaultShow || child.cache.state === 'true') {
+          // the cache has been 'used' so remove it
+          child.cache.removeCache();
+
           const newContext = { ...ctx, addingDefaults: true };
           newLocation = child.show(newLocation, child, newContext);
         }
@@ -128,38 +136,77 @@ export default class Manager {
 
     return newLocation;
   }
+
+  static setCacheAndHide(location, router, ctx = {}) {
+    let newLocation = location;
+    let disableCaching; 
+
+    // figure out if caching should occur
+    if (router.disableCaching !== undefined) {
+      disableCaching = router.disableCaching;
+    } else {
+      disableCaching = ctx.disableCaching || false;
+    }
+      
+    Object.keys(router.routers).forEach((routerType) => {
+      router.routers[routerType].forEach((child) => {
+        // update ctx object's caching attr for this branch 
+        ctx.disableCaching = disableCaching;
+
+        // call location action
+        newLocation = child.hide(location, child, ctx);
+      });
+    });
+    
+    // use caching figured out above b/c the ctx object might get mutate when
+    // transversing the router tree
+    if (!disableCaching) {
+      router.cache.setCacheFromLocation(newLocation, router);
+    }
+    return newLocation;
+  }
+
   // wrapper around action function
   static createActionWrapperFunction(action, type) {
-    /* eslint-disable no-else-return */
     function actionWrapper(existingLocation, routerInstance = this, ctx = {}) {
       // if called from another action wrapper
+      let updatedLocation;
       if (existingLocation) {
-        // console.log('existing location found', existingLocation)
-        let updatedLocation = action(existingLocation, routerInstance, ctx);
+        // set cache before location changes b/c cache info is derived from location path
+        if (type === 'hide') {
+          updatedLocation = Manager.setCacheAndHide(existingLocation, routerInstance, ctx);
+        }
+
+        updatedLocation = action(existingLocation, routerInstance, ctx);
 
         if (type === 'show') { // add location defaults from children
-          // console.log('calling show! at child level')
-
           updatedLocation = Manager.setChildrenDefaults(updatedLocation, routerInstance, ctx);
         }
 
         return updatedLocation;
-      } else {
-        // if called directly
-        const location = this.manager.serializedStateStore.getState();
-  
-        let newLocation = action(location, routerInstance, ctx);
-        if (type === 'show') { // add location defaults from children
-          // console.log('calling show! at top level')
-          newLocation = Manager.setChildrenDefaults(newLocation, routerInstance, ctx);
-        }
-        // console.log('new location found', newLocation)
-  
-        // set serialized state
-        this.manager.serializedStateStore.setState(newLocation);
+      } 
+
+      // if called directly, fetch location
+      updatedLocation = this.manager.serializedStateStore.getState();
+      
+      // set cache before location changes b/c cache info is derived from location path
+      if (type === 'hide') {
+        updatedLocation = Manager.setCacheAndHide(updatedLocation, routerInstance, ctx);
       }
+
+      updatedLocation = action(updatedLocation, routerInstance, ctx);
+
+      if (type === 'hide' && routerInstance.state.visible === true) {
+        routerInstance.cache.setCache('false');
+      }
+
+      if (type === 'show') { // add location defaults from children
+        updatedLocation = Manager.setChildrenDefaults(updatedLocation, routerInstance, ctx);
+      }
+
+      // set serialized state
+      this.manager.serializedStateStore.setState(updatedLocation);
     }
-    /* eslint-enable no-else-return */
 
     return actionWrapper;
   }
@@ -185,7 +232,7 @@ export default class Manager {
   //   mutateExistingLocation: boolean, default: false
   //   cacheState: boolean, default: null, is equal to true
   // }
-  createRouter({ name, routeKey, config, defaultShow, type, parentName }) {
+  createRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName }) {
     const parent = this.routers[parentName];
 
     const initalParams = {
@@ -198,14 +245,14 @@ export default class Manager {
       manager: this,
       root: this.rootRouter,
       defaultShow: defaultShow || false,
+      disableCaching,
       getState: this.routerStateStore.createRouterStateGetter(name),
       subscribe: this.routerStateStore.createRouterStateSubscriber(name),
-      
       childCacheStore: this.childCacheStore,
     };
-    
+
     const RouterType = this.routerTypes[type] || this.routerTypes['scene'];
-    
+
     return new RouterType(initalParams);
   }
 
@@ -233,9 +280,7 @@ export default class Manager {
   // location -> newState
   // newState -> routerStates :specify
   setNewRouterState(location) {
-    // console.log('location', location)
     const newState = this.calcNewRouterState(location, this.rootRouter);
-    // console.log('STATE', newState)
     this.routerStateStore.setState(newState);
   }
 
@@ -247,9 +292,9 @@ export default class Manager {
 
     // recursive call all children to add their state
     Object.keys(router.routers)
-      .forEach(type => {
+      .forEach((type) => {
         router.routers[type]
-          .forEach(childRouter => this.calcNewRouterState(location, childRouter, ctx, newState))
+          .forEach(childRouter => this.calcNewRouterState(location, childRouter, ctx, newState));
       });
 
     return newState;

@@ -2,7 +2,7 @@ import Cache from './cache';
 
 export default class RouterBase {
   constructor(init = {}) {
-    const { name, config, type, manager, parent, routers, root, defaultShow, getState, subscribe } = init;
+    const { name, config, type, manager, parent, routers, root, defaultShow, disableCaching, getState, subscribe } = init;
 
     if (!name  || !type || !manager) { throw new Error('Missing required kwargs: name, type, and/or manager'); }
     // required
@@ -23,6 +23,7 @@ export default class RouterBase {
 
     // default actions to call when immediate parent visibility changes from hidden -> visible
     this.defaultShow = defaultShow || false;
+    this.disableCaching = disableCaching;
 
     // store the routers location data for rehydration
     this.cache = new Cache();
@@ -121,89 +122,8 @@ export default class RouterBase {
     const { historical } = this.getState();
     return historical || [];
   }
-  // the write location is set by setting the 'options.writeLocation' in location to 'path' or 'query'
-  // const options = {
-  //   writeToPath
-  // }
 
-  // show(newLocation) {
-  //   let location = rehydrateLocationFromCache(newLocation);
-
-  //   ...etc
-  //   return this.reduceChildren('show', location)
-  // }
-  
-  // hide(newLocation) {
-  //   calc new location ...etc
-  //   let location = saveLocationToCache(location);
-  //   return this.reduceChildren('hide', location)
-  // }
-
-  // modify location with default actions
-  // static addLocationDefaults(location, routerInstance, ctx = {}) {
-  //   // TODO validate default action names are on type
-  //   let locationWithDefaults = { ...location };
-
-  //   Object.keys(routerInstance.routers).forEach((type) => {
-  //     routerInstance.routers[type].forEach((router) => {
-  //       if (router.defaultShow || false) {
-  //         const newContext = { ...ctx, addingDefaults: true };
-  //         locationWithDefaults = router.show(locationWithDefaults, router, newContext);
-  //       }
-  //     });
-  //   });
-  //   return locationWithDefaults;
-  // }
-
-  rehydrateLocationFromCache(newLocation) {
-    let location = newLocation;
-    if (newLocation && (this.config.cache === null || this.config.restoreFromCache === true) && this.parentsAllowLocationCache) {
-      // const cachedLocation = this.removeStateFromCache()
-      const cachedLocation = this.manager.cacheStore.remove(this.name);
-
-      location = this.joinLocationWithCachedLocation(location, cachedLocation)
-    } 
-    // else {
-    //   location = this._show(location)
-    // }
-
-    return location;
-  }
-
-  saveLocationToCache(newLocation) {
-    let location = newLocation;
-    if (newLocation && (this.config.cache === null || this.config.restoreFromCache === true) && this.parentsAllowLocationCache) {
-      const cachedLocation = this.calcCachedLocation(); // { pathLocation: 0-N, value } || { queryParam, value }
-      this.manager.cachedStore.add(this.name, cachedLocation);
-
-      location = this.joinLocationWithCachedLocation(location, cachedLocation);
-    } 
-    // else {
-    //   location = this._hide(location)
-    // }
-
-    return location;
-  }
-
-
-  // addStateToCache() {
-  //   this.manager.cachedStore.add(this.name, state);
-  // }
-
-  // removeStateFromCache() {
-  //   const cachedLocation = this.manager.cacheStore.remove(this.name);
-  //   return cachedLocation;
-  // }
-
-  // addBeforeHooks([], fn) {
-  //   [].forEach(hook => hook())
-  //   fn()
-  // }
-
-  // addAfterHooks([], fn) {
-  //   fn
-  // }
-
+  // TODO deprecate this method and remove tests
   // return pathLocation cached data types
   calcCachedLocation(globalState = null) {
     // reuse global state for efficiency if doing a recursive calculation
@@ -222,6 +142,7 @@ export default class RouterBase {
     return { queryParam: this.routeKey, value: routerState.visible }
   }
 
+  // TODO deprecate this function and remove tests
   static joinLocationWithCachedLocation(location, cachedLocation) {
     const newLocation = Object.assign({}, location);
     if (cachedLocation.isPathData) {
@@ -231,36 +152,4 @@ export default class RouterBase {
     }
     return newLocation;
   }
-  
-  // updateLocation(Options, newOptions) {
-  //   // Only add the shouldStoreLocationMutationInHistory if it hasn't already explicitly been set.
-  //   // The shouldStoreLocationMutationInHistory option prevents location mutation.
-  //   // This prevents additional history from being added to location history.
-  //   // Ex: You have modal popups and want the back button to return to the previous scene not close the modal
-  //   // const { options } = location;
-  //   // if (newOptions.shouldStoreLocationMutationInHistory && location.options.shouldStoreLocationMutationInHistory === undefined) {
-  //   //   options = { ...options, ...newOptions };
-  //   // }
-
-  //   // delete newOptions.shouldStoreLocationMutationInHistory;
-  //   // options = { ...options, ...newOptions };
-
-  //   return { pathname: location.pathname, search: location.search, options };
-  // }
-
-  // actionHandler(action) {
-  //   return (location) => {
-  //     // if no location has been specified, b/c this is the primary action call
-  //     if (!location) {
-  //       let newLocation = this.manager.location;
-  //       const updatedLocation = action(newLocation);
-  //       this.manager.setLocation(updatedLocation);
-  //     } else {
-  //       // if a location has been specified, this isn't the primary action call
-  //       // the location should be returned such that the orignal action call can recieve it
-  //       const updatedLocation = action(location);
-  //       return updatedLocation;
-  //     }
-  //   }
-  // }
 }

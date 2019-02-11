@@ -7,7 +7,7 @@ class Cache {
     return !!this._cacheStore;
   }
 
-  get cache() {
+  get state() {
     return this._cacheStore;
   }
 
@@ -15,17 +15,22 @@ class Cache {
     this._cacheStore = undefined;
   }
 
-  setCacheFromLocation(location) {
+  setCache(value) {
+    this._cacheStore = value;
+  }
+
+  setCacheFromLocation(location, routerInstance) {
+    // dont set cache if one already exists!
+    if (this.hasCache) { return; }
+
     let cache;
-    if (this.isPathRouter) {
-      cache = location.pathname[this.pathLocation];
+    if (routerInstance.isPathRouter) {
+      cache = location.pathname[routerInstance.pathLocation];
     } else {
-      cache = location.search[this.routeKey];
+      cache = location.search[routerInstance.routeKey];
     }
 
-    if (!!cache) {
-      this._cacheStore = undefined;
-    }
+    this.setCache(cache)
   }
 }
 
