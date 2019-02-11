@@ -420,7 +420,10 @@ All routers will by default rehydrate children routers back to how the chidlren 
 Release canidate is in PR: `architecture-update`
 
 - Incrementally add Types using TypeScript
-- Add template validations
+- Add validations
+  - templates
+  - uniqueness of route keys
+  - uniqueness of router names
 - Add ability to clean up removed routers (subscriptions etc...)
 - Add tslint
 - Add CI
