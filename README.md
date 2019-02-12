@@ -5,7 +5,7 @@ Recursive router is a different take on routing that hopefully increases develop
 
 With Recursive, instead of defining how the URL is constructed you **define the visual elements of your app** and URL construction is automatically handled for you - based on the hierarchical arrangement of routers! Plus, if you work on a platform where there is no concept of a URL, you can still use this library (since the URL is simiply managed serialized state - which is platform aware and configurable)!
 
-Bindings exist for Mobx, Redux, and [React](https://github.com/erhathaway/recursive-router-react).
+Bindings exist for [Mobx](https://github.com/erhathaway/recursive-router-mobx), Redux, and [React](https://github.com/erhathaway/recursive-router-react).
 
 # Intro
 
@@ -150,50 +150,62 @@ Almost all routeable and dynamic apps can be expressed in terms of 4 predefined 
 
 ### `Scene` router
 
-Function: show only one router at a time 
+**Function**: show only one router at a time 
+
+**URL Access**: write to both `path` and `search` parts of url
 
 | | |
 |-|-|
 | **states**      | `visible` |
 | **actions**     | `show hide` |
-| url access  | write to both path and search parts of url |
-| example url | `http://<something>/sceneA/2/sceneB` |
-| example url | `http://<something>/sceneA?sceneC` |
+
+ example urls 
+ - `http://<something>/sceneA/2/sceneB` 
+ - `http://<something>/sceneA?sceneC` 
 
 ### `Stack` router
 
-Function: show multiple routers at a time with an ordering
+**Function**: show multiple routers at a time with an ordering
+
+**URL Access**: write to only `search` part of url
 
 | | |
 |-|-|
 | **states**      | `visible order` |
 | **actions**     | `show hide toFront toBack forward backward` |
-| url access  | write to only search parts of url |
-| example url | `http://<something>?modal1=1&modal2=0` |
+
+example url
+- `http://<something>?modal1=1&modal2=0` 
 
 
 ### `Feature` router
 
-Function: show multiple routers at a time with no sense of ordering 
+**Function**: show multiple routers at a time with no sense of ordering 
+
+**URL Access**: write to only `search` part of url
 
 | | |
 |-|-|
 | **states**      | `visible` |
 | **actions**     | `show hide` |
-| url access  | write to only search parts of url |
-| example url | `http://<something>?feature1&feature2` |
+
+example url 
+- `http://<something>?feature1&feature2` |
 
 ### `Data` router
 
-Function: show a string of data in the url to set things like page number, item ID, and callback urls 
+**Function**: show a string of data in the url to set things like page number, item ID, and callback urls 
+
+**URL Access**: write to both `path` and `search` parts of url
 
 | | |
 |-|-|
 | **states**      | `visible` |
 | **actions**     | `show hide` |
-| url access  | write to both path and search parts of url |
-| example url | `http://<something>?data1&data2` |
-| example url | `http://<something>/data3/?data1&data2` |
+
+example url 
+- `http://<something>?data1&data2`
+- `http://<something>/data3/?data1&data2`
 
 # Usage
 
@@ -211,7 +223,7 @@ Function: show a string of data in the url to set things like page number, item 
 ### 1. Describe the layout of your app in terms of multiple `Stack`, `Scene`, `Feature`, and `Data` routers.
 
 Each router is a javascript object with the keys: `name`, `routers`
-```
+```javascript
   { 
     name: 'user',
     routers: {},
@@ -219,7 +231,7 @@ Each router is a javascript object with the keys: `name`, `routers`
 ```
 
 The `routers` key is used to specify other routers that are children of this router:
-```
+```javascript
   { 
     name: 'user',
     routers: {
@@ -233,7 +245,7 @@ The `routers` key is used to specify other routers that are children of this rou
 
 An example app layout might look like:
 
-```
+```javascript
 const tree =
   { name: 'root',
     routers: {
@@ -251,7 +263,7 @@ const tree =
 ```
 
 ### 2. Register the router tree
-```
+```javascript
 { registerRouter } from 'recursive-router';
 
 const routers = registerRouter(tree);
@@ -259,7 +271,7 @@ const routers = registerRouter(tree);
 
 ### 3. Observe when the routers have changed via the power of mobx
 
-```
+```html
 <App>
   <NavBar>
     <Button onClick={routers['user'].show} />
@@ -295,7 +307,7 @@ By default, all routers are hidden - aka `visible: false`.
 
 To have certain routers become visible when their immediate parent is visible, you can set the `defaultVisible` key to `true` in your router declaration object.
 
-```
+```javascript
 { 
   name: my-router
   routers: {
@@ -322,7 +334,7 @@ The pathname part of a url is the union of router names that make up the longest
 
 If there are both `Scene` and `Data` routers are neighbors (same level in router tree) in a path, the `Scene` router is always used for the pathname, unless the `Data` router explicitly sets the config option `isPathRouter = true`
 
-```
+```javascript
 {
   name="my-router",
   routers: <Routers Obj>,
@@ -332,7 +344,7 @@ If there are both `Scene` and `Data` routers are neighbors (same level in router
 
 Example using [React bindings](https://github.com/erhathaway/recursive-router-react):
 
-```
+```html
 <Router type="scene" name="user">
   <Router type="feature" name="admin-tray" />
   <Router type="data" name="user-id">
@@ -396,7 +408,7 @@ to
 
 You can set the route key with the `routeKey` parameter:
 
-```
+```javascript
 {
   name='my-router',
   routers: <Routers Obj>,
@@ -406,7 +418,7 @@ You can set the route key with the `routeKey` parameter:
 
 With the [React bindings](https://github.com/erhathaway/recursive-router-react), this would look like:
 
-```
+```html
 <Router name="my-router" type="scene" routeKey="a" />
 ```
 
