@@ -466,7 +466,6 @@ var queryString = {
 var deserializer = function deserializer() {
   var serializedLocation = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
 
-  // return { pathname: [], search: {}, options: {} };
   var locationStringParts = serializedLocation.split('?');
 
   var search = queryString.parse(locationStringParts[1], { decode: true, arrayFormat: 'bracket' });
@@ -477,26 +476,14 @@ var deserializer = function deserializer() {
   return { search: search, pathname: pathname, options: {} };
 };
 
-// const joinLocationParts = ({ pathname, search }) => {
-//   if (window && window.history) {
-//     const url = `${pathname}?${search}`;
-//     if (options.mutateExistingLocation) {
-//       window.history.replaceState({ url }, '', url);
-//     } else {
-//       window.history.pushState({ url }, '', url);
-//     }
-//   }
-
 var serializer = function serializer(newLocation) {
   var oldLocation = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
   var newPathname = newLocation.pathname || [];
   var newSearchObj = newLocation.search || {};
 
-  // const { search: oldSearchObj } = oldLocation;
   var oldSearchObj = oldLocation.search || {};
   var combinedSearchObj = _extends({}, oldSearchObj, newSearchObj);
-  // const combinedSearchObj = { ...newSearchObj };
 
   Object.keys(combinedSearchObj).forEach(function (key) {
     return combinedSearchObj[key] == null && delete combinedSearchObj[key];
@@ -525,11 +512,11 @@ var serializer = function serializer(newLocation) {
 
 var NativeStore = function () {
   function NativeStore() {
+    var config = arguments[1];
     classCallCheck(this, NativeStore);
 
-    // this.state = state;
     this.observers = [];
-    this.config = { serializer: serializer, deserializer: deserializer, historySize: 10 };
+    this.config = config || { serializer: serializer, deserializer: deserializer, historySize: 10 };
     this.history = [];
     this.currentLocationInHistory = 0;
   }
@@ -547,7 +534,6 @@ var NativeStore = function () {
 
       var _config$serializer = this.config.serializer(unserializedLocation, oldUnserializedLocation),
           newState = _config$serializer.location;
-      // this.state = newState;
 
       if (options.updateHistory !== false) {
         // clone history
@@ -643,10 +629,11 @@ var NativeStore = function () {
 var BrowserStore = function () {
   function BrowserStore() {
     var _this = this;
+    var config = arguments[1];
     classCallCheck(this, BrowserStore);
 
     this.observers = [];
-    this.config = { serializer: serializer, deserializer: deserializer };
+    this.config = config || { serializer: serializer, deserializer: deserializer };
 
     // subscribe to location changes
     this.existingLocation = '';
@@ -723,24 +710,43 @@ var BrowserStore = function () {
   return BrowserStore;
 }();
 
-// export const defaultStore = {};
-
-var DefaultRoutersStateAdapter = function () {
-  function DefaultRoutersStateAdapter(store) {
+/**
+ * The default router state store. 
+ * This store keeps track of each routers state which is derived from the current location
+ * This store can be swaped out in the manager with other stores. For example, a redux store.
+ * Stores must implement the methods:
+ *   setState
+ *   getState
+ *   createRouterStateGetter
+ *   createRouterStateSubscriber
+ */
+var DefaultRoutersStateStore = function () {
+  function DefaultRoutersStateStore(store) {
     var config = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : { historySize: 2 };
-    classCallCheck(this, DefaultRoutersStateAdapter);
+    classCallCheck(this, DefaultRoutersStateStore);
 
     this.store = store || {};
     this.config = config;
     this.observers = {}; // key is routerName
   }
 
-  createClass(DefaultRoutersStateAdapter, [{
+  /**
+   * Sets the state of the router state store by adding to the history.
+   * Adding state will completly overwrite existing state.
+   * If the new contains routers whose state is identical to old state
+   *   the router callbacks wont be called for this router. Otherwise, if the state
+   *   has changed in any way, callback will be fired off for the router.
+   */
+
+
+  createClass(DefaultRoutersStateStore, [{
     key: "setState",
     value: function setState(desiredRouterStates) {
       var _this = this;
 
       var routerNames = Object.keys(desiredRouterStates);
+      // Keeps track of which routers have new state. 
+      // Used to notify observers of new state changes on a router by router level
       var hasUpdatedTracker = [];
 
       this.store = routerNames.reduce(function (routerStates, routerName) {
@@ -751,10 +757,8 @@ var DefaultRoutersStateAdapter = function () {
 
         var newCurrent = desiredRouterStates[routerName];
 
-        // // remove null and undefined keys
-        // Object.keys(newCurrent).forEach((key) => (newCurrent[key] == null) && delete newCurrent[key]);
-
         // skip routers who haven't been updated
+        // TODO test performance of this JSON.stringify comparison
         if (JSON.stringify(newCurrent) === JSON.stringify(prevCurrent)) {
           return routerStates;
         }
@@ -767,15 +771,16 @@ var DefaultRoutersStateAdapter = function () {
           // add current to historical states
           newHistorical.unshift(prevCurrent);
         }
+
         // enforce history size
         if (newHistorical.length > _this.config.historySize) {
           newHistorical = newHistorical.slice(0, _this.config.historySize);
         }
         // update state to include new router state
-        routerStates[routerName] = { current: newCurrent, historical: newHistorical
+        routerStates[routerName] = { current: newCurrent, historical: newHistorical };
 
-          // record which routers have had a state change
-        };hasUpdatedTracker.push(routerName);
+        // record which routers have had a state change
+        hasUpdatedTracker.push(routerName);
 
         return routerStates;
       }, Object.assign(this.getState()));
@@ -790,6 +795,12 @@ var DefaultRoutersStateAdapter = function () {
         }
       });
     }
+
+    /**
+     * Returns a function which has a router name in closure scope.
+     * The returned function is used for getting the router store state for a specific router.
+     */
+
   }, {
     key: "createRouterStateGetter",
     value: function createRouterStateGetter(routerName) {
@@ -799,6 +810,13 @@ var DefaultRoutersStateAdapter = function () {
         return _this2.store[routerName] || {};
       };
     }
+
+    /**
+     * Returns a function which as the router name in closure scope.
+     * The returned function is used subscribe observers to changes in 
+     *   a single routers state.
+     */
+
   }, {
     key: "createRouterStateSubscriber",
     value: function createRouterStateSubscriber(routerName) {
@@ -812,13 +830,18 @@ var DefaultRoutersStateAdapter = function () {
         }
       };
     }
+
+    /**
+     * Returns the stores state for all routers
+     */
+
   }, {
     key: "getState",
     value: function getState() {
       return this.store;
     }
   }]);
-  return DefaultRoutersStateAdapter;
+  return DefaultRoutersStateStore;
 }();
 
 var Cache = function () {
@@ -850,7 +873,7 @@ var Cache = function () {
       if (routerInstance.isPathRouter) {
         cache = location.pathname[routerInstance.pathLocation];
       } else {
-        cache = location.search[routerInstance.routeKey];
+        cache = !!location.search[routerInstance.routeKey];
       }
 
       this.setCache(cache);
@@ -1017,7 +1040,7 @@ var RouterBase = function () {
 
       if (this.type === 'scene' && this.parent.isPathRouter) {
         // check to make sure neighboring data routers arent explicitly set to modify the pathname
-        var neighboringDataRouters = this.getNeighborsByType('data'); // this.parent.routers.data || [];
+        var neighboringDataRouters = this.getNeighborsByType('data');
         var isSiblingRouterExplictlyAPathRouter = neighboringDataRouters.reduce(function (acc, r) {
           return (
             // check all data router neighbors and
@@ -1030,7 +1053,6 @@ var RouterBase = function () {
         if (this._isPathRouter === false) return false;
         // check to make sure neighboring scene routers aren't present
         var neighboringSceneRouters = this.getNeighborsByType('scene');
-        // if (neighboringSceneRouters.length === 0) return true;
 
         return neighboringSceneRouters.length === 0 && !this.siblings.reduce(function (acc, r) {
           return (
@@ -1392,7 +1414,6 @@ var stack = {
 
 var capitalize = function capitalize() {
   var string = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
@@ -1407,11 +1428,11 @@ var Manager = function () {
 
     classCallCheck(this, Manager);
 
-    this.routerStateStore = routerStateStore || new DefaultRoutersStateAdapter();
+    this.routerStateStore = routerStateStore || new DefaultRoutersStateStore();
     this.routers = {};
     this.rootRouter = null;
 
-    // check if window 
+    // check if window
     if (typeof window === 'undefined') {
       this.serializedStateStore = serializedStateStore || new NativeStore();
     } else {
@@ -1473,8 +1494,8 @@ var Manager = function () {
 
   /**
    * Adds the initial routers defined during initialization
-   * @param {*} router 
-   * 
+   * @param {*} router
+   *
    */
 
 
@@ -1493,7 +1514,7 @@ var Manager = function () {
         return;
       }
 
-      // The type is derived by the relationship with the parent. 
+      // The type is derived by the relationship with the parent.
       //   Or has none, as is the case with the root router in essence
       //   Below, we are deriving the type and calling the add function recursively by type
       this.addRouter(_extends({}, router, { type: type, parentName: parentName }));
@@ -1575,7 +1596,7 @@ var Manager = function () {
         childCacheStore: this.childCacheStore
       };
 
-      var RouterType = this.routerTypes[type] || this.routerTypes['scene'];
+      var RouterType = this.routerTypes[type] || this.routerTypes.scene;
 
       return new RouterType(initalParams);
     }
@@ -1595,8 +1616,8 @@ var Manager = function () {
       // delete ref the parent (if any) stores
 
       if (parent) {
-        var routersToKeep = parent.routers[type].filter(function (router) {
-          return router.name !== name;
+        var routersToKeep = parent.routers[type].filter(function (child) {
+          return child.name !== name;
         });
         parent.routers[type] = routersToKeep;
       }
@@ -1652,14 +1673,13 @@ var Manager = function () {
       var newLocation = _extends({}, location);
       Object.keys(router.routers).forEach(function (routerType) {
         router.routers[routerType].forEach(function (child) {
-
           // if the cached visibility state if 'false' don't show on rehydration
-          if (child.cache.state === 'false') {
+          if (child.cache.state === false) {
             return;
           }
 
           // if there is a cache state or a default visibility, show the router
-          if (child.defaultShow || child.cache.state === 'true') {
+          if (child.defaultShow || child.cache.state === true) {
             // the cache has been 'used' so remove it
             child.cache.removeCache();
 
@@ -1688,7 +1708,7 @@ var Manager = function () {
 
       Object.keys(router.routers).forEach(function (routerType) {
         router.routers[routerType].forEach(function (child) {
-          // update ctx object's caching attr for this branch 
+          // update ctx object's caching attr for this branch
           ctx.disableCaching = disableCaching;
 
           // call location action
@@ -1742,7 +1762,7 @@ var Manager = function () {
         updatedLocation = action(updatedLocation, routerInstance, ctx);
 
         if (type === 'hide' && routerInstance.state.visible === true) {
-          routerInstance.cache.setCache('false');
+          routerInstance.cache.setCache(false);
         }
 
         if (type === 'show') {
@@ -1779,4 +1799,4 @@ var Manager = function () {
 }();
 
 export default Manager;
-export { DefaultRoutersStateAdapter as routerStateStore, NativeStore as NativeSerializedStore, BrowserStore as BrowserSerializedStore, serializer, deserializer };
+export { DefaultRoutersStateStore as routerStateStore, NativeStore as NativeSerializedStore, BrowserStore as BrowserSerializedStore, serializer, deserializer };

@@ -3,6 +3,8 @@ import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import { eslint } from 'rollup-plugin-eslint';
 import minify from 'rollup-plugin-babel-minify';
+import typescript from 'rollup-plugin-typescript2';
+import pkg from './package.json';
 
 const dependencies = Object.keys({
   ...require('./package.json').dependencies,
@@ -15,16 +17,19 @@ export default {
   input: 'src/index.js',
   output: [
     {
-      file: 'dist/index.cjs.js',
+      file: pkg.main,
       format: 'cjs',
     },
     {
-      file: 'dist/index.es.js',
+      file: pkg.module,
       format: 'es',
     },
   ],
   plugins: [
     eslint({}),
+    typescript({
+      typescript: require('typescript'),
+    }),
     resolve({
       customResolveOptions: {
         moduleDirectory: 'node_modules',

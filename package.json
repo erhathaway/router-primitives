@@ -4,24 +4,28 @@
   "description": "Simple, expressive, mobx-based routing state management. Routers all the way down",
   "main": "dist/index.cjs.js",
   "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "BABEL_ENV=test jest",
     "build": "BABEL_ENV=prod rollup -c",
-    "start": "BABEL_ENV=prod rollup -c -w",
-    "flow": "flow"
+    "watch": "BABEL_ENV=prod rollup -cw",
+    "start": "watch"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/erhathaway/recursive-router.git"
   },
   "keywords": [
-    "mobx",
-    "mst",
     "router",
     "router-state",
     "router-management",
     "react",
     "react-state",
+    "mobx",
+    "redux",
     "declarative-routing"
   ],
   "author": "Ethan Hathaway",
@@ -47,13 +51,16 @@
     "flow-bin": "^0.82.0",
     "jest": "^23.6.0",
     "mobx": "^5.5.0",
-    "rollup": "^0.64.1",
+    "rollup": "^1.1.2",
     "rollup-plugin-babel": "^3.0.7",
     "rollup-plugin-babel-minify": "^6.1.1",
     "rollup-plugin-commonjs": "^9.1.5",
     "rollup-plugin-eslint": "^5.0.0",
     "rollup-plugin-node-resolve": "^3.3.0",
-    "rollup-watch": "^4.3.1"
+    "rollup-plugin-typescript2": "^0.19.2",
+    "rollup-watch": "^4.3.1",
+    "tslib": "^1.9.3",
+    "typescript": "^3.3.3"
   },
   "dependencies": {
     "query-string": "^5.1.1"
