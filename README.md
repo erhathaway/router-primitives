@@ -3,9 +3,15 @@
 
 Recursive router is a different take on routing that hopefully increases developer productivity and allows for the easier creation and maintaince of complex routing. 
 
-With Recursive, instead of defining how the URL is constructed you **define the visual elements of your app** and URL construction is automatically handled for you - based on the hierarchical arrangement of routers! Plus, if you work on a platform where there is no concept of a URL, you can still use this library (since the URL is simiply managed serialized state - which is platform aware and configurable)!
+##### URL is a reflection of your app
 
-Bindings exist for [Mobx](https://github.com/erhathaway/recursive-router-mobx), Redux, and [React](https://github.com/erhathaway/recursive-router-react).
+With Recursive, instead of defining how the URL is constructed you **define the visual elements of your app** and URL construction is automatically handled for you, based on the hierarchical arrangement of routers! 
+
+##### Cross platform
+
+If you work on a platform where there is no concept of a URL, you can still use this library. The URL is simiply managed serialized state - which is platform aware and configurable!
+
+Bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)**, **Redux**, and **[React](https://github.com/erhathaway/recursive-router-react)**.
 
 # Intro
 
