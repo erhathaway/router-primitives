@@ -24,6 +24,8 @@ Bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)
 
 #### Paradigm 
 
+###### Describe the layout of your app in terms of `scene` `stack` `feature` and `data` routers
+
 In the context of this library, a router should be thought of as a feature of your application that responds to actions of other application features. 
 
 For example, a router can be 'visible' when other routers are 'hidden'. This type of logic is what a scene router uses. Or, as another example, a router can be 'in front of' or 'behind' other routers. This type of logic is what a stack router uses. By defining your application in terms of visual elements like `scene` or `stack` (along with `feature` and `data`) you can implement variations of complex application routing. 
