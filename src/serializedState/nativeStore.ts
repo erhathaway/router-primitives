@@ -1,6 +1,17 @@
 import deserializer from './deserializer';
 import serializer from './serializer';
+import { InputLocation } from '../types';
 
+type NativeStoreConfig = {
+  serializer: typeof serializer,
+  deserializer: typeof deserializer,
+  historySize: number,
+}
+type State = ReturnType<typeof deserializer>;
+type StateObserver = (state: State) => any;
+interface setStateOptions {
+  updateHistory?: boolean;
+}
 /**
  * The store that the router manager uses to write and read from the serialized state
  * The serialized state store is what, on the web, holds the URL - aka the serilaized state of the router tree
@@ -8,7 +19,13 @@ import serializer from './serializer';
  * The default serialized state is a string for this store
  */
 export default class NativeStore {
-  constructor(state = '', config) {
+  observers: StateObserver[];
+  config: NativeStoreConfig;
+  state: string; // TODO remove state
+  history: string[];
+  currentLocationInHistory: number;
+
+  constructor(state = '', config: NativeStoreConfig) {
     this.observers = [];
     this.config = config || { serializer, deserializer, historySize: 10 };
     this.history = [];
@@ -17,7 +34,7 @@ export default class NativeStore {
 
   // unserialized state = { pathname: [], search: {}, options: {} }
   // options = { updateHistory }
-  setState(unserializedLocation, options = {}) {
+  setState(unserializedLocation: InputLocation, options: setStateOptions = {}) {
     const oldUnserializedLocation = this.getState();
     const { location: newState } = this.config.serializer(unserializedLocation, oldUnserializedLocation);
 
@@ -47,7 +64,7 @@ export default class NativeStore {
 
   getState() { return this.config.deserializer(this.history[this.currentLocationInHistory]); }
 
-  subscribeToStateChanges(fn) { this.observers.push(fn); }
+  subscribeToStateChanges(fn: StateObserver) { this.observers.push(fn); }
 
   // unsubscribeToStateChanges // TODO fill me in!
 
@@ -64,7 +81,7 @@ export default class NativeStore {
     this.go(1);
   }
 
-  go(historyChange) {
+  go(historyChange: number) {
     if (historyChange === 0) { throw new Error('No history size change specified'); }
 
     // calcuate request history location

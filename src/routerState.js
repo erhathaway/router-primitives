@@ -1,5 +1,5 @@
 /**
- * The default router state store. 
+ * The default router state store.
  * This store keeps track of each routers state which is derived from the current location
  * This store can be swaped out in the manager with other stores. For example, a redux store.
  * Stores must implement the methods:
@@ -24,7 +24,7 @@ export default class DefaultRoutersStateStore {
    */
   setState(desiredRouterStates) {
     const routerNames = Object.keys(desiredRouterStates);
-    // Keeps track of which routers have new state. 
+    // Keeps track of which routers have new state.
     // Used to notify observers of new state changes on a router by router level
     const hasUpdatedTracker = [];
 
@@ -76,7 +76,7 @@ export default class DefaultRoutersStateStore {
 
   /**
    * Returns a function which as the router name in closure scope.
-   * The returned function is used subscribe observers to changes in 
+   * The returned function is used subscribe observers to changes in
    *   a single routers state.
    */
   createRouterStateSubscriber(routerName) {

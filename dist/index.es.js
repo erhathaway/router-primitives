@@ -346,14 +346,6 @@ function keysSorter(input) {
 	return input;
 }
 
-function extract(str) {
-	var queryStart = str.indexOf('?');
-	if (queryStart === -1) {
-		return '';
-	}
-	return str.slice(queryStart + 1);
-}
-
 function parse(str, opts) {
 	opts = objectAssign({ arrayFormat: 'none' }, opts);
 
@@ -399,18 +391,16 @@ function parse(str, opts) {
 		return result;
 	}, Object.create(null));
 }
-
-var extract_1 = extract;
 var parse_1 = parse;
 
 var stringify = function stringify(obj, opts) {
-	var defaults$$1 = {
+	var defaults = {
 		encode: true,
 		strict: true,
 		arrayFormat: 'none'
 	};
 
-	opts = objectAssign(defaults$$1, opts);
+	opts = objectAssign(defaults, opts);
 
 	if (opts.sort === false) {
 		opts.sort = function () {};
@@ -449,31 +439,16 @@ var stringify = function stringify(obj, opts) {
 	}).join('&') : '';
 };
 
-var parseUrl = function parseUrl(str, opts) {
-	return {
-		url: str.split('?')[0] || '',
-		query: parse(extract(str), opts)
-	};
-};
-
-var queryString = {
-	extract: extract_1,
-	parse: parse_1,
-	stringify: stringify,
-	parseUrl: parseUrl
-};
-
-var deserializer = function deserializer() {
-  var serializedLocation = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-
-  var locationStringParts = serializedLocation.split('?');
-
-  var search = queryString.parse(locationStringParts[1], { decode: true, arrayFormat: 'bracket' });
-  var pathname = locationStringParts[0].split('/').filter(function (s) {
-    return s !== '';
-  });
-
-  return { search: search, pathname: pathname, options: {} };
+var deserializer = function deserializer(serializedLocation) {
+    if (serializedLocation === void 0) {
+        serializedLocation = '';
+    }
+    var locationStringParts = serializedLocation.split('?');
+    var search = parse_1(locationStringParts[1], { decode: true, arrayFormat: 'bracket' });
+    var pathname = locationStringParts[0].split('/').filter(function (s) {
+        return s !== '';
+    });
+    return { search: search, pathname: pathname, options: {} };
 };
 
 /*! *****************************************************************************
@@ -903,12 +878,12 @@ var Cache = function () {
     }
   }, {
     key: "hasCache",
-    get: function get$$1() {
+    get: function get() {
       return !!this._cacheStore;
     }
   }, {
     key: "state",
-    get: function get$$1() {
+    get: function get() {
       return this._cacheStore;
     }
   }]);
@@ -1017,17 +992,17 @@ var RouterBase = function () {
 
   }, {
     key: 'routeKey',
-    get: function get$$1() {
+    get: function get() {
       return this.config.routeKey || this.name;
     }
   }, {
     key: 'shouldStoreLocationMutationInHistory',
-    get: function get$$1() {
+    get: function get() {
       return this.config.shouldStoreLocationMutationInHistory;
     }
   }, {
     key: 'siblings',
-    get: function get$$1() {
+    get: function get() {
       var _this = this;
 
       return this.parent.routers[this.type].filter(function (r) {
@@ -1036,18 +1011,18 @@ var RouterBase = function () {
     }
   }, {
     key: 'pathLocation',
-    get: function get$$1() {
+    get: function get() {
       if (!this.parent) return -1;
       return 1 + this.parent.pathLocation;
     }
   }, {
     key: 'isRootRouter',
-    get: function get$$1() {
+    get: function get() {
       return !this.parent;
     }
   }, {
     key: 'isPathRouter',
-    get: function get$$1() {
+    get: function get() {
       // if there is no parent, we are at the root. The root is by default a path router since
       // it represents the '/' in a pathname location
       if (!this.parent) return true;
@@ -1090,7 +1065,7 @@ var RouterBase = function () {
     }
   }, {
     key: 'state',
-    get: function get$$1() {
+    get: function get() {
       if (!this.getState) {
         throw new Error('no getState function specified by the manager');
       }
@@ -1102,7 +1077,7 @@ var RouterBase = function () {
     }
   }, {
     key: 'history',
-    get: function get$$1() {
+    get: function get() {
       if (!this.getState) {
         throw new Error('no getState function specified by the manager');
       }

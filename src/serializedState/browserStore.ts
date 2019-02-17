@@ -1,5 +1,13 @@
 import deserializer from './deserializer';
 import serializer from './serializer';
+import { OutputLocation, InputLocation } from '../types/index';
+
+type BrowserStoreConfig = {
+  serializer: typeof serializer,
+  deserializer: typeof deserializer,
+}
+type State = ReturnType<typeof deserializer>;
+type StateObserver = (state: State) => any;
 
 /**
  * The store that the router manager uses to write and read from the serialized state
@@ -7,9 +15,18 @@ import serializer from './serializer';
  * The default serialized state is the URL for this store
  */
 export default class BrowserStore {
-  constructor(state = '', config) {
+  observers: StateObserver[]
+  config: BrowserStoreConfig
+  state: string; // TODO remove state
+  existingLocation: string;
+  stateWatcher: ReturnType<typeof window.setInterval>
+
+  constructor(state = '', config: BrowserStoreConfig) {
     this.observers = [];
     this.config = config || { serializer, deserializer };
+
+    // TODO remove this and delete state param in constructor once tests are rewritten in TS
+    this.state = state;
 
     // subscribe to location changes
     this.existingLocation = '';
@@ -28,7 +45,7 @@ export default class BrowserStore {
 
   // unserialized state = { pathname: [], search: {}, options: {} }
   // options = { updateHistory }
-  setState(unserializedLocation) {
+  setState(unserializedLocation: InputLocation) {
     const oldUnserializedLocation = this.getState();
     const { location: newState } = this.config.serializer(unserializedLocation, oldUnserializedLocation);
 
@@ -46,13 +63,13 @@ export default class BrowserStore {
     this.observers.forEach(fn => fn(deserializedState));
   }
 
-  getState() {
+  getState(): OutputLocation {
     const searchString = window.location.search || '';
     const pathnameString = window.location.pathname || '';
     return this.config.deserializer(pathnameString + searchString);
   }
 
-  subscribeToStateChanges(fn) { this.observers.push(fn); }
+  subscribeToStateChanges(fn: StateObserver) { this.observers.push(fn); }
 
   back() {
     window.history.back();
@@ -62,7 +79,7 @@ export default class BrowserStore {
     window.history.forward();
   }
 
-  go(historyChange) {
+  go(historyChange: number) {
     window.history.go(historyChange);
   }
 }

@@ -1,14 +1,14 @@
 import * as queryString from 'query-string';
-import { Location, Options } from '../types/index';
+import { InputLocation, Options } from '../types/index';
 
-const DEFAULT_LOCATION: Location = { pathname: [], search: { test: true }, options: {} };
+const DEFAULT_LOCATION: InputLocation = { pathname: [], search: { test: true }, options: {} };
 
-const serializer = (newLocation: Location, oldLocation = DEFAULT_LOCATION): { location: string, options: Options } => {
+const serializer = (newLocation: InputLocation, oldLocation = DEFAULT_LOCATION) => {
   const newPathname = newLocation.pathname || [];
   const newSearchObj = newLocation.search || {};
 
   const oldSearchObj = oldLocation.search || {};
-  const combinedSearchObj = { ...oldSearchObj, ...newSearchObj };
+  const combinedSearchObj = { ...oldSearchObj, ...newSearchObj } as { [key: string]: string };
 
   Object.keys(combinedSearchObj).forEach(key => (combinedSearchObj[key] == null) && delete combinedSearchObj[key]);
 

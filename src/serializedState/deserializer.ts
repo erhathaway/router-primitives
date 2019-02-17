@@ -1,6 +1,7 @@
-import queryString from 'query-string';
+import * as queryString from 'query-string';
+import { OutputLocation } from '../types';
 
-const deserializer = (serializedLocation = '') => {
+const deserializer = (serializedLocation = ''): OutputLocation => {
   const locationStringParts = serializedLocation.split('?');
 
   const search = queryString.parse(locationStringParts[1], { decode: true, arrayFormat: 'bracket' });
