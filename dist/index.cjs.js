@@ -480,31 +480,54 @@ var deserializer = function deserializer() {
   return { search: search, pathname: pathname, options: {} };
 };
 
-var serializer = function serializer(newLocation) {
-  var oldLocation = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation. All rights reserved.
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at http://www.apache.org/licenses/LICENSE-2.0
 
-  var newPathname = newLocation.pathname || [];
-  var newSearchObj = newLocation.search || {};
+THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+MERCHANTABLITY OR NON-INFRINGEMENT.
 
-  var oldSearchObj = oldLocation.search || {};
-  var combinedSearchObj = _extends({}, oldSearchObj, newSearchObj);
+See the Apache Version 2.0 License for specific language governing permissions
+and limitations under the License.
+***************************************************************************** */
 
-  Object.keys(combinedSearchObj).forEach(function (key) {
-    return combinedSearchObj[key] == null && delete combinedSearchObj[key];
-  });
+var __assign = function() {
+    __assign = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 
-  var searchString = queryString.stringify(combinedSearchObj, { arrayFormat: 'bracket' });
-  var pathname = newPathname.join('/');
-  var pathnameString = pathname === '' ? '/' : pathname;
-
-  var location = void 0;
-  if (searchString === '') {
-    location = pathnameString;
-  } else {
-    location = pathnameString + '?' + searchString;
-  }
-
-  return { location: location, options: newLocation.options };
+var DEFAULT_LOCATION = { pathname: [], search: { test: true }, options: {} };
+var serializer = function serializer(newLocation, oldLocation) {
+    if (oldLocation === void 0) {
+        oldLocation = DEFAULT_LOCATION;
+    }
+    var newPathname = newLocation.pathname || [];
+    var newSearchObj = newLocation.search || {};
+    var oldSearchObj = oldLocation.search || {};
+    var combinedSearchObj = __assign({}, oldSearchObj, newSearchObj);
+    Object.keys(combinedSearchObj).forEach(function (key) {
+        return combinedSearchObj[key] == null && delete combinedSearchObj[key];
+    });
+    var searchString = stringify(combinedSearchObj, { arrayFormat: 'bracket' });
+    var pathname = newPathname.join('/');
+    var pathnameString = pathname === '' ? '/' : pathname;
+    var location;
+    if (searchString === '') {
+        location = pathnameString;
+    } else {
+        location = pathnameString + "?" + searchString;
+    }
+    return { location: location, options: newLocation.options };
 };
 
 /**

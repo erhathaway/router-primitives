@@ -1,6 +1,9 @@
-import queryString from 'query-string';
+import * as queryString from 'query-string';
+import { Location, Options } from '../types/index';
 
-const serializer = (newLocation, oldLocation = {}) => {
+const DEFAULT_LOCATION: Location = { pathname: [], search: { test: true }, options: {} };
+
+const serializer = (newLocation: Location, oldLocation = DEFAULT_LOCATION): { location: string, options: Options } => {
   const newPathname = newLocation.pathname || [];
   const newSearchObj = newLocation.search || {};
 
@@ -13,7 +16,7 @@ const serializer = (newLocation, oldLocation = {}) => {
   const pathname = newPathname.join('/');
   const pathnameString = pathname === '' ? '/' : pathname;
 
-  let location;
+  let location: string;
   if (searchString === '') {
     location = pathnameString;
   } else {
