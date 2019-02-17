@@ -1,3 +1,19 @@
+import { RouterState, RouterHistory } from "./types";
+
+interface StoreValue {
+  current: RouterState,
+  historical: RouterHistory
+} 
+interface Store {
+  [key: string]: StoreValue;
+}
+
+interface Config {
+  historySize: number;
+}
+
+type Observer = (state: StoreValue) => any;
+
 /**
  * The default router state store.
  * This store keeps track of each routers state which is derived from the current location
@@ -9,7 +25,11 @@
  *   createRouterStateSubscriber
  */
 export default class DefaultRoutersStateStore {
-  constructor(store, config = { historySize: 2 }) {
+  store: Store;
+  config: Config;
+  observers: { [key: string]: Observer[] }
+
+  constructor(store: Store, config = { historySize: 2 }) {
     this.store = store || {};
     this.config = config;
     this.observers = {}; // key is routerName
@@ -22,11 +42,11 @@ export default class DefaultRoutersStateStore {
    *   the router callbacks wont be called for this router. Otherwise, if the state
    *   has changed in any way, callback will be fired off for the router.
    */
-  setState(desiredRouterStates) {
+  setState(desiredRouterStates: { [key: string]: RouterState }) {
     const routerNames = Object.keys(desiredRouterStates);
     // Keeps track of which routers have new state.
     // Used to notify observers of new state changes on a router by router level
-    const hasUpdatedTracker = [];
+    const hasUpdatedTracker = [] as string[];
 
     this.store = routerNames.reduce((routerStates, routerName) => {
       // extract current and historical states
@@ -55,7 +75,7 @@ export default class DefaultRoutersStateStore {
       hasUpdatedTracker.push(routerName);
 
       return routerStates;
-    }, Object.assign(this.getState()));
+    }, { ...this.getState()} );
 
     // call observers of all routers that have had state changes
     hasUpdatedTracker.forEach((routerName) => {
@@ -70,7 +90,7 @@ export default class DefaultRoutersStateStore {
    * Returns a function which has a router name in closure scope.
    * The returned function is used for getting the router store state for a specific router.
    */
-  createRouterStateGetter(routerName) {
+  createRouterStateGetter(routerName: string) {
     return () => this.store[routerName] || {};
   }
 
@@ -79,8 +99,8 @@ export default class DefaultRoutersStateStore {
    * The returned function is used subscribe observers to changes in
    *   a single routers state.
    */
-  createRouterStateSubscriber(routerName) {
-    return (fn) => {
+  createRouterStateSubscriber(routerName: string) {
+    return (fn: Observer) => {
       if (Array.isArray(this.observers[routerName])) {
         this.observers[routerName].push(fn);
       } else {

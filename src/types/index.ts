@@ -13,5 +13,7 @@ export type Options = {
 
 type Pathname = string[];
 
+export type RouterState = { visible?: boolean };
+export type RouterHistory = RouterState[];
 export type OutputLocation = { pathname: Pathname, search: OutputSearch, options: Options };
 export type InputLocation = { pathname: Pathname, search: InputSearch, options: Options };
