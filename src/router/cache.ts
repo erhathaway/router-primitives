@@ -1,4 +1,16 @@
+import { OutputLocation } from "../types";
+
+type CacheValue = string | boolean;
+
+/**
+ * Used to manipulate the router cache
+ * Cache is set when a router 'hides'
+ * Depending on the router type logic, a router can use its 
+ * cache when setting new state instead of a default value
+ */
 class Cache {
+  _cacheStore?: CacheValue
+
   constructor() {
     this._cacheStore = undefined;
   }
@@ -15,11 +27,12 @@ class Cache {
     this._cacheStore = undefined;
   }
 
-  setCache(value) {
+  setCache(value: CacheValue) {
     this._cacheStore = value;
   }
 
-  setCacheFromLocation(location, routerInstance) {
+  // TODO Fix this any type once Router has a type definition
+  setCacheFromLocation(location: OutputLocation, routerInstance: any) {
     // dont set cache if one already exists!
     if (this.hasCache) { return; }
 

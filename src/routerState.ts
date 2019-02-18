@@ -1,18 +1,14 @@
-import { RouterState, RouterHistory } from "./types";
+import { RouterState, RouterCurrentState, RouterHistoryState } from "./types";
 
-interface StoreValue {
-  current: RouterState,
-  historical: RouterHistory
-} 
 interface Store {
-  [key: string]: StoreValue;
+  [key: string]: RouterState;
 }
 
 interface Config {
   historySize: number;
 }
 
-type Observer = (state: StoreValue) => any;
+type Observer = (state: RouterState) => any;
 
 /**
  * The default router state store.
@@ -42,7 +38,7 @@ export default class DefaultRoutersStateStore {
    *   the router callbacks wont be called for this router. Otherwise, if the state
    *   has changed in any way, callback will be fired off for the router.
    */
-  setState(desiredRouterStates: { [key: string]: RouterState }) {
+  setState(desiredRouterStates: { [key: string]: RouterCurrentState }) {
     const routerNames = Object.keys(desiredRouterStates);
     // Keeps track of which routers have new state.
     // Used to notify observers of new state changes on a router by router level

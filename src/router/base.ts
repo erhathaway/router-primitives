@@ -1,7 +1,47 @@
 import Cache from './cache';
+import { RouterState } from '../types';
 
+interface Config {
+  routeKey?: string;
+  shouldStoreLocationMutationInHistory?: boolean;
+  isPathRouter?: boolean;
+}
+
+interface ChildRouters {
+  [key: string]: RouterBase[]
+}
+
+type Observer = (state: RouterState) => any;
+
+interface InitParams {
+  name: string;
+  type: string;
+  manager: any; // TODO replace once manager has a type def
+  config: Config;
+  parent: RouterBase;
+  routers: ChildRouters;
+  root: RouterBase;
+  defaultShow?: boolean; // TODO move into config
+  disableCaching?: boolean; // TODO move into config
+  getState: () => RouterState;
+  subscribe: (observer: Observer) => void;
+
+}
 export default class RouterBase {
-  constructor(init = {}) {
+  name: InitParams['name'];
+  config: InitParams['config'];
+  type: InitParams['type'];
+  manager: InitParams['manager'];
+  parent: InitParams['parent'];
+  routers: InitParams['routers'];
+  root: InitParams['root'];
+  getState: InitParams['getState'];
+  subscribe: InitParams['subscribe'];
+  defaultShow: InitParams['defaultShow'];
+  disableCaching: InitParams['disableCaching'];
+  cache: Cache;
+
+  constructor(init: InitParams) {
     const { name, config, type, manager, parent, routers, root, defaultShow, disableCaching, getState, subscribe } = init;
 
     if (!name || !type || !manager) { throw new Error('Missing required kwargs: name, type, and/or manager'); }
@@ -9,7 +49,7 @@ export default class RouterBase {
     this.name = name;
     this.config = config || {};
     this.type = type;
-    this.actionNames = []; // used to map over the actions and replace with the actionHandler closure
+    // this.actionNames = []; // used to map over the actions and replace with the actionHandler closure
     this.manager = manager;
 
     // optional
@@ -41,14 +81,14 @@ export default class RouterBase {
     return this.parent.routers[this.type].filter(r => r.name !== this.name);
   }
 
-  getNeighborsByType(type) {
+  getNeighborsByType(type: string): RouterBase[] {
     if (this.parent && this.parent.routers) {
       return this.parent.routers[type] || [];
     }
     return [];
   }
 
-  get pathLocation() {
+  get pathLocation(): number {
     if (!this.parent) return -1;
     return 1 + this.parent.pathLocation;
   }
@@ -59,10 +99,10 @@ export default class RouterBase {
 
   // TODO Remove testing dependency - this shouldn't be used since it bypasses the manager
   // Create utility function instead to orchestrate relationships between routers
-  _addChildRouter(router) {
+  _addChildRouter(router: RouterBase) {
     if (!router.type) { throw new Error('Router is missing type'); }
 
-    const siblingTypes = this.routers[router.type] || [];
+    const siblingTypes = (this.routers[router.type] || []) as RouterBase[];
     siblingTypes.push(router);
     this.routers[router.type] = siblingTypes;
 
@@ -96,7 +136,7 @@ export default class RouterBase {
       ), false);
       if (isSiblingRouterExplictlyAPathRouter === false) return true;
     } else if (this.type === 'data' && this.parent && this.parent.isPathRouter) {
-      if (this._isPathRouter === false) return false;
+      if (this.isPathRouter === false) return false;
       // check to make sure neighboring scene routers aren't present
       const neighboringSceneRouters = this.getNeighborsByType('scene');
 
@@ -124,7 +164,7 @@ export default class RouterBase {
 
   // TODO deprecate this method and remove tests
   // return pathLocation cached data types
-  calcCachedLocation(globalState = null) {
+  calcCachedLocation(globalState: any = null) {
     // reuse global state for efficiency if doing a recursive calculation
     const routerState = globalState
       ? globalState[this.name].current
@@ -142,8 +182,8 @@ export default class RouterBase {
   }
 
   // TODO deprecate this function and remove tests
-  static joinLocationWithCachedLocation(location, cachedLocation) {
-    const newLocation = Object.assign({}, location);
+  static joinLocationWithCachedLocation(location: any, cachedLocation: any) {
+    const newLocation = { ...location };
     if (cachedLocation.isPathData) {
       newLocation.path[cachedLocation.pathLocation] = cachedLocation.value;
     } else {
