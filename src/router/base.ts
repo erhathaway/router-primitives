@@ -1,5 +1,5 @@
 import Cache from './cache';
-import { RouterState } from '../types';
+import { RouterState, Router, RouterCurrentState, RouterHistoryState } from '../types';
 
 interface Config {
   routeKey?: string;
@@ -8,7 +8,7 @@ interface Config {
 }
 
 interface ChildRouters {
-  [key: string]: RouterBase[]
+  [key: string]: Router[]
 }
 
 type Observer = (state: RouterState) => any;
@@ -18,9 +18,9 @@ interface InitParams {
   type: string;
   manager: any; // TODO replace once manager has a type def
   config: Config;
-  parent: RouterBase;
+  parent: Router;
   routers: ChildRouters;
-  root: RouterBase;
+  root: Router;
   defaultShow?: boolean; // TODO move into config
   disableCaching?: boolean; // TODO move into config
   getState: () => RouterState;
@@ -81,7 +81,7 @@ export default class RouterBase {
     return this.parent.routers[this.type].filter(r => r.name !== this.name);
   }
 
-  getNeighborsByType(type: string): RouterBase[] {
+  getNeighborsByType(type: string): Router[] {
     if (this.parent && this.parent.routers) {
       return this.parent.routers[type] || [];
     }
@@ -99,14 +99,14 @@ export default class RouterBase {
 
   // TODO Remove testing dependency - this shouldn't be used since it bypasses the manager
   // Create utility function instead to orchestrate relationships between routers
-  _addChildRouter(router: RouterBase) {
+  _addChildRouter(router: Router) {
     if (!router.type) { throw new Error('Router is missing type'); }
 
-    const siblingTypes = (this.routers[router.type] || []) as RouterBase[];
+    const siblingTypes = (this.routers[router.type] || []) as Router[];
     siblingTypes.push(router);
     this.routers[router.type] = siblingTypes;
 
-    router.parent = this;
+    router.parent = (this as any as Router);
   }
 
   get isPathRouter() {
@@ -150,13 +150,13 @@ export default class RouterBase {
     return false;
   }
 
-  get state() {
+  get state(): RouterCurrentState {
     if (!this.getState) { throw new Error('no getState function specified by the manager'); }
     const { current } = this.getState();
     return current || {};
   }
 
-  get history() {
+  get history(): RouterHistoryState {
     if (!this.getState) { throw new Error('no getState function specified by the manager'); }
     const { historical } = this.getState();
     return historical || [];

@@ -1,4 +1,6 @@
-const show = (location, router, ctx = {}) => {
+import { RouterAction, RouterReducer } from "../../types";
+
+const show: RouterAction = (location, router, ctx = {}) => {
   // hide sibling routers
   location = router.siblings.reduce((acc, s) => { 
     return s.hide(acc, s, ctx);
@@ -22,7 +24,7 @@ const show = (location, router, ctx = {}) => {
   return location;
 };
 
-const hide = (location, router, ctx) => {
+const hide: RouterAction = (location, router, ctx) => {
   if (router.isPathRouter) {
     location.pathname = location.pathname.slice(0, router.pathLocation);
   } else {
@@ -32,8 +34,8 @@ const hide = (location, router, ctx) => {
   return location;
 };
 
-const reducer = (location, router, ctx) => {
-  const newState = {};
+const reducer: RouterReducer = (location, router, ctx) => {
+  const newState: { [key: string]: any } = {};
   if (router.isPathRouter) {
     newState['visible'] = location.pathname[router.pathLocation] === router.routeKey;
   } else {

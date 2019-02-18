@@ -1,37 +1,38 @@
+import { Router, RouterAction, RouterReducer } from "../../types";
+
 // returns the routeKey names of visible routers based on the ordering of their 'order' state
-function getRouteKeyOrderings(router) {
+function getRouteKeyOrderings(router: Router) {
   // creates an object of { [visible router routeKey]: order }
   const routeKeyOrderObj = router.parent.routers[router.type].reduce((acc, r) => {
     if (r.state.visible === false) { return acc; }
-    acc[r.routeKey] =  r.state.order;
+    // TODO use generics to handle state type
+    acc[r.routeKey] =  (r.state as { order: number }).order;
     return acc;
-  }, {});
+  }, {} as { [key: string]: number });
 
-  /*
-    { <routeKeyName>: <order> }
-  */
+  /**
+   * { <routeKeyName>: <order> }
+   */
 
   // reduce the order object to the array of sorted keys
   const routerRouteKeys = Object.keys(routeKeyOrderObj);
-  /* reorder routeKeyOrderObj by order
-    ex: { <order>: <routeKeyName> }
-  */
+
   const orderAsKey = routerRouteKeys.reduce((acc, key) => {
     const value = routeKeyOrderObj[key];
     if (value != null && !Number.isNaN(value)) {
       acc[routeKeyOrderObj[key]] = key;
     }
     return acc;
-  }, {});
+  }, {} as { [key: string]: string });
 
   const orders = Object.values(routeKeyOrderObj);
-  const filteredOrders = ((orders.filter(n => n != null && !Number.isNaN(n)): any): Array<number>);
+  const filteredOrders = ((orders.filter(n => n != null && !Number.isNaN(n))));
   const sortedOrders = filteredOrders.sort((a, b) => a - b);
   const sortedKeys = sortedOrders.map(order => orderAsKey[order]);
   return sortedKeys;
 }
 
-const show = (location, router, ctx) => {
+const show: RouterAction = (location, router, ctx) => {
   if (!router.parent) { return location; }
 
   const sortedKeys = getRouteKeyOrderings(router);
@@ -49,7 +50,7 @@ const show = (location, router, ctx) => {
   const search = sortedKeys.reduce((acc, key, i) => {
     acc[key] = i + 1;
     return acc;
-  }, {});
+  }, {} as { [key: string]: number });
 
   location.search = { ...location.search, ...search };
     // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
@@ -58,7 +59,7 @@ const show = (location, router, ctx) => {
   return location;
 };
 
-const hide = (location, router, ctx) => {
+const hide: RouterAction = (location, router, ctx) => {
   if (!router.parent) return location;
 
   const sortedKeys = getRouteKeyOrderings(router);
@@ -74,7 +75,8 @@ const hide = (location, router, ctx) => {
   const search = sortedKeys.reduce((acc, key, i) => {
     acc[key] = i + 1;
     return acc;
-  }, {});
+  }, {} as { [key: string]: number });
+
   // remove this routeKey from the router type search
   search[router.routeKey] = undefined;
 
@@ -86,7 +88,7 @@ const hide = (location, router, ctx) => {
   return location;
 };
 
-const forward = (location, router, ctx) => {
+const forward: RouterAction = (location, router, ctx) => {
   if (!router.parent) return location;
 
   const sortedKeys = getRouteKeyOrderings(router);
@@ -106,7 +108,7 @@ const forward = (location, router, ctx) => {
   const search = sortedKeys.reduce((acc, key, i) => {
     acc[key] = i + 1;
     return acc;
-  }, {});
+  }, {} as { [key: string]: number });
 
   // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
@@ -120,7 +122,7 @@ const forward = (location, router, ctx) => {
   return location;
 }
 
-const backward = (location, router, ctx) => {
+const backward: RouterAction = (location, router, ctx) => {
   if (!router.parent) return location;
 
   const sortedKeys = getRouteKeyOrderings(router);
@@ -140,7 +142,7 @@ const backward = (location, router, ctx) => {
   const search = sortedKeys.reduce((acc, key, i) => {
     acc[key] = i + 1;
     return acc;
-  }, {});
+  }, {} as { [key: string]: number });
 
   // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
@@ -154,13 +156,13 @@ const backward = (location, router, ctx) => {
   return location;
 }
 
-const toFront = (location, router, ctx) => {
+const toFront: RouterAction = (location, router, ctx) => {
   // const newLocation = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
   return router.show(location, router, ctx);
 }
 
-const toBack = (location, router, ctx) => {
+const toBack: RouterAction = (location, router, ctx) => {
   if (!router.parent) return location;
 
   const sortedKeys = getRouteKeyOrderings(router);
@@ -179,7 +181,7 @@ const toBack = (location, router, ctx) => {
   const search = sortedKeys.reduce((acc, key, i) => {
     acc[key] = i + 1;
     return acc;
-  }, {});
+  }, {} as { [key: string]: number });
 
   // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
@@ -194,7 +196,7 @@ const toBack = (location, router, ctx) => {
 
 
 
-const reducer = (location, router, ctx) => {
+const reducer: RouterReducer = (location, router, ctx) => {
   const newState = {};
 
   const value = location.search[router.routeKey];
