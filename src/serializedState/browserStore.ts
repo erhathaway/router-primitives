@@ -21,7 +21,7 @@ export default class BrowserStore {
   existingLocation: string;
   stateWatcher: ReturnType<typeof window.setInterval>
 
-  constructor(state = '', config: BrowserStoreConfig) {
+  constructor(state?: string, config?: BrowserStoreConfig) {
     this.observers = [];
     this.config = config || { serializer, deserializer };
 

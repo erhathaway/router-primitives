@@ -57,9 +57,9 @@ const parser = () => {
 
 const scene = {
   actions: { show, hide },
-  state: defaultState,
+  // state: defaultState,
   reducer,
-  parser,
+  // parser,
 };
 
 export default scene;

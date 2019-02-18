@@ -2,11 +2,24 @@ import { NativeSerializedStore, BrowserSerializedStore } from './serializedState
 import DefaultRouterStateStore from './routerState';
 import Router from './router/base';
 import { scene, stack } from './router/template';
+import { RouterDeclaration, Router as RouterT, RouterTemplate, InputLocation, LocationActionContext, RouterAction, OutputLocation } from './types';
 
 const capitalize = (string = '') => string.charAt(0).toUpperCase() + string.slice(1);
 
+type Init = {
+  routerTree?: RouterDeclaration,
+  serializedStateStore?: NativeSerializedStore | BrowserSerializedStore,
+  routerStateStore?: DefaultRouterStateStore 
+}
+
 export default class Manager {
-  constructor({ routerTree, serializedStateStore, routerStateStore } = {}) {
+  serializedStateStore: Init['serializedStateStore'];
+  routerStateStore: Init['routerStateStore'];
+  routers: { [routerName: string]: RouterT };
+  rootRouter: RouterT;
+  routerTypes: { [routerType: string]: RouterT };
+
+  constructor({ routerTree, serializedStateStore, routerStateStore }: Init = {}) {
     this.routerStateStore = routerStateStore || new DefaultRouterStateStore();
     this.routers = {};
     this.rootRouter = null;
@@ -19,7 +32,7 @@ export default class Manager {
     }
 
     // router types
-    const templates = { scene, stack };
+    const templates = { scene, stack } as { [templateName: string]: RouterTemplate };
     this.routerTypes = {};
 
     // TODO implement
@@ -41,16 +54,16 @@ export default class Manager {
 
       // add actions to RouterType
       Object.keys(selectedTemplate.actions).forEach((actionName) => {
-        RouterType.prototype[actionName] = Manager.createActionWrapperFunction(selectedTemplate.actions[actionName], actionName);
+        (RouterType as any).prototype[actionName] = Manager.createActionWrapperFunction(selectedTemplate.actions[actionName], actionName);
       });
 
       // add reducer to RouterType
-      RouterType.prototype.reducer = selectedTemplate.reducer;
+      (RouterType.prototype as RouterT).reducer = selectedTemplate.reducer;
 
       // add parser to RouterType
-      RouterType.prototype.parser = selectedTemplate.parser;
+      // RouterType.prototype.parser = selectedTemplate.parser;
 
-      this.routerTypes[templateName] = RouterType;
+      this.routerTypes[templateName] = (RouterType as any as RouterT);
     });
 
     // add initial routers
@@ -65,7 +78,7 @@ export default class Manager {
    * @param {*} router
    *
    */
-  addRouters(router = null, type = null, parentName = null) {
+  addRouters(router: RouterDeclaration = null, type: string = null, parentName: string = null) {
     // If no router specified, there are no routers to add
     if (!router) { return; }
 
@@ -79,7 +92,8 @@ export default class Manager {
     });
   }
 
-  addRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName }) {
+
+  addRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName }: RouterDeclaration) {
     // create a router
     const router = this.createRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName });
 
@@ -104,7 +118,7 @@ export default class Manager {
     this.routers[name] = router;
   }
 
-  static setChildrenDefaults(location, router, ctx) {
+  static setChildrenDefaults(location: InputLocation, router: RouterT, ctx: LocationActionContext) {
     let newLocation = { ...location };
     Object.keys(router.routers).forEach((routerType) => {
       router.routers[routerType].forEach((child) => {
@@ -125,9 +139,9 @@ export default class Manager {
     return newLocation;
   }
 
-  static setCacheAndHide(location, router, ctx = {}) {
+  static setCacheAndHide(location: InputLocation, router: RouterT, ctx: LocationActionContext = {}) {
     let newLocation = location;
-    let disableCaching;
+    let disableCaching: boolean | undefined;
 
     // figure out if caching should occur
     if (router.disableCaching !== undefined) {
@@ -155,8 +169,8 @@ export default class Manager {
   }
 
   // wrapper around action function
-  static createActionWrapperFunction(action, type) {
-    function actionWrapper(existingLocation, routerInstance = this, ctx = {}) {
+  static createActionWrapperFunction(action: RouterAction, type: string) {
+    function actionWrapper(existingLocation: OutputLocation, routerInstance = this, ctx: LocationActionContext = {}) {
       // if called from another action wrapper
       let updatedLocation;
       if (existingLocation) {
@@ -199,7 +213,7 @@ export default class Manager {
     return actionWrapper;
   }
 
-  static addLocationDefaults(location, routerInstance, ctx = {}) {
+  static addLocationDefaults(location: InputLocation, routerInstance: RouterT, ctx: LocationActionContext = {}) {
     // TODO validate default action names are on type
     let locationWithDefaults = { ...location };
 
@@ -220,7 +234,7 @@ export default class Manager {
   //   mutateExistingLocation: boolean, default: false
   //   cacheState: boolean, default: null, is equal to true
   // }
-  createRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName }) {
+  createRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName }: RouterDeclaration) {
     const parent = this.routers[parentName];
 
     const initalParams = {
@@ -236,16 +250,16 @@ export default class Manager {
       disableCaching,
       getState: this.routerStateStore.createRouterStateGetter(name),
       subscribe: this.routerStateStore.createRouterStateSubscriber(name),
-      childCacheStore: this.childCacheStore,
+      // childCacheStore: this.childCacheStore,
     };
 
     const RouterType = this.routerTypes[type] || this.routerTypes.scene;
 
-    return new RouterType(initalParams);
+    return new ((RouterType as any)(initalParams) as any) as RouterT;
   }
 
   // removing a router will also unset all of its children
-  removeRouter(name) {
+  removeRouter(name: string) {
     const router = this.routers[name];
     const { parent, routers, type } = router;
 
@@ -267,12 +281,12 @@ export default class Manager {
 
   // location -> newState
   // newState -> routerStates :specify
-  setNewRouterState(location) {
+  setNewRouterState(location: InputLocation) {
     const newState = this.calcNewRouterState(location, this.rootRouter);
     this.routerStateStore.setState(newState);
   }
 
-  calcNewRouterState(location, router, ctx = {}, newState = {}) {
+  calcNewRouterState(location: InputLocation, router: RouterT, ctx: LocationActionContext = {}, newState: { [routerName: string]: {}} = {}) {
     if (!router) { return; }
 
     // calc new router state from new location and existing state

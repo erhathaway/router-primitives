@@ -21,15 +21,18 @@ interface setStateOptions {
 export default class NativeStore {
   observers: StateObserver[];
   config: NativeStoreConfig;
-  state: string; // TODO remove state
+  state?: string; // TODO remove state
   history: string[];
   currentLocationInHistory: number;
 
-  constructor(state = '', config: NativeStoreConfig) {
+  constructor(state?: string, config?: NativeStoreConfig) {
     this.observers = [];
     this.config = config || { serializer, deserializer, historySize: 10 };
     this.history = [];
     this.currentLocationInHistory = 0;
+
+    // TODO remove once tests are ported over to TS
+    this.state = state;
   }
 
   // unserialized state = { pathname: [], search: {}, options: {} }

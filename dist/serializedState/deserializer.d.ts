@@ -1,7 +1,3 @@
-import * as queryString from 'query-string';
-declare const deserializer: (serializedLocation?: string) => {
-    search: queryString.OutputParams;
-    pathname: string[];
-    options: {};
-};
+import { OutputLocation } from '../types';
+declare const deserializer: (serializedLocation?: string) => OutputLocation;
 export default deserializer;

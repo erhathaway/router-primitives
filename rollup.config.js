@@ -14,7 +14,7 @@ const dependencies = Object.keys({
 const include = 'query-string';
 
 export default {
-  input: 'src/index.js',
+  input: 'src/index.ts',
   output: [
     {
       file: pkg.main,

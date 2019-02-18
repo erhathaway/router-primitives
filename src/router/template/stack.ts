@@ -233,9 +233,9 @@ const parser = () => {
 
 const stack = {
   actions: { show, hide, forward, backward, toFront, toBack },
-  state: defaultState,
+  // state: defaultState,
   reducer,
-  parser,
+  // parser,
 };
 
 export default stack;

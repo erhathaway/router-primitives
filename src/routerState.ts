@@ -25,7 +25,7 @@ export default class DefaultRoutersStateStore {
   config: Config;
   observers: { [key: string]: Observer[] }
 
-  constructor(store: Store, config = { historySize: 2 }) {
+  constructor(store?: Store, config: Config = { historySize: 2 }) {
     this.store = store || {};
     this.config = config;
     this.observers = {}; // key is routerName
