@@ -125,8 +125,8 @@ describe('Integration', () => {
         dataRouter.subscribe(dataObserver);
 
         dataRouter.show();
-        welcomeRouter.toFront();
-        cookiesRouter.toFront();
+        (welcomeRouter as any).toFront();
+        (cookiesRouter as any).toFront();
 
         expect(dataObserver.mock.calls[0][0].current).toEqual({ order: '1', visible: true });
         expect(dataObserver.mock.calls[1][0].current).toEqual({ order: '2', visible: true });
@@ -135,37 +135,37 @@ describe('Integration', () => {
         expect(welcomeObserver.mock.calls[2][0].current).toEqual({ order: '2', visible: true });
         expect(cookiesObserver.mock.calls[1][0].current).toEqual({ order: '1', visible: true });
 
-        dataRouter.toFront();
+        (dataRouter as any).toFront();
 
         expect(dataObserver.mock.calls[3][0].current).toEqual({ order: '1', visible: true });
         expect(welcomeObserver.mock.calls[3][0].current).toEqual({ order: '3', visible: true });
         expect(cookiesObserver.mock.calls[2][0].current).toEqual({ order: '2', visible: true });
 
-        dataRouter.toBack();
+        (dataRouter as any).toBack();
 
         expect(dataObserver.mock.calls[4][0].current).toEqual({ order: '3', visible: true });
         expect(welcomeObserver.mock.calls[4][0].current).toEqual({ order: '2', visible: true });
         expect(cookiesObserver.mock.calls[3][0].current).toEqual({ order: '1', visible: true });
 
-        welcomeRouter.toBack();
+        (welcomeRouter as any).toBack();
 
         expect(dataObserver.mock.calls[5][0].current).toEqual({ order: '2', visible: true });
         expect(welcomeObserver.mock.calls[5][0].current).toEqual({ order: '3', visible: true });
         expect(cookiesObserver.mock.calls[4]).toBe(undefined);
 
-        welcomeRouter.forward();
+        (welcomeRouter as any).forward();
 
         expect(dataObserver.mock.calls[6][0].current).toEqual({ order: '3', visible: true });
         expect(welcomeObserver.mock.calls[6][0].current).toEqual({ order: '2', visible: true });
         expect(cookiesObserver.mock.calls[4]).toBe(undefined);
 
-        welcomeRouter.backward();
+        (welcomeRouter as any).backward();
 
         expect(dataObserver.mock.calls[7][0].current).toEqual({ order: '2', visible: true });
         expect(welcomeObserver.mock.calls[7][0].current).toEqual({ order: '3', visible: true });
         expect(cookiesObserver.mock.calls[4]).toBe(undefined);
 
-        cookiesRouter.backward();
+        (cookiesRouter as any).backward();
 
         expect(dataObserver.mock.calls[8][0].current).toEqual({ order: '1', visible: true });
         expect(welcomeObserver.mock.calls[8]).toBe(undefined);

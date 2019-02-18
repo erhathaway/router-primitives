@@ -1,11 +1,11 @@
 import { BrowserSerializedStore } from '../../../src/serializedState';
 
 beforeAll(() => {
-  global.window = { history: {}, location: {}, setInterval: jest.fn() };
+  (global as any).window = { history: {}, location: {}, setInterval: jest.fn() };
 });
 
 afterAll(() => {
-  delete global.window;
+  delete (global as any).window;
 });
 
 describe('Browser Serialized State', () => {
@@ -50,14 +50,23 @@ describe('Browser Serialized State', () => {
 
       store.subscribeToStateChanges(subscriptionOne);
       const stateOne = { pathname: ['newState'], search: { param1: '2', param2: 'testparam'}, options: {}}
-      window.location.search  = '?param1=2&param2=testparam';
-      window.location.pathname = 'newState/';
+      window.location = jest.fn(() => ({
+        search: '?param1=2&param2=testparam',
+        pathname: 'newState/',
+      }))
+      // window.location.search  = '?param1=2&param2=testparam';
+      // window.location.pathname = 'newState/';
       store.setState(stateOne);
 
 
       store.subscribeToStateChanges(subscriptionTwo);
       const stateTwo = { pathname: ['newStateOther'], search: { param1: '3', param2: undefined }, options: {}}
-      window.location.search  = '?param1=3';
+
+      window.location = jest.fn(() => ({
+        search: '?param1=3',
+        pathname: 'newStateOther',
+      }))
+      // window.location.search  = '?param1=3';
       window.location.pathname = 'newStateOther';
       store.setState(stateTwo);
 
@@ -103,7 +112,7 @@ describe('Browser Serialized State', () => {
   });
 
   describe('History', () => {
-    global.window = {}; // TODO Figure out why this is required?? The beforeAll should take care of it, but doesn't
+    (global as any).window = {}; // TODO Figure out why this is required?? The beforeAll should take care of it, but doesn't
     window.setInterval = jest.fn();
     // window.history.pushState = jest.fn();
     // window.history.replaceState = jest.fn();

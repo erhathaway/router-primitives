@@ -44,10 +44,10 @@ describe('Native Serialized State', () => {
       adapter.subscribeToStateChanges(subscription);
 
       const stateOne = { pathname: ['here/newState'], search: { param1: '2', param2: 'testparam'}}
-      adapter.setState(stateOne);
+      adapter.setState(stateOne as any);
 
       const stateTwo = { pathname: ['there'], search: { param1: '3' }}
-      adapter.setState(stateTwo);
+      adapter.setState(stateTwo as any);
 
       expect(subscription.mock.calls[0][0]).toEqual({ pathname: ['here', 'newState'], search: { param1: '2', param2: 'testparam'}, options: {}});
       expect(subscription.mock.calls[1][0]).toEqual({ pathname: ['there'], search: { param1: '3', param2: 'testparam'}, options: {}});

@@ -1274,6 +1274,7 @@ var Manager = /** @class */function () {
             parentName = _a.parentName;
         // create a router
         var router = this.createRouter({ name: name, routeKey: routeKey, config: config, defaultShow: defaultShow, disableCaching: disableCaching, type: type, parentName: parentName });
+        console.log("NAMEEEEE", name);
         // set as the parent router if this router has not parent and there is not yet a root
         if (!parentName && !this.rootRouter) {
             this.rootRouter = router;

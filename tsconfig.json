@@ -12,7 +12,8 @@
       "es2015",
       "es2017",
       "dom"
-    ]
+    ],
+    "esModuleInterop": true
   },
   "include": [
     "src/**/*"

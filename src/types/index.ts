@@ -32,7 +32,7 @@ export interface Router extends RouterBase {
   hide: RouterAction;
   reducer: RouterReducer;
 }
-export type RouterAction = (location: InputLocation, router: Router, ctx: { [key: string]: any }) => InputLocation
+export type RouterAction = (location?: InputLocation, router?: Router, ctx?: { [key: string]: any }) => InputLocation
 export type RouterReducer = (location: InputLocation, router: Router, ctx: { [key: string]: any }) => { [key: string]: any }
 
 export type RouterTemplate = {

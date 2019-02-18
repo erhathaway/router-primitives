@@ -96,7 +96,6 @@ export default class Manager {
   addRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName }: RouterDeclaration) {
     // create a router
     const router = this.createRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName });
-
     // set as the parent router if this router has not parent and there is not yet a root
     if (!parentName && !this.rootRouter) {
       this.rootRouter = router;
@@ -235,6 +234,7 @@ export default class Manager {
   //   cacheState: boolean, default: null, is equal to true
   // }
   createRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName }: RouterDeclaration) {
+    // console.log("NAMEEEEE", name)
     const parent = this.routers[parentName];
 
     const initalParams = {
@@ -255,7 +255,7 @@ export default class Manager {
 
     const RouterType = this.routerTypes[type] || this.routerTypes.scene;
 
-    return new ((RouterType as any)(initalParams) as any) as RouterT;
+    return new (RouterType as any)(initalParams) as any as RouterT;
   }
 
   // removing a router will also unset all of its children

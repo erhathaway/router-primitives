@@ -1,7 +1,7 @@
 import * as queryString from 'query-string';
 import { InputLocation, Options } from '../types/index';
 
-const DEFAULT_LOCATION: InputLocation = { pathname: [], search: { test: true }, options: {} };
+const DEFAULT_LOCATION: InputLocation = { pathname: [], search: {}, options: {} };
 
 const serializer = (newLocation: InputLocation, oldLocation = DEFAULT_LOCATION) => {
   const newPathname = newLocation.pathname || [];

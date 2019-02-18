@@ -1,4 +1,4 @@
-import RouterStateAdapater, { defaultStore } from '../../src/routerState';
+import RouterStateAdapater from '../../src/routerState';
 
 
 describe('Router State', () => {
@@ -57,7 +57,7 @@ describe('Router State', () => {
       const adp = new RouterStateAdapater(store, { historySize: 3 });
 
       [1, 2, 3, 4, 5, 6].forEach((order) => {
-        adp.setState({ root: { visible: true, order }});
+        adp.setState({ root: { visible: true, order } as any});
       });
 
       expect(adp.getState()).toEqual({

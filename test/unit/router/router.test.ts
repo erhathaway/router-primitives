@@ -1,6 +1,15 @@
 import Router from '../../../src/router/base';
+import Manager from '../../../src/manager';
 
-const generateMockInit = (requiredInits = {}, optionalInits = {}) => {
+type RequiredInits = {
+  name?: string,
+  config?: {},
+  type?: string,
+  manager?: Manager,
+  isPathRouter?: boolean,
+}
+
+const generateMockInit = (requiredInits: RequiredInits = {}, optionalInits = {}) => {
   return {
     name: requiredInits.name || 'test',
     config: requiredInits.config || {},
@@ -13,17 +22,17 @@ const generateMockInit = (requiredInits = {}, optionalInits = {}) => {
 describe('Router', () => {
   describe('Initialization', () => {
     it('Has required kwargs', () => {
-      const initializeWrong = () => new Router();
+      const initializeWrong = () => new (Router as any)({});
       expect(initializeWrong).toThrow(Error);
 
       const mockInit = generateMockInit();
-      const initializeRight = () => new Router(mockInit);
+      const initializeRight = () => new (Router as any)(mockInit);
       expect(initializeRight).not.toThrow(Error);
     });
 
     it('Can set routeKey', () => {
       const mockInit = generateMockInit({}, { config: { routeKey: 'hi' }} );
-      const router = new Router(mockInit);
+      const router = new (Router as any)(mockInit);
       expect(router.routeKey).toBe('hi');
     })
   });
@@ -31,7 +40,7 @@ describe('Router', () => {
   describe('Default action', () => {
     it('Can be set', () => {
       const mockInit = generateMockInit({}, { defaultShow: true });
-      const router = new Router(mockInit);
+      const router = new (Router as any)(mockInit);
       expect(router.defaultShow).toBe(true);
     });
   });
@@ -39,7 +48,7 @@ describe('Router', () => {
   describe('Caching', () => {
     it('Can be disabled', () => {
       const mockInit = generateMockInit({}, { disableCaching: true });
-      const router = new Router(mockInit);
+      const router = new (Router as any)(mockInit);
       expect(router.disableCaching).toBe(true);
     });
   });
@@ -48,27 +57,27 @@ describe('Router', () => {
     describe('True', () => {
       it('Has no parent', () => {
         const mockInit = generateMockInit({ isPathRouter: true });
-        const router = new Router(mockInit);
+        const router = new (Router as any)(mockInit);
         expect(router.isPathRouter).toBe(true);
       });
 
       it('Parent is a path router and config option "isPathRouter" set to true', () => {
         const mockInit = generateMockInit({ config: { isPathRouter: true } }, { parent: { isPathRouter: true } });
-        const router = new Router(mockInit);
+        const router = new (Router as any)(mockInit);
         expect(router.isPathRouter).toBe(true);
       });
 
       it('Parent is a path router and type is "scene" with no neighbors', () => {
         const mockInit = generateMockInit({ type: 'scene' }, { parent: { isPathRouter: true } });
-        const router = new Router(mockInit);
+        const router = new (Router as any)(mockInit);
         expect(router.isPathRouter).toBe(true);
       })
 
       it('Parent is a path router and type is "scene" with a data neighbor NOT set to be a path router', () => {
-        const dataRouterOne = new Router(generateMockInit({ name: 'data1', type: 'data', config: { isPathRouter: false } }));
-        const dataRouterTwo = new Router(generateMockInit({ type: 'data' }));
-        const sceneRouter = new Router(generateMockInit({ name: 'scene1', type: 'scene' }));
-        const parentRouter = new Router(generateMockInit());
+        const dataRouterOne = new (Router as any)(generateMockInit({ name: 'data1', type: 'data', config: { isPathRouter: false } }));
+        const dataRouterTwo = new (Router as any)(generateMockInit({ type: 'data' }));
+        const sceneRouter = new (Router as any)(generateMockInit({ name: 'scene1', type: 'scene' }));
+        const parentRouter = new (Router as any)(generateMockInit());
 
         parentRouter._addChildRouter(dataRouterOne);
         parentRouter._addChildRouter(dataRouterTwo);
@@ -80,10 +89,10 @@ describe('Router', () => {
       });
 
       it('Parent is a path router and type is "data" with no scene neighbors', () => {
-        const dataRouterOne = new Router(generateMockInit({ name: 'data1', type: 'data', config: { isPathRouter: true } }));
-        const dataRouterTwo = new Router(generateMockInit({ type: 'data' }));
-        const sceneRouter = new Router(generateMockInit({ name: 'scene1', type: 'feature' }));
-        const parentRouter = new Router(generateMockInit());
+        const dataRouterOne = new (Router as any)(generateMockInit({ name: 'data1', type: 'data', config: { isPathRouter: true } }));
+        const dataRouterTwo = new (Router as any)(generateMockInit({ type: 'data' }));
+        const sceneRouter = new (Router as any)(generateMockInit({ name: 'scene1', type: 'feature' }));
+        const parentRouter = new (Router as any)(generateMockInit());
 
         parentRouter._addChildRouter(dataRouterOne);
         parentRouter._addChildRouter(dataRouterTwo);
@@ -96,10 +105,10 @@ describe('Router', () => {
 
     describe('False', () => {
       it('Parent is a path router and type is "scene" with a data neighbor set to be a path router', () => {
-        const dataRouterOne = new Router(generateMockInit({ name: 'data1', type: 'data', config: { isPathRouter: false } }));
-        const dataRouterTwo = new Router(generateMockInit({ type: 'data', config: { isPathRouter: true } }));
-        const sceneRouter = new Router(generateMockInit({ name: 'scene1', type: 'scene' }));
-        const parentRouter = new Router(generateMockInit());
+        const dataRouterOne = new (Router as any)(generateMockInit({ name: 'data1', type: 'data', config: { isPathRouter: false } }));
+        const dataRouterTwo = new (Router as any)(generateMockInit({ type: 'data', config: { isPathRouter: true } }));
+        const sceneRouter = new (Router as any)(generateMockInit({ name: 'scene1', type: 'scene' }));
+        const parentRouter = new (Router as any)(generateMockInit());
 
         parentRouter._addChildRouter(dataRouterOne);
         parentRouter._addChildRouter(dataRouterTwo);
@@ -114,7 +123,7 @@ describe('Router', () => {
     describe('Error', () => {
       it('Parent is not a path router and config option "isPathRouter" set to true', () => {
         const mockInit = generateMockInit({ config: { isPathRouter: true }}, { parent: { isPathRouter: false } });
-        const router = new Router(mockInit);
+        const router = new (Router as any)(mockInit);
 
         const isPathRouter = () => router.isPathRouter;
         expect(isPathRouter).toThrow(Error);
@@ -124,10 +133,10 @@ describe('Router', () => {
 
   describe('Siblings', () => {
     it('Returns all siblings, not including itself', () => {
-      const dataRouterOne = new Router(generateMockInit({ name: 'data1', type: 'data' }));
-      const dataRouterTwo = new Router(generateMockInit({ type: 'data' }));
-      const sceneRouter = new Router(generateMockInit({ name: 'scene1', type: 'scene' }));
-      const parentRouter = new Router(generateMockInit());
+      const dataRouterOne = new (Router as any)(generateMockInit({ name: 'data1', type: 'data' }));
+      const dataRouterTwo = new (Router as any)(generateMockInit({ type: 'data' }));
+      const sceneRouter = new (Router as any)(generateMockInit({ name: 'scene1', type: 'scene' }));
+      const parentRouter = new (Router as any)(generateMockInit());
 
       parentRouter._addChildRouter(dataRouterOne);
       parentRouter._addChildRouter(dataRouterTwo);
@@ -141,10 +150,10 @@ describe('Router', () => {
 
   describe('Neighbors', () => {
     it('Returns all neighbors of type', () => {
-      const dataRouterOne = new Router(generateMockInit({ name: 'data1', type: 'data' }));
-      const dataRouterTwo = new Router(generateMockInit({ type: 'data' }));
-      const sceneRouter = new Router(generateMockInit({ name: 'scene1', type: 'scene' }));
-      const parentRouter = new Router(generateMockInit());
+      const dataRouterOne = new (Router as any)(generateMockInit({ name: 'data1', type: 'data' }));
+      const dataRouterTwo = new (Router as any)(generateMockInit({ type: 'data' }));
+      const sceneRouter = new (Router as any)(generateMockInit({ name: 'scene1', type: 'scene' }));
+      const parentRouter = new (Router as any)(generateMockInit());
 
       parentRouter._addChildRouter(dataRouterOne);
       parentRouter._addChildRouter(dataRouterTwo);
@@ -158,12 +167,12 @@ describe('Router', () => {
 
   describe('Route key', () => {
     it('Returns the name if no route key is set during initalization', () => {
-      const dataRouterOne = new Router(generateMockInit({ name: 'data1', type: 'data' }));
+      const dataRouterOne = new (Router as any)(generateMockInit({ name: 'data1', type: 'data' }));
       expect(dataRouterOne.routeKey).toBe('data1');
     });
 
     it('Returns the route key if one was set during initalization', () => {
-      const dataRouterOne = new Router(generateMockInit({ name: 'data1', type: 'data', config: { routeKey: 'hello' } }));
+      const dataRouterOne = new (Router as any)(generateMockInit({ name: 'data1', type: 'data', config: { routeKey: 'hello' } }));
       expect(dataRouterOne.routeKey).toBe('hello');
     });
   });
@@ -173,8 +182,8 @@ describe('Router', () => {
       describe('Path routers', () => {
         it('Data router returns path location and data', () => {
           const mockGetState = () => ({ current: { data: 'here', visible: true } , historical: [{}] })
-          const childRouter = new Router(generateMockInit({ name: 'child', type: 'data' }, { getState: mockGetState }));
-          const parentRouter = new Router(generateMockInit());
+          const childRouter = new (Router as any)(generateMockInit({ name: 'child', type: 'data' }, { getState: mockGetState }));
+          const parentRouter = new (Router as any)(generateMockInit());
     
           parentRouter._addChildRouter(childRouter);
           expect(childRouter.calcCachedLocation()).toEqual({ isPathData: true, pathLocation: 0, value: 'here' });
@@ -182,8 +191,8 @@ describe('Router', () => {
 
         it('All other path types return path location and visibility', () => {
           const mockGetState = () => ({ current: { data: 'here', visible: true } , historical: [{}] })
-          const childRouter = new Router(generateMockInit({ name: 'child', type: 'scene' }, { getState: mockGetState }));
-          const parentRouter = new Router(generateMockInit());
+          const childRouter = new (Router as any)(generateMockInit({ name: 'child', type: 'scene' }, { getState: mockGetState }));
+          const parentRouter = new (Router as any)(generateMockInit());
     
           parentRouter._addChildRouter(childRouter);
           expect(childRouter.calcCachedLocation()).toEqual({ isPathData: true, pathLocation: 0, value: true });
@@ -193,9 +202,9 @@ describe('Router', () => {
       describe('Non path routers', () => {
         it('Data router returns query param and data', () => {
           const mockGetState = () => ({ current: { data: 'here', visible: true } , historical: [{}] })
-          const childRouter = new Router(generateMockInit({ name: 'child', type: 'data' }, { getState: mockGetState }));
-          const featureRouter = new Router(generateMockInit({ name: 'feature1', type: 'feature' }, { getState: mockGetState }));
-          const parentRouter = new Router(generateMockInit({}));
+          const childRouter = new (Router as any)(generateMockInit({ name: 'child', type: 'data' }, { getState: mockGetState }));
+          const featureRouter = new (Router as any)(generateMockInit({ name: 'feature1', type: 'feature' }, { getState: mockGetState }));
+          const parentRouter = new (Router as any)(generateMockInit({}));
     
           parentRouter._addChildRouter(featureRouter);
           featureRouter._addChildRouter(childRouter);
@@ -205,9 +214,9 @@ describe('Router', () => {
 
         it('Stack router returns query param and order', () => {
           const mockGetState = () => ({ current: { data: 'here', visible: true, order: 2 } , historical: [{}] })
-          const childRouter = new Router(generateMockInit({ name: 'child', type: 'stack' }, { getState: mockGetState }));
-          const featureRouter = new Router(generateMockInit({ name: 'feature1', type: 'feature' }, { getState: mockGetState }));
-          const parentRouter = new Router(generateMockInit({}));
+          const childRouter = new (Router as any)(generateMockInit({ name: 'child', type: 'stack' }, { getState: mockGetState }));
+          const featureRouter = new (Router as any)(generateMockInit({ name: 'feature1', type: 'feature' }, { getState: mockGetState }));
+          const parentRouter = new (Router as any)(generateMockInit({}));
     
           parentRouter._addChildRouter(featureRouter);
           featureRouter._addChildRouter(childRouter);
@@ -217,9 +226,9 @@ describe('Router', () => {
 
         it('Scene and feature router returns query param and visibility', () => {
           const mockGetState = () => ({ current: { data: 'here', visible: true, order: 2 } , historical: [{}] })
-          const childRouter = new Router(generateMockInit({ name: 'child', type: 'scene' }, { getState: mockGetState }));
-          const featureRouter = new Router(generateMockInit({ name: 'feature1', type: 'feature' }, { getState: mockGetState }));
-          const parentRouter = new Router(generateMockInit({}));
+          const childRouter = new (Router as any)(generateMockInit({ name: 'child', type: 'scene' }, { getState: mockGetState }));
+          const featureRouter = new (Router as any)(generateMockInit({ name: 'feature1', type: 'feature' }, { getState: mockGetState }));
+          const parentRouter = new (Router as any)(generateMockInit({}));
     
           parentRouter._addChildRouter(featureRouter);
           featureRouter._addChildRouter(childRouter);
@@ -233,9 +242,9 @@ describe('Router', () => {
         const state1 = { current: { data: 'here', visible: true, order: 2 }, historical: [{}] };
         const state2 = { current: { data: 'notHere', visible: false, order: 3 }, historical: [{}] };
         const mockGetState = () => (state1);
-        const childRouter = new Router(generateMockInit({ name: 'child', type: 'stack' }, { getState: mockGetState }));
-        const featureRouter = new Router(generateMockInit({ name: 'feature1', type: 'feature' }, { getState: mockGetState }));
-        const parentRouter = new Router(generateMockInit({}));
+        const childRouter = new (Router as any)(generateMockInit({ name: 'child', type: 'stack' }, { getState: mockGetState }));
+        const featureRouter = new (Router as any)(generateMockInit({ name: 'feature1', type: 'feature' }, { getState: mockGetState }));
+        const parentRouter = new (Router as any)(generateMockInit({}));
   
         parentRouter._addChildRouter(featureRouter);
         featureRouter._addChildRouter(childRouter);

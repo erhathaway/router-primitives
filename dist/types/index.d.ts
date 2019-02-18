@@ -33,7 +33,7 @@ export interface Router extends RouterBase {
     hide: RouterAction;
     reducer: RouterReducer;
 }
-export declare type RouterAction = (location: InputLocation, router: Router, ctx: {
+export declare type RouterAction = (location?: InputLocation, router?: Router, ctx?: {
     [key: string]: any;
 }) => InputLocation;
 export declare type RouterReducer = (location: InputLocation, router: Router, ctx: {

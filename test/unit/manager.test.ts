@@ -47,12 +47,12 @@ describe('Router Manager', () => {
 
       describe('With window object (Browser env)', () => {
         it('uses browserStore', () => {
-          global.window = { setInterval: jest.fn(), history: {}, location: {} };
+          (global as any).window = { setInterval: jest.fn(), history: {}, location: {} };
           const manager = new Manager({ routerTree });
 
           expect(manager.serializedStateStore).toBeInstanceOf(BrowserSerializedStore);
 
-          delete global.window;
+          delete (global as any).window;
         });
       })
     });

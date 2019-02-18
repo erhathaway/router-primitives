@@ -25,8 +25,8 @@ interface InitParams {
   disableCaching?: boolean; // TODO move into config
   getState: () => RouterState;
   subscribe: (observer: Observer) => void;
-
 }
+
 export default class RouterBase {
   name: InitParams['name'];
   config: InitParams['config'];
@@ -46,6 +46,7 @@ export default class RouterBase {
 
     if (!name || !type || !manager) { throw new Error('Missing required kwargs: name, type, and/or manager'); }
     // required
+    // console.log("HEREEE", this)
     this.name = name;
     this.config = config || {};
     this.type = type;
@@ -136,7 +137,8 @@ export default class RouterBase {
       ), false);
       if (isSiblingRouterExplictlyAPathRouter === false) return true;
     } else if (this.type === 'data' && this.parent && this.parent.isPathRouter) {
-      if (this.isPathRouter === false) return false;
+      // TODO FIX ME - causes stack overflow
+      // if (this.isPathRouter === false) return false;
       // check to make sure neighboring scene routers aren't present
       const neighboringSceneRouters = this.getNeighborsByType('scene');
 

@@ -32,6 +32,7 @@ describe('Integration', () => {
     describe('Actions', () => {
       describe('Show', () => {
         const manager = new Manager({ routerTree: routerTreeForDefaultShowTest });
+        console.log('hurrr')
 
         const userObserver = jest.fn();
         const userRouter = manager.routers['user'];
@@ -44,7 +45,6 @@ describe('Integration', () => {
         const mainToolsObserver = jest.fn();
         const mainToolsRouter = manager.routers['main-tools'];
         mainToolsRouter.subscribe(mainToolsObserver);
-        
         it('PathRouter child of rootRouter', () => {
           userRouter.show();
           userRouter.show();
