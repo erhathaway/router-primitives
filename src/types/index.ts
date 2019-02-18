@@ -1,5 +1,8 @@
 import RouterBase from "../router/base";
 
+/**
+ * Location types
+ */
 export interface InputSearch {
   [key: string]: any;
 };
@@ -14,6 +17,12 @@ export type Options = {
 
 type Pathname = string[];
 
+export type OutputLocation = { pathname: Pathname, search: OutputSearch, options: Options };
+export type InputLocation = { pathname: Pathname, search: InputSearch, options: Options };
+
+/**
+ * Rotuer template types
+ */
 export interface Router extends RouterBase {
   show: RouterAction;
   hide: RouterAction;
@@ -21,8 +30,9 @@ export interface Router extends RouterBase {
 export type RouterAction = (location: InputLocation, router: Router, ctx: { [key: string]: any }) => InputLocation
 export type RouterReducer = (location: InputLocation, router: Router, ctx: { [key: string]: any }) => { [key: string]: any }
 
+/**
+ * Router state types
+ */
 export type RouterCurrentState = { visible?: boolean };
 export type RouterHistoryState = RouterCurrentState[];
 export type RouterState = { current: RouterCurrentState, historical: RouterHistoryState };
-export type OutputLocation = { pathname: Pathname, search: OutputSearch, options: Options };
-export type InputLocation = { pathname: Pathname, search: InputSearch, options: Options };
