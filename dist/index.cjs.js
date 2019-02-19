@@ -468,13 +468,11 @@ var serializer = function (newLocation, oldLocation) {
  * The default serialized state is a string for this store
  */
 var NativeStore = /** @class */ (function () {
-    function NativeStore(state, config) {
+    function NativeStore(config) {
         this.observers = [];
         this.config = config || { serializer: serializer, deserializer: deserializer, historySize: 10 };
         this.history = [];
         this.currentLocationInHistory = 0;
-        // TODO remove once tests are ported over to TS
-        this.state = state;
     }
     // unserialized state = { pathname: [], search: {}, options: {} }
     // options = { updateHistory }
@@ -546,12 +544,10 @@ var NativeStore = /** @class */ (function () {
  * The default serialized state is the URL for this store
  */
 var BrowserStore = /** @class */ (function () {
-    function BrowserStore(state, config) {
+    function BrowserStore(config) {
         var _this = this;
         this.observers = [];
         this.config = config || { serializer: serializer, deserializer: deserializer };
-        // TODO remove this and delete state param in constructor once tests are rewritten in TS
-        this.state = state;
         // subscribe to location changes
         this.existingLocation = '';
         this.stateWatcher = window.setInterval(function () {
@@ -745,16 +741,17 @@ var Cache = /** @class */ (function () {
 
 var RouterBase = /** @class */ (function () {
     function RouterBase(init) {
-        var name = init.name, config = init.config, type = init.type, manager = init.manager, parent = init.parent, routers = init.routers, root = init.root, defaultShow = init.defaultShow, getState = init.getState, subscribe = init.subscribe;
+        var name = init.name, config = init.config, type = init.type, manager = init.manager, parent = init.parent, routers = init.routers, root = init.root, getState = init.getState, subscribe = init.subscribe;
+        // required
         if (!name || !type || !manager) {
             throw new Error('Missing required kwargs: name, type, and/or manager');
         }
-        // required
-        // console.log("HEREEE", this)
         this.name = name;
         this.config = config || {};
+        if (this.config.defaultShow === undefined) {
+            this.config.defaultShow = false;
+        }
         this.type = type;
-        // this.actionNames = []; // used to map over the actions and replace with the actionHandler closure
         this.manager = manager;
         // optional
         this.parent = parent;
@@ -763,9 +760,6 @@ var RouterBase = /** @class */ (function () {
         // methods customized for instance from manager
         this.getState = getState;
         this.subscribe = subscribe;
-        // default actions to call when immediate parent visibility changes from hidden -> visible
-        this.defaultShow = defaultShow || false;
-        // this.disableCaching = disableCaching;
         // store the routers location data for rehydration
         this.cache = new Cache();
     }
@@ -777,9 +771,6 @@ var RouterBase = /** @class */ (function () {
         configurable: true
     });
     Object.defineProperty(RouterBase.prototype, "siblings", {
-        // get shouldStoreLocationMutationInHistory() {
-        // return this.config.shouldStoreLocationMutationInHistory;
-        // }
         get: function () {
             var _this = this;
             return this.parent.routers[this.type].filter(function (r) { return r.name !== _this.name; });
@@ -888,11 +879,11 @@ var RouterBase = /** @class */ (function () {
     return RouterBase;
 }());
 
-var show = function (location, router, ctx) {
+var show = function (options, location, router, ctx) {
     if (ctx === void 0) { ctx = {}; }
     // hide sibling routers
     location = router.siblings.reduce(function (acc, s) {
-        return s.hide(acc, s, ctx);
+        return s.hide(options, acc, s, ctx);
     }, location);
     if (router.isPathRouter) {
         var parent_1 = router.parent;
@@ -907,10 +898,10 @@ var show = function (location, router, ctx) {
         location.search[router.routeKey] = true;
     }
     // add defaults for child routers
-    // location = router.constructor.addLocationDefaults(location, router, ctx);
+    // location = router.constructor.addLocationDefaults(options, location, router, ctx);
     return location;
 };
-var hide = function (location, router, ctx) {
+var hide = function (options, location, router, ctx) {
     if (router.isPathRouter) {
         location.pathname = location.pathname.slice(0, router.pathLocation);
     }
@@ -963,7 +954,7 @@ function getRouteKeyOrderings(router) {
     var sortedKeys = sortedOrders.map(function (order) { return orderAsKey[order]; });
     return sortedKeys;
 }
-var show$1 = function (location, router, ctx) {
+var show$1 = function (options, location, router, ctx) {
     if (!router.parent) {
         return location;
     }
@@ -986,7 +977,7 @@ var show$1 = function (location, router, ctx) {
     // return { pathname: location.pathname, search, options };
     return location;
 };
-var hide$1 = function (location, router, ctx) {
+var hide$1 = function (options, location, router, ctx) {
     if (!router.parent) {
         return location;
     }
@@ -1009,7 +1000,7 @@ var hide$1 = function (location, router, ctx) {
     // return { pathname: location.pathname, search, options };
     return location;
 };
-var forward = function (location, router, ctx) {
+var forward = function (options, location, router, ctx) {
     if (!router.parent) {
         return location;
     }
@@ -1035,7 +1026,7 @@ var forward = function (location, router, ctx) {
     // return { pathname: location.pathname, search, options };
     return location;
 };
-var backward = function (location, router, ctx) {
+var backward = function (options, location, router, ctx) {
     if (!router.parent) {
         return location;
     }
@@ -1062,11 +1053,11 @@ var backward = function (location, router, ctx) {
     // return { pathname: location.pathname, search, options };
     return location;
 };
-var toFront = function (location, router, ctx) {
+var toFront = function (options, location, router, ctx) {
     // const newLocation = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-    return router.show(location, router, ctx);
+    return router.show(options, location, router, ctx);
 };
-var toBack = function (location, router, ctx) {
+var toBack = function (options, location, router, ctx) {
     if (!router.parent) {
         return location;
     }
@@ -1171,7 +1162,7 @@ var Manager = /** @class */ (function () {
         // subscribe to URL changes and update the router state when this happens
         this.serializedStateStore.subscribeToStateChanges(this.setNewRouterState.bind(this));
     }
-    Manager.setChildrenDefaults = function (location, router, ctx) {
+    Manager.setChildrenDefaults = function (options, location, router, ctx) {
         var newLocation = __assign({}, location);
         Object.keys(router.routers).forEach(function (routerType) {
             router.routers[routerType].forEach(function (child) {
@@ -1180,17 +1171,17 @@ var Manager = /** @class */ (function () {
                     return;
                 }
                 // if there is a cache state or a default visibility, show the router
-                if (child.defaultShow || child.cache.state === true) {
+                if (child.config.defaultShow || child.cache.state === true) {
                     // the cache has been 'used' so remove it
                     child.cache.removeCache();
                     var newContext = __assign({}, ctx, { addingDefaults: true });
-                    newLocation = child.show(newLocation, child, newContext);
+                    newLocation = child.show(options, newLocation, child, newContext);
                 }
             });
         });
         return newLocation;
     };
-    Manager.setCacheAndHide = function (location, router, ctx) {
+    Manager.setCacheAndHide = function (options, location, router, ctx) {
         if (ctx === void 0) { ctx = {}; }
         var newLocation = location;
         var disableCaching;
@@ -1206,7 +1197,7 @@ var Manager = /** @class */ (function () {
                 // update ctx object's caching attr for this branch
                 ctx.disableCaching = disableCaching;
                 // call location action
-                newLocation = child.hide(location, child, ctx);
+                newLocation = child.hide(options, location, child, ctx);
             });
         });
         // use caching figured out above b/c the ctx object might get mutate when
@@ -1218,7 +1209,7 @@ var Manager = /** @class */ (function () {
     };
     // wrapper around action function
     Manager.createActionWrapperFunction = function (action, type) {
-        function actionWrapper(existingLocation, routerInstance, ctx) {
+        function actionWrapper(options, existingLocation, routerInstance, ctx) {
             if (routerInstance === void 0) { routerInstance = this; }
             if (ctx === void 0) { ctx = {}; }
             // if called from another action wrapper
@@ -1226,11 +1217,11 @@ var Manager = /** @class */ (function () {
             if (existingLocation) {
                 // set cache before location changes b/c cache info is derived from location path
                 if (type === 'hide') {
-                    updatedLocation = Manager.setCacheAndHide(existingLocation, routerInstance, ctx);
+                    updatedLocation = Manager.setCacheAndHide(options, existingLocation, routerInstance, ctx);
                 }
-                updatedLocation = action(existingLocation, routerInstance, ctx);
+                updatedLocation = action(options, existingLocation, routerInstance, ctx);
                 if (type === 'show') { // add location defaults from children
-                    updatedLocation = Manager.setChildrenDefaults(updatedLocation, routerInstance, ctx);
+                    updatedLocation = Manager.setChildrenDefaults(options, updatedLocation, routerInstance, ctx);
                 }
                 return updatedLocation;
             }
@@ -1238,38 +1229,38 @@ var Manager = /** @class */ (function () {
             updatedLocation = this.manager.serializedStateStore.getState();
             // set cache before location changes b/c cache info is derived from location path
             if (type === 'hide') {
-                updatedLocation = Manager.setCacheAndHide(updatedLocation, routerInstance, ctx);
+                updatedLocation = Manager.setCacheAndHide(options, updatedLocation, routerInstance, ctx);
             }
-            updatedLocation = action(updatedLocation, routerInstance, ctx);
+            updatedLocation = action(options, updatedLocation, routerInstance, ctx);
             if (type === 'hide' && routerInstance.state.visible === true) {
                 routerInstance.cache.setCache(false);
             }
             if (type === 'show') { // add location defaults from children
-                updatedLocation = Manager.setChildrenDefaults(updatedLocation, routerInstance, ctx);
+                updatedLocation = Manager.setChildrenDefaults(options, updatedLocation, routerInstance, ctx);
             }
+            // add user options to new location options
+            updatedLocation.options = __assign({}, updatedLocation.options, options);
             // set serialized state
             this.manager.serializedStateStore.setState(updatedLocation);
         }
         return actionWrapper;
     };
-    Manager.addLocationDefaults = function (location, routerInstance, ctx) {
+    Manager.addLocationDefaults = function (options, location, routerInstance, ctx) {
         if (ctx === void 0) { ctx = {}; }
         // TODO validate default action names are on type
         var locationWithDefaults = __assign({}, location);
         Object.keys(routerInstance.routers).forEach(function (type) {
             routerInstance.routers[type].forEach(function (router) {
-                if (router.defaultShow || false) {
+                if (router.config.defaultShow || false) {
                     var newContext = __assign({}, ctx, { addingDefaults: true });
-                    locationWithDefaults = router.show(locationWithDefaults, router, newContext);
+                    locationWithDefaults = router.show(options, locationWithDefaults, router, newContext);
                 }
             });
         });
         return locationWithDefaults;
     };
     /**
-     * Adds the initial routers defined during initialization
-     * @param {*} router
-     *
+     * Adds the initial routers defined during initialization*
      */
     Manager.prototype.addRouters = function (router, type, parentName) {
         var _this = this;
@@ -1290,15 +1281,23 @@ var Manager = /** @class */ (function () {
         });
     };
     Manager.prototype.addRouter = function (_a) {
-        var name = _a.name, routeKey = _a.routeKey, config = _a.config, defaultShow = _a.defaultShow, type = _a.type, parentName = _a.parentName;
+        var name = _a.name, routeKey = _a.routeKey, disableCaching = _a.disableCaching, defaultShow = _a.defaultShow, type = _a.type, parentName = _a.parentName;
+        var config = {
+            disableCaching: disableCaching,
+            defaultShow: defaultShow || false,
+            routeKey: routeKey,
+        };
         // create a router
-        var router = this.createRouter({ name: name, routeKey: routeKey, config: config, defaultShow: defaultShow, type: type, parentName: parentName });
+        var router = this.createRouter({ name: name, config: config, type: type, parentName: parentName });
         // set as the parent router if this router has not parent and there is not yet a root
         if (!parentName && !this.rootRouter) {
             this.rootRouter = router;
         }
         else if (!parentName && this.rootRouter) {
             throw new Error('Root router already exists. You likely forgot to specify a parentName');
+        }
+        else if (this.routers[parentName] === undefined) {
+            throw new Error('Parent of to be created router not found');
         }
         else {
             // fetch the parent, and assign a ref of it to this router
@@ -1332,25 +1331,30 @@ var Manager = /** @class */ (function () {
         delete this.routers[name];
     };
     // create router :specify
-    // config = {
-    //   routeKey: 'overrides name
-    //   mutateExistingLocation: boolean, default: false
-    //   cacheState: boolean, default: null, is equal to true
-    // }
     Manager.prototype.createRouter = function (_a) {
-        var name = _a.name, routeKey = _a.routeKey, config = _a.config, defaultShow = _a.defaultShow, type = _a.type, parentName = _a.parentName;
-        // console.log("NAMEEEEE", name)
+        var name = _a.name, config = _a.config, type = _a.type, parentName = _a.parentName;
+        // check if the router name is unique
+        if (this.routers[name]) {
+            throw new Error("A router with the name " + name + " already exists");
+        }
+        // check if the router routeKey is unique
+        if (config.routeKey) {
+            var alreadyExists = Object.values(this.routers).reduce(function (acc, r) {
+                return acc || r.routeKey === config.routeKey;
+            }, false);
+            if (alreadyExists) {
+                throw new Error("A router with the routeKey " + config.routeKey + " already exists");
+            }
+        }
         var parent = this.routers[parentName];
         var initalParams = {
             name: name,
-            // routeKey,
-            config: __assign({}, config, { routeKey: routeKey }),
+            config: __assign({}, config),
             type: type || 'scene',
             parent: parent,
             routers: {},
             manager: this,
             root: this.rootRouter,
-            defaultShow: defaultShow || false,
             getState: this.routerStateStore.createRouterStateGetter(name),
             subscribe: this.routerStateStore.createRouterStateSubscriber(name),
         };

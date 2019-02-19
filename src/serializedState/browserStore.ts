@@ -17,16 +17,12 @@ type StateObserver = (state: State) => any;
 export default class BrowserStore {
   private observers: StateObserver[]
   private config: IBrowserStoreConfig
-  private state: string; // TODO remove state
   private existingLocation: string;
   private stateWatcher: ReturnType<typeof window.setInterval>
 
-  constructor(state?: string, config?: IBrowserStoreConfig) {
+  constructor(config?: IBrowserStoreConfig) {
     this.observers = [];
     this.config = config || { serializer, deserializer };
-
-    // TODO remove this and delete state param in constructor once tests are rewritten in TS
-    this.state = state;
 
     // subscribe to location changes
     this.existingLocation = '';

@@ -187,9 +187,7 @@ export default class Manager {
   }
 
   /**
-   * Adds the initial routers defined during initialization
-   * @param {*} router
-   *
+   * Adds the initial routers defined during initialization*
    */
   public addRouters(router: IRouterDeclaration = null, type: string = null, parentName: string = null) {
     // If no router specified, there are no routers to add
@@ -260,28 +258,34 @@ export default class Manager {
   }
 
   // create router :specify
-  // config = {
-  //   routeKey: 'overrides name
-  //   mutateExistingLocation: boolean, default: false
-  //   cacheState: boolean, default: null, is equal to true
-  // }
   private createRouter({ name, config, type, parentName }: IRouterInitParams) {
-    // console.log("NAMEEEEE", name)
+    // check if the router name is unique
+    if (this.routers[name]) {
+      throw new Error(`A router with the name ${name} already exists`);
+    }
+
+    // check if the router routeKey is unique
+    if (config.routeKey) {
+      const alreadyExists = Object.values(this.routers).reduce((acc, r) => {
+        return acc || r.routeKey === config.routeKey
+      }, false);
+      if (alreadyExists) {
+        throw new Error(`A router with the routeKey ${config.routeKey} already exists`);
+      }
+    }
+
     const parent = this.routers[parentName];
 
     const initalParams = {
       name,
-      // routeKey,
       config: { ...config },
       type: type || 'scene', // make root routers a scene router TODO make root router an empty template
       parent,
       routers: {},
       manager: this,
       root: this.rootRouter,
-      // defaultShow: defaultShow || false,
       getState: this.routerStateStore.createRouterStateGetter(name),
       subscribe: this.routerStateStore.createRouterStateSubscriber(name),
-      // childCacheStore: this.childCacheStore,
     };
 
     const routerClass = this.routerTypes[type] || this.routerTypes.scene;

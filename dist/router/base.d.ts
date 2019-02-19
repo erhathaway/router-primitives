@@ -1,10 +1,5 @@
 import Cache from './cache';
-import { IRouterState, IRouter, IRouterCurrentState, RouterHistoryState } from '../types';
-interface IConfig {
-    routeKey?: string;
-    isPathRouter?: boolean;
-    disableCaching?: boolean;
-}
+import { IRouterState, IRouter, IRouterConfig, IRouterCurrentState, RouterHistoryState } from '../types';
 interface IChildRouters {
     [key: string]: IRouter[];
 }
@@ -13,11 +8,10 @@ interface InitParams {
     name: string;
     type: string;
     manager: any;
-    config: IConfig;
+    config: IRouterConfig;
     parent: IRouter;
     routers: IChildRouters;
     root: IRouter;
-    defaultShow?: boolean;
     getState: () => IRouterState;
     subscribe: (observer: Observer) => void;
 }
@@ -31,7 +25,6 @@ export default class RouterBase {
     getState: InitParams['getState'];
     subscribe: InitParams['subscribe'];
     config: InitParams['config'];
-    defaultShow: InitParams['defaultShow'];
     cache: Cache;
     constructor(init: InitParams);
     readonly routeKey: string;

@@ -8,7 +8,7 @@ declare const _default: {
     BrowserSerializedStore: typeof BrowserSerializedStore;
     serializer: (newLocation: import("./types").IInputLocation, oldLocation?: import("./types").IInputLocation) => {
         location: string;
-        options: import("./types").IOptions;
+        options: import("./types").ILocationOptions;
     };
     deserializer: (serializedLocation?: string) => import("./types").IOutputLocation;
 };

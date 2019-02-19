@@ -23,17 +23,13 @@ export default class NativeStore {
   public history: string[];
   private observers: StateObserver[];
   private config: INativeStoreConfig;
-  private state?: string; // TODO remove state
   private currentLocationInHistory: number;
 
-  constructor(state?: string, config?: INativeStoreConfig) {
+  constructor(config?: INativeStoreConfig) {
     this.observers = [];
     this.config = config || { serializer, deserializer, historySize: 10 };
     this.history = [];
     this.currentLocationInHistory = 0;
-
-    // TODO remove once tests are ported over to TS
-    this.state = state;
   }
 
   // unserialized state = { pathname: [], search: {}, options: {} }

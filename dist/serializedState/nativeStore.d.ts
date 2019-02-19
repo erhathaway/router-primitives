@@ -21,9 +21,8 @@ export default class NativeStore {
     history: string[];
     private observers;
     private config;
-    private state?;
     private currentLocationInHistory;
-    constructor(state?: string, config?: INativeStoreConfig);
+    constructor(config?: INativeStoreConfig);
     setState(unserializedLocation: IInputLocation, options?: ISetStateOptions): void;
     getState(): import("../types").IOutputLocation;
     subscribeToStateChanges(fn: StateObserver): void;

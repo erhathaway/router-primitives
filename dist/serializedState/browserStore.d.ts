@@ -15,10 +15,9 @@ declare type StateObserver = (state: State) => any;
 export default class BrowserStore {
     private observers;
     private config;
-    private state;
     private existingLocation;
     private stateWatcher;
-    constructor(state?: string, config?: IBrowserStoreConfig);
+    constructor(config?: IBrowserStoreConfig);
     setState(unserializedLocation: IInputLocation): void;
     getState(): IOutputLocation;
     subscribeToStateChanges(fn: StateObserver): void;

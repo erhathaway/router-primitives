@@ -8,19 +8,19 @@ export interface IInputSearch {
 export interface IOutputSearch {
     [key: string]: string | string[] | undefined;
 }
-export interface IOptions {
+export interface ILocationOptions {
     replaceLocation?: boolean;
 }
 declare type Pathname = string[];
 export interface IOutputLocation {
     pathname: Pathname;
     search: IOutputSearch;
-    options: IOptions;
+    options: ILocationOptions;
 }
 export interface IInputLocation {
     pathname: Pathname;
     search: IInputSearch;
-    options: IOptions;
+    options: ILocationOptions;
 }
 export interface ILocationActionContext {
     disableCaching?: boolean;
@@ -33,7 +33,8 @@ export interface IRouter extends RouterBase {
     hide: RouterAction;
     reducer: RouterReducer;
 }
-export declare type RouterAction = (location?: IInputLocation, router?: IRouter, ctx?: {
+export declare type IRouterActionOptions = ILocationOptions;
+export declare type RouterAction = (options: IRouterActionOptions, location?: IInputLocation, router?: IRouter, ctx?: {
     [key: string]: any;
 }) => IInputLocation;
 export declare type RouterReducer = (location: IInputLocation, router: IRouter, ctx: {
@@ -67,10 +68,21 @@ export interface IRouterDeclaration {
         [key: string]: IRouterDeclaration[];
     };
     routeKey?: string;
-    config?: {
-        disableCaching?: boolean;
-    };
+    disableCaching?: boolean;
     defaultShow?: boolean;
+    type?: string;
+    parentName?: string;
+}
+export interface IRouterConfig {
+    routeKey?: string;
+    isPathRouter?: boolean;
+    disableCaching?: boolean;
+    defaultShow?: boolean;
+}
+export interface IRouterInitParams {
+    name: string;
+    routeKey?: string;
+    config: IRouterConfig;
     type?: string;
     parentName?: string;
 }
