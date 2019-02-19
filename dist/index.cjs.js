@@ -433,7 +433,7 @@ var deserializer = function deserializer(serializedLocation) {
     return { search: search, pathname: pathname, options: {} };
 };
 
-var DEFAULT_LOCATION = { pathname: [], search: { test: true }, options: {} };
+var DEFAULT_LOCATION = { pathname: [], search: {}, options: {} };
 var serializer = function serializer(newLocation, oldLocation) {
     if (oldLocation === void 0) {
         oldLocation = DEFAULT_LOCATION;
@@ -773,6 +773,7 @@ var RouterBase = /** @class */function () {
             throw new Error('Missing required kwargs: name, type, and/or manager');
         }
         // required
+        // console.log("HEREEE", this)
         this.name = name;
         this.config = config || {};
         this.type = type;
@@ -873,7 +874,8 @@ var RouterBase = /** @class */function () {
                 }, false);
                 if (isSiblingRouterExplictlyAPathRouter === false) return true;
             } else if (this.type === 'data' && this.parent && this.parent.isPathRouter) {
-                if (this.isPathRouter === false) return false;
+                // TODO FIX ME - causes stack overflow
+                // if (this.isPathRouter === false) return false;
                 // check to make sure neighboring scene routers aren't present
                 var neighboringSceneRouters = this.getNeighborsByType('scene');
                 return neighboringSceneRouters.length === 0 && !this.siblings.reduce(function (acc, r) {
@@ -1274,7 +1276,6 @@ var Manager = /** @class */function () {
             parentName = _a.parentName;
         // create a router
         var router = this.createRouter({ name: name, routeKey: routeKey, config: config, defaultShow: defaultShow, disableCaching: disableCaching, type: type, parentName: parentName });
-        console.log("NAMEEEEE", name);
         // set as the parent router if this router has not parent and there is not yet a root
         if (!parentName && !this.rootRouter) {
             this.rootRouter = router;
@@ -1411,6 +1412,7 @@ var Manager = /** @class */function () {
             disableCaching = _a.disableCaching,
             type = _a.type,
             parentName = _a.parentName;
+        // console.log("NAMEEEEE", name)
         var parent = this.routers[parentName];
         var initalParams = {
             name: name,
@@ -1427,7 +1429,7 @@ var Manager = /** @class */function () {
             subscribe: this.routerStateStore.createRouterStateSubscriber(name)
         };
         var RouterType = this.routerTypes[type] || this.routerTypes.scene;
-        return new (RouterType(initalParams))();
+        return new RouterType(initalParams);
     };
     // removing a router will also unset all of its children
     Manager.prototype.removeRouter = function (name) {

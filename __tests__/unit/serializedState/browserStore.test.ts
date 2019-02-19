@@ -50,23 +50,16 @@ describe('Browser Serialized State', () => {
 
       store.subscribeToStateChanges(subscriptionOne);
       const stateOne = { pathname: ['newState'], search: { param1: '2', param2: 'testparam'}, options: {}}
-      window.location = jest.fn(() => ({
-        search: '?param1=2&param2=testparam',
-        pathname: 'newState/',
-      }))
-      // window.location.search  = '?param1=2&param2=testparam';
-      // window.location.pathname = 'newState/';
+
+      window.location.search  = '?param1=2&param2=testparam';
+      window.location.pathname = 'newState/';
       store.setState(stateOne);
 
 
       store.subscribeToStateChanges(subscriptionTwo);
       const stateTwo = { pathname: ['newStateOther'], search: { param1: '3', param2: undefined }, options: {}}
 
-      window.location = jest.fn(() => ({
-        search: '?param1=3',
-        pathname: 'newStateOther',
-      }))
-      // window.location.search  = '?param1=3';
+      window.location.search  = '?param1=3';
       window.location.pathname = 'newStateOther';
       store.setState(stateTwo);
 
