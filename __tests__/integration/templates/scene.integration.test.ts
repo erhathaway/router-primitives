@@ -32,7 +32,6 @@ describe('Integration', () => {
     describe('Actions', () => {
       describe('Show', () => {
         const manager = new Manager({ routerTree: routerTreeForDefaultShowTest });
-        console.log('hurrr')
 
         const userObserver = jest.fn();
         const userRouter = manager.routers['user'];
@@ -45,6 +44,7 @@ describe('Integration', () => {
         const mainToolsObserver = jest.fn();
         const mainToolsRouter = manager.routers['main-tools'];
         mainToolsRouter.subscribe(mainToolsObserver);
+
         it('PathRouter child of rootRouter', () => {
           userRouter.show();
           userRouter.show();
@@ -59,12 +59,14 @@ describe('Integration', () => {
         it('On non pathRouter child of rootRouter', () => {
           toolbarRouter.show();
           mainToolsRouter.show();
+          mainToolsRouter.show();
+
           expect(mainToolsRouter.isPathRouter).toBe(false);
   
           // should have a history of 1 b/c the userRouter.show() caused the router tree to reduce state when toolbar wasn't visible
-          expect(mainToolsObserver.mock.calls[0][0]).toEqual({ current: { visible: true }, historical: [{ visible: false }] });
-          // only one state update should have been made for this router
-          expect(mainToolsObserver.mock.calls.length).toBe(1);
+          expect(mainToolsObserver.mock.calls[1][0]).toEqual({ current: { visible: true }, historical: [{ visible: false }] });
+          // only two state update should have been made for this router
+          expect(mainToolsObserver.mock.calls.length).toBe(2);
         });
       });
 
@@ -104,7 +106,7 @@ describe('Integration', () => {
           mainToolsRouter.hide();
 
           expect(mainToolsRouter.state.visible).toBe(false);
-          expect(mainToolsObserver.mock.calls[1][0]).toEqual({ current: { visible: false }, historical: [{ visible: true }, { visible: false }] });
+          expect(mainToolsObserver.mock.calls[2][0]).toEqual({ current: { visible: false }, historical: [{ visible: true }, { visible: false }] });
         });
       });
     });
