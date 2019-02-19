@@ -1,7 +1,5 @@
 'use strict';
 
-Object.defineProperty(exports, '__esModule', { value: true });
-
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use
@@ -1464,9 +1462,13 @@ var Manager = /** @class */function () {
     return Manager;
 }();
 
-exports.default = Manager;
-exports.routerStateStore = DefaultRoutersStateStore;
-exports.NativeSerializedStore = NativeStore;
-exports.BrowserSerializedStore = BrowserStore;
-exports.serializer = serializer;
-exports.deserializer = deserializer;
+var index = {
+    Manager: Manager,
+    routerStateStore: DefaultRoutersStateStore,
+    NativeSerializedStore: NativeStore,
+    BrowserSerializedStore: BrowserStore,
+    serializer: serializer,
+    deserializer: deserializer
+};
+
+module.exports = index;

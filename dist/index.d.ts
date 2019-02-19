@@ -1,4 +1,15 @@
 import Manager from './manager';
 import routerStateStore from './routerState';
-import { NativeSerializedStore, BrowserSerializedStore, serializer, deserializer } from './serializedState';
-export { Manager as default, routerStateStore, NativeSerializedStore, BrowserSerializedStore, serializer, deserializer, };
+import { NativeSerializedStore, BrowserSerializedStore } from './serializedState';
+declare const _default: {
+    Manager: typeof Manager;
+    routerStateStore: typeof routerStateStore;
+    NativeSerializedStore: typeof NativeSerializedStore;
+    BrowserSerializedStore: typeof BrowserSerializedStore;
+    serializer: (newLocation: import("./types").IInputLocation, oldLocation?: import("./types").IInputLocation) => {
+        location: string;
+        options: import("./types").IOptions;
+    };
+    deserializer: (serializedLocation?: string) => import("./types").IOutputLocation;
+};
+export default _default;

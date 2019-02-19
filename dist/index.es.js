@@ -1460,5 +1460,13 @@ var Manager = /** @class */function () {
     return Manager;
 }();
 
-export default Manager;
-export { DefaultRoutersStateStore as routerStateStore, NativeStore as NativeSerializedStore, BrowserStore as BrowserSerializedStore, serializer, deserializer };
+var index = {
+    Manager: Manager,
+    routerStateStore: DefaultRoutersStateStore,
+    NativeSerializedStore: NativeStore,
+    BrowserSerializedStore: BrowserStore,
+    serializer: serializer,
+    deserializer: deserializer
+};
+
+export default index;
