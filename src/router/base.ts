@@ -28,17 +28,6 @@ interface InitParams {
 }
 
 export default class RouterBase {
-  // TODO deprecate this function and remove tests
-  private static joinLocationWithCachedLocation(location: any, cachedLocation: any) {
-    const newLocation = { ...location };
-    if (cachedLocation.isPathData) {
-      newLocation.path[cachedLocation.pathLocation] = cachedLocation.value;
-    } else {
-      newLocation.search[cachedLocation.queryParam] = cachedLocation.value;
-    }
-    return newLocation;
-  }
-
   public name: InitParams['name'];
   public type: InitParams['type'];
   public manager: InitParams['manager'];
@@ -174,24 +163,5 @@ export default class RouterBase {
     if (!this.getState) { throw new Error('no getState function specified by the manager'); }
     const { historical } = this.getState();
     return historical || [];
-  }
-
-  // TODO deprecate this method and remove tests
-  // return pathLocation cached data types
-  private calcCachedLocation(globalState: any = null) {
-    // reuse global state for efficiency if doing a recursive calculation
-    const routerState = globalState
-      ? globalState[this.name].current
-      : this.state;
-
-    if (this.isPathRouter) {
-      if (this.type === 'data') { return { isPathData: true, pathLocation: this.pathLocation, value: routerState.data }; }
-      return { isPathData: true, pathLocation: this.pathLocation, value: routerState.visible };
-    }
-
-    // return queryParam cached data types
-    if (this.type === 'data') { return { queryParam: this.routeKey, value: routerState.data }; }
-    if (this.type === 'stack') { return { queryParam: this.routeKey, value: routerState.order }; }
-    return { queryParam: this.routeKey, value: routerState.visible };
   }
 }

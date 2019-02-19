@@ -1,15 +1,15 @@
 import Router from '../../../src/router/base';
 import Manager from '../../../src/manager';
 
-type RequiredInits = {
-  name?: string,
-  config?: {},
-  type?: string,
-  manager?: Manager,
-  isPathRouter?: boolean,
+interface IRequiredInits {
+  name?: string;
+  config?: {};
+  type?: string;
+  manager?: Manager;
+  isPathRouter?: boolean;
 }
 
-const generateMockInit = (requiredInits: RequiredInits = {}, optionalInits = {}) => {
+const generateMockInit = (requiredInits: IRequiredInits = {}, optionalInits = {}) => {
   return {
     name: requiredInits.name || 'test',
     config: requiredInits.config || {},
@@ -174,123 +174,6 @@ describe('Router', () => {
     it('Returns the route key if one was set during initalization', () => {
       const dataRouterOne = new (Router as any)(generateMockInit({ name: 'data1', type: 'data', config: { routeKey: 'hello' } }));
       expect(dataRouterOne.routeKey).toBe('hello');
-    });
-  });
-
-  describe('Location Caching', () => {
-    describe('Calculation', () => {
-      describe('Path routers', () => {
-        it('Data router returns path location and data', () => {
-          const mockGetState = () => ({ current: { data: 'here', visible: true } , historical: [{}] })
-          const childRouter = new (Router as any)(generateMockInit({ name: 'child', type: 'data' }, { getState: mockGetState }));
-          const parentRouter = new (Router as any)(generateMockInit());
-    
-          parentRouter._addChildRouter(childRouter);
-          expect(childRouter.calcCachedLocation()).toEqual({ isPathData: true, pathLocation: 0, value: 'here' });
-        });
-
-        it('All other path types return path location and visibility', () => {
-          const mockGetState = () => ({ current: { data: 'here', visible: true } , historical: [{}] })
-          const childRouter = new (Router as any)(generateMockInit({ name: 'child', type: 'scene' }, { getState: mockGetState }));
-          const parentRouter = new (Router as any)(generateMockInit());
-    
-          parentRouter._addChildRouter(childRouter);
-          expect(childRouter.calcCachedLocation()).toEqual({ isPathData: true, pathLocation: 0, value: true });
-        });
-      });
-
-      describe('Non path routers', () => {
-        it('Data router returns query param and data', () => {
-          const mockGetState = () => ({ current: { data: 'here', visible: true } , historical: [{}] })
-          const childRouter = new (Router as any)(generateMockInit({ name: 'child', type: 'data' }, { getState: mockGetState }));
-          const featureRouter = new (Router as any)(generateMockInit({ name: 'feature1', type: 'feature' }, { getState: mockGetState }));
-          const parentRouter = new (Router as any)(generateMockInit({}));
-    
-          parentRouter._addChildRouter(featureRouter);
-          featureRouter._addChildRouter(childRouter);
-
-          expect(childRouter.calcCachedLocation()).toEqual({ queryParam: 'child', value: 'here' });
-        });
-
-        it('Stack router returns query param and order', () => {
-          const mockGetState = () => ({ current: { data: 'here', visible: true, order: 2 } , historical: [{}] })
-          const childRouter = new (Router as any)(generateMockInit({ name: 'child', type: 'stack' }, { getState: mockGetState }));
-          const featureRouter = new (Router as any)(generateMockInit({ name: 'feature1', type: 'feature' }, { getState: mockGetState }));
-          const parentRouter = new (Router as any)(generateMockInit({}));
-    
-          parentRouter._addChildRouter(featureRouter);
-          featureRouter._addChildRouter(childRouter);
-
-          expect(childRouter.calcCachedLocation()).toEqual({ queryParam: 'child', value: 2 });
-        });
-
-        it('Scene and feature router returns query param and visibility', () => {
-          const mockGetState = () => ({ current: { data: 'here', visible: true, order: 2 } , historical: [{}] })
-          const childRouter = new (Router as any)(generateMockInit({ name: 'child', type: 'scene' }, { getState: mockGetState }));
-          const featureRouter = new (Router as any)(generateMockInit({ name: 'feature1', type: 'feature' }, { getState: mockGetState }));
-          const parentRouter = new (Router as any)(generateMockInit({}));
-    
-          parentRouter._addChildRouter(featureRouter);
-          featureRouter._addChildRouter(childRouter);
-
-          expect(childRouter.calcCachedLocation()).toEqual({ queryParam: 'child', value: true });
-          expect(featureRouter.calcCachedLocation()).toEqual({ queryParam: 'feature1', value: true });
-        });
-      });
-
-      it('Works with pased in global state', () => {
-        const state1 = { current: { data: 'here', visible: true, order: 2 }, historical: [{}] };
-        const state2 = { current: { data: 'notHere', visible: false, order: 3 }, historical: [{}] };
-        const mockGetState = () => (state1);
-        const childRouter = new (Router as any)(generateMockInit({ name: 'child', type: 'stack' }, { getState: mockGetState }));
-        const featureRouter = new (Router as any)(generateMockInit({ name: 'feature1', type: 'feature' }, { getState: mockGetState }));
-        const parentRouter = new (Router as any)(generateMockInit({}));
-  
-        parentRouter._addChildRouter(featureRouter);
-        featureRouter._addChildRouter(childRouter);
-
-        const globalState = { feature1: state1, child: state2 };
-
-        expect(childRouter.calcCachedLocation(globalState)).toEqual({ queryParam: 'child', value: 3 });
-      });
-
-      describe('Joins cached location with regular location object', () => {
-        it('Works with path cached locations', () => {
-          // TODO figure out why pulling this out to the describe block causes location to be mutated
-          const location = { 
-            path: ['home', 'scene1', 'scene2'], 
-            search: { feature1: true, feature2: false, data22: 'okay', stack1: 0 },
-            options: { mutateLocation: false }, 
-          };
-
-          const cachedLocation = { isPathData: true, pathLocation: 1, value: 'newScene' };
-
-          expect(Router.joinLocationWithCachedLocation(location, cachedLocation))
-            .toEqual({
-              path: ['home', 'newScene', 'scene2'], 
-              search: { feature1: true, feature2: false, data22: 'okay', stack1: 0 },
-              options: { mutateLocation: false }, 
-            });
-        });
-
-
-        it('Works with query param cached locations', () => {
-          const location = { 
-            path: ['home', 'scene1', 'scene2'], 
-            search: { feature1: true, feature2: false, data22: 'okay', stack1: 0 },
-            options: { mutateLocation: false }, 
-          };
-
-          const cachedLocation = { queryParam: 'stack1', value: 3 };
-
-          expect(Router.joinLocationWithCachedLocation(location, cachedLocation))
-            .toEqual({
-              path: ['home', 'scene1', 'scene2'], 
-              search: { feature1: true, feature2: false, data22: 'okay', stack1: 3 },
-              options: { mutateLocation: false }, 
-            });
-        });
-      })
     });
   });
 });

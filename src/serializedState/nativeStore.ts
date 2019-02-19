@@ -1,6 +1,6 @@
 import deserializer from './deserializer';
 import serializer from './serializer';
-import { InputLocation } from '../types';
+import { IInputLocation } from '../types';
 
 interface INativeStoreConfig {
   serializer: typeof serializer;
@@ -38,7 +38,7 @@ export default class NativeStore {
 
   // unserialized state = { pathname: [], search: {}, options: {} }
   // options = { updateHistory }
-  public setState(unserializedLocation: InputLocation, options: ISetStateOptions = {}) {
+  public setState(unserializedLocation: IInputLocation, options: ISetStateOptions = {}) {
     const oldUnserializedLocation = this.getState();
     const { location: newState } = this.config.serializer(unserializedLocation, oldUnserializedLocation);
 
