@@ -38,7 +38,7 @@ var __assign = function() {
     return __assign.apply(this, arguments);
 };
 
-var strictUriEncode = function strictUriEncode(str) {
+var strictUriEncode = function (str) {
 	return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
 		return '%' + c.charCodeAt(0).toString(16).toUpperCase();
 	});
@@ -50,7 +50,6 @@ object-assign
 @license MIT
 */
 /* eslint-disable no-unused-vars */
-
 var getOwnPropertySymbols = Object.getOwnPropertySymbols;
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 var propIsEnumerable = Object.prototype.propertyIsEnumerable;
@@ -72,7 +71,7 @@ function shouldUseNative() {
 		// Detect buggy property enumeration order in older V8 versions.
 
 		// https://bugs.chromium.org/p/v8/issues/detail?id=4118
-		var test1 = new String('abc'); // eslint-disable-line no-new-wrappers
+		var test1 = new String('abc');  // eslint-disable-line no-new-wrappers
 		test1[5] = 'de';
 		if (Object.getOwnPropertyNames(test1)[0] === '5') {
 			return false;
@@ -95,7 +94,8 @@ function shouldUseNative() {
 		'abcdefghijklmnopqrst'.split('').forEach(function (letter) {
 			test3[letter] = letter;
 		});
-		if (Object.keys(Object.assign({}, test3)).join('') !== 'abcdefghijklmnopqrst') {
+		if (Object.keys(Object.assign({}, test3)).join('') !==
+				'abcdefghijklmnopqrst') {
 			return false;
 		}
 
@@ -131,12 +131,6 @@ var objectAssign = shouldUseNative() ? Object.assign : function (target, source)
 	}
 
 	return to;
-};
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
 };
 
 var token = '%[a-f0-9]{2}';
@@ -217,9 +211,9 @@ function customDecodeURIComponent(input) {
 	return input;
 }
 
-var decodeUriComponent = function decodeUriComponent(encodedURI) {
+var decodeUriComponent = function (encodedURI) {
 	if (typeof encodedURI !== 'string') {
-		throw new TypeError('Expected `encodedURI` to be of type `string`, got `' + (typeof encodedURI === 'undefined' ? 'undefined' : _typeof(encodedURI)) + '`');
+		throw new TypeError('Expected `encodedURI` to be of type `string`, got `' + typeof encodedURI + '`');
 	}
 
 	try {
@@ -237,17 +231,36 @@ function encoderForArrayFormat(opts) {
 	switch (opts.arrayFormat) {
 		case 'index':
 			return function (key, value, index) {
-				return value === null ? [encode(key, opts), '[', index, ']'].join('') : [encode(key, opts), '[', encode(index, opts), ']=', encode(value, opts)].join('');
+				return value === null ? [
+					encode(key, opts),
+					'[',
+					index,
+					']'
+				].join('') : [
+					encode(key, opts),
+					'[',
+					encode(index, opts),
+					']=',
+					encode(value, opts)
+				].join('');
 			};
 
 		case 'bracket':
 			return function (key, value) {
-				return value === null ? encode(key, opts) : [encode(key, opts), '[]=', encode(value, opts)].join('');
+				return value === null ? encode(key, opts) : [
+					encode(key, opts),
+					'[]=',
+					encode(value, opts)
+				].join('');
 			};
 
 		default:
 			return function (key, value) {
-				return value === null ? encode(key, opts) : [encode(key, opts), '=', encode(value, opts)].join('');
+				return value === null ? encode(key, opts) : [
+					encode(key, opts),
+					'=',
+					encode(value, opts)
+				].join('');
 			};
 	}
 }
@@ -313,7 +326,7 @@ function encode(value, opts) {
 function keysSorter(input) {
 	if (Array.isArray(input)) {
 		return input.sort();
-	} else if ((typeof input === 'undefined' ? 'undefined' : _typeof(input)) === 'object') {
+	} else if (typeof input === 'object') {
 		return keysSorter(Object.keys(input)).sort(function (a, b) {
 			return Number(a) - Number(b);
 		}).map(function (key) {
@@ -325,7 +338,7 @@ function keysSorter(input) {
 }
 
 function parse(str, opts) {
-	opts = objectAssign({ arrayFormat: 'none' }, opts);
+	opts = objectAssign({arrayFormat: 'none'}, opts);
 
 	var formatter = parserForArrayFormat(opts);
 
@@ -359,7 +372,7 @@ function parse(str, opts) {
 
 	return Object.keys(ret).sort().reduce(function (result, key) {
 		var val = ret[key];
-		if (Boolean(val) && (typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object' && !Array.isArray(val)) {
+		if (Boolean(val) && typeof val === 'object' && !Array.isArray(val)) {
 			// Sort object keys, not values
 			result[key] = keysSorter(val);
 		} else {
@@ -371,7 +384,7 @@ function parse(str, opts) {
 }
 var parse_1 = parse;
 
-var stringify = function stringify(obj, opts) {
+var stringify = function (obj, opts) {
 	var defaults = {
 		encode: true,
 		strict: true,
@@ -417,37 +430,30 @@ var stringify = function stringify(obj, opts) {
 	}).join('&') : '';
 };
 
-var deserializer = function deserializer(serializedLocation) {
-    if (serializedLocation === void 0) {
-        serializedLocation = '';
-    }
+var deserializer = function (serializedLocation) {
+    if (serializedLocation === void 0) { serializedLocation = ''; }
     var locationStringParts = serializedLocation.split('?');
     var search = parse_1(locationStringParts[1], { decode: true, arrayFormat: 'bracket' });
-    var pathname = locationStringParts[0].split('/').filter(function (s) {
-        return s !== '';
-    });
+    var pathname = locationStringParts[0].split('/').filter(function (s) { return s !== ''; });
     return { search: search, pathname: pathname, options: {} };
 };
 
 var DEFAULT_LOCATION = { pathname: [], search: {}, options: {} };
-var serializer = function serializer(newLocation, oldLocation) {
-    if (oldLocation === void 0) {
-        oldLocation = DEFAULT_LOCATION;
-    }
+var serializer = function (newLocation, oldLocation) {
+    if (oldLocation === void 0) { oldLocation = DEFAULT_LOCATION; }
     var newPathname = newLocation.pathname || [];
     var newSearchObj = newLocation.search || {};
     var oldSearchObj = oldLocation.search || {};
     var combinedSearchObj = __assign({}, oldSearchObj, newSearchObj);
-    Object.keys(combinedSearchObj).forEach(function (key) {
-        return combinedSearchObj[key] == null && delete combinedSearchObj[key];
-    });
+    Object.keys(combinedSearchObj).forEach(function (key) { return (combinedSearchObj[key] == null) && delete combinedSearchObj[key]; });
     var searchString = stringify(combinedSearchObj, { arrayFormat: 'bracket' });
     var pathname = newPathname.join('/');
     var pathnameString = pathname === '' ? '/' : pathname;
     var location;
     if (searchString === '') {
         location = pathnameString;
-    } else {
+    }
+    else {
         location = pathnameString + "?" + searchString;
     }
     return { location: location, options: newLocation.options };
@@ -459,7 +465,7 @@ var serializer = function serializer(newLocation, oldLocation) {
  * For non web, or when manager.config.serializedStateStore === 'native' this store is used
  * The default serialized state is a string for this store
  */
-var NativeStore = /** @class */function () {
+var NativeStore = /** @class */ (function () {
     function NativeStore(state, config) {
         this.observers = [];
         this.config = config || { serializer: serializer, deserializer: deserializer, historySize: 10 };
@@ -471,9 +477,7 @@ var NativeStore = /** @class */function () {
     // unserialized state = { pathname: [], search: {}, options: {} }
     // options = { updateHistory }
     NativeStore.prototype.setState = function (unserializedLocation, options) {
-        if (options === void 0) {
-            options = {};
-        }
+        if (options === void 0) { options = {}; }
         var oldUnserializedLocation = this.getState();
         var newState = this.config.serializer(unserializedLocation, oldUnserializedLocation).location;
         if (options.updateHistory !== false) {
@@ -498,12 +502,8 @@ var NativeStore = /** @class */function () {
         }
         this.notifyObservers();
     };
-    NativeStore.prototype.getState = function () {
-        return this.config.deserializer(this.history[this.currentLocationInHistory]);
-    };
-    NativeStore.prototype.subscribeToStateChanges = function (fn) {
-        this.observers.push(fn);
-    };
+    NativeStore.prototype.getState = function () { return this.config.deserializer(this.history[this.currentLocationInHistory]); };
+    NativeStore.prototype.subscribeToStateChanges = function (fn) { this.observers.push(fn); };
     // unsubscribeToStateChanges // TODO fill me in!
     NativeStore.prototype.back = function () {
         this.go(-1);
@@ -521,29 +521,29 @@ var NativeStore = /** @class */function () {
         if (newLocation + 1 <= this.history.length && newLocation >= 0) {
             this.currentLocationInHistory = newLocation;
             // if too far in the future, set as the most recent history
-        } else if (newLocation + 1 <= this.history.length) {
+        }
+        else if (newLocation + 1 <= this.history.length) {
             this.currentLocationInHistory = 0;
             // if too far in the past, set as the last recorded history
-        } else if (newLocation >= 0) {
+        }
+        else if (newLocation >= 0) {
             this.currentLocationInHistory = this.history.length - 1;
         }
         this.setState(this.getState(), { updateHistory: false });
     };
     NativeStore.prototype.notifyObservers = function () {
         var deserializedState = this.getState();
-        this.observers.forEach(function (fn) {
-            return fn(deserializedState);
-        });
+        this.observers.forEach(function (fn) { return fn(deserializedState); });
     };
     return NativeStore;
-}();
+}());
 
 /**
  * The store that the router manager uses to write and read from the serialized state
  * The serialized state store is what, on the web, holds the URL - aka the serilaized state of the router tree
  * The default serialized state is the URL for this store
  */
-var BrowserStore = /** @class */function () {
+var BrowserStore = /** @class */ (function () {
     function BrowserStore(state, config) {
         var _this = this;
         this.observers = [];
@@ -563,7 +563,8 @@ var BrowserStore = /** @class */function () {
         var newState = this.config.serializer(unserializedLocation, oldUnserializedLocation).location;
         if (unserializedLocation.options && unserializedLocation.options.replaceLocation === true) {
             window.history.replaceState({ url: newState }, '', newState);
-        } else {
+        }
+        else {
             window.history.pushState({ url: newState }, '', newState);
         }
         this.notifyObservers();
@@ -573,9 +574,7 @@ var BrowserStore = /** @class */function () {
         var pathnameString = window.location.pathname || '';
         return this.config.deserializer(pathnameString + searchString);
     };
-    BrowserStore.prototype.subscribeToStateChanges = function (fn) {
-        this.observers.push(fn);
-    };
+    BrowserStore.prototype.subscribeToStateChanges = function (fn) { this.observers.push(fn); };
     BrowserStore.prototype.back = function () {
         window.history.back();
     };
@@ -586,7 +585,7 @@ var BrowserStore = /** @class */function () {
         window.history.go(historyChange);
     };
     BrowserStore.prototype._monitorLocation = function () {
-        var newLocation = window.location.href;
+        var newLocation = (window.location.href);
         if (this.existingLocation !== newLocation) {
             this.existingLocation = newLocation;
             this.notifyObservers();
@@ -594,12 +593,10 @@ var BrowserStore = /** @class */function () {
     };
     BrowserStore.prototype.notifyObservers = function () {
         var deserializedState = this.getState();
-        this.observers.forEach(function (fn) {
-            return fn(deserializedState);
-        });
+        this.observers.forEach(function (fn) { return fn(deserializedState); });
     };
     return BrowserStore;
-}();
+}());
 
 /**
  * The default router state store.
@@ -611,11 +608,9 @@ var BrowserStore = /** @class */function () {
  *   createRouterStateGetter
  *   createRouterStateSubscriber
  */
-var DefaultRoutersStateStore = /** @class */function () {
+var DefaultRoutersStateStore = /** @class */ (function () {
     function DefaultRoutersStateStore(store, config) {
-        if (config === void 0) {
-            config = { historySize: 2 };
-        }
+        if (config === void 0) { config = { historySize: 2 }; }
         this.store = store || {};
         this.config = config;
         this.observers = {}; // key is routerName
@@ -635,9 +630,7 @@ var DefaultRoutersStateStore = /** @class */function () {
         var hasUpdatedTracker = [];
         this.store = routerNames.reduce(function (routerStates, routerName) {
             // extract current and historical states
-            var _a = routerStates[routerName] || { current: {}, historical: [] },
-                prevCurrent = _a.current,
-                historical = _a.historical;
+            var _a = routerStates[routerName] || { current: {}, historical: [] }, prevCurrent = _a.current, historical = _a.historical;
             var newCurrent = desiredRouterStates[routerName];
             // skip routers who haven't been updated
             // TODO test performance of this JSON.stringify comparison
@@ -665,9 +658,7 @@ var DefaultRoutersStateStore = /** @class */function () {
         hasUpdatedTracker.forEach(function (routerName) {
             var observers = _this.observers[routerName] || [];
             if (Array.isArray(observers)) {
-                observers.forEach(function (fn) {
-                    return fn(_this.store[routerName]);
-                });
+                observers.forEach(function (fn) { return fn(_this.store[routerName]); });
             }
         });
     };
@@ -677,9 +668,7 @@ var DefaultRoutersStateStore = /** @class */function () {
      */
     DefaultRoutersStateStore.prototype.createRouterStateGetter = function (routerName) {
         var _this = this;
-        return function () {
-            return _this.store[routerName] || {};
-        };
+        return function () { return _this.store[routerName] || {}; };
     };
     /**
      * Returns a function which as the router name in closure scope.
@@ -691,7 +680,8 @@ var DefaultRoutersStateStore = /** @class */function () {
         return function (fn) {
             if (Array.isArray(_this.observers[routerName])) {
                 _this.observers[routerName].push(fn);
-            } else {
+            }
+            else {
                 _this.observers[routerName] = [fn];
             }
         };
@@ -699,11 +689,9 @@ var DefaultRoutersStateStore = /** @class */function () {
     /**
      * Returns the stores state for all routers
      */
-    DefaultRoutersStateStore.prototype.getState = function () {
-        return this.store;
-    };
+    DefaultRoutersStateStore.prototype.getState = function () { return this.store; };
     return DefaultRoutersStateStore;
-}();
+}());
 
 /**
  * Used to manipulate the router cache
@@ -711,19 +699,19 @@ var DefaultRoutersStateStore = /** @class */function () {
  * Depending on the router type logic, a router can use its
  * cache when setting new state instead of a default value
  */
-var Cache = /** @class */function () {
+var Cache = /** @class */ (function () {
     function Cache() {
         this._cacheStore = undefined;
     }
     Object.defineProperty(Cache.prototype, "hasCache", {
-        get: function get() {
+        get: function () {
             return !!this._cacheStore;
         },
         enumerable: true,
         configurable: true
     });
     Object.defineProperty(Cache.prototype, "state", {
-        get: function get() {
+        get: function () {
             return this._cacheStore;
         },
         enumerable: true,
@@ -744,27 +732,18 @@ var Cache = /** @class */function () {
         var cache;
         if (routerInstance.isPathRouter) {
             cache = location.pathname[routerInstance.pathLocation];
-        } else {
+        }
+        else {
             cache = !!location.search[routerInstance.routeKey];
         }
         this.setCache(cache);
     };
     return Cache;
-}();
+}());
 
-var RouterBase = /** @class */function () {
+var RouterBase = /** @class */ (function () {
     function RouterBase(init) {
-        var name = init.name,
-            config = init.config,
-            type = init.type,
-            manager = init.manager,
-            parent = init.parent,
-            routers = init.routers,
-            root = init.root,
-            defaultShow = init.defaultShow,
-            disableCaching = init.disableCaching,
-            getState = init.getState,
-            subscribe = init.subscribe;
+        var name = init.name, config = init.config, type = init.type, manager = init.manager, parent = init.parent, routers = init.routers, root = init.root, defaultShow = init.defaultShow, disableCaching = init.disableCaching, getState = init.getState, subscribe = init.subscribe;
         if (!name || !type || !manager) {
             throw new Error('Missing required kwargs: name, type, and/or manager');
         }
@@ -789,25 +768,23 @@ var RouterBase = /** @class */function () {
         this.cache = new Cache();
     }
     Object.defineProperty(RouterBase.prototype, "routeKey", {
-        get: function get() {
+        get: function () {
             return this.config.routeKey || this.name;
         },
         enumerable: true,
         configurable: true
     });
     Object.defineProperty(RouterBase.prototype, "shouldStoreLocationMutationInHistory", {
-        get: function get() {
+        get: function () {
             return this.config.shouldStoreLocationMutationInHistory;
         },
         enumerable: true,
         configurable: true
     });
     Object.defineProperty(RouterBase.prototype, "siblings", {
-        get: function get() {
+        get: function () {
             var _this = this;
-            return this.parent.routers[this.type].filter(function (r) {
-                return r.name !== _this.name;
-            });
+            return this.parent.routers[this.type].filter(function (r) { return r.name !== _this.name; });
         },
         enumerable: true,
         configurable: true
@@ -819,7 +796,7 @@ var RouterBase = /** @class */function () {
         return [];
     };
     Object.defineProperty(RouterBase.prototype, "pathLocation", {
-        get: function get() {
+        get: function () {
             if (!this.parent) {
                 return -1;
             }
@@ -829,7 +806,7 @@ var RouterBase = /** @class */function () {
         configurable: true
     });
     Object.defineProperty(RouterBase.prototype, "isRootRouter", {
-        get: function get() {
+        get: function () {
             return !this.parent;
         },
         enumerable: true,
@@ -841,13 +818,13 @@ var RouterBase = /** @class */function () {
         if (!router.type) {
             throw new Error('Router is missing type');
         }
-        var siblingTypes = this.routers[router.type] || [];
+        var siblingTypes = (this.routers[router.type] || []);
         siblingTypes.push(router);
         this.routers[router.type] = siblingTypes;
         router.parent = this;
     };
     Object.defineProperty(RouterBase.prototype, "isPathRouter", {
-        get: function get() {
+        get: function () {
             // if there is no parent, we are at the root. The root is by default a path router since
             // it represents the '/' in a pathname location
             if (!this.parent) {
@@ -865,28 +842,23 @@ var RouterBase = /** @class */function () {
             if (this.type === 'scene' && this.parent.isPathRouter) {
                 // check to make sure neighboring data routers arent explicitly set to modify the pathname
                 var neighboringDataRouters = this.getNeighborsByType('data');
-                var isSiblingRouterExplictlyAPathRouter = neighboringDataRouters.reduce(function (acc, r) {
-                    return (
-                        // check all data router neighbors and
-                        // make sure none have been explicitly set to be a path router
-                        acc || r.config.isPathRouter === true
-                    );
-                }, false);
+                var isSiblingRouterExplictlyAPathRouter = neighboringDataRouters.reduce(function (acc, r) { return (
+                // check all data router neighbors and
+                // make sure none have been explicitly set to be a path router
+                acc || r.config.isPathRouter === true); }, false);
                 if (isSiblingRouterExplictlyAPathRouter === false) {
                     return true;
                 }
-            } else if (this.type === 'data' && this.parent && this.parent.isPathRouter) {
+            }
+            else if (this.type === 'data' && this.parent && this.parent.isPathRouter) {
                 // TODO FIX ME - causes stack overflow
                 // if (this.isPathRouter === false) return false;
                 // check to make sure neighboring scene routers aren't present
                 var neighboringSceneRouters = this.getNeighborsByType('scene');
-                return neighboringSceneRouters.length === 0 && !this.siblings.reduce(function (acc, r) {
-                    return (
-                        // check all data router siblings and
-                        // make sure none are path routers
-                        acc || r.config.isPathRouter === true
-                    );
-                }, false);
+                return (neighboringSceneRouters.length === 0) && !this.siblings.reduce(function (acc, r) { return (
+                // check all data router siblings and
+                // make sure none are path routers
+                acc || r.config.isPathRouter === true); }, false);
             }
             return false;
         },
@@ -894,7 +866,7 @@ var RouterBase = /** @class */function () {
         configurable: true
     });
     Object.defineProperty(RouterBase.prototype, "state", {
-        get: function get() {
+        get: function () {
             if (!this.getState) {
                 throw new Error('no getState function specified by the manager');
             }
@@ -905,7 +877,7 @@ var RouterBase = /** @class */function () {
         configurable: true
     });
     Object.defineProperty(RouterBase.prototype, "history", {
-        get: function get() {
+        get: function () {
             if (!this.getState) {
                 throw new Error('no getState function specified by the manager');
             }
@@ -916,51 +888,52 @@ var RouterBase = /** @class */function () {
         configurable: true
     });
     return RouterBase;
-}();
+}());
 
-var show = function show(location, router, ctx) {
-    if (ctx === void 0) {
-        ctx = {};
-    }
+var show = function (location, router, ctx) {
+    if (ctx === void 0) { ctx = {}; }
     // hide sibling routers
     location = router.siblings.reduce(function (acc, s) {
         return s.hide(acc, s, ctx);
     }, location);
     if (router.isPathRouter) {
         var parent_1 = router.parent;
-        if (!ctx.addingDefaults && (!parent_1 || !parent_1.state.visible && !parent_1.isRootRouter)) {
+        if (!ctx.addingDefaults && (!parent_1 || (!parent_1.state.visible && !parent_1.isRootRouter))) {
             return location;
         }
         location.pathname[router.pathLocation] = router.routeKey;
         // drop pathname after this pathLocation
         location.pathname = location.pathname.slice(0, router.pathLocation + 1);
-    } else {
+    }
+    else {
         location.search[router.routeKey] = true;
     }
     // add defaults for child routers
     // location = router.constructor.addLocationDefaults(location, router, ctx);
     return location;
 };
-var hide = function hide(location, router, ctx) {
+var hide = function (location, router, ctx) {
     if (router.isPathRouter) {
         location.pathname = location.pathname.slice(0, router.pathLocation);
-    } else {
+    }
+    else {
         location.search[router.routeKey] = undefined;
     }
     return location;
 };
-var reducer = function reducer(location, router, ctx) {
+var reducer = function (location, router, ctx) {
     var newState = {};
     if (router.isPathRouter) {
         newState['visible'] = location.pathname[router.pathLocation] === router.routeKey;
-    } else {
+    }
+    else {
         newState['visible'] = location.search[router.routeKey] === 'true';
     }
     return newState;
 };
 var scene = {
     actions: { show: show, hide: hide },
-    reducer: reducer
+    reducer: reducer,
 };
 
 // returns the routeKey names of visible routers based on the ordering of their 'order' state
@@ -987,18 +960,12 @@ function getRouteKeyOrderings(router) {
         return acc;
     }, {});
     var orders = Object.values(routeKeyOrderObj);
-    var filteredOrders = orders.filter(function (n) {
-        return n != null && !Number.isNaN(n);
-    });
-    var sortedOrders = filteredOrders.sort(function (a, b) {
-        return a - b;
-    });
-    var sortedKeys = sortedOrders.map(function (order) {
-        return orderAsKey[order];
-    });
+    var filteredOrders = ((orders.filter(function (n) { return n != null && !Number.isNaN(n); })));
+    var sortedOrders = filteredOrders.sort(function (a, b) { return a - b; });
+    var sortedKeys = sortedOrders.map(function (order) { return orderAsKey[order]; });
     return sortedKeys;
 }
-var show$1 = function show(location, router, ctx) {
+var show$1 = function (location, router, ctx) {
     if (!router.parent) {
         return location;
     }
@@ -1021,7 +988,7 @@ var show$1 = function show(location, router, ctx) {
     // return { pathname: location.pathname, search, options };
     return location;
 };
-var hide$1 = function hide(location, router, ctx) {
+var hide$1 = function (location, router, ctx) {
     if (!router.parent) {
         return location;
     }
@@ -1044,7 +1011,7 @@ var hide$1 = function hide(location, router, ctx) {
     // return { pathname: location.pathname, search, options };
     return location;
 };
-var forward = function forward(location, router, ctx) {
+var forward = function (location, router, ctx) {
     if (!router.parent) {
         return location;
     }
@@ -1070,7 +1037,7 @@ var forward = function forward(location, router, ctx) {
     // return { pathname: location.pathname, search, options };
     return location;
 };
-var backward = function backward(location, router, ctx) {
+var backward = function (location, router, ctx) {
     if (!router.parent) {
         return location;
     }
@@ -1097,11 +1064,11 @@ var backward = function backward(location, router, ctx) {
     // return { pathname: location.pathname, search, options };
     return location;
 };
-var toFront = function toFront(location, router, ctx) {
+var toFront = function (location, router, ctx) {
     // const newLocation = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
     return router.show(location, router, ctx);
 };
-var toBack = function toBack(location, router, ctx) {
+var toBack = function (location, router, ctx) {
     if (!router.parent) {
         return location;
     }
@@ -1126,17 +1093,17 @@ var toBack = function toBack(location, router, ctx) {
     // return { pathname: location.pathname, search, options };
     return location;
 };
-var reducer$1 = function reducer(location, router, ctx) {
+var reducer$1 = function (location, router, ctx) {
     var value = location.search[router.routeKey];
     if (value) {
         return {
             order: value,
-            visible: true
+            visible: true,
         };
     }
     return {
         order: undefined,
-        visible: false
+        visible: false,
     };
     // if (router.isPathRouter) {
     //   newState['visible'] = location.pathname[router.pathLocation] === router.routeKey;
@@ -1147,23 +1114,18 @@ var reducer$1 = function reducer(location, router, ctx) {
 };
 var stack = {
     actions: { show: show$1, hide: hide$1, forward: forward, backward: backward, toFront: toFront, toBack: toBack },
-    reducer: reducer$1
+    reducer: reducer$1,
 };
 
 // export { default as data } from './data';
 
-var capitalize = function capitalize(name) {
-    if (name === void 0) {
-        name = '';
-    }
+var capitalize = function (name) {
+    if (name === void 0) { name = ''; }
     return name.charAt(0).toUpperCase() + name.slice(1);
 };
-var Manager = /** @class */function () {
+var Manager = /** @class */ (function () {
     function Manager(_a) {
-        var _b = _a === void 0 ? {} : _a,
-            routerTree = _b.routerTree,
-            serializedStateStore = _b.serializedStateStore,
-            routerStateStore = _b.routerStateStore;
+        var _b = _a === void 0 ? {} : _a, routerTree = _b.routerTree, serializedStateStore = _b.serializedStateStore, routerStateStore = _b.routerStateStore;
         var _this = this;
         this.routerStateStore = routerStateStore || new DefaultRoutersStateStore();
         this.routers = {};
@@ -1171,7 +1133,8 @@ var Manager = /** @class */function () {
         // check if window
         if (typeof window === 'undefined') {
             this.serializedStateStore = serializedStateStore || new NativeStore();
-        } else {
+        }
+        else {
             this.serializedStateStore = serializedStateStore || new BrowserStore();
         }
         // router types
@@ -1184,13 +1147,13 @@ var Manager = /** @class */function () {
         Object.keys(templates).forEach(function (templateName) {
             // create a RouterType off the base Router
             // extend router base for specific type
-            var RouterType = /** @class */function (_super) {
+            var RouterType = /** @class */ (function (_super) {
                 __extends(RouterType, _super);
                 function RouterType() {
                     return _super !== null && _super.apply(this, arguments) || this;
                 }
                 return RouterType;
-            }(RouterBase);
+            }(RouterBase));
             // change the router name to include the type
             Object.defineProperty(RouterType, 'name', { value: capitalize(templateName) + "Router" });
             // fetch template
@@ -1230,15 +1193,14 @@ var Manager = /** @class */function () {
         return newLocation;
     };
     Manager.setCacheAndHide = function (location, router, ctx) {
-        if (ctx === void 0) {
-            ctx = {};
-        }
+        if (ctx === void 0) { ctx = {}; }
         var newLocation = location;
         var disableCaching;
         // figure out if caching should occur
         if (router.disableCaching !== undefined) {
             disableCaching = router.disableCaching;
-        } else {
+        }
+        else {
             disableCaching = ctx.disableCaching || false;
         }
         Object.keys(router.routers).forEach(function (routerType) {
@@ -1259,12 +1221,8 @@ var Manager = /** @class */function () {
     // wrapper around action function
     Manager.createActionWrapperFunction = function (action, type) {
         function actionWrapper(existingLocation, routerInstance, ctx) {
-            if (routerInstance === void 0) {
-                routerInstance = this;
-            }
-            if (ctx === void 0) {
-                ctx = {};
-            }
+            if (routerInstance === void 0) { routerInstance = this; }
+            if (ctx === void 0) { ctx = {}; }
             // if called from another action wrapper
             var updatedLocation;
             if (existingLocation) {
@@ -1273,8 +1231,7 @@ var Manager = /** @class */function () {
                     updatedLocation = Manager.setCacheAndHide(existingLocation, routerInstance, ctx);
                 }
                 updatedLocation = action(existingLocation, routerInstance, ctx);
-                if (type === 'show') {
-                    // add location defaults from children
+                if (type === 'show') { // add location defaults from children
                     updatedLocation = Manager.setChildrenDefaults(updatedLocation, routerInstance, ctx);
                 }
                 return updatedLocation;
@@ -1289,8 +1246,7 @@ var Manager = /** @class */function () {
             if (type === 'hide' && routerInstance.state.visible === true) {
                 routerInstance.cache.setCache(false);
             }
-            if (type === 'show') {
-                // add location defaults from children
+            if (type === 'show') { // add location defaults from children
                 updatedLocation = Manager.setChildrenDefaults(updatedLocation, routerInstance, ctx);
             }
             // set serialized state
@@ -1299,9 +1255,7 @@ var Manager = /** @class */function () {
         return actionWrapper;
     };
     Manager.addLocationDefaults = function (location, routerInstance, ctx) {
-        if (ctx === void 0) {
-            ctx = {};
-        }
+        if (ctx === void 0) { ctx = {}; }
         // TODO validate default action names are on type
         var locationWithDefaults = __assign({}, location);
         Object.keys(routerInstance.routers).forEach(function (type) {
@@ -1321,15 +1275,9 @@ var Manager = /** @class */function () {
      */
     Manager.prototype.addRouters = function (router, type, parentName) {
         var _this = this;
-        if (router === void 0) {
-            router = null;
-        }
-        if (type === void 0) {
-            type = null;
-        }
-        if (parentName === void 0) {
-            parentName = null;
-        }
+        if (router === void 0) { router = null; }
+        if (type === void 0) { type = null; }
+        if (parentName === void 0) { parentName = null; }
         // If no router specified, there are no routers to add
         if (!router) {
             return;
@@ -1340,27 +1288,21 @@ var Manager = /** @class */function () {
         this.addRouter(__assign({}, router, { type: type, parentName: parentName }));
         var childRouters = router.routers || {};
         Object.keys(childRouters).forEach(function (childType) {
-            childRouters[childType].forEach(function (child) {
-                return _this.addRouters(child, childType, router.name);
-            });
+            childRouters[childType].forEach(function (child) { return _this.addRouters(child, childType, router.name); });
         });
     };
     Manager.prototype.addRouter = function (_a) {
-        var name = _a.name,
-            routeKey = _a.routeKey,
-            config = _a.config,
-            defaultShow = _a.defaultShow,
-            disableCaching = _a.disableCaching,
-            type = _a.type,
-            parentName = _a.parentName;
+        var name = _a.name, routeKey = _a.routeKey, config = _a.config, defaultShow = _a.defaultShow, disableCaching = _a.disableCaching, type = _a.type, parentName = _a.parentName;
         // create a router
         var router = this.createRouter({ name: name, routeKey: routeKey, config: config, defaultShow: defaultShow, disableCaching: disableCaching, type: type, parentName: parentName });
         // set as the parent router if this router has not parent and there is not yet a root
         if (!parentName && !this.rootRouter) {
             this.rootRouter = router;
-        } else if (!parentName && this.rootRouter) {
+        }
+        else if (!parentName && this.rootRouter) {
             throw new Error('Root router already exists. You likely forgot to specify a parentName');
-        } else {
+        }
+        else {
             // fetch the parent, and assign a ref of it to this router
             var parent_1 = this.routers[parentName];
             // TODO migrate code over to use <router>.addChildRouter method instead
@@ -1377,22 +1319,16 @@ var Manager = /** @class */function () {
     Manager.prototype.removeRouter = function (name) {
         var _this = this;
         var router = this.routers[name];
-        var parent = router.parent,
-            routers = router.routers,
-            type = router.type;
+        var parent = router.parent, routers = router.routers, type = router.type;
         // delete ref the parent (if any) stores
         if (parent) {
-            var routersToKeep = parent.routers[type].filter(function (child) {
-                return child.name !== name;
-            });
+            var routersToKeep = parent.routers[type].filter(function (child) { return child.name !== name; });
             parent.routers[type] = routersToKeep;
         }
         // recursively call this method for all children
         var childrenTypes = Object.keys(routers);
         childrenTypes.forEach(function (childType) {
-            routers[childType].forEach(function (childRouter) {
-                return _this.removeRouter(childRouter.name);
-            });
+            routers[childType].forEach(function (childRouter) { return _this.removeRouter(childRouter.name); });
         });
         // delete ref the manager stores
         delete this.routers[name];
@@ -1404,13 +1340,7 @@ var Manager = /** @class */function () {
     //   cacheState: boolean, default: null, is equal to true
     // }
     Manager.prototype.createRouter = function (_a) {
-        var name = _a.name,
-            routeKey = _a.routeKey,
-            config = _a.config,
-            defaultShow = _a.defaultShow,
-            disableCaching = _a.disableCaching,
-            type = _a.type,
-            parentName = _a.parentName;
+        var name = _a.name, routeKey = _a.routeKey, config = _a.config, defaultShow = _a.defaultShow, disableCaching = _a.disableCaching, type = _a.type, parentName = _a.parentName;
         // console.log("NAMEEEEE", name)
         var parent = this.routers[parentName];
         var initalParams = {
@@ -1425,7 +1355,7 @@ var Manager = /** @class */function () {
             defaultShow: defaultShow || false,
             disableCaching: disableCaching,
             getState: this.routerStateStore.createRouterStateGetter(name),
-            subscribe: this.routerStateStore.createRouterStateSubscriber(name)
+            subscribe: this.routerStateStore.createRouterStateSubscriber(name),
         };
         var routerClass = this.routerTypes[type] || this.routerTypes.scene;
         return new routerClass(initalParams);
@@ -1438,27 +1368,23 @@ var Manager = /** @class */function () {
     };
     Manager.prototype.calcNewRouterState = function (location, router, ctx, newState) {
         var _this = this;
-        if (ctx === void 0) {
-            ctx = {};
-        }
-        if (newState === void 0) {
-            newState = {};
-        }
+        if (ctx === void 0) { ctx = {}; }
+        if (newState === void 0) { newState = {}; }
         if (!router) {
             return;
         }
         // calc new router state from new location and existing state
         newState[router.name] = router.reducer(location, router, ctx);
         // recursive call all children to add their state
-        Object.keys(router.routers).forEach(function (type) {
-            router.routers[type].forEach(function (childRouter) {
-                return _this.calcNewRouterState(location, childRouter, ctx, newState);
-            });
+        Object.keys(router.routers)
+            .forEach(function (type) {
+            router.routers[type]
+                .forEach(function (childRouter) { return _this.calcNewRouterState(location, childRouter, ctx, newState); });
         });
         return newState;
     };
     return Manager;
-}();
+}());
 
 var index = {
     Manager: Manager,
@@ -1466,7 +1392,7 @@ var index = {
     NativeSerializedStore: NativeStore,
     BrowserSerializedStore: BrowserStore,
     serializer: serializer,
-    deserializer: deserializer
+    deserializer: deserializer,
 };
 
 export default index;
