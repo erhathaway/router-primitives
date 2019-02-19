@@ -435,7 +435,8 @@ All routers will by default rehydrate children routers back to how the chidlren 
 
 Release canidate is in PR: `architecture-update`
 
-- Incrementally add Types using TypeScript
+- Add Types using TypeScript
+- Add options param to location actions (esp. for replace vs push router history)
 - Add validations
   - templates
   - uniqueness of route keys
