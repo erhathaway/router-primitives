@@ -1,48 +1,34 @@
 import { NativeSerializedStore, BrowserSerializedStore } from './serializedState';
 import DefaultRouterStateStore from './routerState';
-import { RouterDeclaration, Router as RouterT, InputLocation, LocationActionContext, RouterAction, OutputLocation } from './types';
-declare type Init = {
-    routerTree?: RouterDeclaration;
+import { IRouterDeclaration, IRouter as RouterT } from './types';
+interface IInit {
+    routerTree?: IRouterDeclaration;
     serializedStateStore?: NativeSerializedStore | BrowserSerializedStore;
     routerStateStore?: DefaultRouterStateStore;
-};
+}
 export default class Manager {
-    serializedStateStore: Init['serializedStateStore'];
-    routerStateStore: Init['routerStateStore'];
+    private static setChildrenDefaults;
+    private static setCacheAndHide;
+    private static createActionWrapperFunction;
+    private static addLocationDefaults;
     routers: {
         [routerName: string]: RouterT;
     };
     rootRouter: RouterT;
-    routerTypes: {
-        [routerType: string]: RouterT;
-    };
-    constructor({ routerTree, serializedStateStore, routerStateStore }?: Init);
+    serializedStateStore: IInit['serializedStateStore'];
+    routerStateStore: IInit['routerStateStore'];
+    private routerTypes;
+    constructor({ routerTree, serializedStateStore, routerStateStore }?: IInit);
     /**
      * Adds the initial routers defined during initialization
      * @param {*} router
      *
      */
-    addRouters(router?: RouterDeclaration, type?: string, parentName?: string): void;
-    addRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName }: RouterDeclaration): void;
-    static setChildrenDefaults(location: InputLocation, router: RouterT, ctx: LocationActionContext): {
-        pathname: string[];
-        search: import("./types").InputSearch;
-        options: import("./types").Options;
-    };
-    static setCacheAndHide(location: InputLocation, router: RouterT, ctx?: LocationActionContext): InputLocation;
-    static createActionWrapperFunction(action: RouterAction, type: string): (existingLocation: OutputLocation, routerInstance?: any, ctx?: LocationActionContext) => InputLocation;
-    static addLocationDefaults(location: InputLocation, routerInstance: RouterT, ctx?: LocationActionContext): {
-        pathname: string[];
-        search: import("./types").InputSearch;
-        options: import("./types").Options;
-    };
-    createRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName }: RouterDeclaration): RouterT;
+    addRouters(router?: IRouterDeclaration, type?: string, parentName?: string): void;
+    addRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName }: IRouterDeclaration): void;
     removeRouter(name: string): void;
-    setNewRouterState(location: InputLocation): void;
-    calcNewRouterState(location: InputLocation, router: RouterT, ctx?: LocationActionContext, newState?: {
-        [routerName: string]: {};
-    }): {
-        [routerName: string]: {};
-    };
+    private createRouter;
+    private setNewRouterState;
+    private calcNewRouterState;
 }
 export {};

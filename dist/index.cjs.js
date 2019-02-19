@@ -509,12 +509,6 @@ var NativeStore = /** @class */function () {
         this.observers.push(fn);
     };
     // unsubscribeToStateChanges // TODO fill me in!
-    NativeStore.prototype.notifyObservers = function () {
-        var deserializedState = this.getState();
-        this.observers.forEach(function (fn) {
-            return fn(deserializedState);
-        });
-    };
     NativeStore.prototype.back = function () {
         this.go(-1);
     };
@@ -539,6 +533,12 @@ var NativeStore = /** @class */function () {
         }
         this.setState(this.getState(), { updateHistory: false });
     };
+    NativeStore.prototype.notifyObservers = function () {
+        var deserializedState = this.getState();
+        this.observers.forEach(function (fn) {
+            return fn(deserializedState);
+        });
+    };
     return NativeStore;
 }();
 
@@ -560,13 +560,6 @@ var BrowserStore = /** @class */function () {
             _this._monitorLocation();
         }, 100);
     }
-    BrowserStore.prototype._monitorLocation = function () {
-        var newLocation = window.location.href;
-        if (this.existingLocation !== newLocation) {
-            this.existingLocation = newLocation;
-            this.notifyObservers();
-        }
-    };
     // unserialized state = { pathname: [], search: {}, options: {} }
     // options = { updateHistory }
     BrowserStore.prototype.setState = function (unserializedLocation) {
@@ -578,12 +571,6 @@ var BrowserStore = /** @class */function () {
             window.history.pushState({ url: newState }, '', newState);
         }
         this.notifyObservers();
-    };
-    BrowserStore.prototype.notifyObservers = function () {
-        var deserializedState = this.getState();
-        this.observers.forEach(function (fn) {
-            return fn(deserializedState);
-        });
     };
     BrowserStore.prototype.getState = function () {
         var searchString = window.location.search || '';
@@ -601,6 +588,19 @@ var BrowserStore = /** @class */function () {
     };
     BrowserStore.prototype.go = function (historyChange) {
         window.history.go(historyChange);
+    };
+    BrowserStore.prototype._monitorLocation = function () {
+        var newLocation = window.location.href;
+        if (this.existingLocation !== newLocation) {
+            this.existingLocation = newLocation;
+            this.notifyObservers();
+        }
+    };
+    BrowserStore.prototype.notifyObservers = function () {
+        var deserializedState = this.getState();
+        this.observers.forEach(function (fn) {
+            return fn(deserializedState);
+        });
     };
     return BrowserStore;
 }();
@@ -824,7 +824,9 @@ var RouterBase = /** @class */function () {
     };
     Object.defineProperty(RouterBase.prototype, "pathLocation", {
         get: function get() {
-            if (!this.parent) return -1;
+            if (!this.parent) {
+                return -1;
+            }
             return 1 + this.parent.pathLocation;
         },
         enumerable: true,
@@ -852,7 +854,9 @@ var RouterBase = /** @class */function () {
         get: function get() {
             // if there is no parent, we are at the root. The root is by default a path router since
             // it represents the '/' in a pathname location
-            if (!this.parent) return true;
+            if (!this.parent) {
+                return true;
+            }
             // if this router was explicitly set to be a path router during config, return true
             if (this.config.isPathRouter && this.parent.isPathRouter) {
                 return true;
@@ -872,7 +876,9 @@ var RouterBase = /** @class */function () {
                         acc || r.config.isPathRouter === true
                     );
                 }, false);
-                if (isSiblingRouterExplictlyAPathRouter === false) return true;
+                if (isSiblingRouterExplictlyAPathRouter === false) {
+                    return true;
+                }
             } else if (this.type === 'data' && this.parent && this.parent.isPathRouter) {
                 // TODO FIX ME - causes stack overflow
                 // if (this.isPathRouter === false) return false;
@@ -913,39 +919,6 @@ var RouterBase = /** @class */function () {
         enumerable: true,
         configurable: true
     });
-    // TODO deprecate this method and remove tests
-    // return pathLocation cached data types
-    RouterBase.prototype.calcCachedLocation = function (globalState) {
-        if (globalState === void 0) {
-            globalState = null;
-        }
-        // reuse global state for efficiency if doing a recursive calculation
-        var routerState = globalState ? globalState[this.name].current : this.state;
-        if (this.isPathRouter) {
-            if (this.type === 'data') {
-                return { isPathData: true, pathLocation: this.pathLocation, value: routerState.data };
-            }
-            return { isPathData: true, pathLocation: this.pathLocation, value: routerState.visible };
-        }
-        // return queryParam cached data types
-        if (this.type === 'data') {
-            return { queryParam: this.routeKey, value: routerState.data };
-        }
-        if (this.type === 'stack') {
-            return { queryParam: this.routeKey, value: routerState.order };
-        }
-        return { queryParam: this.routeKey, value: routerState.visible };
-    };
-    // TODO deprecate this function and remove tests
-    RouterBase.joinLocationWithCachedLocation = function (location, cachedLocation) {
-        var newLocation = __assign({}, location);
-        if (cachedLocation.isPathData) {
-            newLocation.path[cachedLocation.pathLocation] = cachedLocation.value;
-        } else {
-            newLocation.search[cachedLocation.queryParam] = cachedLocation.value;
-        }
-        return newLocation;
-    };
     return RouterBase;
 }();
 
@@ -991,7 +964,6 @@ var reducer = function reducer(location, router, ctx) {
 };
 var scene = {
     actions: { show: show, hide: hide },
-    // state: defaultState,
     reducer: reducer
 };
 
@@ -1054,7 +1026,9 @@ var show$1 = function show(location, router, ctx) {
     return location;
 };
 var hide$1 = function hide(location, router, ctx) {
-    if (!router.parent) return location;
+    if (!router.parent) {
+        return location;
+    }
     var sortedKeys = getRouteKeyOrderings(router);
     // find index of this routers routeKey
     var index = sortedKeys.indexOf(router.routeKey);
@@ -1075,7 +1049,9 @@ var hide$1 = function hide(location, router, ctx) {
     return location;
 };
 var forward = function forward(location, router, ctx) {
-    if (!router.parent) return location;
+    if (!router.parent) {
+        return location;
+    }
     var sortedKeys = getRouteKeyOrderings(router);
     // find index of this routers routeKey
     var index = sortedKeys.indexOf(router.routeKey);
@@ -1099,7 +1075,9 @@ var forward = function forward(location, router, ctx) {
     return location;
 };
 var backward = function backward(location, router, ctx) {
-    if (!router.parent) return location;
+    if (!router.parent) {
+        return location;
+    }
     var sortedKeys = getRouteKeyOrderings(router);
     // find index of this routers routeKey
     var index = sortedKeys.indexOf(router.routeKey);
@@ -1128,7 +1106,9 @@ var toFront = function toFront(location, router, ctx) {
     return router.show(location, router, ctx);
 };
 var toBack = function toBack(location, router, ctx) {
-    if (!router.parent) return location;
+    if (!router.parent) {
+        return location;
+    }
     var sortedKeys = getRouteKeyOrderings(router);
     // find index of this routers routeKey
     var index = sortedKeys.indexOf(router.routeKey);
@@ -1154,13 +1134,13 @@ var reducer$1 = function reducer(location, router, ctx) {
     var value = location.search[router.routeKey];
     if (value) {
         return {
-            visible: true,
-            order: value
+            order: value,
+            visible: true
         };
     }
     return {
-        visible: false,
-        order: undefined
+        order: undefined,
+        visible: false
     };
     // if (router.isPathRouter) {
     //   newState['visible'] = location.pathname[router.pathLocation] === router.routeKey;
@@ -1171,17 +1151,16 @@ var reducer$1 = function reducer(location, router, ctx) {
 };
 var stack = {
     actions: { show: show$1, hide: hide$1, forward: forward, backward: backward, toFront: toFront, toBack: toBack },
-    // state: defaultState,
     reducer: reducer$1
 };
 
 // export { default as data } from './data';
 
-var capitalize = function capitalize(string) {
-    if (string === void 0) {
-        string = '';
+var capitalize = function capitalize(name) {
+    if (name === void 0) {
+        name = '';
     }
-    return string.charAt(0).toUpperCase() + string.slice(1);
+    return name.charAt(0).toUpperCase() + name.slice(1);
 };
 var Manager = /** @class */function () {
     function Manager(_a) {
@@ -1235,65 +1214,6 @@ var Manager = /** @class */function () {
         // subscribe to URL changes and update the router state when this happens
         this.serializedStateStore.subscribeToStateChanges(this.setNewRouterState.bind(this));
     }
-    /**
-     * Adds the initial routers defined during initialization
-     * @param {*} router
-     *
-     */
-    Manager.prototype.addRouters = function (router, type, parentName) {
-        var _this = this;
-        if (router === void 0) {
-            router = null;
-        }
-        if (type === void 0) {
-            type = null;
-        }
-        if (parentName === void 0) {
-            parentName = null;
-        }
-        // If no router specified, there are no routers to add
-        if (!router) {
-            return;
-        }
-        // The type is derived by the relationship with the parent.
-        //   Or has none, as is the case with the root router in essence
-        //   Below, we are deriving the type and calling the add function recursively by type
-        this.addRouter(__assign({}, router, { type: type, parentName: parentName }));
-        var childRouters = router.routers || {};
-        Object.keys(childRouters).forEach(function (childType) {
-            childRouters[childType].forEach(function (child) {
-                return _this.addRouters(child, childType, router.name);
-            });
-        });
-    };
-    Manager.prototype.addRouter = function (_a) {
-        var name = _a.name,
-            routeKey = _a.routeKey,
-            config = _a.config,
-            defaultShow = _a.defaultShow,
-            disableCaching = _a.disableCaching,
-            type = _a.type,
-            parentName = _a.parentName;
-        // create a router
-        var router = this.createRouter({ name: name, routeKey: routeKey, config: config, defaultShow: defaultShow, disableCaching: disableCaching, type: type, parentName: parentName });
-        // set as the parent router if this router has not parent and there is not yet a root
-        if (!parentName && !this.rootRouter) {
-            this.rootRouter = router;
-        } else if (!parentName && this.rootRouter) {
-            throw new Error('Root router already exists. You likely forgot to specify a parentName');
-        } else {
-            // fetch the parent, and assign a ref of it to this router
-            var parent_1 = this.routers[parentName];
-            // TODO migrate code over to use <router>.addChildRouter method instead
-            router.parent = parent_1;
-            // add ref of new router to the parent
-            var siblingTypes = parent_1.routers[type] || [];
-            siblingTypes.push(router);
-            parent_1.routers[type] = siblingTypes;
-        }
-        // add ref of new router to manager
-        this.routers[name] = router;
-    };
     Manager.setChildrenDefaults = function (location, router, ctx) {
         var newLocation = __assign({}, location);
         Object.keys(router.routers).forEach(function (routerType) {
@@ -1398,6 +1318,89 @@ var Manager = /** @class */function () {
         });
         return locationWithDefaults;
     };
+    /**
+     * Adds the initial routers defined during initialization
+     * @param {*} router
+     *
+     */
+    Manager.prototype.addRouters = function (router, type, parentName) {
+        var _this = this;
+        if (router === void 0) {
+            router = null;
+        }
+        if (type === void 0) {
+            type = null;
+        }
+        if (parentName === void 0) {
+            parentName = null;
+        }
+        // If no router specified, there are no routers to add
+        if (!router) {
+            return;
+        }
+        // The type is derived by the relationship with the parent.
+        //   Or has none, as is the case with the root router in essence
+        //   Below, we are deriving the type and calling the add function recursively by type
+        this.addRouter(__assign({}, router, { type: type, parentName: parentName }));
+        var childRouters = router.routers || {};
+        Object.keys(childRouters).forEach(function (childType) {
+            childRouters[childType].forEach(function (child) {
+                return _this.addRouters(child, childType, router.name);
+            });
+        });
+    };
+    Manager.prototype.addRouter = function (_a) {
+        var name = _a.name,
+            routeKey = _a.routeKey,
+            config = _a.config,
+            defaultShow = _a.defaultShow,
+            disableCaching = _a.disableCaching,
+            type = _a.type,
+            parentName = _a.parentName;
+        // create a router
+        var router = this.createRouter({ name: name, routeKey: routeKey, config: config, defaultShow: defaultShow, disableCaching: disableCaching, type: type, parentName: parentName });
+        // set as the parent router if this router has not parent and there is not yet a root
+        if (!parentName && !this.rootRouter) {
+            this.rootRouter = router;
+        } else if (!parentName && this.rootRouter) {
+            throw new Error('Root router already exists. You likely forgot to specify a parentName');
+        } else {
+            // fetch the parent, and assign a ref of it to this router
+            var parent_1 = this.routers[parentName];
+            // TODO migrate code over to use <router>.addChildRouter method instead
+            router.parent = parent_1;
+            // add ref of new router to the parent
+            var siblingTypes = parent_1.routers[type] || [];
+            siblingTypes.push(router);
+            parent_1.routers[type] = siblingTypes;
+        }
+        // add ref of new router to manager
+        this.routers[name] = router;
+    };
+    // removing a router will also unset all of its children
+    Manager.prototype.removeRouter = function (name) {
+        var _this = this;
+        var router = this.routers[name];
+        var parent = router.parent,
+            routers = router.routers,
+            type = router.type;
+        // delete ref the parent (if any) stores
+        if (parent) {
+            var routersToKeep = parent.routers[type].filter(function (child) {
+                return child.name !== name;
+            });
+            parent.routers[type] = routersToKeep;
+        }
+        // recursively call this method for all children
+        var childrenTypes = Object.keys(routers);
+        childrenTypes.forEach(function (childType) {
+            routers[childType].forEach(function (childRouter) {
+                return _this.removeRouter(childRouter.name);
+            });
+        });
+        // delete ref the manager stores
+        delete this.routers[name];
+    };
     // create router :specify
     // config = {
     //   routeKey: 'overrides name
@@ -1428,32 +1431,8 @@ var Manager = /** @class */function () {
             getState: this.routerStateStore.createRouterStateGetter(name),
             subscribe: this.routerStateStore.createRouterStateSubscriber(name)
         };
-        var RouterType = this.routerTypes[type] || this.routerTypes.scene;
-        return new RouterType(initalParams);
-    };
-    // removing a router will also unset all of its children
-    Manager.prototype.removeRouter = function (name) {
-        var _this = this;
-        var router = this.routers[name];
-        var parent = router.parent,
-            routers = router.routers,
-            type = router.type;
-        // delete ref the parent (if any) stores
-        if (parent) {
-            var routersToKeep = parent.routers[type].filter(function (child) {
-                return child.name !== name;
-            });
-            parent.routers[type] = routersToKeep;
-        }
-        // recursively call this method for all children
-        var childrenTypes = Object.keys(routers);
-        childrenTypes.forEach(function (childType) {
-            routers[childType].forEach(function (childRouter) {
-                return _this.removeRouter(childRouter.name);
-            });
-        });
-        // delete ref the manager stores
-        delete this.routers[name];
+        var routerClass = this.routerTypes[type] || this.routerTypes.scene;
+        return new routerClass(initalParams);
     };
     // location -> newState
     // newState -> routerStates :specify

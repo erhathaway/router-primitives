@@ -1,11 +1,11 @@
-import { RouterState, RouterCurrentState } from "./types";
-interface Store {
-    [key: string]: RouterState;
+import { IRouterState, IRouterCurrentState } from "./types";
+interface IStore {
+    [key: string]: IRouterState;
 }
-interface Config {
+interface IConfig {
     historySize: number;
 }
-declare type Observer = (state: RouterState) => any;
+declare type Observer = (state: IRouterState) => any;
 /**
  * The default router state store.
  * This store keeps track of each routers state which is derived from the current location
@@ -17,12 +17,10 @@ declare type Observer = (state: RouterState) => any;
  *   createRouterStateSubscriber
  */
 export default class DefaultRoutersStateStore {
-    store: Store;
-    config: Config;
-    observers: {
-        [key: string]: Observer[];
-    };
-    constructor(store?: Store, config?: Config);
+    private store;
+    private config;
+    private observers;
+    constructor(store?: IStore, config?: IConfig);
     /**
      * Sets the state of the router state store by adding to the history.
      * Adding state will completly overwrite existing state.
@@ -31,7 +29,7 @@ export default class DefaultRoutersStateStore {
      *   has changed in any way, callback will be fired off for the router.
      */
     setState(desiredRouterStates: {
-        [key: string]: RouterCurrentState;
+        [key: string]: IRouterCurrentState;
     }): void;
     /**
      * Returns a function which has a router name in closure scope.
@@ -47,6 +45,6 @@ export default class DefaultRoutersStateStore {
     /**
      * Returns the stores state for all routers
      */
-    getState(): Store;
+    getState(): IStore;
 }
 export {};

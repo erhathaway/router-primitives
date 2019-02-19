@@ -20,10 +20,10 @@ interface ISetStateOptions {
  * The default serialized state is a string for this store
  */
 export default class NativeStore {
+  public history: string[];
   private observers: StateObserver[];
   private config: INativeStoreConfig;
   private state?: string; // TODO remove state
-  private history: string[];
   private currentLocationInHistory: number;
 
   constructor(state?: string, config?: INativeStoreConfig) {

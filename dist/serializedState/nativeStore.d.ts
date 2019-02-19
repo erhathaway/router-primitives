@@ -1,14 +1,14 @@
 import deserializer from './deserializer';
 import serializer from './serializer';
-import { InputLocation } from '../types';
-declare type NativeStoreConfig = {
+import { IInputLocation } from '../types';
+interface INativeStoreConfig {
     serializer: typeof serializer;
     deserializer: typeof deserializer;
     historySize: number;
-};
+}
 declare type State = ReturnType<typeof deserializer>;
 declare type StateObserver = (state: State) => any;
-interface setStateOptions {
+interface ISetStateOptions {
     updateHistory?: boolean;
 }
 /**
@@ -18,18 +18,18 @@ interface setStateOptions {
  * The default serialized state is a string for this store
  */
 export default class NativeStore {
-    observers: StateObserver[];
-    config: NativeStoreConfig;
-    state?: string;
     history: string[];
-    currentLocationInHistory: number;
-    constructor(state?: string, config?: NativeStoreConfig);
-    setState(unserializedLocation: InputLocation, options?: setStateOptions): void;
-    getState(): import("../types").OutputLocation;
+    private observers;
+    private config;
+    private state?;
+    private currentLocationInHistory;
+    constructor(state?: string, config?: INativeStoreConfig);
+    setState(unserializedLocation: IInputLocation, options?: ISetStateOptions): void;
+    getState(): import("../types").IOutputLocation;
     subscribeToStateChanges(fn: StateObserver): void;
-    notifyObservers(): void;
     back(): void;
     forward(): void;
     go(historyChange: number): void;
+    private notifyObservers;
 }
 export {};

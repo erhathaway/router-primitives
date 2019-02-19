@@ -1,4 +1,4 @@
-import { OutputLocation } from "../types";
+import { IOutputLocation, IRouter } from "../types";
 declare type CacheValue = string | boolean;
 /**
  * Used to manipulate the router cache
@@ -7,12 +7,12 @@ declare type CacheValue = string | boolean;
  * cache when setting new state instead of a default value
  */
 declare class Cache {
-    _cacheStore?: CacheValue;
+    private _cacheStore?;
     constructor();
     readonly hasCache: boolean;
     readonly state: CacheValue;
     removeCache(): void;
     setCache(value: CacheValue): void;
-    setCacheFromLocation(location: OutputLocation, routerInstance: any): void;
+    setCacheFromLocation(location: IOutputLocation, routerInstance: IRouter): void;
 }
 export default Cache;

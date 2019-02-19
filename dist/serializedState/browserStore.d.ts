@@ -1,10 +1,10 @@
 import deserializer from './deserializer';
 import serializer from './serializer';
-import { OutputLocation, InputLocation } from '../types/index';
-declare type BrowserStoreConfig = {
+import { IOutputLocation, IInputLocation } from '../types/index';
+interface IBrowserStoreConfig {
     serializer: typeof serializer;
     deserializer: typeof deserializer;
-};
+}
 declare type State = ReturnType<typeof deserializer>;
 declare type StateObserver = (state: State) => any;
 /**
@@ -13,19 +13,19 @@ declare type StateObserver = (state: State) => any;
  * The default serialized state is the URL for this store
  */
 export default class BrowserStore {
-    observers: StateObserver[];
-    config: BrowserStoreConfig;
-    state: string;
-    existingLocation: string;
-    stateWatcher: ReturnType<typeof window.setInterval>;
-    constructor(state?: string, config?: BrowserStoreConfig);
-    _monitorLocation(): void;
-    setState(unserializedLocation: InputLocation): void;
-    notifyObservers(): void;
-    getState(): OutputLocation;
+    private observers;
+    private config;
+    private state;
+    private existingLocation;
+    private stateWatcher;
+    constructor(state?: string, config?: IBrowserStoreConfig);
+    setState(unserializedLocation: IInputLocation): void;
+    getState(): IOutputLocation;
     subscribeToStateChanges(fn: StateObserver): void;
     back(): void;
     forward(): void;
     go(historyChange: number): void;
+    private _monitorLocation;
+    private notifyObservers;
 }
 export {};

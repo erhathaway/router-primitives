@@ -1,6 +1,6 @@
-import { InputLocation, Options } from '../types/index';
-declare const serializer: (newLocation: InputLocation, oldLocation?: InputLocation) => {
+import { IInputLocation } from '../types/index';
+declare const serializer: (newLocation: IInputLocation, oldLocation?: IInputLocation) => {
     location: string;
-    options: Options;
+    options: import("../types").IOptions;
 };
 export default serializer;

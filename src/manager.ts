@@ -125,8 +125,8 @@ export default class Manager {
 
   public routers: { [routerName: string]: RouterT };
   public rootRouter: RouterT;
-  private serializedStateStore: IInit['serializedStateStore'];
-  private routerStateStore: IInit['routerStateStore'];
+  public serializedStateStore: IInit['serializedStateStore'];
+  public routerStateStore: IInit['routerStateStore'];
   private routerTypes: { [routerType: string]: RouterT };
 
   constructor({ routerTree, serializedStateStore, routerStateStore }: IInit = {}) {
