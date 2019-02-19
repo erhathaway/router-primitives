@@ -11,7 +11,7 @@ export interface IOutputSearch {
   [key: string]: string | string[] | undefined;
 }
 
-export interface IOptions {
+export interface ILocationOptions {
   replaceLocation?: boolean; // used to replace history location in URL
 };
 
@@ -20,12 +20,12 @@ type Pathname = string[];
 export interface IOutputLocation { 
   pathname: Pathname;
   search: IOutputSearch;
-  options: IOptions;
+  options: ILocationOptions;
 };
 export interface IInputLocation { 
   pathname: Pathname;
   search: IInputSearch;
-  options: IOptions;
+  options: ILocationOptions;
 };
 
 export interface ILocationActionContext {
@@ -40,7 +40,11 @@ export interface IRouter extends RouterBase {
   hide: RouterAction;
   reducer: RouterReducer;
 }
-export type RouterAction = (location?: IInputLocation, router?: IRouter, ctx?: { [key: string]: any }) => IInputLocation
+
+// at the moment these should be the same
+export type IRouterActionOptions = ILocationOptions;
+
+export type RouterAction = (options: IRouterActionOptions, location?: IInputLocation, router?: IRouter, ctx?: { [key: string]: any }) => IInputLocation
 export type RouterReducer = (location: IInputLocation, router: IRouter, ctx: { [key: string]: any }) => { [key: string]: any }
 
 export interface IRouterTemplate {
@@ -72,7 +76,6 @@ export interface IRouterState {
   type?: string;
   parentName?: string;
  }
-
 
 export interface IRouterConfig {
   routeKey?: string;

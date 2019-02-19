@@ -2,7 +2,7 @@ import { NativeSerializedStore, BrowserSerializedStore } from './serializedState
 import DefaultRouterStateStore from './routerState';
 import Router from './router/base';
 import { scene, stack } from './router/template';
-import { IRouterDeclaration, IRouter as RouterT, IRouterTemplate, IInputLocation, ILocationActionContext, RouterAction, IOutputLocation, IRouterInitParams } from './types';
+import { IRouterDeclaration, IRouter as RouterT, IRouterTemplate, IInputLocation, ILocationActionContext, RouterAction, IOutputLocation, IRouterInitParams, IRouterActionOptions } from './types';
 
 const capitalize = (name = '') => name.charAt(0).toUpperCase() + name.slice(1);
 
@@ -13,7 +13,7 @@ interface IInit {
 }
 
 export default class Manager {
-  private static setChildrenDefaults(location: IInputLocation, router: RouterT, ctx: ILocationActionContext) {
+  private static setChildrenDefaults(options: IRouterActionOptions, location: IInputLocation, router: RouterT, ctx: ILocationActionContext) {
     let newLocation = { ...location };
     Object.keys(router.routers).forEach((routerType) => {
       router.routers[routerType].forEach((child) => {
@@ -26,7 +26,7 @@ export default class Manager {
           child.cache.removeCache();
 
           const newContext = { ...ctx, addingDefaults: true };
-          newLocation = child.show(newLocation, child, newContext);
+          newLocation = child.show(options, newLocation, child, newContext);
         }
       });
     });
@@ -34,7 +34,7 @@ export default class Manager {
     return newLocation;
   }
 
-  private static setCacheAndHide(location: IInputLocation, router: RouterT, ctx: ILocationActionContext = {}) {
+  private static setCacheAndHide(options: IRouterActionOptions, location: IInputLocation, router: RouterT, ctx: ILocationActionContext = {}) {
     let newLocation = location;
     let disableCaching: boolean | undefined;
 
@@ -51,7 +51,7 @@ export default class Manager {
         ctx.disableCaching = disableCaching;
 
         // call location action
-        newLocation = child.hide(location, child, ctx);
+        newLocation = child.hide(options, location, child, ctx);
       });
     });
 
@@ -65,19 +65,19 @@ export default class Manager {
 
   // wrapper around action function
   private static createActionWrapperFunction(action: RouterAction, type: string) {
-    function actionWrapper(existingLocation: IOutputLocation, routerInstance = this, ctx: ILocationActionContext = {}) {
+    function actionWrapper(options: IRouterActionOptions, existingLocation: IOutputLocation, routerInstance = this, ctx: ILocationActionContext = {}) {
       // if called from another action wrapper
-      let updatedLocation;
+      let updatedLocation: IInputLocation;
       if (existingLocation) {
         // set cache before location changes b/c cache info is derived from location path
         if (type === 'hide') {
-          updatedLocation = Manager.setCacheAndHide(existingLocation, routerInstance, ctx);
+          updatedLocation = Manager.setCacheAndHide(options, existingLocation, routerInstance, ctx);
         }
 
-        updatedLocation = action(existingLocation, routerInstance, ctx);
+        updatedLocation = action(options, existingLocation, routerInstance, ctx);
 
         if (type === 'show') { // add location defaults from children
-          updatedLocation = Manager.setChildrenDefaults(updatedLocation, routerInstance, ctx);
+          updatedLocation = Manager.setChildrenDefaults(options, updatedLocation, routerInstance, ctx);
         }
 
         return updatedLocation;
@@ -88,18 +88,21 @@ export default class Manager {
 
       // set cache before location changes b/c cache info is derived from location path
       if (type === 'hide') {
-        updatedLocation = Manager.setCacheAndHide(updatedLocation, routerInstance, ctx);
+        updatedLocation = Manager.setCacheAndHide(options, updatedLocation, routerInstance, ctx);
       }
 
-      updatedLocation = action(updatedLocation, routerInstance, ctx);
+      updatedLocation = action(options, updatedLocation, routerInstance, ctx);
 
       if (type === 'hide' && routerInstance.state.visible === true) {
         routerInstance.cache.setCache(false);
       }
 
       if (type === 'show') { // add location defaults from children
-        updatedLocation = Manager.setChildrenDefaults(updatedLocation, routerInstance, ctx);
+        updatedLocation = Manager.setChildrenDefaults(options, updatedLocation, routerInstance, ctx);
       }
+
+      // add user options to new location options
+      updatedLocation.options = { ...updatedLocation.options, ...options };
 
       // set serialized state
       this.manager.serializedStateStore.setState(updatedLocation);
@@ -108,7 +111,7 @@ export default class Manager {
     return actionWrapper;
   }
 
-  private static addLocationDefaults(location: IInputLocation, routerInstance: RouterT, ctx: ILocationActionContext = {}) {
+  private static addLocationDefaults(options: IRouterActionOptions, location: IInputLocation, routerInstance: RouterT, ctx: ILocationActionContext = {}) {
     // TODO validate default action names are on type
     let locationWithDefaults = { ...location };
 
@@ -116,7 +119,7 @@ export default class Manager {
       routerInstance.routers[type].forEach((router) => {
         if (router.config.defaultShow || false) {
           const newContext = { ...ctx, addingDefaults: true };
-          locationWithDefaults = router.show(locationWithDefaults, router, newContext);
+          locationWithDefaults = router.show(options, locationWithDefaults, router, newContext);
         }
       });
     });

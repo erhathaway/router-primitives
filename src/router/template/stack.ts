@@ -32,7 +32,7 @@ function getRouteKeyOrderings(router: IRouter) {
   return sortedKeys;
 }
 
-const show: RouterAction = (location, router, ctx) => {
+const show: RouterAction = (options, location, router, ctx) => {
   if (!router.parent) { return location; }
 
   const sortedKeys = getRouteKeyOrderings(router);
@@ -59,7 +59,7 @@ const show: RouterAction = (location, router, ctx) => {
   return location;
 };
 
-const hide: RouterAction = (location, router, ctx) => {
+const hide: RouterAction = (options, location, router, ctx) => {
   if (!router.parent) { return location };
 
   const sortedKeys = getRouteKeyOrderings(router);
@@ -88,7 +88,7 @@ const hide: RouterAction = (location, router, ctx) => {
   return location;
 };
 
-const forward: RouterAction = (location, router, ctx) => {
+const forward: RouterAction = (options, location, router, ctx) => {
   if (!router.parent) { return location };
 
   const sortedKeys = getRouteKeyOrderings(router);
@@ -122,7 +122,7 @@ const forward: RouterAction = (location, router, ctx) => {
   return location;
 }
 
-const backward: RouterAction = (location, router, ctx) => {
+const backward: RouterAction = (options, location, router, ctx) => {
   if (!router.parent) { return location };
 
   const sortedKeys = getRouteKeyOrderings(router);
@@ -156,13 +156,13 @@ const backward: RouterAction = (location, router, ctx) => {
   return location;
 }
 
-const toFront: RouterAction = (location, router, ctx) => {
+const toFront: RouterAction = (options, location, router, ctx) => {
   // const newLocation = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
-  return router.show(location, router, ctx);
+  return router.show(options, location, router, ctx);
 }
 
-const toBack: RouterAction = (location, router, ctx) => {
+const toBack: RouterAction = (options, location, router, ctx) => {
   if (!router.parent) { return location };
 
   const sortedKeys = getRouteKeyOrderings(router);

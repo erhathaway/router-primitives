@@ -1,9 +1,9 @@
 import { RouterAction, RouterReducer } from "../../types";
 
-const show: RouterAction = (location, router, ctx = {}) => {
+const show: RouterAction = (options, location, router, ctx = {}) => {
   // hide sibling routers
   location = router.siblings.reduce((acc, s) => { 
-    return s.hide(acc, s, ctx);
+    return s.hide(options, acc, s, ctx);
   }, location);
 
   if (router.isPathRouter) {
@@ -19,12 +19,12 @@ const show: RouterAction = (location, router, ctx = {}) => {
   }
 
   // add defaults for child routers
-  // location = router.constructor.addLocationDefaults(location, router, ctx);
+  // location = router.constructor.addLocationDefaults(options, location, router, ctx);
 
   return location;
 };
 
-const hide: RouterAction = (location, router, ctx) => {
+const hide: RouterAction = (options, location, router, ctx) => {
   if (router.isPathRouter) {
     location.pathname = location.pathname.slice(0, router.pathLocation);
   } else {
