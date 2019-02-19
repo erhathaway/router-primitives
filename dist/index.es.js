@@ -743,7 +743,7 @@ var Cache = /** @class */ (function () {
 
 var RouterBase = /** @class */ (function () {
     function RouterBase(init) {
-        var name = init.name, config = init.config, type = init.type, manager = init.manager, parent = init.parent, routers = init.routers, root = init.root, defaultShow = init.defaultShow, disableCaching = init.disableCaching, getState = init.getState, subscribe = init.subscribe;
+        var name = init.name, config = init.config, type = init.type, manager = init.manager, parent = init.parent, routers = init.routers, root = init.root, defaultShow = init.defaultShow, getState = init.getState, subscribe = init.subscribe;
         if (!name || !type || !manager) {
             throw new Error('Missing required kwargs: name, type, and/or manager');
         }
@@ -763,7 +763,7 @@ var RouterBase = /** @class */ (function () {
         this.subscribe = subscribe;
         // default actions to call when immediate parent visibility changes from hidden -> visible
         this.defaultShow = defaultShow || false;
-        this.disableCaching = disableCaching;
+        // this.disableCaching = disableCaching;
         // store the routers location data for rehydration
         this.cache = new Cache();
     }
@@ -774,14 +774,10 @@ var RouterBase = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(RouterBase.prototype, "shouldStoreLocationMutationInHistory", {
-        get: function () {
-            return this.config.shouldStoreLocationMutationInHistory;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(RouterBase.prototype, "siblings", {
+        // get shouldStoreLocationMutationInHistory() {
+        // return this.config.shouldStoreLocationMutationInHistory;
+        // }
         get: function () {
             var _this = this;
             return this.parent.routers[this.type].filter(function (r) { return r.name !== _this.name; });
@@ -1197,8 +1193,8 @@ var Manager = /** @class */ (function () {
         var newLocation = location;
         var disableCaching;
         // figure out if caching should occur
-        if (router.disableCaching !== undefined) {
-            disableCaching = router.disableCaching;
+        if (router.config.disableCaching !== undefined) {
+            disableCaching = router.config.disableCaching;
         }
         else {
             disableCaching = ctx.disableCaching || false;
@@ -1292,9 +1288,9 @@ var Manager = /** @class */ (function () {
         });
     };
     Manager.prototype.addRouter = function (_a) {
-        var name = _a.name, routeKey = _a.routeKey, config = _a.config, defaultShow = _a.defaultShow, disableCaching = _a.disableCaching, type = _a.type, parentName = _a.parentName;
+        var name = _a.name, routeKey = _a.routeKey, config = _a.config, defaultShow = _a.defaultShow, type = _a.type, parentName = _a.parentName;
         // create a router
-        var router = this.createRouter({ name: name, routeKey: routeKey, config: config, defaultShow: defaultShow, disableCaching: disableCaching, type: type, parentName: parentName });
+        var router = this.createRouter({ name: name, routeKey: routeKey, config: config, defaultShow: defaultShow, type: type, parentName: parentName });
         // set as the parent router if this router has not parent and there is not yet a root
         if (!parentName && !this.rootRouter) {
             this.rootRouter = router;
@@ -1340,7 +1336,7 @@ var Manager = /** @class */ (function () {
     //   cacheState: boolean, default: null, is equal to true
     // }
     Manager.prototype.createRouter = function (_a) {
-        var name = _a.name, routeKey = _a.routeKey, config = _a.config, defaultShow = _a.defaultShow, disableCaching = _a.disableCaching, type = _a.type, parentName = _a.parentName;
+        var name = _a.name, routeKey = _a.routeKey, config = _a.config, defaultShow = _a.defaultShow, type = _a.type, parentName = _a.parentName;
         // console.log("NAMEEEEE", name)
         var parent = this.routers[parentName];
         var initalParams = {
@@ -1353,7 +1349,6 @@ var Manager = /** @class */ (function () {
             manager: this,
             root: this.rootRouter,
             defaultShow: defaultShow || false,
-            disableCaching: disableCaching,
             getState: this.routerStateStore.createRouterStateGetter(name),
             subscribe: this.routerStateStore.createRouterStateSubscriber(name),
         };

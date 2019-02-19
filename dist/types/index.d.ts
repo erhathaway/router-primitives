@@ -68,10 +68,9 @@ export interface IRouterDeclaration {
     };
     routeKey?: string;
     config?: {
-        [key: string]: boolean;
+        disableCaching?: boolean;
     };
     defaultShow?: boolean;
-    disableCaching?: boolean;
     type?: string;
     parentName?: string;
 }

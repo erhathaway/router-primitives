@@ -2,8 +2,8 @@ import Cache from './cache';
 import { IRouterState, IRouter, IRouterCurrentState, RouterHistoryState } from '../types';
 interface IConfig {
     routeKey?: string;
-    shouldStoreLocationMutationInHistory?: boolean;
     isPathRouter?: boolean;
+    disableCaching?: boolean;
 }
 interface IChildRouters {
     [key: string]: IRouter[];
@@ -18,7 +18,6 @@ interface InitParams {
     routers: IChildRouters;
     root: IRouter;
     defaultShow?: boolean;
-    disableCaching?: boolean;
     getState: () => IRouterState;
     subscribe: (observer: Observer) => void;
 }
@@ -33,11 +32,9 @@ export default class RouterBase {
     subscribe: InitParams['subscribe'];
     config: InitParams['config'];
     defaultShow: InitParams['defaultShow'];
-    disableCaching: InitParams['disableCaching'];
     cache: Cache;
     constructor(init: InitParams);
     readonly routeKey: string;
-    readonly shouldStoreLocationMutationInHistory: boolean;
     readonly siblings: IRouter[];
     getNeighborsByType(type: string): IRouter[];
     readonly pathLocation: number;

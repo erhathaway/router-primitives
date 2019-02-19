@@ -2,7 +2,7 @@ import { NativeSerializedStore, BrowserSerializedStore } from './serializedState
 import DefaultRouterStateStore from './routerState';
 import Router from './router/base';
 import { scene, stack } from './router/template';
-import { IRouterDeclaration, IRouter as RouterT, IRouterTemplate, IInputLocation, ILocationActionContext, RouterAction, IOutputLocation } from './types';
+import { IRouterDeclaration, IRouter as RouterT, IRouterTemplate, IInputLocation, ILocationActionContext, RouterAction, IOutputLocation, IRouterInitParams } from './types';
 
 const capitalize = (name = '') => name.charAt(0).toUpperCase() + name.slice(1);
 
@@ -21,7 +21,7 @@ export default class Manager {
         if (child.cache.state === false) { return; }
 
         // if there is a cache state or a default visibility, show the router
-        if (child.defaultShow || child.cache.state === true) {
+        if (child.config.defaultShow || child.cache.state === true) {
           // the cache has been 'used' so remove it
           child.cache.removeCache();
 
@@ -39,8 +39,8 @@ export default class Manager {
     let disableCaching: boolean | undefined;
 
     // figure out if caching should occur
-    if (router.disableCaching !== undefined) {
-      disableCaching = router.disableCaching;
+    if (router.config.disableCaching !== undefined) {
+      disableCaching = router.config.disableCaching;
     } else {
       disableCaching = ctx.disableCaching || false;
     }
@@ -114,7 +114,7 @@ export default class Manager {
 
     Object.keys(routerInstance.routers).forEach((type) => {
       routerInstance.routers[type].forEach((router) => {
-        if (router.defaultShow || false) {
+        if (router.config.defaultShow || false) {
           const newContext = { ...ctx, addingDefaults: true };
           locationWithDefaults = router.show(locationWithDefaults, router, newContext);
         }
@@ -203,14 +203,22 @@ export default class Manager {
   }
 
 
-  public addRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName }: IRouterDeclaration) {
+  public addRouter({ name, routeKey, disableCaching, defaultShow, type, parentName }: IRouterDeclaration) {
+    const config = {
+      disableCaching,
+      defaultShow: defaultShow || false,
+      routeKey,
+    };
+    
     // create a router
-    const router = this.createRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName });
+    const router = this.createRouter({ name, config, type, parentName });
     // set as the parent router if this router has not parent and there is not yet a root
     if (!parentName && !this.rootRouter) {
       this.rootRouter = router;
     } else if (!parentName && this.rootRouter) {
       throw new Error('Root router already exists. You likely forgot to specify a parentName');
+    } else if (this.routers[parentName] === undefined) {
+      throw new Error('Parent of to be created router not found');
     } else {
       // fetch the parent, and assign a ref of it to this router
       const parent = this.routers[parentName];
@@ -254,21 +262,20 @@ export default class Manager {
   //   mutateExistingLocation: boolean, default: false
   //   cacheState: boolean, default: null, is equal to true
   // }
-  private createRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName }: IRouterDeclaration) {
+  private createRouter({ name, config, type, parentName }: IRouterInitParams) {
     // console.log("NAMEEEEE", name)
     const parent = this.routers[parentName];
 
     const initalParams = {
       name,
       // routeKey,
-      config: { ...config, routeKey },
+      config: { ...config },
       type: type || 'scene', // make root routers a scene router TODO make root router an empty template
       parent,
       routers: {},
       manager: this,
       root: this.rootRouter,
-      defaultShow: defaultShow || false,
-      disableCaching,
+      // defaultShow: defaultShow || false,
       getState: this.routerStateStore.createRouterStateGetter(name),
       subscribe: this.routerStateStore.createRouterStateSubscriber(name),
       // childCacheStore: this.childCacheStore,

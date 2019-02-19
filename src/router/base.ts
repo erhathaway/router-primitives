@@ -1,11 +1,6 @@
 import Cache from './cache';
-import { IRouterState, IRouter, IRouterCurrentState, RouterHistoryState } from '../types';
+import { IRouterState, IRouter, IRouterConfig, IRouterCurrentState, RouterHistoryState } from '../types';
 
-interface IConfig {
-  routeKey?: string;
-  shouldStoreLocationMutationInHistory?: boolean;
-  isPathRouter?: boolean;
-}
 
 interface IChildRouters {
   [key: string]: IRouter[]
@@ -17,12 +12,10 @@ interface InitParams {
   name: string;
   type: string;
   manager: any; // TODO replace once manager has a type def
-  config: IConfig;
+  config: IRouterConfig;
   parent: IRouter;
   routers: IChildRouters;
   root: IRouter;
-  defaultShow?: boolean; // TODO move into config
-  disableCaching?: boolean; // TODO move into config
   getState: () => IRouterState;
   subscribe: (observer: Observer) => void;
 }
@@ -37,21 +30,20 @@ export default class RouterBase {
   public getState: InitParams['getState'];
   public subscribe: InitParams['subscribe'];
   public config: InitParams['config'];
-  public defaultShow: InitParams['defaultShow'];
-  public disableCaching: InitParams['disableCaching'];
   public cache: Cache;
 
 
   constructor(init: InitParams) {
-    const { name, config, type, manager, parent, routers, root, defaultShow, disableCaching, getState, subscribe } = init;
+    const { name, config, type, manager, parent, routers, root, getState, subscribe } = init;
 
-    if (!name || !type || !manager) { throw new Error('Missing required kwargs: name, type, and/or manager'); }
     // required
-    // console.log("HEREEE", this)
+    if (!name || !type || !manager) { throw new Error('Missing required kwargs: name, type, and/or manager'); }
+    
     this.name = name;
     this.config = config || {};
+    if (this.config.defaultShow === undefined) { this.config.defaultShow = false };
+
     this.type = type;
-    // this.actionNames = []; // used to map over the actions and replace with the actionHandler closure
     this.manager = manager;
 
     // optional
@@ -63,20 +55,12 @@ export default class RouterBase {
     this.getState = getState;
     this.subscribe = subscribe;
 
-    // default actions to call when immediate parent visibility changes from hidden -> visible
-    this.defaultShow = defaultShow || false;
-    this.disableCaching = disableCaching;
-
     // store the routers location data for rehydration
     this.cache = new Cache();
   }
 
   get routeKey() {
     return this.config.routeKey || this.name;
-  }
-
-  get shouldStoreLocationMutationInHistory() {
-    return this.config.shouldStoreLocationMutationInHistory;
   }
 
   get siblings() {

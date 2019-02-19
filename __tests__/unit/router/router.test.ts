@@ -39,17 +39,17 @@ describe('Router', () => {
 
   describe('Default action', () => {
     it('Can be set', () => {
-      const mockInit = generateMockInit({}, { defaultShow: true });
+      const mockInit = generateMockInit({}, { config: { defaultShow: true }} );
       const router = new (Router as any)(mockInit);
-      expect(router.defaultShow).toBe(true);
+      expect(router.config.defaultShow).toBe(true);
     });
   });
 
   describe('Caching', () => {
     it('Can be disabled', () => {
-      const mockInit = generateMockInit({}, { disableCaching: true });
+      const mockInit = generateMockInit({}, { config: { disableCaching: true }});
       const router = new (Router as any)(mockInit);
-      expect(router.disableCaching).toBe(true);
+      expect(router.config.disableCaching).toBe(true);
     });
   });
 

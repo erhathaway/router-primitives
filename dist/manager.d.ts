@@ -25,7 +25,7 @@ export default class Manager {
      *
      */
     addRouters(router?: IRouterDeclaration, type?: string, parentName?: string): void;
-    addRouter({ name, routeKey, config, defaultShow, disableCaching, type, parentName }: IRouterDeclaration): void;
+    addRouter({ name, routeKey, config, defaultShow, type, parentName }: IRouterDeclaration): void;
     removeRouter(name: string): void;
     private createRouter;
     private setNewRouterState;
