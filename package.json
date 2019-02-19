@@ -9,7 +9,8 @@
     "dist"
   ],
   "scripts": {
-    "test": "BABEL_ENV=test jest",
+    "test": "BABEL_ENV=test jest --watch",
+    "lint": "tslint --project ./tsconfig.json",
     "build": "BABEL_ENV=prod rollup -c",
     "watch": "BABEL_ENV=prod rollup -cw",
     "start": "watch"
@@ -53,6 +54,7 @@
     "flow-bin": "^0.82.0",
     "jest": "^23.1.0",
     "mobx": "^5.5.0",
+    "prettier": "^1.16.4",
     "rollup": "^1.1.2",
     "rollup-plugin-babel": "^3.0.7",
     "rollup-plugin-babel-minify": "^6.1.1",
@@ -63,6 +65,8 @@
     "rollup-watch": "^4.3.1",
     "ts-jest": "^23.10.5",
     "tslib": "^1.9.3",
+    "tslint": "^5.12.1",
+    "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.3.3"
   },
   "dependencies": {

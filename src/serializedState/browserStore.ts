@@ -2,10 +2,10 @@ import deserializer from './deserializer';
 import serializer from './serializer';
 import { OutputLocation, InputLocation } from '../types/index';
 
-type BrowserStoreConfig = {
-  serializer: typeof serializer,
-  deserializer: typeof deserializer,
-}
+interface IBrowserStoreConfig {
+  serializer: typeof serializer;
+  deserializer: typeof deserializer;
+};
 type State = ReturnType<typeof deserializer>;
 type StateObserver = (state: State) => any;
 
@@ -15,13 +15,13 @@ type StateObserver = (state: State) => any;
  * The default serialized state is the URL for this store
  */
 export default class BrowserStore {
-  observers: StateObserver[]
-  config: BrowserStoreConfig
-  state: string; // TODO remove state
-  existingLocation: string;
-  stateWatcher: ReturnType<typeof window.setInterval>
+  private observers: StateObserver[]
+  private config: IBrowserStoreConfig
+  private state: string; // TODO remove state
+  private existingLocation: string;
+  private stateWatcher: ReturnType<typeof window.setInterval>
 
-  constructor(state?: string, config?: BrowserStoreConfig) {
+  constructor(state?: string, config?: IBrowserStoreConfig) {
     this.observers = [];
     this.config = config || { serializer, deserializer };
 
@@ -35,17 +35,9 @@ export default class BrowserStore {
     }, 100);
   }
 
-  _monitorLocation() {
-    const newLocation = (window.location.href);
-    if (this.existingLocation !== newLocation) {
-      this.existingLocation = newLocation;
-      this.notifyObservers();
-    }
-  }
-
   // unserialized state = { pathname: [], search: {}, options: {} }
   // options = { updateHistory }
-  setState(unserializedLocation: InputLocation) {
+  public setState(unserializedLocation: InputLocation) {
     const oldUnserializedLocation = this.getState();
     const { location: newState } = this.config.serializer(unserializedLocation, oldUnserializedLocation);
 
@@ -57,29 +49,38 @@ export default class BrowserStore {
 
     this.notifyObservers();
   }
-
-  notifyObservers() {
-    const deserializedState = this.getState();
-    this.observers.forEach(fn => fn(deserializedState));
-  }
-
-  getState(): OutputLocation {
+  
+  public getState(): OutputLocation {
     const searchString = window.location.search || '';
     const pathnameString = window.location.pathname || '';
     return this.config.deserializer(pathnameString + searchString);
   }
 
-  subscribeToStateChanges(fn: StateObserver) { this.observers.push(fn); }
+  public subscribeToStateChanges(fn: StateObserver) { this.observers.push(fn); }
 
-  back() {
+  public back() {
     window.history.back();
   }
 
-  forward() {
+  public forward() {
     window.history.forward();
   }
 
-  go(historyChange: number) {
+  public go(historyChange: number) {
     window.history.go(historyChange);
+  }
+  
+  private _monitorLocation() {
+    const newLocation = (window.location.href);
+    if (this.existingLocation !== newLocation) {
+      this.existingLocation = newLocation;
+      this.notifyObservers();
+    }
+  }
+
+
+  private notifyObservers() {
+    const deserializedState = this.getState();
+    this.observers.forEach(fn => fn(deserializedState));
   }
 }

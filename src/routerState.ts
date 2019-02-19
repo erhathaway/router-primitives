@@ -1,14 +1,14 @@
-import { RouterState, RouterCurrentState, RouterHistoryState } from "./types";
+import { IRouterState, IRouterCurrentState, RouterHistoryState } from "./types";
 
-interface Store {
-  [key: string]: RouterState;
+interface IStore {
+  [key: string]: IRouterState;
 }
 
-interface Config {
+interface IConfig {
   historySize: number;
 }
 
-type Observer = (state: RouterState) => any;
+type Observer = (state: IRouterState) => any;
 
 /**
  * The default router state store.
@@ -21,11 +21,11 @@ type Observer = (state: RouterState) => any;
  *   createRouterStateSubscriber
  */
 export default class DefaultRoutersStateStore {
-  store: Store;
-  config: Config;
-  observers: { [key: string]: Observer[] }
+  private store: IStore;
+  private config: IConfig;
+  private observers: { [key: string]: Observer[] }
 
-  constructor(store?: Store, config: Config = { historySize: 2 }) {
+  constructor(store?: IStore, config: IConfig = { historySize: 2 }) {
     this.store = store || {};
     this.config = config;
     this.observers = {}; // key is routerName
@@ -38,7 +38,7 @@ export default class DefaultRoutersStateStore {
    *   the router callbacks wont be called for this router. Otherwise, if the state
    *   has changed in any way, callback will be fired off for the router.
    */
-  setState(desiredRouterStates: { [key: string]: RouterCurrentState }) {
+  public setState(desiredRouterStates: { [key: string]: IRouterCurrentState }) {
     const routerNames = Object.keys(desiredRouterStates);
     // Keeps track of which routers have new state.
     // Used to notify observers of new state changes on a router by router level
@@ -86,7 +86,7 @@ export default class DefaultRoutersStateStore {
    * Returns a function which has a router name in closure scope.
    * The returned function is used for getting the router store state for a specific router.
    */
-  createRouterStateGetter(routerName: string) {
+  public createRouterStateGetter(routerName: string) {
     return () => this.store[routerName] || {};
   }
 
@@ -95,7 +95,7 @@ export default class DefaultRoutersStateStore {
    * The returned function is used subscribe observers to changes in
    *   a single routers state.
    */
-  createRouterStateSubscriber(routerName: string) {
+  public createRouterStateSubscriber(routerName: string) {
     return (fn: Observer) => {
       if (Array.isArray(this.observers[routerName])) {
         this.observers[routerName].push(fn);
@@ -108,5 +108,5 @@ export default class DefaultRoutersStateStore {
   /**
    * Returns the stores state for all routers
    */
-  getState() { return this.store; }
+  public getState() { return this.store; }
 }

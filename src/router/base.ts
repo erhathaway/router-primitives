@@ -1,45 +1,57 @@
 import Cache from './cache';
-import { RouterState, Router, RouterCurrentState, RouterHistoryState } from '../types';
+import { IRouterState, IRouter, IRouterCurrentState, RouterHistoryState } from '../types';
 
-interface Config {
+interface IConfig {
   routeKey?: string;
   shouldStoreLocationMutationInHistory?: boolean;
   isPathRouter?: boolean;
 }
 
-interface ChildRouters {
-  [key: string]: Router[]
+interface IChildRouters {
+  [key: string]: IRouter[]
 }
 
-type Observer = (state: RouterState) => any;
+type Observer = (state: IRouterState) => any;
 
 interface InitParams {
   name: string;
   type: string;
   manager: any; // TODO replace once manager has a type def
-  config: Config;
-  parent: Router;
-  routers: ChildRouters;
-  root: Router;
+  config: IConfig;
+  parent: IRouter;
+  routers: IChildRouters;
+  root: IRouter;
   defaultShow?: boolean; // TODO move into config
   disableCaching?: boolean; // TODO move into config
-  getState: () => RouterState;
+  getState: () => IRouterState;
   subscribe: (observer: Observer) => void;
 }
 
 export default class RouterBase {
-  name: InitParams['name'];
-  config: InitParams['config'];
-  type: InitParams['type'];
-  manager: InitParams['manager'];
-  parent: InitParams['parent'];
-  routers: InitParams['routers'];
-  root: InitParams['root'];
-  getState: InitParams['getState'];
-  subscribe: InitParams['subscribe'];
-  defaultShow: InitParams['defaultShow'];
-  disableCaching: InitParams['disableCaching'];
-  cache: Cache;
+  // TODO deprecate this function and remove tests
+  private static joinLocationWithCachedLocation(location: any, cachedLocation: any) {
+    const newLocation = { ...location };
+    if (cachedLocation.isPathData) {
+      newLocation.path[cachedLocation.pathLocation] = cachedLocation.value;
+    } else {
+      newLocation.search[cachedLocation.queryParam] = cachedLocation.value;
+    }
+    return newLocation;
+  }
+
+  public name: InitParams['name'];
+  public type: InitParams['type'];
+  public manager: InitParams['manager'];
+  public parent: InitParams['parent'];
+  public routers: InitParams['routers'];
+  public root: InitParams['root'];
+  public getState: InitParams['getState'];
+  public subscribe: InitParams['subscribe'];
+  public config: InitParams['config'];
+  public defaultShow: InitParams['defaultShow'];
+  public disableCaching: InitParams['disableCaching'];
+  public cache: Cache;
+
 
   constructor(init: InitParams) {
     const { name, config, type, manager, parent, routers, root, defaultShow, disableCaching, getState, subscribe } = init;
@@ -82,7 +94,7 @@ export default class RouterBase {
     return this.parent.routers[this.type].filter(r => r.name !== this.name);
   }
 
-  getNeighborsByType(type: string): Router[] {
+  public getNeighborsByType(type: string): IRouter[] {
     if (this.parent && this.parent.routers) {
       return this.parent.routers[type] || [];
     }
@@ -90,7 +102,7 @@ export default class RouterBase {
   }
 
   get pathLocation(): number {
-    if (!this.parent) return -1;
+    if (!this.parent) { return -1 };
     return 1 + this.parent.pathLocation;
   }
 
@@ -100,20 +112,20 @@ export default class RouterBase {
 
   // TODO Remove testing dependency - this shouldn't be used since it bypasses the manager
   // Create utility function instead to orchestrate relationships between routers
-  _addChildRouter(router: Router) {
+  private _addChildRouter(router: IRouter) {
     if (!router.type) { throw new Error('Router is missing type'); }
 
-    const siblingTypes = (this.routers[router.type] || []) as Router[];
+    const siblingTypes = (this.routers[router.type] || []) as IRouter[];
     siblingTypes.push(router);
     this.routers[router.type] = siblingTypes;
 
-    router.parent = (this as any as Router);
+    router.parent = (this as any as IRouter);
   }
 
   get isPathRouter() {
     // if there is no parent, we are at the root. The root is by default a path router since
     // it represents the '/' in a pathname location
-    if (!this.parent) return true;
+    if (!this.parent) { return true };
     // if this router was explicitly set to be a path router during config, return true
     if (this.config.isPathRouter && this.parent.isPathRouter) { return true; }
     // else if this router is a path router but its parent isn't we need to throw an error.
@@ -135,7 +147,7 @@ export default class RouterBase {
         // make sure none have been explicitly set to be a path router
         acc || r.config.isPathRouter === true
       ), false);
-      if (isSiblingRouterExplictlyAPathRouter === false) return true;
+      if (isSiblingRouterExplictlyAPathRouter === false) { return true };
     } else if (this.type === 'data' && this.parent && this.parent.isPathRouter) {
       // TODO FIX ME - causes stack overflow
       // if (this.isPathRouter === false) return false;
@@ -152,7 +164,7 @@ export default class RouterBase {
     return false;
   }
 
-  get state(): RouterCurrentState {
+  get state(): IRouterCurrentState {
     if (!this.getState) { throw new Error('no getState function specified by the manager'); }
     const { current } = this.getState();
     return current || {};
@@ -166,7 +178,7 @@ export default class RouterBase {
 
   // TODO deprecate this method and remove tests
   // return pathLocation cached data types
-  calcCachedLocation(globalState: any = null) {
+  private calcCachedLocation(globalState: any = null) {
     // reuse global state for efficiency if doing a recursive calculation
     const routerState = globalState
       ? globalState[this.name].current
@@ -181,16 +193,5 @@ export default class RouterBase {
     if (this.type === 'data') { return { queryParam: this.routeKey, value: routerState.data }; }
     if (this.type === 'stack') { return { queryParam: this.routeKey, value: routerState.order }; }
     return { queryParam: this.routeKey, value: routerState.visible };
-  }
-
-  // TODO deprecate this function and remove tests
-  static joinLocationWithCachedLocation(location: any, cachedLocation: any) {
-    const newLocation = { ...location };
-    if (cachedLocation.isPathData) {
-      newLocation.path[cachedLocation.pathLocation] = cachedLocation.value;
-    } else {
-      newLocation.search[cachedLocation.queryParam] = cachedLocation.value;
-    }
-    return newLocation;
   }
 }

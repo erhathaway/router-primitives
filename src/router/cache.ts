@@ -1,4 +1,4 @@
-import { OutputLocation } from "../types";
+import { IOutputLocation, IRouter } from "../types";
 
 type CacheValue = string | boolean;
 
@@ -9,7 +9,7 @@ type CacheValue = string | boolean;
  * cache when setting new state instead of a default value
  */
 class Cache {
-  _cacheStore?: CacheValue
+  private _cacheStore?: CacheValue
 
   constructor() {
     this._cacheStore = undefined;
@@ -23,16 +23,16 @@ class Cache {
     return this._cacheStore;
   }
 
-  removeCache() {
+  public removeCache() {
     this._cacheStore = undefined;
   }
 
-  setCache(value: CacheValue) {
+  public setCache(value: CacheValue) {
     this._cacheStore = value;
   }
 
   // TODO Fix this any type once Router has a type definition
-  setCacheFromLocation(location: OutputLocation, routerInstance: any) {
+  public setCacheFromLocation(location: IOutputLocation, routerInstance: IRouter) {
     // dont set cache if one already exists!
     if (this.hasCache) { return; }
 

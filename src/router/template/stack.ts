@@ -1,7 +1,7 @@
-import { Router, RouterAction, RouterReducer } from "../../types";
+import { IRouter, RouterAction, RouterReducer } from "../../types";
 
 // returns the routeKey names of visible routers based on the ordering of their 'order' state
-function getRouteKeyOrderings(router: Router) {
+function getRouteKeyOrderings(router: IRouter) {
   // creates an object of { [visible router routeKey]: order }
   const routeKeyOrderObj = router.parent.routers[router.type].reduce((acc, r) => {
     if (r.state.visible === false) { return acc; }
@@ -60,7 +60,7 @@ const show: RouterAction = (location, router, ctx) => {
 };
 
 const hide: RouterAction = (location, router, ctx) => {
-  if (!router.parent) return location;
+  if (!router.parent) { return location };
 
   const sortedKeys = getRouteKeyOrderings(router);
 
@@ -89,7 +89,7 @@ const hide: RouterAction = (location, router, ctx) => {
 };
 
 const forward: RouterAction = (location, router, ctx) => {
-  if (!router.parent) return location;
+  if (!router.parent) { return location };
 
   const sortedKeys = getRouteKeyOrderings(router);
 
@@ -123,7 +123,7 @@ const forward: RouterAction = (location, router, ctx) => {
 }
 
 const backward: RouterAction = (location, router, ctx) => {
-  if (!router.parent) return location;
+  if (!router.parent) { return location };
 
   const sortedKeys = getRouteKeyOrderings(router);
 
@@ -163,7 +163,7 @@ const toFront: RouterAction = (location, router, ctx) => {
 }
 
 const toBack: RouterAction = (location, router, ctx) => {
-  if (!router.parent) return location;
+  if (!router.parent) { return location };
 
   const sortedKeys = getRouteKeyOrderings(router);
 
@@ -203,14 +203,14 @@ const reducer: RouterReducer = (location, router, ctx) => {
 
   if (value) {
     return {
-      visible: true,
       order: value,
+      visible: true,
     }
   }
 
   return {
-    visible: false,
     order: undefined,
+    visible: false,
   }
   // if (router.isPathRouter) {
   //   newState['visible'] = location.pathname[router.pathLocation] === router.routeKey;
@@ -221,21 +221,9 @@ const reducer: RouterReducer = (location, router, ctx) => {
   // return newState;
 };
 
-
-// TODO figure out what to do about default states
-const defaultState = {
-  visible: 'lala',
-};
-
-const parser = () => {
-  
-}
-
 const stack = {
   actions: { show, hide, forward, backward, toFront, toBack },
-  // state: defaultState,
   reducer,
-  // parser,
 };
 
 export default stack;
