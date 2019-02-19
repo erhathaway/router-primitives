@@ -1,4 +1,4 @@
-import { IRouterState, IRouterCurrentState, RouterHistoryState } from "./types";
+import { IRouterState, IRouterCurrentState } from "./types";
 
 interface IStore {
   [key: string]: IRouterState;

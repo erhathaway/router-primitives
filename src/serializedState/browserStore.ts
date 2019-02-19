@@ -1,6 +1,6 @@
 import deserializer from './deserializer';
 import serializer from './serializer';
-import { OutputLocation, InputLocation } from '../types/index';
+import { IOutputLocation, IInputLocation } from '../types/index';
 
 interface IBrowserStoreConfig {
   serializer: typeof serializer;
@@ -37,7 +37,7 @@ export default class BrowserStore {
 
   // unserialized state = { pathname: [], search: {}, options: {} }
   // options = { updateHistory }
-  public setState(unserializedLocation: InputLocation) {
+  public setState(unserializedLocation: IInputLocation) {
     const oldUnserializedLocation = this.getState();
     const { location: newState } = this.config.serializer(unserializedLocation, oldUnserializedLocation);
 
@@ -50,7 +50,7 @@ export default class BrowserStore {
     this.notifyObservers();
   }
   
-  public getState(): OutputLocation {
+  public getState(): IOutputLocation {
     const searchString = window.location.search || '';
     const pathnameString = window.location.pathname || '';
     return this.config.deserializer(pathnameString + searchString);
