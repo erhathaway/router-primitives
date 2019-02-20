@@ -438,7 +438,7 @@ Release canidate is in PR: `architecture-update`
 - [x] Add Types using TypeScript
 - [x] Add options param to location actions (esp. for replace vs push router history)
 - Add validations
-  - [ ]templates
+  - [ ] templates
   - [x] uniqueness of route keys
   - [x] uniqueness of router names
 - [x] Add ability to clean up removed routers (subscriptions etc...)
