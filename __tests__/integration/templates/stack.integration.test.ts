@@ -29,6 +29,31 @@ describe('Integration', () => {
 
   describe('Scene template', () => {
     describe('Actions', () => {  
+      it('Can have replace location action option set', () => {
+        const manager = new Manager({ routerTree });
+        const welcomeModalRouter = manager.routers['welcome-modal'];
+        const cookiesModalRouter = manager.routers['cookies-modal'];
+
+        welcomeModalRouter.show();
+        expect(manager.serializedStateStore.history.length).toBe(1);
+
+        cookiesModalRouter.show({ replaceLocation: true })
+
+        expect(manager.serializedStateStore.history.length).toBe(1);
+
+        cookiesModalRouter.hide({ replaceLocation: true })
+
+        expect(manager.serializedStateStore.history.length).toBe(1);
+
+        cookiesModalRouter.show();
+
+        expect(manager.serializedStateStore.history.length).toBe(2);
+
+        cookiesModalRouter.hide({ replaceLocation: false })
+
+        expect(manager.serializedStateStore.history.length).toBe(3);
+      });
+
       it('Show sets order to 1 if the only stack router', () => {
         const manager = new Manager({ routerTree });
         const welcomeObserver = jest.fn();

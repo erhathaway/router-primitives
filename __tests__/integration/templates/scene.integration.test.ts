@@ -28,8 +28,33 @@ describe('Integration', () => {
     }
   };
 
-  describe('Scene template', () => {
+  
+  describe('Scene template', () => {    
     describe('Actions', () => {
+      it('Can have replace location action option set', () => {
+        const manager = new Manager({ routerTree: routerTreeForDefaultShowTest });
+        const userRouter = manager.routers['user'];
+        const eventsRouter = manager.routers['events'];
+
+        userRouter.show();
+        expect(manager.serializedStateStore.history.length).toBe(1);
+
+        eventsRouter.show({ replaceLocation: true })
+
+        expect(manager.serializedStateStore.history.length).toBe(1);
+
+        eventsRouter.hide({ replaceLocation: true })
+
+        expect(manager.serializedStateStore.history.length).toBe(1);
+
+        eventsRouter.show();
+
+        expect(manager.serializedStateStore.history.length).toBe(2);
+
+        eventsRouter.hide({ replaceLocation: false })
+
+        expect(manager.serializedStateStore.history.length).toBe(3);
+      });
       describe('Show', () => {
         const manager = new Manager({ routerTree: routerTreeForDefaultShowTest });
 
