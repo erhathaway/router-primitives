@@ -96,6 +96,9 @@ export default class DefaultRoutersStateStore {
    *   a single routers state.
    */
   public createRouterStateSubscriber(routerName: string) {
+    if (!this.observers[routerName]) {
+      this.observers[routerName] = [];
+    }
     return (fn: Observer) => {
       if (Array.isArray(this.observers[routerName])) {
         this.observers[routerName].push(fn);
@@ -104,6 +107,27 @@ export default class DefaultRoutersStateStore {
       }
     };
   }
+
+  public createRouterStateUnsubscriber(routerName: string) {
+    return (fn: Observer) => {
+      if (!this.observers[routerName]) {
+        // TODO add to logger
+        // console.warn('No subscribers present to unscribe from store');
+        return;
+      }
+      const observers = this.observers[routerName];
+      this.observers[routerName] = observers.filter(presentObservers => presentObservers !== fn);
+    };
+  }
+
+  public unsubscribeAllObserversForRouter(routerName: string) {
+    if (!this.observers[routerName]) {
+      // TODO add to logger
+      // console.warn('No subscribers present to unscribe from store');
+      return;
+    }
+    delete this.observers[routerName];
+  } 
 
   /**
    * Returns the stores state for all routers

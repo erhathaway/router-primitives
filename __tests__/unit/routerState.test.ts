@@ -1,16 +1,16 @@
-import RouterStateAdapater from '../../src/routerState';
+import RouterStateStore from '../../src/routerState';
 
 
 describe('Router State', () => {
   describe('Adapter', () => {
     test('Uses a default object store', () => {
-      const adapter = new RouterStateAdapater();
-      expect(adapter.getState()).toEqual({});
+      const store = new RouterStateStore();
+      expect(store.getState()).toEqual({});
     });
 
     test('Can write to store', () => {
-      const store = {};
-      const adapter = new RouterStateAdapater(store);
+      const defaultState = {};
+      const store = new RouterStateStore(defaultState);
 
       const rootState = { visible: true, order: 0 };
       const firstSceneState = { visible: false, flow: 'wild' };
@@ -19,48 +19,150 @@ describe('Router State', () => {
         firstScene: firstSceneState,
       };
 
-      adapter.setState(routers);
-      expect(adapter.getState()).toEqual({
+      store.setState(routers);
+      expect(store.getState()).toEqual({
         root: { current: rootState, historical: [] },
         firstScene: { current: firstSceneState, historical: [] },
       });
     });
 
+    test('Can unsubscribe a single router that doesnt exist without causing an error', () => {
+      const defaultState = {};
+      const TEST_ROUTER_A = 'TEST_ROUTER_A';
+      const store = new RouterStateStore(defaultState);
+      store.unsubscribeAllObserversForRouter(TEST_ROUTER_A);
+    });
+
+    test('Can unsubscribe all observers for a router that doesnt exist without causing an error', () => {
+      const defaultState = {};
+      const TEST_ROUTER_A = 'TEST_ROUTER_A';
+      const store = new RouterStateStore(defaultState);
+      const unsubscribeer = store.createRouterStateUnsubscriber(TEST_ROUTER_A);
+
+      const testFnA = jest.fn();
+
+      unsubscribeer(testFnA);
+    });
+
+    test('Can unsubscribe all observers from store for a given router', () => {
+      const defaultState = {};
+
+      const TEST_ROUTER_A = 'TEST_ROUTER_A';
+      const TEST_ROUTER_B = 'TEST_ROUTER_B';
+
+      const store = new RouterStateStore(defaultState);
+
+      const subscriberA = store.createRouterStateSubscriber(TEST_ROUTER_A);
+      const subscriberB = store.createRouterStateSubscriber(TEST_ROUTER_B);
+
+      const testFnA = jest.fn();
+      const testFnB = jest.fn();
+      const testFnC = jest.fn();
+      const testFnD = jest.fn();
+
+      subscriberA(testFnA);
+      subscriberA(testFnB);
+      subscriberB(testFnC);
+      subscriberB(testFnD);
+
+      const routerStateOne = { visible: true, order: 0 };
+      const newState = {} as { [k: string]: any };
+      newState[TEST_ROUTER_A] = routerStateOne;
+      newState[TEST_ROUTER_B] = routerStateOne;
+
+      store.setState(newState);
+
+      expect(testFnA.mock.calls.length).toBe(1);
+      expect(testFnB.mock.calls.length).toBe(1);
+      expect(testFnC.mock.calls.length).toBe(1);
+      expect(testFnD.mock.calls.length).toBe(1);
+
+      store.unsubscribeAllObserversForRouter(TEST_ROUTER_A);
+
+      const routerStateTwo = { visible: false, order: 1 };
+      const anotherNewState = {} as { [k: string]: any };
+      anotherNewState[TEST_ROUTER_A] = routerStateTwo;
+      anotherNewState[TEST_ROUTER_B] = routerStateTwo;
+
+      store.setState(anotherNewState);
+
+      expect(testFnA.mock.calls.length).toBe(1);
+      expect(testFnB.mock.calls.length).toBe(1);
+      expect(testFnC.mock.calls.length).toBe(2);
+      expect(testFnD.mock.calls.length).toBe(2);
+    });
+
+    test('Can unsubscribe single observers from store for a given router', () => {
+      const defaultState = {};
+
+      const TEST_ROUTER_A = 'TEST_ROUTER_A';
+      const store = new RouterStateStore(defaultState);
+      const subscriber = store.createRouterStateSubscriber(TEST_ROUTER_A);
+      const unsubscriber = store.createRouterStateUnsubscriber(TEST_ROUTER_A);
+
+      const testFnA = jest.fn();
+      const testFnB = jest.fn();
+      subscriber(testFnA);
+      subscriber(testFnB);
+
+
+      const routerStateOne = { visible: true, order: 0 };
+      const newState = {} as { [k: string]: any };
+      newState[TEST_ROUTER_A] = routerStateOne;
+
+      store.setState(newState);
+
+      expect(testFnA.mock.calls.length).toBe(1);
+      expect(testFnB.mock.calls.length).toBe(1);
+
+      unsubscriber(testFnA);
+
+      const routerStateTwo = { visible: false, order: 1 };
+      const anotherNewState = {} as { [k: string]: any };
+      anotherNewState[TEST_ROUTER_A] = routerStateTwo;
+
+      store.setState(anotherNewState);
+
+      expect(testFnA.mock.calls.length).toBe(1);
+      expect(testFnB.mock.calls.length).toBe(2);
+    });
+    
+
     test('Can store history', () => {
-      const store = {};
-      const adp = new RouterStateAdapater(store);
+      const defaultState = {};
+      const store = new RouterStateStore(defaultState);
 
-      const rootState_one = { visible: true, order: 0 };
-      const rootState_two = { visible: false, order: 1 };
+      const rootStateOne = { visible: true, order: 0 };
+      const rootStateTwo = { visible: false, order: 1 };
 
-      const firstSceneState_one = { visible: false, flow: 'wild' };
-      const firstSceneState_two = { visible: true, flow: 'calm' };
+      const firstSceneStateOne = { visible: false, flow: 'wild' };
+      const firstSceneStateTwo = { visible: true, flow: 'calm' };
 
-      adp.setState({ 
-        root: rootState_one,
-        firstScene: firstSceneState_one,
+      store.setState({ 
+        root: rootStateOne,
+        firstScene: firstSceneStateOne,
       });
 
-      adp.setState({ 
-        root: rootState_two,
-        firstScene: firstSceneState_two,
+      store.setState({ 
+        root: rootStateTwo,
+        firstScene: firstSceneStateTwo,
       });
 
-      expect(adp.getState()).toEqual({
-        root: { current: rootState_two, historical: [rootState_one] },
-        firstScene: { current: firstSceneState_two, historical: [firstSceneState_one] },
+      expect(store.getState()).toEqual({
+        root: { current: rootStateTwo, historical: [rootStateOne] },
+        firstScene: { current: firstSceneStateTwo, historical: [firstSceneStateOne] },
       });
     });
 
     test('Can set and maintain history size', () => {
-      const store = {};
-      const adp = new RouterStateAdapater(store, { historySize: 3 });
+      const defaultState = {};
+      const store = new RouterStateStore(defaultState, { historySize: 3 });
 
       [1, 2, 3, 4, 5, 6].forEach((order) => {
-        adp.setState({ root: { visible: true, order } as any});
+        store.setState({ root: { visible: true, order } as any});
       });
 
-      expect(adp.getState()).toEqual({
+      expect(store.getState()).toEqual({
         root: { 
           current: { visible: true, order: 6 }, 
           historical: [
@@ -73,18 +175,18 @@ describe('Router State', () => {
     });
 
     test('Can can create individaul router state subscribers', () => {
-      const store = {};
-      const adp = new RouterStateAdapater(store);
+      const defaultState = {};
+      const store = new RouterStateStore(defaultState);
       const ownerObserver = jest.fn();
-      const ownerSubjectSubscriber = adp.createRouterStateSubscriber('owner-router');
+      const ownerSubjectSubscriber = store.createRouterStateSubscriber('owner-router');
       ownerSubjectSubscriber(ownerObserver);
 
       const infoObserver = jest.fn();
-      const infoSubjectSubscriber = adp.createRouterStateSubscriber('info-router');
+      const infoSubjectSubscriber = store.createRouterStateSubscriber('info-router');
       infoSubjectSubscriber(infoObserver);
 
       // set two different router states
-      adp.setState({
+      store.setState({
         'owner-router': { visible: true },
         'info-router': { visible: false }
       });
@@ -93,7 +195,7 @@ describe('Router State', () => {
       expect(infoObserver.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [] });
 
       // set one router state
-      adp.setState({
+      store.setState({
         'info-router': { visible: true }
       });
 
@@ -104,7 +206,7 @@ describe('Router State', () => {
       expect(infoObserver.mock.calls.length).toEqual(2);
 
       // set the other router state
-      adp.setState({
+      store.setState({
         'owner-router': { visible: false }
       });
 
@@ -116,13 +218,13 @@ describe('Router State', () => {
     });
 
     test('Can create individual router state getters', () => {
-      const store = {};
-      const adp = new RouterStateAdapater(store);
-      const ownerGetter = adp.createRouterStateGetter('owner-router');
-      const infoGetter = adp.createRouterStateGetter('info-router');
+      const defaultState = {};
+      const store = new RouterStateStore(defaultState);
+      const ownerGetter = store.createRouterStateGetter('owner-router');
+      const infoGetter = store.createRouterStateGetter('info-router');
 
       // set two different router states
-      adp.setState({
+      store.setState({
         'owner-router': { visible: true },
         'info-router': { visible: false }
       });
@@ -131,7 +233,7 @@ describe('Router State', () => {
       expect(infoGetter()).toEqual({ current: { visible: false }, historical: [] })
 
       // set one router state
-      adp.setState({
+      store.setState({
         'info-router': { visible: true }
       });
 

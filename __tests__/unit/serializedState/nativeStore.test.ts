@@ -38,6 +38,33 @@ describe('Native Serialized State', () => {
       expect(subscriptionTwo.mock.calls[0][0]).toEqual(stateTwo);
     });
 
+    test('Can unsubscribe from store state changes', () => {
+       const store = new NativeSerializedStore();
+      const testFnA = jest.fn();
+      const testFnB = jest.fn();
+      const testFnC = jest.fn();
+
+      store.subscribeToStateChanges(testFnA);
+      store.subscribeToStateChanges(testFnB);
+      store.subscribeToStateChanges(testFnC);
+
+      const state = { pathname: ['newState'], search: {}, options: {}}
+      store.setState(state);
+
+      expect(testFnA.mock.calls.length).toBe(1);
+      expect(testFnB.mock.calls.length).toBe(1);
+      expect(testFnC.mock.calls.length).toBe(1);
+
+      store.unsubscribeFromStateChanges(testFnA);
+
+      const nextState = { pathname: ['newState'], search: { update: 'yest' }, options: {}}
+      store.setState(nextState);
+
+      expect(testFnA.mock.calls.length).toBe(1);
+      expect(testFnB.mock.calls.length).toBe(2);
+      expect(testFnC.mock.calls.length).toBe(2);
+    });
+
     test('Use the previous location to fill in missing queryParams when saving a new location', () => {
       const adapter = new NativeSerializedStore();
       const subscription = jest.fn();

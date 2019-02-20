@@ -54,6 +54,10 @@ export default class BrowserStore {
 
   public subscribeToStateChanges(fn: StateObserver) { this.observers.push(fn); }
 
+  public unsubscribeFromStateChanges(fn: StateObserver) { 
+    this.observers = this.observers.filter(existingFn => existingFn !== fn);
+  }
+
   public back() {
     window.history.back();
   }

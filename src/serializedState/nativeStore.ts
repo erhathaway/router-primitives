@@ -66,6 +66,9 @@ export default class NativeStore {
 
   public subscribeToStateChanges(fn: StateObserver) { this.observers.push(fn); }
 
+  public unsubscribeFromStateChanges(fn: StateObserver) { 
+    this.observers = this.observers.filter(existingFn => existingFn !== fn);
+  }
   // unsubscribeToStateChanges // TODO fill me in!
   
   public back() {
