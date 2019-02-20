@@ -253,6 +253,9 @@ export default class Manager {
       routers[childType].forEach(childRouter => this.removeRouter(childRouter.name));
     });
 
+    // remove router related state subscribers
+    this.routerStateStore.unsubscribeAllObserversForRouter(name);
+
     // delete ref the manager stores
     delete this.routers[name];
   }
@@ -279,7 +282,7 @@ export default class Manager {
     const initalParams = {
       name,
       config: { ...config },
-      type: type || 'scene', // make root routers a scene router TODO make root router an empty template
+      type: type || 'scene', // TODO make root router an empty router
       parent,
       routers: {},
       manager: this,

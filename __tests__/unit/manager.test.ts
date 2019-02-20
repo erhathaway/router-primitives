@@ -97,6 +97,51 @@ describe('Router Manager', () => {
         expect(manager.routers['details']).toBe(undefined);
       });
     });
+    
+    describe('Removing a router with state observers', () => {
+      it('cleans up observers', () => {
+        const manager = new Manager({ routerTree });
+        const newRouter = {
+          name: 'admin',
+          type: 'scene',
+          parentName: 'user',
+        };
+    
+        manager.addRouter(newRouter);
+
+        const testFnA = jest.fn();
+        const testFnB = jest.fn();
+        const testFnC = jest.fn();
+
+        manager.routers['admin'].subscribe(testFnA);
+        manager.routers['admin'].subscribe(testFnB);
+        manager.routers['user'].subscribe(testFnC);
+
+        const initialRoutersState = {
+          admin: { visible: false, order: 1 },
+          user: { visible: true, order: 22 },
+        }
+
+        manager.routerStateStore.setState(initialRoutersState);
+
+        expect(testFnA.mock.calls.length).toBe(1);
+        expect(testFnB.mock.calls.length).toBe(1);
+        expect(testFnC.mock.calls.length).toBe(1);
+
+        manager.removeRouter('admin');
+
+        const nextRoutersState = {
+          admin: { visible: true, order: 2 },
+          user: { visible: false, order: 0 },
+        }
+
+        manager.routerStateStore.setState(nextRoutersState);
+
+        expect(testFnA.mock.calls.length).toBe(1);
+        expect(testFnB.mock.calls.length).toBe(1);
+        expect(testFnC.mock.calls.length).toBe(2);
+      });
+    });
 
     describe('Not initialized with routers', () => {
       const manager = new Manager();
