@@ -438,16 +438,16 @@ Release canidate is in PR: `architecture-update`
 - [x] Add Types using TypeScript
 - [x] Add options param to location actions (esp. for replace vs push router history)
 - Add validations
-  - templates
-  - uniqueness of route keys
-  - uniqueness of router names
-- Add ability to clean up removed routers (subscriptions etc...)
+  - [ ]templates
+  - [x] uniqueness of route keys
+  - [x] uniqueness of router names
+- [x] Add ability to clean up removed routers (subscriptions etc...)
 - [x] Add tslint
-- Add CI
-- Add mobx bindings
-- Update playground to use new mobx bindings
-- Add react bindings
-  - add 'guards' to react bindings
-- Add redux bindings
-- Demo apps built with `recursive-router`
+- [ ] Add CI
+- [ ] Add mobx bindings
+- [ ] Update playground to use new mobx bindings
+- [ ] Add react bindings
+  - [ ] add 'guards' to react bindings
+- [ ] Add redux bindings
+- [ ] Demo apps built with `recursive-router`
 
