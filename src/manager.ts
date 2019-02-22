@@ -264,7 +264,7 @@ export default class Manager {
   private createRouter({ name, config, type, parentName }: IRouterInitParams) {
     // check if the router name is unique
     if (this.routers[name]) {
-      throw new Error(`A router with the name ${name} already exists`);
+      throw new Error(`A router with the name '${name}' already exists`);
     }
 
     // check if the router routeKey is unique
@@ -273,7 +273,7 @@ export default class Manager {
         return acc || r.routeKey === config.routeKey
       }, false);
       if (alreadyExists) {
-        throw new Error(`A router with the routeKey ${config.routeKey} already exists`);
+        throw new Error(`A router with the routeKey '${config.routeKey}' already exists`);
       }
     }
 

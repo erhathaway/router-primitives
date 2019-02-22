@@ -3,6 +3,37 @@ import { NativeSerializedStore, BrowserSerializedStore } from '../../src/seriali
 import RouterStore from '../../src/routerState';
 
 describe('Router Manager', () => {
+  test('Requires all router names to be unique', () => {
+    const tree = {
+      name: 'root',
+      routers: {
+        scene: [{
+          name: 'user',
+          routers: {
+            scene: [{ name: 'user' }]
+          }
+        }]
+      }
+    }
+    expect(() => new Manager({ routerTree: tree })).toThrow();
+  });
+
+  test('Requires all router routeKeys to be unique', () => {
+    const tree = {
+      name: 'root',
+      routers: {
+        scene: [{
+          name: 'user',
+          routeKey: 'hello',
+          routers: {
+            scene: [{ name: 'nextScene', routeKey: 'hello' }]
+          }
+        }]
+      }
+    }
+    expect(() => new Manager({ routerTree: tree })).toThrow();
+  });
+
   const routerTree = {
     name: 'root',
     routers: {
