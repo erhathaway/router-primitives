@@ -1,4 +1,4 @@
-import { RouterAction, RouterReducer } from "../../types";
+import { RouterAction, RouterReducer, IRouterCurrentState } from "../../types";
 
 const show: RouterAction = (options, location, router, ctx = {}) => {
   // hide sibling routers
@@ -33,7 +33,7 @@ const hide: RouterAction = (options, location, router, ctx) => {
 };
 
 const reducer: RouterReducer = (location, router, ctx) => {
-  const newState: { [key: string]: any } = {};
+  const newState: IRouterCurrentState = {};
   if (router.isPathRouter) {
     newState['visible'] = location.pathname[router.pathLocation] === router.routeKey;
   } else {

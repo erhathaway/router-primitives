@@ -1,4 +1,4 @@
-import { RouterAction, RouterReducer, IRouterState, IRouterCurrentState } from "../../types";
+import { RouterAction, RouterReducer, IRouterCurrentState } from "../../types";
 
 const show: RouterAction = (options, location, router, ctx = {}) => {
   const data = options.data || router.state.data;

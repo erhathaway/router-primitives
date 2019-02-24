@@ -1,7 +1,7 @@
 import { NativeSerializedStore, BrowserSerializedStore } from './serializedState';
 import DefaultRouterStateStore from './routerState';
 import Router from './router/base';
-import { scene, stack, data } from './router/template';
+import { scene, stack, data, feature } from './router/template';
 import { IRouterDeclaration, IRouter as RouterT, IRouterTemplate, IInputLocation, ILocationActionContext, RouterAction, IOutputLocation, IRouterInitParams, IRouterActionOptions } from './types';
 
 const capitalize = (name = '') => name.charAt(0).toUpperCase() + name.slice(1);
@@ -145,7 +145,7 @@ export default class Manager {
     }
 
     // router types
-    const templates = { scene, stack, data } as { [templateName: string]: IRouterTemplate };
+    const templates = { scene, stack, data, feature } as { [templateName: string]: IRouterTemplate };
     this.routerTypes = {};
 
     // TODO implement
