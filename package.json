@@ -1,7 +1,7 @@
 {
   "name": "recursive-router",
   "version": "0.0.1",
-  "description": "Simple, expressive, mobx-based routing state management. Routers all the way down",
+  "description": "A cross-platform application router. Declarative routing by way of layout primitives",
   "main": "dist/index.cjs.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
@@ -27,6 +27,7 @@
     "react-state",
     "mobx",
     "redux",
+    "primitives",
     "declarative-routing"
   ],
   "author": "Ethan Hathaway",
@@ -49,7 +50,6 @@
     "babel-preset-flow": "^6.23.0",
     "flow-bin": "^0.82.0",
     "jest": "^23.1.0",
-    "mobx": "^5.5.0",
     "prettier": "^1.16.4",
     "rollup": "^1.1.2",
     "rollup-plugin-babel": "^3.0.7",
@@ -67,7 +67,5 @@
   "dependencies": {
     "query-string": "^5.1.1"
   },
-  "peerDependencies": {
-    "mobx": "^5.0.3"
-  }
+  "peerDependencies": {}
 }
