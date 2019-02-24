@@ -1,7 +1,7 @@
 # Recursive Router     
 
 
-Recursive router is a different take on routing that hopefully increases developer productivity and allows for the easier creation and maintaince of complex routing. 
+Recursive router is a different take on routing. Hopefully it'll increase productivity and allow for the easier creation and maintaince of complex routing. 
 
 With Recursive, the URL is a reflection of your app. Instead of defining how the URL is constructed you **define the visual elements of your app**. URL construction is automatically handled for you, based on the hierarchical arrangement of layout primitives (`Scene`, `Stack`, `Feature`, `Data`)! 
 
