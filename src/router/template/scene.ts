@@ -9,6 +9,7 @@ const show: RouterAction = (options, location, router, ctx = {}) => {
   if (router.isPathRouter) {
     const { parent } = router;
 
+    // TODO document why this is necessary
     if (!ctx.addingDefaults && (!parent || (!parent.state.visible && !parent.isRootRouter))) { return location; }
 
     location.pathname[router.pathLocation] = router.routeKey;
@@ -17,9 +18,6 @@ const show: RouterAction = (options, location, router, ctx = {}) => {
   } else {
     location.search[router.routeKey] = true;
   }
-
-  // add defaults for child routers
-  // location = router.constructor.addLocationDefaults(options, location, router, ctx);
 
   return location;
 };
@@ -46,9 +44,7 @@ const reducer: RouterReducer = (location, router, ctx) => {
 };
 
 
-const scene = {
+export default {
   actions: { show, hide },
   reducer,
 };
-
-export default scene;

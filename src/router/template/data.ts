@@ -1,26 +1,58 @@
-// options = { 
-//   replace: boolean,
-//   data: string,
-// }
+import { RouterAction, RouterReducer, IRouterState, IRouterCurrentState } from "../../types";
 
-// const show = (options, location, router) => {
+const show: RouterAction = (options, location, router, ctx = {}) => {
+  const data = options.data || router.state.data;
+  if (router.isPathRouter) {
+    const { parent } = router;
 
-// }
+    // TODO document why this is necessary
+    if (!ctx.addingDefaults && (!parent || (!parent.state.visible && !parent.isRootRouter))) { return location; }
 
-// const setData = (options, location, router) => {
-  
-// };
+    location.pathname[router.pathLocation] = data;
+    // drop pathname after this pathLocation
+    location.pathname = location.pathname.slice(0, router.pathLocation + 1);
+  } else {
+    location.search[router.routeKey] = data;
+  }
 
-// Router.options() -> takes an array of options
-// Router.replace() -> set options to include data
-// Router.data() -> sets options to include data
+  return location;
+};
 
-// const data = {
-//   actions: { show, hide, setData },
-//   state: defaultState,
-//   helpers: { replace, data },
-//   reducer,
-//   parser,
-// };
+const hide: RouterAction = (options, location, router, ctx) => {
+  if (router.isPathRouter) {
+    location.pathname = location.pathname.slice(0, router.pathLocation);
+  } else {
+    location.search[router.routeKey] = undefined;
+  }
 
-// export default data;
+  return location;
+};
+
+const setData: RouterAction = (options, location, router, ctx = {}) => {
+  return router.show(options);
+};
+
+
+const reducer: RouterReducer = (location, router, ctx) => {
+  const newState: IRouterCurrentState = {};
+
+  let routerData: string;
+  if (router.isPathRouter) {
+    routerData = location.pathname[router.pathLocation];
+  } else {
+    routerData = location.search[router.routeKey];
+  }
+
+  if (routerData) {
+    newState['visible'] = true;
+  }
+
+  newState['data'] = routerData || router.state.data;
+
+  return newState;
+};
+
+export default {
+  actions: { show, hide, setData },
+  reducer,
+};

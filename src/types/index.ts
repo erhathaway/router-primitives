@@ -12,6 +12,7 @@ export interface IOutputSearch {
 }
 
 export interface ILocationOptions {
+  data?: string;
   replaceLocation?: boolean; // used to replace history location in URL
 };
 
@@ -55,8 +56,10 @@ export interface IRouterTemplate {
  * Router state types
  */
 export interface IRouterCurrentState {
-  visible?: boolean 
+  visible?: boolean;
+  data?: string;
 };
+
 export type RouterHistoryState = IRouterCurrentState[];
 export interface IRouterState { 
   current: IRouterCurrentState;
