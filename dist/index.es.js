@@ -459,43 +459,26 @@ var serializer = function (newLocation, oldLocation) {
     return { location: location, options: newLocation.options };
 };
 
-/**
- * The store that the router manager uses to write and read from the serialized state
- * The serialized state store is what, on the web, holds the URL - aka the serilaized state of the router tree
- * For non web, or when manager.config.serializedStateStore === 'native' this store is used
- * The default serialized state is a string for this store
- */
-var NativeStore = /** @class */ (function () {
+var NativeStore = (function () {
     function NativeStore(config) {
         this.observers = [];
         this.config = config || { serializer: serializer, deserializer: deserializer, historySize: 10 };
         this.history = [];
         this.currentLocationInHistory = 0;
     }
-    // unserialized state = { pathname: [], search: {}, options: {} }
-    // options = { updateHistory }
     NativeStore.prototype.setState = function (unserializedLocation, options) {
         if (options === void 0) { options = {}; }
         var oldUnserializedLocation = this.getState();
         var newState = this.config.serializer(unserializedLocation, oldUnserializedLocation).location;
         if (options.updateHistory !== false) {
-            // clone history
             var newHistory = this.history.slice();
-            // not mutating the location causes the previous location to be replaced
-            // thus, there will be no history of it
-            // this is useful when you use modals and other elements that dont have a concept of 'back'
-            // b/c once you close a modal it shouldn't reappear if you click 'back'
             if (unserializedLocation.options && unserializedLocation.options.replaceLocation === true) {
-                // remove previous location
                 newHistory.shift();
             }
-            // add current to history
             newHistory.unshift(newState.slice());
-            // enforce history size
             if (newHistory.length > this.config.historySize) {
                 newHistory = newHistory.slice(0, this.config.historySize);
             }
-            // set history
             this.history = newHistory;
         }
         this.notifyObservers();
@@ -505,7 +488,6 @@ var NativeStore = /** @class */ (function () {
     NativeStore.prototype.unsubscribeFromStateChanges = function (fn) {
         this.observers = this.observers.filter(function (existingFn) { return existingFn !== fn; });
     };
-    // unsubscribeToStateChanges // TODO fill me in!
     NativeStore.prototype.back = function () {
         this.go(-1);
     };
@@ -516,16 +498,12 @@ var NativeStore = /** @class */ (function () {
         if (historyChange === 0) {
             throw new Error('No history size change specified');
         }
-        // calcuate request history location
         var newLocation = this.currentLocationInHistory - historyChange;
-        // if within the range of recorded history, set as the new history location
         if (newLocation + 1 <= this.history.length && newLocation >= 0) {
             this.currentLocationInHistory = newLocation;
-            // if too far in the future, set as the most recent history
         }
         else if (newLocation + 1 <= this.history.length) {
             this.currentLocationInHistory = 0;
-            // if too far in the past, set as the last recorded history
         }
         else if (newLocation >= 0) {
             this.currentLocationInHistory = this.history.length - 1;
@@ -539,24 +517,16 @@ var NativeStore = /** @class */ (function () {
     return NativeStore;
 }());
 
-/**
- * The store that the router manager uses to write and read from the serialized state
- * The serialized state store is what, on the web, holds the URL - aka the serilaized state of the router tree
- * The default serialized state is the URL for this store
- */
-var BrowserStore = /** @class */ (function () {
+var BrowserStore = (function () {
     function BrowserStore(config) {
         var _this = this;
         this.observers = [];
         this.config = config || { serializer: serializer, deserializer: deserializer };
-        // subscribe to location changes
         this.existingLocation = '';
         this.stateWatcher = window.setInterval(function () {
             _this._monitorLocation();
         }, 100);
     }
-    // unserialized state = { pathname: [], search: {}, options: {} }
-    // options = { updateHistory }
     BrowserStore.prototype.setState = function (unserializedLocation) {
         var oldUnserializedLocation = this.getState();
         var newState = this.config.serializer(unserializedLocation, oldUnserializedLocation).location;
@@ -600,63 +570,34 @@ var BrowserStore = /** @class */ (function () {
     return BrowserStore;
 }());
 
-/**
- * The default router state store.
- * This store keeps track of each routers state which is derived from the current location
- * This store can be swaped out in the manager with other stores. For example, a redux store.
- * Stores must implement the methods:
- *   setState
- *   getState
- *   createRouterStateGetter
- *   createRouterStateSubscriber
- */
-var DefaultRoutersStateStore = /** @class */ (function () {
+var DefaultRoutersStateStore = (function () {
     function DefaultRoutersStateStore(store, config) {
         if (config === void 0) { config = { historySize: 2 }; }
         this.store = store || {};
         this.config = config;
-        this.observers = {}; // key is routerName
+        this.observers = {};
     }
-    /**
-     * Sets the state of the router state store by adding to the history.
-     * Adding state will completly overwrite existing state.
-     * If the new contains routers whose state is identical to old state
-     *   the router callbacks wont be called for this router. Otherwise, if the state
-     *   has changed in any way, callback will be fired off for the router.
-     */
     DefaultRoutersStateStore.prototype.setState = function (desiredRouterStates) {
         var _this = this;
         var routerNames = Object.keys(desiredRouterStates);
-        // Keeps track of which routers have new state.
-        // Used to notify observers of new state changes on a router by router level
         var hasUpdatedTracker = [];
         this.store = routerNames.reduce(function (routerStates, routerName) {
-            // extract current and historical states
             var _a = routerStates[routerName] || { current: {}, historical: [] }, prevCurrent = _a.current, historical = _a.historical;
             var newCurrent = desiredRouterStates[routerName];
-            // skip routers who haven't been updated
-            // TODO test performance of this JSON.stringify comparison
             if (JSON.stringify(newCurrent) === JSON.stringify(prevCurrent)) {
                 return routerStates;
             }
-            // clone historical states
             var newHistorical = historical.slice();
-            // check to make sure there is state to record into history
             if (Object.keys(prevCurrent).length > 0) {
-                // add current to historical states
                 newHistorical.unshift(prevCurrent);
             }
-            // enforce history size
             if (newHistorical.length > _this.config.historySize) {
                 newHistorical = newHistorical.slice(0, _this.config.historySize);
             }
-            // update state to include new router state
             routerStates[routerName] = { current: newCurrent, historical: newHistorical };
-            // record which routers have had a state change
             hasUpdatedTracker.push(routerName);
             return routerStates;
         }, __assign({}, this.getState()));
-        // call observers of all routers that have had state changes
         hasUpdatedTracker.forEach(function (routerName) {
             var observers = _this.observers[routerName] || [];
             if (Array.isArray(observers)) {
@@ -664,19 +605,10 @@ var DefaultRoutersStateStore = /** @class */ (function () {
             }
         });
     };
-    /**
-     * Returns a function which has a router name in closure scope.
-     * The returned function is used for getting the router store state for a specific router.
-     */
     DefaultRoutersStateStore.prototype.createRouterStateGetter = function (routerName) {
         var _this = this;
         return function () { return _this.store[routerName] || {}; };
     };
-    /**
-     * Returns a function which as the router name in closure scope.
-     * The returned function is used subscribe observers to changes in
-     *   a single routers state.
-     */
     DefaultRoutersStateStore.prototype.createRouterStateSubscriber = function (routerName) {
         var _this = this;
         if (!this.observers[routerName]) {
@@ -695,8 +627,6 @@ var DefaultRoutersStateStore = /** @class */ (function () {
         var _this = this;
         return function (fn) {
             if (!_this.observers[routerName]) {
-                // TODO add to logger
-                // console.warn('No subscribers present to unscribe from store');
                 return;
             }
             var observers = _this.observers[routerName];
@@ -705,26 +635,15 @@ var DefaultRoutersStateStore = /** @class */ (function () {
     };
     DefaultRoutersStateStore.prototype.unsubscribeAllObserversForRouter = function (routerName) {
         if (!this.observers[routerName]) {
-            // TODO add to logger
-            // console.warn('No subscribers present to unscribe from store');
             return;
         }
         delete this.observers[routerName];
     };
-    /**
-     * Returns the stores state for all routers
-     */
     DefaultRoutersStateStore.prototype.getState = function () { return this.store; };
     return DefaultRoutersStateStore;
 }());
 
-/**
- * Used to manipulate the router cache
- * Cache is set when a router 'hides'
- * Depending on the router type logic, a router can use its
- * cache when setting new state instead of a default value
- */
-var Cache = /** @class */ (function () {
+var Cache = (function () {
     function Cache() {
         this._cacheStore = undefined;
     }
@@ -748,9 +667,7 @@ var Cache = /** @class */ (function () {
     Cache.prototype.setCache = function (value) {
         this._cacheStore = value;
     };
-    // TODO Fix this any type once Router has a type definition
     Cache.prototype.setCacheFromLocation = function (location, routerInstance) {
-        // dont set cache if one already exists!
         if (this.hasCache) {
             return;
         }
@@ -766,10 +683,9 @@ var Cache = /** @class */ (function () {
     return Cache;
 }());
 
-var RouterBase = /** @class */ (function () {
+var RouterBase = (function () {
     function RouterBase(init) {
         var name = init.name, config = init.config, type = init.type, manager = init.manager, parent = init.parent, routers = init.routers, root = init.root, getState = init.getState, subscribe = init.subscribe;
-        // required
         if (!name || !type || !manager) {
             throw new Error('Missing required kwargs: name, type, and/or manager');
         }
@@ -780,14 +696,11 @@ var RouterBase = /** @class */ (function () {
         }
         this.type = type;
         this.manager = manager;
-        // optional
         this.parent = parent;
         this.routers = routers || {};
         this.root = root;
-        // methods customized for instance from manager
         this.getState = getState;
         this.subscribe = subscribe;
-        // store the routers location data for rehydration
         this.cache = new Cache();
     }
     Object.defineProperty(RouterBase.prototype, "routeKey", {
@@ -828,8 +741,6 @@ var RouterBase = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
-    // TODO Remove testing dependency - this shouldn't be used since it bypasses the manager
-    // Create utility function instead to orchestrate relationships between routers
     RouterBase.prototype._addChildRouter = function (router) {
         if (!router.type) {
             throw new Error('Router is missing type');
@@ -841,40 +752,25 @@ var RouterBase = /** @class */ (function () {
     };
     Object.defineProperty(RouterBase.prototype, "isPathRouter", {
         get: function () {
-            // if there is no parent, we are at the root. The root is by default a path router since
-            // it represents the '/' in a pathname location
             if (!this.parent) {
                 return true;
             }
-            // if this router was explicitly set to be a path router during config, return true
             if (this.config.isPathRouter && this.parent.isPathRouter) {
                 return true;
             }
-            // else if this router is a path router but its parent isn't we need to throw an error.
-            // it is impossible to construct a path if all the parents are also not path routers
             if (this.config.isPathRouter) {
                 throw new Error(this.type + " router: " + this.name + " is explicitly set to modify the pathname\n        but one of its parent routers doesnt have this permission.\n        Make sure all parents have 'isPathRouter' attribute set to 'true' in the router config OR\n        Make sure all parents are of router type 'scene' or 'data'.\n        If the routers parents have siblings of both 'scene' and 'data' the 'scene' router will always be used for the pathname\n      ");
             }
             if (this.type === 'scene' && this.parent.isPathRouter) {
-                // check to make sure neighboring data routers arent explicitly set to modify the pathname
                 var neighboringDataRouters = this.getNeighborsByType('data');
-                var isSiblingRouterExplictlyAPathRouter = neighboringDataRouters.reduce(function (acc, r) { return (
-                // check all data router neighbors and
-                // make sure none have been explicitly set to be a path router
-                acc || r.config.isPathRouter === true); }, false);
+                var isSiblingRouterExplictlyAPathRouter = neighboringDataRouters.reduce(function (acc, r) { return (acc || r.config.isPathRouter === true); }, false);
                 if (isSiblingRouterExplictlyAPathRouter === false) {
                     return true;
                 }
             }
             else if (this.type === 'data' && this.parent && this.parent.isPathRouter) {
-                // TODO FIX ME - causes stack overflow
-                // if (this.isPathRouter === false) return false;
-                // check to make sure neighboring scene routers aren't present
                 var neighboringSceneRouters = this.getNeighborsByType('scene');
-                return (neighboringSceneRouters.length === 0) && !this.siblings.reduce(function (acc, r) { return (
-                // check all data router siblings and
-                // make sure none are path routers
-                acc || r.config.isPathRouter === true); }, false);
+                return (neighboringSceneRouters.length === 0) && !this.siblings.reduce(function (acc, r) { return (acc || r.config.isPathRouter === true); }, false);
             }
             return false;
         },
@@ -908,20 +804,15 @@ var RouterBase = /** @class */ (function () {
 
 var show = function (options, location, router, ctx) {
     if (ctx === void 0) { ctx = {}; }
-    // hide sibling routers
     location = router.siblings.reduce(function (acc, s) {
         return s.hide(options, acc, s, ctx);
     }, location);
     if (router.isPathRouter) {
         var parent_1 = router.parent;
-        // If we are not adding defaults or the parent is not visible, use the existing location
-        // This can happen when a router is called randomly. We don't want a router to become visible if it's 
-        //   parent isn't visible.
         if (!ctx.addingDefaults && (!parent_1 || (!parent_1.state.visible && !parent_1.isRootRouter))) {
             return location;
         }
         location.pathname[router.pathLocation] = router.routeKey;
-        // drop pathname after this pathLocation
         location.pathname = location.pathname.slice(0, router.pathLocation + 1);
     }
     else {
@@ -953,21 +844,14 @@ var scene = {
     reducer: reducer,
 };
 
-// returns the routeKey names of visible routers based on the ordering of their 'order' state
 function getRouteKeyOrderings(router) {
-    // creates an object of { [visible router routeKey]: order }
     var routeKeyOrderObj = router.parent.routers[router.type].reduce(function (acc, r) {
         if (r.state.visible === false) {
             return acc;
         }
-        // TODO use generics to handle state type
         acc[r.routeKey] = r.state.order;
         return acc;
     }, {});
-    /**
-     * { <routeKeyName>: <order> }
-     */
-    // reduce the order object to the array of sorted keys
     var routerRouteKeys = Object.keys(routeKeyOrderObj);
     var orderAsKey = routerRouteKeys.reduce(function (acc, key) {
         var value = routeKeyOrderObj[key];
@@ -987,22 +871,16 @@ var show$1 = function (options, location, router, ctx) {
         return location;
     }
     var sortedKeys = getRouteKeyOrderings(router);
-    // find index of this routers routeKey
     var index = sortedKeys.indexOf(router.routeKey);
     if (index > -1) {
-        // remove routeKey if it exists
         sortedKeys.splice(index, 1);
     }
-    // add route key to front of sorted keys
     sortedKeys.unshift(router.routeKey);
-    // create search object
     var search = sortedKeys.reduce(function (acc, key, i) {
         acc[key] = i + 1;
         return acc;
     }, {});
     location.search = __assign({}, location.search, search);
-    // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-    // return { pathname: location.pathname, search, options };
     return location;
 };
 var hide$1 = function (options, location, router, ctx) {
@@ -1010,22 +888,16 @@ var hide$1 = function (options, location, router, ctx) {
         return location;
     }
     var sortedKeys = getRouteKeyOrderings(router);
-    // find index of this routers routeKey
     var index = sortedKeys.indexOf(router.routeKey);
     if (index > -1) {
-        // remove routeKey if it exists
         sortedKeys.splice(index, 1);
     }
-    // create router type data obj
     var search = sortedKeys.reduce(function (acc, key, i) {
         acc[key] = i + 1;
         return acc;
     }, {});
-    // remove this routeKey from the router type search
     search[router.routeKey] = undefined;
     location.search = __assign({}, location.search, search);
-    // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-    // return { pathname: location.pathname, search, options };
     return location;
 };
 var forward = function (options, location, router, ctx) {
@@ -1033,25 +905,17 @@ var forward = function (options, location, router, ctx) {
         return location;
     }
     var sortedKeys = getRouteKeyOrderings(router);
-    // find index of this routers routeKey
     var index = sortedKeys.indexOf(router.routeKey);
     if (index > -1) {
-        // remove routeKey if it exists
         sortedKeys.splice(index, 1);
     }
-    // move routeKey router forward by one in the ordered routeKey list
     var newIndex = index >= 1 ? index - 1 : 0;
     sortedKeys.splice(newIndex, 0, router.routeKey);
-    // create router type data obj
     var search = sortedKeys.reduce(function (acc, key, i) {
         acc[key] = i + 1;
         return acc;
     }, {});
-    // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-    // return { pathname: location.pathname, search, options };
     location.search = __assign({}, location.search, search);
-    // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-    // return { pathname: location.pathname, search, options };
     return location;
 };
 var backward = function (options, location, router, ctx) {
@@ -1059,30 +923,20 @@ var backward = function (options, location, router, ctx) {
         return location;
     }
     var sortedKeys = getRouteKeyOrderings(router);
-    // find index of this routers routeKey
     var index = sortedKeys.indexOf(router.routeKey);
     if (index > -1) {
-        // remove routeKey if it exists
         sortedKeys.splice(index, 1);
     }
-    // move routeKey router backward by one in the ordered routeKey list
     var newIndex = index + 1;
     sortedKeys.splice(newIndex, 0, router.routeKey);
-    // create router type data obj
     var search = sortedKeys.reduce(function (acc, key, i) {
         acc[key] = i + 1;
         return acc;
     }, {});
-    // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-    // return { pathname: location.pathname, search, options };
-    // return { pathname: location.pathname, search, options };
     location.search = __assign({}, location.search, search);
-    // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-    // return { pathname: location.pathname, search, options };
     return location;
 };
 var toFront = function (options, location, router, ctx) {
-    // const newLocation = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
     return router.show(options, location, router, ctx);
 };
 var toBack = function (options, location, router, ctx) {
@@ -1090,24 +944,16 @@ var toBack = function (options, location, router, ctx) {
         return location;
     }
     var sortedKeys = getRouteKeyOrderings(router);
-    // find index of this routers routeKey
     var index = sortedKeys.indexOf(router.routeKey);
     if (index > -1) {
-        // remove routeKey if it exists
         sortedKeys.splice(index, 1);
     }
-    // add to back of stack
     sortedKeys.push(router.routeKey);
-    // create router type data obj
     var search = sortedKeys.reduce(function (acc, key, i) {
         acc[key] = i + 1;
         return acc;
     }, {});
-    // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-    // return { pathname: location.pathname, search, options };
     location.search = __assign({}, location.search, search);
-    // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-    // return { pathname: location.pathname, search, options };
     return location;
 };
 var reducer$1 = function (location, router, ctx) {
@@ -1122,12 +968,6 @@ var reducer$1 = function (location, router, ctx) {
         order: undefined,
         visible: false,
     };
-    // if (router.isPathRouter) {
-    //   newState['visible'] = location.pathname[router.pathLocation] === router.routeKey;
-    // } else {
-    //   newState['visible'] = location.search[router.routeKey] === 'true';
-    // }
-    // return newState;
 };
 var stack = {
     actions: { show: show$1, hide: hide$1, forward: forward, backward: backward, toFront: toFront, toBack: toBack },
@@ -1139,10 +979,7 @@ var show$2 = function (options, location, router, ctx) {
     var data = options.data || router.state.data;
     if (router.isPathRouter) {
         var parent_1 = router.parent;
-        // TODO document why this is necessary
-        // if (!ctx.addingDefaults && (!parent || (!parent.state.visible && !parent.isRootRouter))) { return location; }
         location.pathname[router.pathLocation] = data;
-        // drop pathname after this pathLocation
         location.pathname = location.pathname.slice(0, router.pathLocation + 1);
     }
     else {
@@ -1206,67 +1043,48 @@ var capitalize = function (name) {
     if (name === void 0) { name = ''; }
     return name.charAt(0).toUpperCase() + name.slice(1);
 };
-var Manager = /** @class */ (function () {
+var Manager = (function () {
     function Manager(_a) {
         var _b = _a === void 0 ? {} : _a, routerTree = _b.routerTree, serializedStateStore = _b.serializedStateStore, routerStateStore = _b.routerStateStore;
         var _this = this;
         this.routerStateStore = routerStateStore || new DefaultRoutersStateStore();
         this.routers = {};
         this.rootRouter = null;
-        // check if window
         if (typeof window === 'undefined') {
             this.serializedStateStore = serializedStateStore || new NativeStore();
         }
         else {
             this.serializedStateStore = serializedStateStore || new BrowserStore();
         }
-        // router types
         var templates = { scene: scene, stack: stack, data: data, feature: feature };
         this.routerTypes = {};
-        // TODO implement
-        // Manager.validateTemplates(templates);
-        // validate all template names are unique
-        // validation should make sure action names dont collide with any Router method names
         Object.keys(templates).forEach(function (templateName) {
-            // create a RouterType off the base Router
-            // extend router base for specific type
-            var RouterType = /** @class */ (function (_super) {
+            var RouterType = (function (_super) {
                 __extends(RouterType, _super);
                 function RouterType() {
                     return _super !== null && _super.apply(this, arguments) || this;
                 }
                 return RouterType;
             }(RouterBase));
-            // change the router name to include the type
             Object.defineProperty(RouterType, 'name', { value: capitalize(templateName) + "Router" });
-            // fetch template
             var selectedTemplate = templates[templateName];
-            // add actions to RouterType
             Object.keys(selectedTemplate.actions).forEach(function (actionName) {
                 RouterType.prototype[actionName] = Manager.createActionWrapperFunction(selectedTemplate.actions[actionName], actionName);
             });
-            // add reducer to RouterType
             RouterType.prototype.reducer = selectedTemplate.reducer;
-            // add parser to RouterType
-            // RouterType.prototype.parser = selectedTemplate.parser;
             _this.routerTypes[templateName] = RouterType;
         });
-        // add initial routers
         this.addRouters(routerTree);
-        // subscribe to URL changes and update the router state when this happens
         this.serializedStateStore.subscribeToStateChanges(this.setNewRouterState.bind(this));
     }
     Manager.setChildrenDefaults = function (options, location, router, ctx) {
         var newLocation = __assign({}, location);
         Object.keys(router.routers).forEach(function (routerType) {
             router.routers[routerType].forEach(function (child) {
-                // if the cached visibility state is 'false' don't show on rehydration
                 if (child.cache.state === false) {
                     return;
                 }
-                // if there is a cache state or a default visibility, show the router
                 if (child.config.defaultShow || child.cache.state === true) {
-                    // the cache has been 'used' so remove it
                     child.cache.removeCache();
                     var newContext = __assign({}, ctx, { addingDefaults: true });
                     newLocation = child.show(options, newLocation, child, newContext);
@@ -1279,7 +1097,6 @@ var Manager = /** @class */ (function () {
         if (ctx === void 0) { ctx = {}; }
         var newLocation = location;
         var disableCaching;
-        // figure out if caching should occur
         if (router.config.disableCaching !== undefined) {
             disableCaching = router.config.disableCaching;
         }
@@ -1288,40 +1105,31 @@ var Manager = /** @class */ (function () {
         }
         Object.keys(router.routers).forEach(function (routerType) {
             router.routers[routerType].forEach(function (child) {
-                // update ctx object's caching attr for this branch
                 ctx.disableCaching = disableCaching;
-                // call location action
                 newLocation = child.hide(options, location, child, ctx);
             });
         });
-        // use caching figured out above b/c the ctx object might get mutate when
-        // transversing the router tree
         if (!disableCaching) {
             router.cache.setCacheFromLocation(newLocation, router);
         }
         return newLocation;
     };
-    // wrapper around action function
     Manager.createActionWrapperFunction = function (action, type) {
         function actionWrapper(options, existingLocation, routerInstance, ctx) {
             if (routerInstance === void 0) { routerInstance = this; }
             if (ctx === void 0) { ctx = {}; }
-            // if called from another action wrapper
             var updatedLocation;
             if (existingLocation) {
-                // set cache before location changes b/c cache info is derived from location path
                 if (type === 'hide') {
                     updatedLocation = Manager.setCacheAndHide(options, existingLocation, routerInstance, ctx);
                 }
                 updatedLocation = action(options, existingLocation, routerInstance, ctx);
-                if (type === 'show') { // add location defaults from children
+                if (type === 'show') {
                     updatedLocation = Manager.setChildrenDefaults(options, updatedLocation, routerInstance, ctx);
                 }
                 return updatedLocation;
             }
-            // if called directly, fetch location
             updatedLocation = this.manager.serializedStateStore.getState();
-            // set cache before location changes b/c cache info is derived from location path
             if (type === 'hide') {
                 updatedLocation = Manager.setCacheAndHide(options, updatedLocation, routerInstance, ctx);
             }
@@ -1329,31 +1137,22 @@ var Manager = /** @class */ (function () {
             if (type === 'hide' && routerInstance.state.visible === true) {
                 routerInstance.cache.setCache(false);
             }
-            if (type === 'show') { // add location defaults from children
+            if (type === 'show') {
                 updatedLocation = Manager.setChildrenDefaults(options, updatedLocation, routerInstance, ctx);
             }
-            // add user options to new location options
             updatedLocation.options = __assign({}, updatedLocation.options, options);
-            // set serialized state
             this.manager.serializedStateStore.setState(updatedLocation);
         }
         return actionWrapper;
     };
-    /**
-     * Adds the initial routers defined during initialization*
-     */
     Manager.prototype.addRouters = function (router, type, parentName) {
         var _this = this;
         if (router === void 0) { router = null; }
         if (type === void 0) { type = null; }
         if (parentName === void 0) { parentName = null; }
-        // If no router specified, there are no routers to add
         if (!router) {
             return;
         }
-        // The type is derived by the relationship with the parent.
-        //   Or has none, as is the case with the root router in essence
-        //   Below, we are deriving the type and calling the add function recursively by type
         this.addRouter(__assign({}, router, { type: type, parentName: parentName }));
         var childRouters = router.routers || {};
         Object.keys(childRouters).forEach(function (childType) {
@@ -1367,9 +1166,7 @@ var Manager = /** @class */ (function () {
             defaultShow: defaultShow || false,
             routeKey: routeKey,
         };
-        // create a router
         var router = this.createRouter({ name: name, config: config, type: type, parentName: parentName });
-        // set as the parent router if this router has not parent and there is not yet a root
         if (!parentName && !this.rootRouter) {
             this.rootRouter = router;
         }
@@ -1380,46 +1177,34 @@ var Manager = /** @class */ (function () {
             throw new Error('Parent of to be created router not found');
         }
         else {
-            // fetch the parent, and assign a ref of it to this router
             var parent_1 = this.routers[parentName];
-            // TODO migrate code over to use <router>.addChildRouter method instead
             router.parent = parent_1;
-            // add ref of new router to the parent
             var siblingTypes = parent_1.routers[type] || [];
             siblingTypes.push(router);
             parent_1.routers[type] = siblingTypes;
         }
-        // add ref of new router to manager
         this.routers[name] = router;
     };
-    // removing a router will also unset all of its children
     Manager.prototype.removeRouter = function (name) {
         var _this = this;
         var router = this.routers[name];
         var parent = router.parent, routers = router.routers, type = router.type;
-        // delete ref the parent (if any) stores
         if (parent) {
             var routersToKeep = parent.routers[type].filter(function (child) { return child.name !== name; });
             parent.routers[type] = routersToKeep;
         }
-        // recursively call this method for all children
         var childrenTypes = Object.keys(routers);
         childrenTypes.forEach(function (childType) {
             routers[childType].forEach(function (childRouter) { return _this.removeRouter(childRouter.name); });
         });
-        // remove router related state subscribers
         this.routerStateStore.unsubscribeAllObserversForRouter(name);
-        // delete ref the manager stores
         delete this.routers[name];
     };
-    // create router :specify
     Manager.prototype.createRouter = function (_a) {
         var name = _a.name, config = _a.config, type = _a.type, parentName = _a.parentName;
-        // check if the router name is unique
         if (this.routers[name]) {
             throw new Error("A router with the name '" + name + "' already exists");
         }
-        // check if the router routeKey is unique
         if (config.routeKey) {
             var alreadyExists = Object.values(this.routers).reduce(function (acc, r) {
                 return acc || r.routeKey === config.routeKey;
@@ -1443,8 +1228,6 @@ var Manager = /** @class */ (function () {
         var routerClass = this.routerTypes[type] || this.routerTypes.scene;
         return new routerClass(initalParams);
     };
-    // location -> newState
-    // newState -> routerStates :specify
     Manager.prototype.setNewRouterState = function (location) {
         var newState = this.calcNewRouterState(location, this.rootRouter);
         this.routerStateStore.setState(newState);
@@ -1456,9 +1239,7 @@ var Manager = /** @class */ (function () {
         if (!router) {
             return;
         }
-        // calc new router state from new location and existing state
         newState[router.name] = router.reducer(location, router, ctx);
-        // recursive call all children to add their state
         Object.keys(router.routers)
             .forEach(function (type) {
             router.routers[type]
@@ -1469,13 +1250,4 @@ var Manager = /** @class */ (function () {
     return Manager;
 }());
 
-var index = {
-    Manager: Manager,
-    routerStateStore: DefaultRoutersStateStore,
-    NativeSerializedStore: NativeStore,
-    BrowserSerializedStore: BrowserStore,
-    serializer: serializer,
-    deserializer: deserializer,
-};
-
-export default index;
+export { Manager, DefaultRoutersStateStore as routerStateStore, NativeStore as NativeSerializedStore, BrowserStore as BrowserSerializedStore, serializer, deserializer };

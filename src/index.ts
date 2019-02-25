@@ -7,7 +7,7 @@ import {
   deserializer,
 } from './serializedState';
 
-export default {
+export {
   Manager,
   routerStateStore,
   NativeSerializedStore,

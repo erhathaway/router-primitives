@@ -18,9 +18,6 @@ export default class Manager {
     routerStateStore: IInit['routerStateStore'];
     private routerTypes;
     constructor({ routerTree, serializedStateStore, routerStateStore }?: IInit);
-    /**
-     * Adds the initial routers defined during initialization*
-     */
     addRouters(router?: IRouterDeclaration, type?: string, parentName?: string): void;
     addRouter({ name, routeKey, disableCaching, defaultShow, type, parentName }: IRouterDeclaration): void;
     removeRouter(name: string): void;

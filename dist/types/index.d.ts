@@ -1,7 +1,4 @@
 import RouterBase from "../router/base";
-/**
- * Location types
- */
 export interface IInputSearch {
     [key: string]: any;
 }
@@ -27,9 +24,6 @@ export interface ILocationActionContext {
     disableCaching?: boolean;
     addingDefaults?: boolean;
 }
-/**
- * Rotuer template types
- */
 export interface IRouter extends RouterBase {
     show: RouterAction;
     hide: RouterAction;
@@ -48,9 +42,6 @@ export interface IRouterTemplate {
     };
     reducer: RouterReducer;
 }
-/**
- * Router state types
- */
 export interface IRouterCurrentState {
     visible?: boolean;
     data?: string;
@@ -60,9 +51,6 @@ export interface IRouterState {
     current: IRouterCurrentState;
     historical: RouterHistoryState;
 }
-/**
- * Router declaration object
- */
 export interface IRouterDeclaration {
     name: string;
     routers?: {
