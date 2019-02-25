@@ -1,5 +1,5 @@
 import { IOutputLocation, IRouter } from "../types";
-declare type CacheValue = string | boolean;
+declare type CacheValue = boolean;
 /**
  * Used to manipulate the router cache
  * Cache is set when a router 'hides'
@@ -10,7 +10,7 @@ declare class Cache {
     private _cacheStore?;
     constructor();
     readonly hasCache: boolean;
-    readonly state: CacheValue;
+    readonly state: boolean;
     removeCache(): void;
     setCache(value: CacheValue): void;
     setCacheFromLocation(location: IOutputLocation, routerInstance: IRouter): void;

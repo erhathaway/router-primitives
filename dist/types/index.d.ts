@@ -9,6 +9,7 @@ export interface IOutputSearch {
     [key: string]: string | string[] | undefined;
 }
 export interface ILocationOptions {
+    data?: string;
     replaceLocation?: boolean;
 }
 declare type Pathname = string[];
@@ -24,6 +25,7 @@ export interface IInputLocation {
 }
 export interface ILocationActionContext {
     disableCaching?: boolean;
+    addingDefaults?: boolean;
 }
 /**
  * Rotuer template types
@@ -34,9 +36,7 @@ export interface IRouter extends RouterBase {
     reducer: RouterReducer;
 }
 export declare type IRouterActionOptions = ILocationOptions;
-export declare type RouterAction = (options: IRouterActionOptions, location?: IInputLocation, router?: IRouter, ctx?: {
-    [key: string]: any;
-}) => IInputLocation;
+export declare type RouterAction = (options?: IRouterActionOptions, location?: IInputLocation, router?: IRouter, ctx?: ILocationActionContext) => IInputLocation;
 export declare type RouterReducer = (location: IInputLocation, router: IRouter, ctx: {
     [key: string]: any;
 }) => {
@@ -53,6 +53,7 @@ export interface IRouterTemplate {
  */
 export interface IRouterCurrentState {
     visible?: boolean;
+    data?: string;
 }
 export declare type RouterHistoryState = IRouterCurrentState[];
 export interface IRouterState {

@@ -10,7 +10,6 @@ export default class Manager {
     private static setChildrenDefaults;
     private static setCacheAndHide;
     private static createActionWrapperFunction;
-    private static addLocationDefaults;
     routers: {
         [routerName: string]: RouterT;
     };

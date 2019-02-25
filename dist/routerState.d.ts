@@ -42,6 +42,8 @@ export default class DefaultRoutersStateStore {
      *   a single routers state.
      */
     createRouterStateSubscriber(routerName: string): (fn: Observer) => void;
+    createRouterStateUnsubscriber(routerName: string): (fn: Observer) => void;
+    unsubscribeAllObserversForRouter(routerName: string): void;
     /**
      * Returns the stores state for all routers
      */

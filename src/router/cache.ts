@@ -1,6 +1,6 @@
 import { IOutputLocation, IRouter } from "../types";
 
-type CacheValue = string | boolean;
+type CacheValue = boolean;
 
 /**
  * Used to manipulate the router cache
@@ -38,7 +38,7 @@ class Cache {
 
     let cache;
     if (routerInstance.isPathRouter) {
-      cache = location.pathname[routerInstance.pathLocation];
+      cache = !!location.pathname[routerInstance.pathLocation];
     } else {
       cache = !!location.search[routerInstance.routeKey];
     }

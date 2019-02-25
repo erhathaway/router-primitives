@@ -26,6 +26,7 @@ export default class NativeStore {
     setState(unserializedLocation: IInputLocation, options?: ISetStateOptions): void;
     getState(): import("../types").IOutputLocation;
     subscribeToStateChanges(fn: StateObserver): void;
+    unsubscribeFromStateChanges(fn: StateObserver): void;
     back(): void;
     forward(): void;
     go(historyChange: number): void;

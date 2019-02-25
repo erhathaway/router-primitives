@@ -31,6 +31,7 @@ export interface IInputLocation {
 
 export interface ILocationActionContext {
   disableCaching?: boolean;
+  addingDefaults?: boolean;
 }
 
 /**
@@ -45,7 +46,7 @@ export interface IRouter extends RouterBase {
 // at the moment these should be the same
 export type IRouterActionOptions = ILocationOptions;
 
-export type RouterAction = (options?: IRouterActionOptions, location?: IInputLocation, router?: IRouter, ctx?: { [key: string]: any }) => IInputLocation
+export type RouterAction = (options?: IRouterActionOptions, location?: IInputLocation, router?: IRouter, ctx?: ILocationActionContext) => IInputLocation
 export type RouterReducer = (location: IInputLocation, router: IRouter, ctx: { [key: string]: any }) => { [key: string]: any }
 
 export interface IRouterTemplate {

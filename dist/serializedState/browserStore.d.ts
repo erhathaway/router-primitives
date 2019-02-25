@@ -21,6 +21,7 @@ export default class BrowserStore {
     setState(unserializedLocation: IInputLocation): void;
     getState(): IOutputLocation;
     subscribeToStateChanges(fn: StateObserver): void;
+    unsubscribeFromStateChanges(fn: StateObserver): void;
     back(): void;
     forward(): void;
     go(historyChange: number): void;

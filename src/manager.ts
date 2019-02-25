@@ -17,7 +17,7 @@ export default class Manager {
     let newLocation = { ...location };
     Object.keys(router.routers).forEach((routerType) => {
       router.routers[routerType].forEach((child) => {
-        // if the cached visibility state if 'false' don't show on rehydration
+        // if the cached visibility state is 'false' don't show on rehydration
         if (child.cache.state === false) { return; }
 
         // if there is a cache state or a default visibility, show the router
@@ -111,20 +111,20 @@ export default class Manager {
     return actionWrapper;
   }
 
-  private static addLocationDefaults(options: IRouterActionOptions, location: IInputLocation, routerInstance: RouterT, ctx: ILocationActionContext = {}) {
-    // TODO validate default action names are on type
-    let locationWithDefaults = { ...location };
+  // private static addLocationDefaults(options: IRouterActionOptions, location: IInputLocation, routerInstance: RouterT, ctx: ILocationActionContext = {}) {
+  //   // TODO validate default action names are on type
+  //   let locationWithDefaults = { ...location };
 
-    Object.keys(routerInstance.routers).forEach((type) => {
-      routerInstance.routers[type].forEach((router) => {
-        if (router.config.defaultShow || false) {
-          const newContext = { ...ctx, addingDefaults: true };
-          locationWithDefaults = router.show(options, locationWithDefaults, router, newContext);
-        }
-      });
-    });
-    return locationWithDefaults;
-  }
+  //   Object.keys(routerInstance.routers).forEach((type) => {
+  //     routerInstance.routers[type].forEach((router) => {
+  //       if (router.config.defaultShow) {
+  //         const newContext = { ...ctx, addingDefaults: true };
+  //         locationWithDefaults = router.show(options, locationWithDefaults, router, newContext);
+  //       }
+  //     });
+  //   });
+  //   return locationWithDefaults;
+  // }
 
   public routers: { [routerName: string]: RouterT };
   public rootRouter: RouterT;

@@ -6,7 +6,7 @@ const show: RouterAction = (options, location, router, ctx = {}) => {
     const { parent } = router;
 
     // TODO document why this is necessary
-    if (!ctx.addingDefaults && (!parent || (!parent.state.visible && !parent.isRootRouter))) { return location; }
+    // if (!ctx.addingDefaults && (!parent || (!parent.state.visible && !parent.isRootRouter))) { return location; }
 
     location.pathname[router.pathLocation] = data;
     // drop pathname after this pathLocation

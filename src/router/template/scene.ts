@@ -9,7 +9,9 @@ const show: RouterAction = (options, location, router, ctx = {}) => {
   if (router.isPathRouter) {
     const { parent } = router;
 
-    // TODO document why this is necessary
+    // If we are not adding defaults or the parent is not visible, use the existing location
+    // This can happen when a router is called randomly. We don't want a router to become visible if it's 
+    //   parent isn't visible.
     if (!ctx.addingDefaults && (!parent || (!parent.state.visible && !parent.isRootRouter))) { return location; }
 
     location.pathname[router.pathLocation] = router.routeKey;
