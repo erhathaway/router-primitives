@@ -1,12 +1,10 @@
 import Cache from './cache';
-import { IRouterState, IRouter, IRouterConfig, IRouterCurrentState, RouterHistoryState } from '../types';
+import { IRouterState, IRouter, IRouterConfig, IRouterCurrentState, RouterHistoryState, Observer } from '../types';
 
 
 interface IChildRouters {
   [key: string]: IRouter[]
 }
-
-type Observer = (state: IRouterState) => any;
 
 interface InitParams {
   name: string;

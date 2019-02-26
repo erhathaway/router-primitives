@@ -1,8 +1,9 @@
 import { NativeSerializedStore, BrowserSerializedStore } from './serializedState';
 import DefaultRouterStateStore from './routerState';
-import Router from './router/base';
+import DefaultRouter from './router/base';
 import { scene, stack, data, feature } from './router/template';
-import { IRouterDeclaration, IRouter as RouterT, IRouterTemplate, IInputLocation, ILocationActionContext, RouterAction, IOutputLocation, IRouterInitParams, IRouterActionOptions } from './types';
+import { IRouterDeclaration, IRouter as RouterT, IRouterTemplate, IInputLocation, ILocationActionContext, RouterAction, IOutputLocation, IRouterInitParams, IRouterActionOptions, IRouterConfig, Observer } from './types';
+import Router from './router/base';
 
 const capitalize = (name = '') => name.charAt(0).toUpperCase() + name.slice(1);
 
@@ -10,7 +11,21 @@ interface IInit {
   routerTree?: IRouterDeclaration;
   serializedStateStore?: NativeSerializedStore | BrowserSerializedStore;
   routerStateStore?: DefaultRouterStateStore;
+  router?: typeof DefaultRouter
 }
+
+interface IRouterInitArgs {
+  name: string,
+  config: IRouterConfig
+  type: string,
+  parent?: Router,
+  routers: { [type: string]: [Router] },
+  manager: Manager,
+  root?: Router,
+  getState?: () => any,
+  subscribe?: (observer: Observer) => any;
+}
+
 
 export default class Manager {
   private static setChildrenDefaults(options: IRouterActionOptions, location: IInputLocation, router: RouterT, ctx: ILocationActionContext) {
@@ -132,7 +147,7 @@ export default class Manager {
   public routerStateStore: IInit['routerStateStore'];
   private routerTypes: { [routerType: string]: RouterT };
 
-  constructor({ routerTree, serializedStateStore, routerStateStore }: IInit = {}) {
+  constructor({ routerTree, serializedStateStore, routerStateStore, router }: IInit = {}) {
     this.routerStateStore = routerStateStore || new DefaultRouterStateStore();
     this.routers = {};
     this.rootRouter = null;
@@ -153,6 +168,7 @@ export default class Manager {
     // validate all template names are unique
     // validation should make sure action names dont collide with any Router method names
 
+    const Router = router || DefaultRouter; //tslint:disable-line
     Object.keys(templates).forEach((templateName) => {
       // create a RouterType off the base Router
 
@@ -187,7 +203,7 @@ export default class Manager {
   }
 
   /**
-   * Adds the initial routers defined during initialization*
+   * Adds the initial routers defined during initialization
    */
   public addRouters(router: IRouterDeclaration = null, type: string = null, parentName: string = null) {
     // If no router specified, there are no routers to add
@@ -260,11 +276,14 @@ export default class Manager {
     delete this.routers[name];
   }
 
-  // create router :specify
-  private createRouter({ name, config, type, parentName }: IRouterInitParams) {
-    // check if the router name is unique
+  protected validateRouterDeclaration(name: string, type: string, config: IRouterConfig): void {
+        // check if the router type exists
+    // if (!this.routerTypes[type] && type !== 'root') {
+      // throw new Error(`The router type ${type} for router '${name}' does not exist. Consider creating a template for this type.`);
+    // }
+    // check if the router type has a router template 
     if (this.routers[name]) {
-      throw new Error(`A router with the name '${name}' already exists`);
+      throw new Error(`A router with the name '${name}' already exists.`);
     }
 
     // check if the router routeKey is unique
@@ -276,10 +295,12 @@ export default class Manager {
         throw new Error(`A router with the routeKey '${config.routeKey}' already exists`);
       }
     }
+  }
 
+  protected createNewRouterInitArgs({ name, config, type, parentName}: IRouterInitParams): IRouterInitArgs {
     const parent = this.routers[parentName];
 
-    const initalParams = {
+    return {
       name,
       config: { ...config },
       type: type || 'scene', // TODO make root router an empty router
@@ -290,10 +311,23 @@ export default class Manager {
       getState: this.routerStateStore.createRouterStateGetter(name),
       subscribe: this.routerStateStore.createRouterStateSubscriber(name),
     };
+  }
 
-    const routerClass = this.routerTypes[type] || this.routerTypes.scene;
+  private createRouterFromInitArgs(initalArgs: ReturnType<Manager['createNewRouterInitArgs']>) {
+    const routerClass = this.routerTypes[initalArgs.type];
 
-    return new (routerClass as any)(initalParams) as any as RouterT;
+    return new (routerClass as any)(initalArgs) as any as RouterT;
+  }
+
+  // create router :specify
+  private createRouter({ name, config, type, parentName }: IRouterInitParams): RouterT {
+    this.validateRouterDeclaration(name, type, config);
+    const initalArgs = this.createNewRouterInitArgs({ name, config, type, parentName });
+    return this.createRouterFromInitArgs(initalArgs);
+
+    // const routerClass = this.routerTypes[type] || this.routerTypes.scene;
+
+    // return new (routerClass as any)(initalArgs) as any as RouterT;
   }
 
 

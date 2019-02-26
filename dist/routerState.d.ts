@@ -1,11 +1,10 @@
-import { IRouterState, IRouterCurrentState } from "./types";
+import { IRouterState, IRouterCurrentState, Observer } from "./types";
 interface IStore {
     [key: string]: IRouterState;
 }
 interface IConfig {
     historySize: number;
 }
-declare type Observer = (state: IRouterState) => any;
 export default class DefaultRoutersStateStore {
     private store;
     private config;

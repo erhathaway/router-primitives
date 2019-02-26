@@ -68,6 +68,7 @@ export interface IRouterConfig {
     disableCaching?: boolean;
     defaultShow?: boolean;
 }
+export declare type Observer = (state: IRouterState) => any;
 export interface IRouterInitParams {
     name: string;
     routeKey?: string;

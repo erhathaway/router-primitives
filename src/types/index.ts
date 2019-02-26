@@ -89,6 +89,8 @@ export interface IRouterConfig {
   defaultShow?: boolean;
 }
 
+export type Observer = (state: IRouterState) => any;
+
  export interface IRouterInitParams {
   name: string;
   routeKey?: string;

@@ -1,5 +1,7 @@
 import Manager from './manager';
-import routerStateStore from './routerState';
+import RouterStore from './routerState';
+import Router from './router/base';
+
 import {
   NativeSerializedStore,
   BrowserSerializedStore,
@@ -9,7 +11,8 @@ import {
 
 export {
   Manager,
-  routerStateStore,
+  Router,
+  RouterStore,
   NativeSerializedStore,
   BrowserSerializedStore,
   serializer,

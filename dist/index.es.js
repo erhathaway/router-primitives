@@ -1045,7 +1045,7 @@ var capitalize = function (name) {
 };
 var Manager = (function () {
     function Manager(_a) {
-        var _b = _a === void 0 ? {} : _a, routerTree = _b.routerTree, serializedStateStore = _b.serializedStateStore, routerStateStore = _b.routerStateStore;
+        var _b = _a === void 0 ? {} : _a, routerTree = _b.routerTree, serializedStateStore = _b.serializedStateStore, routerStateStore = _b.routerStateStore, router = _b.router;
         var _this = this;
         this.routerStateStore = routerStateStore || new DefaultRoutersStateStore();
         this.routers = {};
@@ -1058,6 +1058,7 @@ var Manager = (function () {
         }
         var templates = { scene: scene, stack: stack, data: data, feature: feature };
         this.routerTypes = {};
+        var Router = router || RouterBase;
         Object.keys(templates).forEach(function (templateName) {
             var RouterType = (function (_super) {
                 __extends(RouterType, _super);
@@ -1065,7 +1066,7 @@ var Manager = (function () {
                     return _super !== null && _super.apply(this, arguments) || this;
                 }
                 return RouterType;
-            }(RouterBase));
+            }(Router));
             Object.defineProperty(RouterType, 'name', { value: capitalize(templateName) + "Router" });
             var selectedTemplate = templates[templateName];
             Object.keys(selectedTemplate.actions).forEach(function (actionName) {
@@ -1200,10 +1201,9 @@ var Manager = (function () {
         this.routerStateStore.unsubscribeAllObserversForRouter(name);
         delete this.routers[name];
     };
-    Manager.prototype.createRouter = function (_a) {
-        var name = _a.name, config = _a.config, type = _a.type, parentName = _a.parentName;
+    Manager.prototype.validateRouterDeclaration = function (name, type, config) {
         if (this.routers[name]) {
-            throw new Error("A router with the name '" + name + "' already exists");
+            throw new Error("A router with the name '" + name + "' already exists.");
         }
         if (config.routeKey) {
             var alreadyExists = Object.values(this.routers).reduce(function (acc, r) {
@@ -1213,8 +1213,11 @@ var Manager = (function () {
                 throw new Error("A router with the routeKey '" + config.routeKey + "' already exists");
             }
         }
+    };
+    Manager.prototype.createNewRouterInitArgs = function (_a) {
+        var name = _a.name, config = _a.config, type = _a.type, parentName = _a.parentName;
         var parent = this.routers[parentName];
-        var initalParams = {
+        return {
             name: name,
             config: __assign({}, config),
             type: type || 'scene',
@@ -1225,8 +1228,16 @@ var Manager = (function () {
             getState: this.routerStateStore.createRouterStateGetter(name),
             subscribe: this.routerStateStore.createRouterStateSubscriber(name),
         };
-        var routerClass = this.routerTypes[type] || this.routerTypes.scene;
-        return new routerClass(initalParams);
+    };
+    Manager.prototype.createRouterFromInitArgs = function (initalArgs) {
+        var routerClass = this.routerTypes[initalArgs.type];
+        return new routerClass(initalArgs);
+    };
+    Manager.prototype.createRouter = function (_a) {
+        var name = _a.name, config = _a.config, type = _a.type, parentName = _a.parentName;
+        this.validateRouterDeclaration(name, type, config);
+        var initalArgs = this.createNewRouterInitArgs({ name: name, config: config, type: type, parentName: parentName });
+        return this.createRouterFromInitArgs(initalArgs);
     };
     Manager.prototype.setNewRouterState = function (location) {
         var newState = this.calcNewRouterState(location, this.rootRouter);
@@ -1250,4 +1261,4 @@ var Manager = (function () {
     return Manager;
 }());
 
-export { Manager, DefaultRoutersStateStore as routerStateStore, NativeStore as NativeSerializedStore, BrowserStore as BrowserSerializedStore, serializer, deserializer };
+export { Manager, RouterBase as Router, DefaultRoutersStateStore as RouterStore, NativeStore as NativeSerializedStore, BrowserStore as BrowserSerializedStore, serializer, deserializer };

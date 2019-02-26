@@ -1,4 +1,4 @@
-import { IRouterState, IRouterCurrentState } from "./types";
+import { IRouterState, IRouterCurrentState, Observer } from "./types";
 
 interface IStore {
   [key: string]: IRouterState;
@@ -8,7 +8,6 @@ interface IConfig {
   historySize: number;
 }
 
-type Observer = (state: IRouterState) => any;
 
 /**
  * The default router state store.
