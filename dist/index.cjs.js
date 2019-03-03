@@ -1205,6 +1205,23 @@ var Manager = (function () {
         this.routerStateStore.unsubscribeAllObserversForRouter(name);
         delete this.routers[name];
     };
+    Manager.prototype.calcNewRouterState = function (location, router, ctx, newState) {
+        var _this = this;
+        if (ctx === void 0) { ctx = {}; }
+        if (newState === void 0) { newState = {}; }
+        if (!router) {
+            return;
+        }
+        if (!router.isRootRouter) {
+            newState[router.name] = router.reducer(location, router, ctx);
+        }
+        Object.keys(router.routers)
+            .forEach(function (type) {
+            router.routers[type]
+                .forEach(function (childRouter) { return _this.calcNewRouterState(location, childRouter, ctx, newState); });
+        });
+        return newState;
+    };
     Manager.prototype.validateRouterDeclaration = function (name, type, config) {
         if (this.routers[name]) {
             throw new Error("A router with the name '" + name + "' already exists.");
@@ -1237,30 +1254,15 @@ var Manager = (function () {
         var routerClass = this.routerTypes[initalArgs.type];
         return new routerClass(initalArgs);
     };
+    Manager.prototype.setNewRouterState = function (location) {
+        var newState = this.calcNewRouterState(location, this.rootRouter);
+        this.routerStateStore.setState(newState);
+    };
     Manager.prototype.createRouter = function (_a) {
         var name = _a.name, config = _a.config, type = _a.type, parentName = _a.parentName;
         this.validateRouterDeclaration(name, type, config);
         var initalArgs = this.createNewRouterInitArgs({ name: name, config: config, type: type, parentName: parentName });
         return this.createRouterFromInitArgs(initalArgs);
-    };
-    Manager.prototype.setNewRouterState = function (location) {
-        var newState = this.calcNewRouterState(location, this.rootRouter);
-        this.routerStateStore.setState(newState);
-    };
-    Manager.prototype.calcNewRouterState = function (location, router, ctx, newState) {
-        var _this = this;
-        if (ctx === void 0) { ctx = {}; }
-        if (newState === void 0) { newState = {}; }
-        if (!router) {
-            return;
-        }
-        newState[router.name] = router.reducer(location, router, ctx);
-        Object.keys(router.routers)
-            .forEach(function (type) {
-            router.routers[type]
-                .forEach(function (childRouter) { return _this.calcNewRouterState(location, childRouter, ctx, newState); });
-        });
-        return newState;
     };
     return Manager;
 }());

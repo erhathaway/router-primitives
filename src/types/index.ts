@@ -91,10 +91,10 @@ export interface IRouterConfig {
 
 export type Observer = (state: IRouterState) => any;
 
- export interface IRouterInitParams {
+export interface IRouterInitParams {
   name: string;
   routeKey?: string;
   config: IRouterConfig;
   type?: string;
   parentName?: string;
- }
+}

@@ -39,11 +39,11 @@ describe('Router Manager', () => {
     routers: {
       scene: [
         { name: 'user',
-          routers: {
-            scene: [{ name: 'events' }, { name: 'details' }],
-          },
+        routers: {
+          scene: [{ name: 'events' }, { name: 'details' }],
         },
-        { name: 'info' }],
+      },
+      { name: 'info' }],
       feature: [{ name: 'toolbar' }],
       stack: [{ name: 'notification-modal' }],
     }
@@ -206,7 +206,7 @@ describe('Router Manager', () => {
       });
     });
 
-    describe('Subscribing to a routers state', () => {
+    describe('Subscribing to a routers state', () => {   
       const manager = new Manager({ routerTree });
 
       it('issues state updates', () => {
@@ -214,28 +214,24 @@ describe('Router Manager', () => {
         const secondUserObserverFn = jest.fn();
         const rootObserverFn = jest.fn();
 
-        const initialRoutersState = {
-          user: { visible: false, order: 1 },
-          root: { visible: true, order: 22 },
-        }
-
-        manager.routerStateStore.setState(initialRoutersState);
+        const initLocation = { pathname: ['user'], search: {}, options: {}}
+        manager.serializedStateStore.setState(initLocation);
 
         manager.routers['user'].subscribe(userObserverFn);
         manager.routers['user'].subscribe(secondUserObserverFn);
         manager.routers['root'].subscribe(rootObserverFn);
 
-        const location = { pathname: ['test'], search: { param1: '2', param2: 'testparam'}, options: {}}
-        manager.serializedStateStore.setState(location);
+        const nextLocation = { pathname: ['test'], search: { param1: '2', param2: 'testparam'}, options: {}}
+        manager.serializedStateStore.setState(nextLocation);
 
-        expect(userObserverFn.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{ visible: false, order: 1 }] });
+        expect(userObserverFn.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{ visible: true }] });
         expect(userObserverFn.mock.calls.length).toEqual(1);
 
-        expect(secondUserObserverFn.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{ visible: false, order: 1 }] });
+        expect(secondUserObserverFn.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{ visible: true }] });
         expect(secondUserObserverFn.mock.calls.length).toEqual(1);
 
-        expect(rootObserverFn.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{ visible: true, order: 22 }] });
-        expect(rootObserverFn.mock.calls.length).toEqual(1);
+        // root router shouldn't be called
+        expect(rootObserverFn.mock.calls.length).toEqual(0);
       });
     });
 

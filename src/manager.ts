@@ -26,7 +26,6 @@ interface IRouterInitArgs {
   subscribe?: (observer: Observer) => any;
 }
 
-
 export default class Manager {
   private static setChildrenDefaults(options: IRouterActionOptions, location: IInputLocation, router: RouterT, ctx: ILocationActionContext) {
     let newLocation = { ...location };
@@ -145,7 +144,7 @@ export default class Manager {
   public rootRouter: RouterT;
   public serializedStateStore: IInit['serializedStateStore'];
   public routerStateStore: IInit['routerStateStore'];
-  private routerTypes: { [routerType: string]: RouterT };
+  public routerTypes: { [routerType: string]: RouterT };
 
   constructor({ routerTree, serializedStateStore, routerStateStore, router }: IInit = {}) {
     this.routerStateStore = routerStateStore || new DefaultRouterStateStore();
@@ -240,7 +239,6 @@ export default class Manager {
       // fetch the parent, and assign a ref of it to this router
       const parent = this.routers[parentName];
 
-      // TODO migrate code over to use <router>.addChildRouter method instead
       router.parent = parent;
 
       // add ref of new router to the parent
@@ -274,6 +272,24 @@ export default class Manager {
 
     // delete ref the manager stores
     delete this.routers[name];
+  }
+
+  public calcNewRouterState(location: IInputLocation, router: RouterT, ctx: ILocationActionContext = {}, newState: { [routerName: string]: {}} = {}) {
+    if (!router) { return; }
+
+    // calc new router state from new location and existing state
+    if (!router.isRootRouter) { // TODO add tests for this
+      newState[router.name] = router.reducer(location, router, ctx);
+    }
+
+    // recursive call all children to add their state
+    Object.keys(router.routers)
+      .forEach((type) => {
+        router.routers[type]
+          .forEach(childRouter => this.calcNewRouterState(location, childRouter, ctx, newState));
+      });
+
+    return newState;
   }
 
   protected validateRouterDeclaration(name: string, type: string, config: IRouterConfig): void {
@@ -313,45 +329,23 @@ export default class Manager {
     };
   }
 
-  private createRouterFromInitArgs(initalArgs: ReturnType<Manager['createNewRouterInitArgs']>) {
+  protected createRouterFromInitArgs(initalArgs: ReturnType<Manager['createNewRouterInitArgs']>) {
     const routerClass = this.routerTypes[initalArgs.type];
 
     return new (routerClass as any)(initalArgs) as any as RouterT;
   }
 
-  // create router :specify
-  private createRouter({ name, config, type, parentName }: IRouterInitParams): RouterT {
-    this.validateRouterDeclaration(name, type, config);
-    const initalArgs = this.createNewRouterInitArgs({ name, config, type, parentName });
-    return this.createRouterFromInitArgs(initalArgs);
-
-    // const routerClass = this.routerTypes[type] || this.routerTypes.scene;
-
-    // return new (routerClass as any)(initalArgs) as any as RouterT;
-  }
-
-
-
   // location -> newState
   // newState -> routerStates :specify
-  private setNewRouterState(location: IInputLocation) {
+  protected setNewRouterState(location: IInputLocation) {
     const newState = this.calcNewRouterState(location, this.rootRouter);
     this.routerStateStore.setState(newState);
   }
 
-  private calcNewRouterState(location: IInputLocation, router: RouterT, ctx: ILocationActionContext = {}, newState: { [routerName: string]: {}} = {}) {
-    if (!router) { return; }
-
-    // calc new router state from new location and existing state
-    newState[router.name] = router.reducer(location, router, ctx);
-
-    // recursive call all children to add their state
-    Object.keys(router.routers)
-      .forEach((type) => {
-        router.routers[type]
-          .forEach(childRouter => this.calcNewRouterState(location, childRouter, ctx, newState));
-      });
-
-    return newState;
+  // create router :specify
+  protected createRouter({ name, config, type, parentName }: IRouterInitParams): RouterT {
+    this.validateRouterDeclaration(name, type, config);
+    const initalArgs = this.createNewRouterInitArgs({ name, config, type, parentName });
+    return this.createRouterFromInitArgs(initalArgs);
   }
 }

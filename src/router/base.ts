@@ -30,7 +30,6 @@ export default class RouterBase {
   public config: InitParams['config'];
   public cache: Cache;
 
-
   constructor(init: InitParams) {
     const { name, config, type, manager, parent, routers, root, getState, subscribe } = init;
 
