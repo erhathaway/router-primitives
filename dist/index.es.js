@@ -685,7 +685,8 @@ var Cache = (function () {
 
 var RouterBase = (function () {
     function RouterBase(init) {
-        var name = init.name, config = init.config, type = init.type, manager = init.manager, parent = init.parent, routers = init.routers, root = init.root, getState = init.getState, subscribe = init.subscribe;
+        var _this = this;
+        var name = init.name, config = init.config, type = init.type, manager = init.manager, parent = init.parent, routers = init.routers, root = init.root, getState = init.getState, subscribe = init.subscribe, actions = init.actions;
         if (!name || !type || !manager) {
             throw new Error('Missing required kwargs: name, type, and/or manager');
         }
@@ -702,6 +703,11 @@ var RouterBase = (function () {
         this.getState = getState;
         this.subscribe = subscribe;
         this.cache = new Cache();
+        (actions || []).forEach(function (actionName) {
+            if (_this[actionName]) {
+                _this[actionName] = _this[actionName].bind(_this);
+            }
+        });
     }
     Object.defineProperty(RouterBase.prototype, "routeKey", {
         get: function () {
@@ -1045,7 +1051,7 @@ var capitalize = function (name) {
 };
 var Manager = (function () {
     function Manager(_a) {
-        var _b = _a === void 0 ? {} : _a, routerTree = _b.routerTree, serializedStateStore = _b.serializedStateStore, routerStateStore = _b.routerStateStore, router = _b.router;
+        var _b = _a === void 0 ? {} : _a, routerTree = _b.routerTree, serializedStateStore = _b.serializedStateStore, routerStateStore = _b.routerStateStore, router = _b.router, templates = _b.templates;
         var _this = this;
         this.routerStateStore = routerStateStore || new DefaultRoutersStateStore();
         this.routers = {};
@@ -1056,10 +1062,10 @@ var Manager = (function () {
         else {
             this.serializedStateStore = serializedStateStore || new BrowserStore();
         }
-        var templates = { scene: scene, stack: stack, data: data, feature: feature };
+        this.templates = __assign({ scene: scene, stack: stack, data: data, feature: feature }, templates);
         this.routerTypes = {};
         var Router = router || RouterBase;
-        Object.keys(templates).forEach(function (templateName) {
+        Object.keys(this.templates).forEach(function (templateName) {
             var RouterType = (function (_super) {
                 __extends(RouterType, _super);
                 function RouterType() {
@@ -1068,7 +1074,7 @@ var Manager = (function () {
                 return RouterType;
             }(Router));
             Object.defineProperty(RouterType, 'name', { value: capitalize(templateName) + "Router" });
-            var selectedTemplate = templates[templateName];
+            var selectedTemplate = _this.templates[templateName];
             Object.keys(selectedTemplate.actions).forEach(function (actionName) {
                 RouterType.prototype[actionName] = Manager.createActionWrapperFunction(selectedTemplate.actions[actionName], actionName);
             });
@@ -1246,9 +1252,9 @@ var Manager = (function () {
             subscribe: this.routerStateStore.createRouterStateSubscriber(name),
         };
     };
-    Manager.prototype.createRouterFromInitArgs = function (initalArgs) {
+    Manager.prototype.createRouterFromInitArgs = function (initalArgs, routerActionNames) {
         var routerClass = this.routerTypes[initalArgs.type];
-        return new routerClass(initalArgs);
+        return new routerClass(__assign({}, initalArgs, { actions: routerActionNames }));
     };
     Manager.prototype.setNewRouterState = function (location) {
         var newState = this.calcNewRouterState(location, this.rootRouter);
@@ -1258,9 +1264,16 @@ var Manager = (function () {
         var name = _a.name, config = _a.config, type = _a.type, parentName = _a.parentName;
         this.validateRouterDeclaration(name, type, config);
         var initalArgs = this.createNewRouterInitArgs({ name: name, config: config, type: type, parentName: parentName });
-        return this.createRouterFromInitArgs(initalArgs);
+        var routerActionNames = Object.keys(this.templates[initalArgs.type].actions);
+        return this.createRouterFromInitArgs(initalArgs, routerActionNames);
     };
     return Manager;
 }());
 
-export { Manager, RouterBase as Router, DefaultRoutersStateStore as RouterStore, NativeStore as NativeSerializedStore, BrowserStore as BrowserSerializedStore, serializer, deserializer };
+
+
+var index = /*#__PURE__*/Object.freeze({
+
+});
+
+export { Manager, RouterBase as Router, DefaultRoutersStateStore as RouterStore, NativeStore as NativeSerializedStore, BrowserStore as BrowserSerializedStore, serializer, deserializer, index as Types };

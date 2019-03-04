@@ -1,4 +1,5 @@
 import RouterBase from "../router/base";
+import Manager from '../manager';
 export interface IInputSearch {
     [key: string]: any;
 }
@@ -75,5 +76,18 @@ export interface IRouterInitParams {
     config: IRouterConfig;
     type?: string;
     parentName?: string;
+}
+export interface IRouterInitArgs {
+    name: string;
+    config: IRouterConfig;
+    type: string;
+    parent?: IRouter;
+    routers: {
+        [type: string]: [IRouter];
+    };
+    manager: Manager;
+    root?: IRouter;
+    getState?: () => any;
+    subscribe?: (observer: Observer) => any;
 }
 export {};

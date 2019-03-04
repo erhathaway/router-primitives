@@ -1,26 +1,15 @@
 import { NativeSerializedStore, BrowserSerializedStore } from './serializedState';
 import DefaultRouterStateStore from './routerState';
 import DefaultRouter from './router/base';
-import { IRouterDeclaration, IRouter as RouterT, IInputLocation, ILocationActionContext, IRouterInitParams, IRouterConfig, Observer } from './types';
-import Router from './router/base';
+import { IRouterDeclaration, IRouter as RouterT, IRouterTemplate, IInputLocation, ILocationActionContext, IRouterInitParams, IRouterConfig, IRouterInitArgs } from './types';
 interface IInit {
     routerTree?: IRouterDeclaration;
     serializedStateStore?: NativeSerializedStore | BrowserSerializedStore;
     routerStateStore?: DefaultRouterStateStore;
     router?: typeof DefaultRouter;
-}
-interface IRouterInitArgs {
-    name: string;
-    config: IRouterConfig;
-    type: string;
-    parent?: Router;
-    routers: {
-        [type: string]: [Router];
+    templates?: {
+        [templateName: string]: IRouterTemplate;
     };
-    manager: Manager;
-    root?: Router;
-    getState?: () => any;
-    subscribe?: (observer: Observer) => any;
 }
 export default class Manager {
     private static setChildrenDefaults;
@@ -35,7 +24,8 @@ export default class Manager {
     routerTypes: {
         [routerType: string]: RouterT;
     };
-    constructor({ routerTree, serializedStateStore, routerStateStore, router }?: IInit);
+    templates: IInit['templates'];
+    constructor({ routerTree, serializedStateStore, routerStateStore, router, templates }?: IInit);
     addRouters(router?: IRouterDeclaration, type?: string, parentName?: string): void;
     addRouter({ name, routeKey, disableCaching, defaultShow, type, parentName }: IRouterDeclaration): void;
     removeRouter(name: string): void;
@@ -46,7 +36,7 @@ export default class Manager {
     };
     protected validateRouterDeclaration(name: string, type: string, config: IRouterConfig): void;
     protected createNewRouterInitArgs({ name, config, type, parentName }: IRouterInitParams): IRouterInitArgs;
-    protected createRouterFromInitArgs(initalArgs: ReturnType<Manager['createNewRouterInitArgs']>): RouterT;
+    protected createRouterFromInitArgs(initalArgs: ReturnType<Manager['createNewRouterInitArgs']>, routerActionNames: string[]): RouterT;
     protected setNewRouterState(location: IInputLocation): void;
     protected createRouter({ name, config, type, parentName }: IRouterInitParams): RouterT;
 }

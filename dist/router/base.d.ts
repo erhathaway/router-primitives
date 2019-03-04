@@ -13,6 +13,7 @@ interface InitParams {
     root: IRouter;
     getState: () => IRouterState;
     subscribe: (observer: Observer) => void;
+    actions: string[];
 }
 export default class RouterBase {
     name: InitParams['name'];

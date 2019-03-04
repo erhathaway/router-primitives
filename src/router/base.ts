@@ -16,6 +16,7 @@ interface InitParams {
   root: IRouter;
   getState: () => IRouterState;
   subscribe: (observer: Observer) => void;
+  actions: string[] // the router actions derived from the template. Usually 'show' and 'hide'
 }
 
 export default class RouterBase {
@@ -31,7 +32,7 @@ export default class RouterBase {
   public cache: Cache;
 
   constructor(init: InitParams) {
-    const { name, config, type, manager, parent, routers, root, getState, subscribe } = init;
+    const { name, config, type, manager, parent, routers, root, getState, subscribe, actions } = init;
 
     // required
     if (!name || !type || !manager) { throw new Error('Missing required kwargs: name, type, and/or manager'); }
@@ -54,7 +55,15 @@ export default class RouterBase {
 
     // store the routers location data for rehydration
     this.cache = new Cache();
-  }
+
+    // TODO fix test so empty array isn't needed
+    // TODO add tests for this
+    (actions || []).forEach(actionName => {
+      if ((this as any)[actionName]) {
+        (this as any)[actionName] = (this as any)[actionName].bind(this);
+      }
+    })
+   }
 
   get routeKey() {
     return this.config.routeKey || this.name;

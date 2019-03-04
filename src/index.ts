@@ -1,6 +1,8 @@
 import Manager from './manager';
 import RouterStore from './routerState';
 import Router from './router/base';
+import * as Types from './types';
+
 
 import {
   NativeSerializedStore,
@@ -17,4 +19,5 @@ export {
   BrowserSerializedStore,
   serializer,
   deserializer,
+  Types,
 };
