@@ -1,30 +1,32 @@
-import babel from 'rollup-plugin-babel';
+// import babel from 'rollup-plugin-babel';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
-import { eslint } from 'rollup-plugin-eslint';
-import minify from 'rollup-plugin-babel-minify';
+import typescript from 'rollup-plugin-typescript2';
+import tslint from "rollup-plugin-tslint";
+import pkg from './package.json';
 
 const dependencies = Object.keys({
-  ...require('./package.json').dependencies,
-  ...require('./package.json').peerDependencies,
+  ...pkg.dependencies,
+  ...pkg.peerDependencies,
 });
 
-const include = 'query-string';
-
 export default {
-  input: 'src/index.js',
+  input: 'src/index.ts',
   output: [
     {
-      file: 'dist/index.cjs.js',
+      file: pkg.main,
       format: 'cjs',
     },
     {
-      file: 'dist/index.es.js',
+      file: pkg.module,
       format: 'es',
     },
   ],
   plugins: [
-    eslint({}),
+    tslint({}),
+    typescript({
+      typescript: require('typescript'),
+    }),
     resolve({
       customResolveOptions: {
         moduleDirectory: 'node_modules',
@@ -33,12 +35,8 @@ export default {
     commonjs({
       include: 'node_modules/**',
     }),
-    babel({
-      babelrc: true,
-    }),
-    // minify({
-    //   comments: false,
-    //   sourceMap: false,
+    // babel({
+    //   babelrc: true,
     // }),
   ],
   external: dependencies.filter(d => d !== 'query-string'),
