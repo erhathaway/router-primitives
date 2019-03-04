@@ -14,7 +14,8 @@ const serializer = (newLocation: IInputLocation, oldLocation = DEFAULT_LOCATION)
 
   const searchString = queryString.stringify(combinedSearchObj, { arrayFormat: 'bracket' });
   const pathname = newPathname.join('/');
-  const pathnameString = pathname === '' ? '/' : pathname;
+  // TODO add test to make sure that pathnameString always has a leading / 
+  const pathnameString = pathname === '' ? '/' : `/${pathname}`;
 
   let location: string;
   if (searchString === '') {
@@ -22,7 +23,6 @@ const serializer = (newLocation: IInputLocation, oldLocation = DEFAULT_LOCATION)
   } else {
     location = `${pathnameString}?${searchString}`;
   }
-
   return { location, options: newLocation.options };
 };
 

@@ -5,7 +5,7 @@ describe('Serializer', () => {
     const location = { pathname: ['hi', 'there'] };
     const serialized = (serializer as any)(location);
 
-    expect(serialized.location).toBe('hi/there');
+    expect(serialized.location).toBe('/hi/there');
   });
 
   it('serializes search', () => {
@@ -19,7 +19,7 @@ describe('Serializer', () => {
     const location = { pathname: ['hi', 'there'], search: { param1: '1', param2: 'hello' } };
     const serialized = (serializer as any)(location);
 
-    expect(serialized.location).toBe('hi/there?param1=1&param2=hello');
+    expect(serialized.location).toBe('/hi/there?param1=1&param2=hello');
   });
 
   it('adds in previous queryParam keys that are not specified in the current location', () => {
@@ -27,7 +27,7 @@ describe('Serializer', () => {
     const newLocation = { pathname: ['good', 'day'], search: { param1: '25' } };
 
     const serialized = (serializer as any)(newLocation, oldLocation);
-    expect(serialized.location).toEqual('good/day?param1=25&param2=hello');
+    expect(serialized.location).toEqual('/good/day?param1=25&param2=hello');
   });
 
   it('removes previous queryParam keys that are set to "undefined"', () => {
@@ -35,7 +35,7 @@ describe('Serializer', () => {
     const newLocation = { pathname: ['good', 'day'], search: { param1: '25', param2: undefined } };
 
     const serialized = (serializer as any)(newLocation, oldLocation);
-    expect(serialized.location).toEqual('good/day?param1=25');
+    expect(serialized.location).toEqual('/good/day?param1=25');
   });
 
   it('removes previous queryParam keys that are set to "null"', () => {
@@ -43,6 +43,6 @@ describe('Serializer', () => {
     const newLocation = { pathname: ['good', 'day'], search: { param1: '25', param2: null } };
 
     const serialized = (serializer as any)(newLocation, oldLocation);
-    expect(serialized.location).toEqual('good/day?param1=25');
+    expect(serialized.location).toEqual('/good/day?param1=25');
   });
 });

@@ -448,7 +448,7 @@ var serializer = function (newLocation, oldLocation) {
     Object.keys(combinedSearchObj).forEach(function (key) { return (combinedSearchObj[key] == null) && delete combinedSearchObj[key]; });
     var searchString = stringify(combinedSearchObj, { arrayFormat: 'bracket' });
     var pathname = newPathname.join('/');
-    var pathnameString = pathname === '' ? '/' : pathname;
+    var pathnameString = pathname === '' ? '/' : "/" + pathname;
     var location;
     if (searchString === '') {
         location = pathnameString;
