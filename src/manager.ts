@@ -1,9 +1,8 @@
 import { NativeSerializedStore, BrowserSerializedStore } from './serializedState';
 import DefaultRouterStateStore from './routerState';
 import DefaultRouter from './router/base';
-import { scene, stack, data, feature } from './router/template';
+import * as defaultTemplates from './router/template';
 import { IRouterDeclaration, IRouter as RouterT, IRouterTemplate, IInputLocation, ILocationActionContext, RouterAction, IOutputLocation, IRouterInitParams, IRouterActionOptions, IRouterConfig, Observer, IRouterInitArgs } from './types';
-import Router from './router/base';
 
 const capitalize = (name = '') => name.charAt(0).toUpperCase() + name.slice(1);
 
@@ -134,7 +133,7 @@ export default class Manager {
     }
 
     // router types
-    this.templates = { scene, stack, data, feature, ...templates };
+    this.templates = { ...defaultTemplates, ...templates };
     this.routerTypes = {};
 
     // TODO implement
@@ -289,12 +288,15 @@ export default class Manager {
   }
 
   protected createNewRouterInitArgs({ name, config, type, parentName}: IRouterInitParams): IRouterInitArgs {
+    // TODO add test
+    if (!type) { throw new Error('Type required'); }
+
     const parent = this.routers[parentName];
 
     return {
       name,
       config: { ...config },
-      type: type || 'scene', // TODO make root router an empty router
+      type: type || 'root', // TODO make root router an empty router
       parent,
       routers: {},
       manager: this,
@@ -320,7 +322,11 @@ export default class Manager {
   // create router :specify
   protected createRouter({ name, config, type, parentName }: IRouterInitParams): RouterT {
     this.validateRouterDeclaration(name, type, config);
-    const initalArgs = this.createNewRouterInitArgs({ name, config, type, parentName });
+
+    // TODO add tests for this
+    const routerType = !parentName && !this.rootRouter ? 'root' : type;
+
+    const initalArgs = this.createNewRouterInitArgs({ name, config, type: routerType, parentName });
     // TODO add tests for extraction of action names
     const routerActionNames = Object.keys(this.templates[initalArgs.type].actions);
 
