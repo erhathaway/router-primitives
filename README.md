@@ -152,20 +152,55 @@ Once you have have added a router to the manager, using a router declaration obj
 Almost all routeable and dynamic apps can be expressed in terms of 4 predefined router types: `Stack`, `Scene`, `Feature`, and `Data`. If these routers don't suit your needs, you can easily create your own router type via [Router Templates](#extensions).
 
 
-### `Scene` router
+# The 4 main router primitives
 
-**Function**: show only one router at a time 
+## Scene
+```
+             +--------------------------------+
+             |                                |
+             |                                |
++---------+  | ---.____    ,/k.               |  +---------+
+|  |\_/|  |  |  ___,---'  /  ih,__,-----.___  |  |    /.)  |
+|  `o.o'  |  |         ,-' ,  `:7b----.__---` |  |   /)\|  |
+|  =(_)=  |  |     _.-/   '  /b.`.4p,         |  |  // /   |
+|    U    |  |  --"  ,    ,-' ^6x, `."^=._    |  | /'" "   |
++---------+  |                                |  +---------+
+     ?       |                                |     pils
+             |                                |
+             +--------------------------------+
+                           itz 
+```                         
+The scene routers purporse is to represent layouts where you only want 1 item in a certain view at a time. For example, you may only want 1 scene to be visible at a certain point in time. In the above layout, we could use a scene router to make `itz` the only picture visible and both the `pils` artwork and the unknown piece invisible.
 
-**URL Access**: write to both `path` and `search` parts of url
+You can control a scene router using the methods:
 
-| | |
-|-|-|
-| **states**      | `visible` |
-| **actions**     | `show hide` |
+`show` | `() => void`
+`hide` | `() => void`
 
- example urls 
+If you show a scene router that is not visible, it will become visible and all sibling scene routers will be hidden.
+
+The state of the router can be accessed using the `getters`:
+
+`state` | `{ visible: boolean }`
+`history` | `Array<{ visible: boolean }`
+
+History is an array of previous states. The newer states have smaller indices.
+
+The scene router primitive will store its state in the `pathname` or `query` part of the `serialized state store`, which will likely be the `URL` if you use the primitive in web browser app.
+
+Some example URLs are:
+
  - `http://<something>/sceneA/2/sceneB` 
  - `http://<something>/sceneA?sceneC` 
+ 
+By default, a scene router will appear in the `pathname` part of the URL if:
+ 
+ 1. All of its parents are `scene` routers
+ 
+ or
+ 
+ 2. All of its parents are `scene` or `data` routers as long as the `data` has no scene routers in its neighborhod (its immeidate parent) or has the option `isPathRouter` set to `true` in the router declaration object.
+ 
 
 ### `Stack` router
 
