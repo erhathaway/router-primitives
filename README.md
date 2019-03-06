@@ -172,25 +172,34 @@ Almost all routeable and dynamic apps can be expressed in terms of 4 predefined 
 ```                         
 The scene routers purporse is to represent layouts where you only want 1 item in a certain view at a time. For example, you may only want 1 scene to be visible at a certain point in time. In the above layout, we could use a scene router to make `itz` the only picture visible and both the `pils` artwork and the unknown piece invisible.
 
+### Methods 
+
 You can control a scene router using the methods:
 
-`show` | `() => void`
-`hide` | `() => void`
+**`show`** | `() => void`
+
+**`hide`** | `() => void`
 
 If you show a scene router that is not visible, it will become visible and all sibling scene routers will be hidden.
 
+### Attributes 
+
 The state of the router can be accessed using the `getters`:
 
-`state` | `{ visible: boolean }`
-`history` | `Array<{ visible: boolean }`
+**`state`** | `{ visible: boolean }`
+
+**`history`** | `Array<{ visible: boolean }`
 
 History is an array of previous states. The newer states have smaller indices.
+
+### Serialized state 
 
 The scene router primitive will store its state in the `pathname` or `query` part of the `serialized state store`, which will likely be the `URL` if you use the primitive in web browser app.
 
 Some example URLs are:
 
  - `http://<something>/sceneA/2/sceneB` 
+ 
  - `http://<something>/sceneA?sceneC` 
  
 By default, a scene router will appear in the `pathname` part of the URL if:
