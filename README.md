@@ -76,23 +76,29 @@ Should the existing router types not be enough, this library provides you with a
 
 ## API Overview
 
-There are 3 major objects in the Recrusrive Router library: `manager`, `router`, and `serializedStateStore`.
+The API consists of 3 classes `manager`, `router`, `serializedStateStore` and 1 connfiguration object `routerDeclaration`.
 
-`manager`: The manager is what ties various `router` types together, and links the routers up to both the `serializedStateStore` and the `routerStateStore`
+`manager` class: 
+  - The manager is what ties various `router` types together, and links the routers up to both the `serializedStateStore` and the `routerStateStore`
 
-`router`: A router backs every router you define in your app. Routers all have a unique name and can be one of the 4 primitive types (scene, stack, data, feature).
+`router` class: 
+  - A router backs every router you define in your app. Routers all have a unique name and can be one of the 4 primitive types (scene, stack, data, feature).
 
-`serializedStateStore`: The serialized state of the router tree is stored in this store. If your app runs in a web browser, this store is a wrapper around the native History API. The store changes to work with different platforms.
+`serializedStateStore` class: 
+ - The serialized state of the router tree is stored in this store. If your app runs in a web browser, this store is a wrapper around the native History API. The store changes to work with different platforms.
+ 
+ `routerDeclaration` config:
+ - An object that is used to specify how a router should be made. On manager initation, you can specify a tree for `routerDeclaration` objects. Or, once the manager is initialized, you can add them to the manager one by one.
 
 ## Manager
 
-The manager is what you use to add routers, remove routers and move the app forward or backwards through history.
+The manager is what you use to: `add routers`, `remove routers` and move the app `forward` or `backwards` through history.
 
-The manager is what you use to add routers to your app. You can either add a tree of routers during initialization, or add them one at a time afterwards
+When using the manager to add routers, you can either add a tree of routers during initialization, or add them one at a time afterwards
 
 ### Addings routers
 
-When you initialize the manager, you have the option of supplying an initial router tree. The router tree is how you describe the layout of your app in terms of routers:
+When you initialize the manager, you have the option of supplying an initial router tree. Each node in the router tree is a `routerDeclation` object. The router tree is how you describe the layout of your app in terms of routers:
 
 ```
                                                    [root Rouer]
@@ -107,7 +113,7 @@ When you initialize the manager, you have the option of supplying an initial rou
                                        [dataB Router]
 
 ```
-Each router in the router tree is simply a javascript object with the following shape:
+Each router in the router tree is simply a `routerDeclartion` object with the following shape:
 
 | Name | Description | Requried | Default |
 | ---- | ----------- | -------- | ------- |
@@ -129,7 +135,7 @@ const routerTree = {
 const manager = new Manager({ routerTree })
 ```
 
-After the manager is initalized, you can use the `addRouter` and `removeRouter` methods. These methods take a single router declaration option with an additional parameter `parent`. The `parent` must name an existing router.
+After the manager is initalized, you can use the `addRouter` method to create a new router. This method takes a `routerDeclaration` object with an additional parameter `parent`. The `parent` must name an existing router.
 
 ```
 const newRouter = {
@@ -151,7 +157,7 @@ const userRouter = manager.router['user']
 
 ## Router Instance
 
-Once you have have added a router to the manager, using a router declaration object or tree of router declaration objects (see above), the manager will have created Router instances to represent each node in the tee. These router instances are the main way you will control routing in your app.
+Once you have have added a router to the manager, using a router declaration object or tree of router declaration objects (see above), the manager will have created router instances to represent each node in the tee. These router instances are the main way you will control routing in your app.
 
 ### Methods 
 
