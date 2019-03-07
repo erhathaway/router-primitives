@@ -76,24 +76,24 @@ Should the existing router types not be enough, this library provides you with a
 
 ## API Overview
 
-The API consists of 3 classes `manager`, `router`, `serializedStateStore` and 1 connfiguration object `routerDeclaration`.
+The API consists of 3 classes: `manager`, `router`, `serializedStateStore`, and 1 connfiguration object: `routerDeclaration`.
 
 `manager` class: 
-  - The manager is what ties various `router` types together, and links the routers up to both the `serializedStateStore` and the `routerStateStore`
+  - The manager is what ties various `router` types together. It is how you add, remove, and list routers.
 
 `router` class: 
-  - A router backs every router you define in your app. Routers all have a unique name and can be one of the 4 primitive types (scene, stack, data, feature).
+  - A router backs every router you define (via `routerDeclaration` objects. Routers all have a unique name and can be one of the 4 primitive types (scene, stack, data, feature).
 
 `serializedStateStore` class: 
- - The serialized state of the router tree is stored in this store. If your app runs in a web browser, this store is a wrapper around the native History API. The store changes to work with different platforms.
+ - The serialized state of the router tree is stored in this store. If your app runs in a web browser, this store is a wrapper around the native History API. The store changes to work with different platforms. You can use the serialized state store to move the app `forward` or `backwards` through history.
+
  
  `routerDeclaration` config:
- - An object that is used to specify how a router should be made. On manager initation, you can specify a tree for `routerDeclaration` objects. Or, once the manager is initialized, you can add them to the manager one by one.
+ - An object that is used to specify how a router should be made. On manager initation, you can specify a tree of `routerDeclaration` objects. Or, once the manager is initialized, you can add them to the manager one by one.
 
 ## Manager
 
-The manager is what you use to: `add routers`, `remove routers` and move the app `forward` or `backwards` through history.
-
+The manager is what you use to: `add routers`, `remove routers` 
 When using the manager to add routers, you can either add a tree of routers during initialization, or add them one at a time afterwards
 
 ### Addings routers
@@ -135,6 +135,8 @@ const routerTree = {
 const manager = new Manager({ routerTree })
 ```
 
+### `addRouter`
+
 After the manager is initalized, you can use the `addRouter` method to create a new router. This method takes a `routerDeclaration` object with an additional parameter `parent`. The `parent` must name an existing router.
 
 ```
@@ -147,12 +149,22 @@ const newRouter = {
 manager.addRouter(newRouter);
 ```
 
+### `removeRouter`
+
+You can remove a router by passing a rouer name to the `removeRouter` method:
+
+```
+manager.removeRouter('user')
+```
+
+Removing a router will also remove all of it's child routers.
+
 ### Accessing routers
 
 You can access routers off of the maanger using the attribute `routers`
 
 ```
-const userRouter = manager.router['user']
+const userRouter = manager.routers['user']
 ```
 
 ## Router Instance
@@ -451,10 +463,11 @@ URL breakdown:
 
 `https://github.com/ <pathname-part1> / <pathname-part2> ? <query-params>`
 
-#### Pathname
+#### Pathname precedence
+
 The pathname part of a url is the union of router names that make up the longest visibile path of `Scene` and `Data` routers from the root router.
 
-If there are both `Scene` and `Data` routers are neighbors (same level in router tree) in a path, the `Scene` router is always used for the pathname, unless the `Data` router explicitly sets the config option `isPathRouter = true`
+If there are both `Scene` and `Data` routers as neighbors (same level in router tree) in a path, the `Scene` router is always used for the pathname, unless the `Data` router explicitly sets the config option `isPathRouter = true`
 
 ```javascript
 {
@@ -515,7 +528,7 @@ Notice two things:
 - `user-options` is a `Scene` router but isn't being used in the pathname. This is because it has a `Data` router as a neighbor that is explicitly set with `isPathRouter=true`.
 
 
-#### Route Key
+## Naming of router state in the URL
 
 The `routeKey` option allows you to alias router names to another value used in the URL (location).
 
