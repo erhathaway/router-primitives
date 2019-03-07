@@ -170,7 +170,7 @@ Almost all routeable and dynamic apps can be expressed in terms of 4 predefined 
              +--------------------------------+
                            itz 
 ```                         
-The scene routers purporse is to represent layouts where you only want 1 item in a certain view at a time. For example, you may only want 1 scene to be visible at a certain point in time. In the above layout, we could use a scene router to make `itz` the only picture visible and both the `pils` artwork and the unknown piece invisible.
+The scene router's purporse is to represent layouts where you only want 1 item in a certain view at a time. For example, you may only want 1 scene to be large while all it's sibling scenes are small. Or, you may want 1 scene to be visible while all the sibling scens are hidden. In the above layout, we have `itz` as the only scene that is large. Thus, to program this, we would say that all scene's should be small unless their state is `visible`, in which case be large.
 
 ### Methods 
 
@@ -209,22 +209,62 @@ By default, a scene router will appear in the `pathname` part of the URL if:
  or
  
  2. All of its parents are `scene` or `data` routers as long as the `data` has no scene routers in its neighborhod (its immeidate parent) or has the option `isPathRouter` set to `true` in the router declaration object.
- 
 
-### `Stack` router
+## Stack
+```
 
-**Function**: show multiple routers at a time with an ordering
++--------------+
+|  _~          | 
+|   _~ )_)_~   |
+|   )_))_))_)  |
+|   _!__!__!_  |
+|   \______t/  |
+| ~~~ @+-------+--------+
+|     |                 |
++-----+      |\_/|      +-------+
+      |      `o.o'      |       |
+      |      =(_)=      |  /.)  |
+      |        U        | /)\|  |
+      |                 |/ /    |
+      +------------+----+" "    |
+                   +------------+
+```                         
+The stack router's purporse is to represent layouts where have multiple scenes that are visible but they need to have some order about them. For example, you may want a scene to be above all the other scenes, as is the case with stackable modals. 
+### Methods 
 
-**URL Access**: write to only `search` part of url
+You can control a scene router using the methods:
 
-| | |
-|-|-|
-| **states**      | `visible order` |
-| **actions**     | `show hide toFront toBack forward backward` |
+**`show`** | `() => void`
 
-example url
-- `http://<something>?modal1=1&modal2=0` 
+**`hide`** | `() => void`
 
+**`toFront`** | `() => void`
+
+**`toBack`** | `() => void`
+
+**`forward`** | `() => void`
+
+**`backward`** | `() => void`
+
+If you show a stack router that is not visible, it will become visible and jump to the front of the stack. 
+
+### Attributes 
+
+The state of the router can be accessed using the `getters`:
+
+**`state`** | `{ visible: boolean }`
+
+**`history`** | `Array<{ visible: boolean }`
+
+History is an array of previous states. The newer states have smaller indices.
+
+### Serialized state 
+
+The stack router primitive will store its state in only the `query` part of the `serialized state store`, which will likely be the `URL` if you use the primitive in web browser app.
+
+An example URL is:
+
+ - `http://<something>?feature1&feature2`
 
 ### `Feature` router
 
