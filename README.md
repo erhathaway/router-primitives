@@ -74,11 +74,23 @@ Should the existing router types not be enough, this library provides you with a
 - [Architecture](#architecture)
 - [Extensions](#extensions)
 
+## API Overview
+
+There are 3 major objects in the Recrusrive Router library: `manager`, `router`, and `serializedStateStore`.
+
+`manager`: The manager is what ties various `router` types together, and links the routers up to both the `serializedStateStore` and the `routerStateStore`
+
+`router`: A router backs every router you define in your app. Routers all have a unique name and can be one of the 4 primitive types (scene, stack, data, feature).
+
+`serializedStateStore`: The serialized state of the router tree is stored in this store. If your app runs in a web browser, this store is a wrapper around the native History API. The store changes to work with different platforms.
+
 ## Manager
+
+The manager is what you use to add routers, remove routers and move the app forward or backwards through history.
 
 The manager is what you use to add routers to your app. You can either add a tree of routers during initialization, or add them one at a time afterwards
 
-## Router Declaration
+### Addings routers
 
 When you initialize the manager, you have the option of supplying an initial router tree. The router tree is how you describe the layout of your app in terms of routers:
 
@@ -95,7 +107,7 @@ When you initialize the manager, you have the option of supplying an initial rou
                                        [dataB Router]
 
 ```
-Each router in the router tree is simply a javascript object:
+Each router in the router tree is simply a javascript object with the following shape:
 
 | Name | Description | Requried | Default |
 | ---- | ----------- | -------- | ------- |
@@ -105,11 +117,45 @@ Each router in the router tree is simply a javascript object:
 | `routers` | Child routers of this router | NO | |
 | `options.isPathRouter` | If should forceibly be part of pathname. See [pathname](#pathname) | NO | False |
 
+```
+const routerTree = {
+  name: 'root'
+  routers: { 
+    scene: [{ name: 'home' }, { name: 'users' }, { name: 'settings }],
+    feature: [{ name: 'side-nav' }]
+  }
+}
+
+const manager = new Manager({ routerTree })
+```
+
+After the manager is initalized, you can use the `addRouter` and `removeRouter` methods. These methods take a single router declaration option with an additional parameter `parent`. The `parent` must name an existing router.
+
+```
+const newRouter = {
+  name: 'user-profile'
+  type: 'scene'
+  parent: 'user'
+}
+
+manager.addRouter(newRouter);
+```
+
+### Accessing routers
+
+You can access routers off of the maanger using the attribute `routers`
+
+```
+const userRouter = manager.router['user']
+```
+
 ## Router Instance
 
 Once you have have added a router to the manager, using a router declaration object or tree of router declaration objects (see above), the manager will have created Router instances to represent each node in the tee. These router instances are the main way you will control routing in your app.
 
 ### Methods 
+
+All router instances have the following methods:
 
 | Name | Description |
 | ---- | ----------- | 
@@ -117,16 +163,17 @@ Once you have have added a router to the manager, using a router declaration obj
 | `hide` | Hides the router |
 | `neighborsOfType` | Other routers in the same neighborhood and **Not** of the same type |
 | `subscribe` | Subscribes an observer to changes in the router state |
-| `<actions>` | Other actions may exist depending on the router type. See [Router Types](#Router-Types) |
+
+Additonal methods may exist depending on the particular router primitive. For example, `stack` routers also have the methods `forward`, `backward`, `toFront`, `toBack`. Also, `data` routers has the method `setData`.
 
 ### Attributes
 
 | Name | Type | Description |
 | ---- | ---- | ----------- | 
-| `manager` | Manager Instance | Returns the current manager overseeing the routers | 
-| `siblings` | Array | Other routers in the same neighborhood and of the same type |
-| `state` | Object | Router state. See [Router Types](#Router-Types) for specific attributes |
-| `history` | Array | An array of previous router states |
+| `manager` | IManager | Returns the current manager overseeing the routers | 
+| `siblings` | IRouter[] | Other routers of the same type and with the same parent |
+| `state` | State = { visibility: boolean, order?: number, data?: string } | Router state. See [Router Types](#Router-Types) for specific attributes |
+| `history` | State[] | An array of previous router states |
 
 ## Router types
 
