@@ -7,7 +7,7 @@ With Recursive, the URL is a reflection of your app. Instead of defining how the
 
 If you work on a platform where there is no concept of a URL, you can still use this library. The URL is simiply managed serialized state - which is platform aware and configurable!
 
-Bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)**, **Redux**, and **[React](https://github.com/erhathaway/recursive-router-react)**.
+Bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)**, and **[React](https://github.com/erhathaway/recursive-router-react)**.
 
 # Intro
 
@@ -36,21 +36,7 @@ For example, a router can be 'visible' when other routers are 'hidden'. This typ
 
 The goal of this library is to provide declarative ways to perform complex routing, based on things like: sibling router state, neighborhood router state, historical state, deep linking, serialization of arbitrary data into router path, etc. 
 
-Recursive tries to be modular, extensible, and framework agnostic. Thus, it can work directly in your app or you can use bindings for Mobx, Redux, and/or React. 
-
-#### Bindings
-
-React bindings: [github.com/erhathaway/recursive-router-react](https://github.com/erhathaway/recursive-router-react)
-- Skip outside router config and manager initialization. Configure and initialize everything from within `Router` components.
-- Wrap app components in `Router` components to get access to router methods and state - via props passing and functions-as-children (FAC)
-
-Redux bindings: [github.com/erhathaway/recursive-router-redux](https://github.com/erhathaway/recursive-router-redux)
-- Dispatch router state changes through the redux bus
-- Persist router state in the redux store
-
-Mobx bindings: [github.com/erhathaway/recursive-router-mobx](https://github.com/erhathaway/recursive-router-mobx)
-- The router instance is now a Mobx instance. 
-- All observable state is accessible directly as attributes on the router. No need to call the `state` or `history` getters.
+Recursive tries to be modular, extensible, and framework agnostic. Thus, it can work directly in your app or you can use bindings for Mobx and/or React. 
 
 #### Custom Router Logic
 
