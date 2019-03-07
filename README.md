@@ -22,9 +22,11 @@ Bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)
 
 ## About
 
-#### Paradigm 
+##### TL;DR
 
-###### Describe the layout of your app in terms of `scene` `stack` `feature` and `data` routers
+Describe the layout of your app in terms of `scene` `stack` `feature` and `data` routers
+
+#### Paradigm 
 
 In the context of this library, a router should be thought of as a feature of your application that responds to actions of other application features. 
 
@@ -32,9 +34,7 @@ For example, a router can be 'visible' when other routers are 'hidden'. This typ
 
 #### Goals 
 
-The goal of this library is to create a common interface for components of an application to consume such that they can control application routing in a declarative way and not have to worry about implementing boilerplate logic that most routing libraries require. 
-
-Furthermore, the goal of this library is to also provide declarative ways to perform complex routing, based on things like: sibling router state, neighborhood router state, historical state, deep linking, serialization of arbitrary data into router path, etc. 
+The goal of this library is to provide declarative ways to perform complex routing, based on things like: sibling router state, neighborhood router state, historical state, deep linking, serialization of arbitrary data into router path, etc. 
 
 Recursive tries to be modular, extensible, and framework agnostic. Thus, it can work directly in your app or you can use bindings for Mobx, Redux, and/or React. 
 
@@ -76,11 +76,6 @@ Should the existing router types not be enough, this library provides you with a
 | 😱 | Opinionated and automatic URL construction |
 | 🚀 | Reactive - Subscribe to the state of any router in the router state tree |
 | 👌 | Simple - Declare the route tree using a small but expressive syntax set |
-
-
-#### TL;DR
-
-If you dislike how much ceremony is around configuring a router and you also frequently find existing routing solutions coming up short, then this library may be something that interests you!
 
 # API
 
