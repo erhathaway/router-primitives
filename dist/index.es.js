@@ -811,7 +811,7 @@ var RouterBase = (function () {
 var show = function (options, location, router, ctx) {
     if (ctx === void 0) { ctx = {}; }
     location = router.siblings.reduce(function (acc, s) {
-        return s.hide(options, acc, s, ctx);
+        return s.hide(options, acc, s, __assign({}, ctx, { disableCaching: true }));
     }, location);
     if (router.isPathRouter) {
         var parent_1 = router.parent;
@@ -1135,6 +1135,9 @@ var Manager = (function () {
                     updatedLocation = Manager.setChildrenDefaults(options, updatedLocation, routerInstance, ctx);
                 }
                 return updatedLocation;
+            }
+            if (type === 'show' && routerInstance.parent && routerInstance.parent.state.visible === false) {
+                routerInstance.parent.show();
             }
             updatedLocation = this.manager.serializedStateStore.getState();
             if (type === 'hide') {

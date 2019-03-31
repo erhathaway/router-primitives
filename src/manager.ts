@@ -76,7 +76,7 @@ export default class Manager {
         if (type === 'hide') {
           updatedLocation = Manager.setCacheAndHide(options, existingLocation, routerInstance, ctx);
         }
-
+        
         updatedLocation = action(options, existingLocation, routerInstance, ctx);
 
         if (type === 'show') { // add location defaults from children
@@ -84,6 +84,11 @@ export default class Manager {
         }
 
         return updatedLocation;
+      }
+      
+      // if the parent router isn't visible, but the child is shown, show all parents
+      if (type === 'show' && routerInstance.parent && routerInstance.parent.state.visible === false) {
+        routerInstance.parent.show();
       }
 
       // if called directly, fetch location
