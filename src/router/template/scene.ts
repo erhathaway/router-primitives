@@ -3,7 +3,9 @@ import { RouterAction, RouterReducer, IRouterCurrentState } from "../../types";
 const show: RouterAction = (options, location, router, ctx = {}) => {
   // hide sibling routers
   location = router.siblings.reduce((acc, s) => { 
-    return s.hide(options, acc, s, ctx);
+    // disable caching of siblings b/c we dont want them to be shown if a parent rehydrates
+    // b/c the scene being shown is now the visible one and should be cached
+    return s.hide(options, acc, s, {...ctx, disableCaching: true});
   }, location);
 
   if (router.isPathRouter) {
