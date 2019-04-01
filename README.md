@@ -561,6 +561,32 @@ With the [React bindings](https://github.com/erhathaway/recursive-router-react),
 
 All routers will by default rehydrate children routers back to how the chidlren were when the parent state changed. The exception to this is if a child in the branch had their state updated while said router was hidden. This setting can be overridden on a case-by-case basis during the router tree declaration. 
 
+# Architecture 
+
+- [Intro](#intro)
+- [API](#api)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- **[Architecture](#architecture)** :point_left:
+- [Extensions](#extensions)
+
+TODO
+
+# Extensions 
+
+- [Intro](#intro)
+- [API](#api)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Architecture](#architecture)
+- [Extensions](#extensions)** :point_left:
+
+The extensions API is currently unstable. Certain behavior (caching of child state, setting initialization defaults, and rehydrating router tree from new URLs) is implicit and needs to be rearchitected so there is a public API.
+
+If need a customer router, you can make one by definting a router template.
+
+TODO
+
 
 ## V1 Roadmap
 
