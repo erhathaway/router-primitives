@@ -579,7 +579,7 @@ TODO
 - [Usage](#usage)
 - [Configuration](#configuration)
 - [Architecture](#architecture)
-- [Extensions](#extensions)** :point_left:
+- **[Extensions](#extensions)** :point_left:
 
 The extensions API is currently unstable. Certain behavior (caching of child state, setting initialization defaults, and rehydrating router tree from new URLs) is implicit and needs to be rearchitected so there is a public API.
 
