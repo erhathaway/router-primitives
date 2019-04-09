@@ -1166,7 +1166,6 @@ var Manager = (function () {
         if (ctx === void 0) { ctx = {}; }
         var newLocation = location;
         var disableCaching;
-        console.log('IN SET CACHE AND HIDE', router.name, ctx);
         if (router.config.disableCaching !== undefined) {
             disableCaching = router.config.disableCaching;
         }
@@ -1179,8 +1178,7 @@ var Manager = (function () {
                 newLocation = child.hide({}, newLocation, child, ctx);
             });
         });
-        if (!disableCaching || options.disableCaching) {
-            console.log('SETTING CACHE', router.name);
+        if (!disableCaching && !options.disableCaching) {
             router.cache.setCacheFromLocation(newLocation, router);
         }
         return newLocation;
@@ -1193,7 +1191,6 @@ var Manager = (function () {
             var updatedLocation;
             if (existingLocation) {
                 if (type === 'hide') {
-                    console.log("HIDING", routerInstance.name, ctx);
                     updatedLocation = Manager.setCacheAndHide(options, existingLocation, routerInstance, ctx);
                 }
                 updatedLocation = action(options, existingLocation, routerInstance, ctx);

@@ -143,8 +143,6 @@ const backward: RouterAction = (options, location, router, ctx) => {
 }
 
 const toFront: RouterAction = (options, location, router, ctx) => {
-  // const newLocation = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-
   return router.show(options, location, router, ctx);
 }
 
@@ -169,14 +167,10 @@ const toBack: RouterAction = (options, location, router, ctx) => {
     return acc;
   }, {} as { [key: string]: number });
 
-  // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
-  // return { pathname: location.pathname, search, options };
   location.search = { ...location.search, ...search };
 
-  // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
-  // return { pathname: location.pathname, search, options };
   return location;
 }
 
