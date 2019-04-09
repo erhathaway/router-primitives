@@ -2,7 +2,7 @@ import { NativeSerializedStore, BrowserSerializedStore } from './serializedState
 import DefaultRouterStateStore from './routerState';
 import DefaultRouter from './router/base';
 import * as defaultTemplates from './router/template';
-import { IRouterDeclaration, IRouter as RouterT, IRouterTemplate, IInputLocation, ILocationActionContext, RouterAction, IOutputLocation, IRouterInitParams, IRouterActionOptions, IRouterConfig, Observer, IRouterInitArgs } from './types';
+import { IRouterDeclaration, IRouter as RouterT, IRouterTemplate, IInputLocation, ILocationActionContext, RouterAction, IOutputLocation, IRouterInitParams, IRouterActionOptions, IRouterConfig, Observer, IRouterInitArgs, IRouter } from './types';
 
 const capitalize = (name = '') => name.charAt(0).toUpperCase() + name.slice(1);
 
@@ -22,13 +22,23 @@ export default class Manager {
         // if the cached visibility state is 'false' don't show on rehydration
         if (child.cache.state === false) { return; }
 
-        // if there is a cache state or a default visibility, show the router
-        if (child.config.defaultShow || child.cache.state === true) {
+        // if there is a cache state, show the router
+        if (child.cache.state === true) {
+
           // the cache has been 'used' so remove it
           child.cache.removeCache();
 
           const newContext = { ...ctx, addingDefaults: true };
           newLocation = child.show(options, newLocation, child, newContext);
+        }
+
+        // if there is no cache state and there is a default action, apply the action
+        else if (child.config.defaultAction && child.config.defaultAction.length > 0) {
+          const [action, ...args] = child.config.defaultAction;
+
+          const newContext = { ...ctx, addingDefaults: true };
+
+          (child as any)[action]({ ...options, data: args[0] }, newLocation, child, newContext);
         }
       });
     });
@@ -53,7 +63,7 @@ export default class Manager {
         ctx.disableCaching = disableCaching;
 
         // call location action
-        newLocation = child.hide(options, location, child, ctx);
+        newLocation = child.hide(options, newLocation, child, ctx);
       });
     });
 
@@ -67,7 +77,7 @@ export default class Manager {
 
   // wrapper around action function
   private static createActionWrapperFunction(action: RouterAction, type: string) {
-    function actionWrapper(options: IRouterActionOptions, existingLocation: IOutputLocation, routerInstance = this, ctx: ILocationActionContext = {}) {
+    function actionWrapper(options: IRouterActionOptions = {}, existingLocation?: IOutputLocation, routerInstance = this, ctx: ILocationActionContext = {}) {
       // if called from another action wrapper
       let updatedLocation: IInputLocation;
       if (existingLocation) {
@@ -86,7 +96,7 @@ export default class Manager {
       }
       
       // if the parent router isn't visible, but the child is shown, show all parents
-      if (type === 'show' && routerInstance.parent && routerInstance.parent.state.visible === false) {
+      if (type === 'show' && routerInstance.parent && (routerInstance.parent.state.visible === false || routerInstance.parent.state.visible === undefined)) { // data routers dont have a visiblity state by default. FIX THIS
         routerInstance.parent.show();
       }
 
@@ -177,7 +187,10 @@ export default class Manager {
     this.addRouters(routerTree);
 
     // subscribe to URL changes and update the router state when this happens
+    // the subject (BehaviorSubject) will notify the observer of its existing state
     this.serializedStateStore.subscribeToStateChanges(this.setNewRouterState.bind(this));
+
+    this.rootRouter.show();
   }
 
   /**
@@ -198,10 +211,11 @@ export default class Manager {
   }
 
 
-  public addRouter({ name, routeKey, disableCaching, defaultShow, type, parentName }: IRouterDeclaration) {
+  public addRouter({ name, routeKey, disableCaching, defaultShow, type, parentName, defaultAction }: IRouterDeclaration) {
     const config = {
       disableCaching,
       defaultShow: defaultShow || false,
+      defaultAction,
       routeKey,
     };
     
@@ -335,6 +349,8 @@ export default class Manager {
     // TODO add tests for extraction of action names
     const routerActionNames = Object.keys(this.templates[initalArgs.type].actions);
 
-    return this.createRouterFromInitArgs(initalArgs, routerActionNames);
+    const router = this.createRouterFromInitArgs(initalArgs, routerActionNames);
+
+    return router;
   }
 }

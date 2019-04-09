@@ -52,7 +52,14 @@ export default class BrowserStore {
     return this.config.deserializer(pathnameString + searchString);
   }
 
-  public subscribeToStateChanges(fn: StateObserver) { this.observers.push(fn); }
+  // is a BehaviorSubject
+  public subscribeToStateChanges(fn: StateObserver) { 
+    this.observers.push(fn);
+
+    // send existing state to observer
+    const deserializedState = this.getState();
+    fn(deserializedState);
+  }
 
   public unsubscribeFromStateChanges(fn: StateObserver) { 
     this.observers = this.observers.filter(existingFn => existingFn !== fn);
@@ -78,7 +85,7 @@ export default class BrowserStore {
     }
   }
 
-
+  
   private notifyObservers() {
     const deserializedState = this.getState();
     this.observers.forEach(fn => fn(deserializedState));

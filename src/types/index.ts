@@ -79,6 +79,8 @@ export interface IRouterState {
   defaultShow?: boolean;
   type?: string;
   parentName?: string;
+  defaultData?: string;
+  defaultAction?: string[] // (fn, ...args)
  }
 
 export interface IRouterConfig {
@@ -87,6 +89,7 @@ export interface IRouterConfig {
   // default actions to call when immediate parent visibility changes from hidden -> visible
   disableCaching?: boolean;
   defaultShow?: boolean;
+  defaultAction?: string[];
 }
 
 export type Observer = (state: IRouterState) => any;

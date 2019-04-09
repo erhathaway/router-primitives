@@ -1,14 +1,14 @@
 import { RouterAction, RouterReducer, IRouterCurrentState } from "../../types";
 
 const show: RouterAction = (options, location, router, ctx = {}) => {
-  const data = options.data || router.state.data;
+  const data = options && options.data ? options.data : router.state.data;
   if (router.isPathRouter) {
     const { parent } = router;
 
     // TODO document why this is necessary
     // if (!ctx.addingDefaults && (!parent || (!parent.state.visible && !parent.isRootRouter))) { return location; }
 
-    location.pathname[router.pathLocation] = data;
+    location.pathname[router.pathLocation] = data; // TODO WHY IS THIS OFF BY ONE --- b/c not alll routers are present so it can't calc pathlocation correctly
     // drop pathname after this pathLocation
     location.pathname = location.pathname.slice(0, router.pathLocation + 1);
   } else {

@@ -6,7 +6,7 @@ declare class Cache {
     readonly hasCache: boolean;
     readonly state: boolean;
     removeCache(): void;
-    setCache(value: CacheValue): void;
     setCacheFromLocation(location: IOutputLocation, routerInstance: IRouter): void;
+    protected setCache(value: CacheValue): void;
 }
 export default Cache;

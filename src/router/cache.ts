@@ -27,15 +27,13 @@ class Cache {
     this._cacheStore = undefined;
   }
 
-  public setCache(value: CacheValue) {
-    this._cacheStore = value;
-  }
 
-  // TODO Fix this any type once Router has a type definition
+
   public setCacheFromLocation(location: IOutputLocation, routerInstance: IRouter) {
+    
     // dont set cache if one already exists!
     if (this.hasCache) { return; }
-
+    
     let cache;
     if (routerInstance.isPathRouter) {
       cache = !!location.pathname[routerInstance.pathLocation];
@@ -44,6 +42,10 @@ class Cache {
     }
 
     this.setCache(cache);
+  }
+
+  protected setCache(value: CacheValue) {
+    this._cacheStore = value;
   }
 }
 

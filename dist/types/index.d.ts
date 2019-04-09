@@ -62,12 +62,15 @@ export interface IRouterDeclaration {
     defaultShow?: boolean;
     type?: string;
     parentName?: string;
+    defaultData?: string;
+    defaultAction?: string[];
 }
 export interface IRouterConfig {
     routeKey?: string;
     isPathRouter?: boolean;
     disableCaching?: boolean;
     defaultShow?: boolean;
+    defaultAction?: string[];
 }
 export declare type Observer = (state: IRouterState) => any;
 export interface IRouterInitParams {
