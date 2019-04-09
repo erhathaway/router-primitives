@@ -1,5 +1,9 @@
 import RouterBase from "../router/base";
 import Manager from '../manager';
+
+// Options are for a specific router within an update cycle
+// Context is for all routers within an update cycle
+
 /**
  * Location types
  */
@@ -13,6 +17,7 @@ export interface IOutputSearch {
 
 export interface ILocationOptions {
   data?: string;
+  disableCaching?: boolean; // the setting will only persist for the router
   replaceLocation?: boolean; // used to replace history location in URL
 };
 
@@ -30,7 +35,7 @@ export interface IInputLocation {
 };
 
 export interface ILocationActionContext {
-  disableCaching?: boolean;
+  disableCaching?: boolean; // the setting will persist for all routers in the update cycle
   addingDefaults?: boolean;
 }
 

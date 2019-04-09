@@ -49,6 +49,7 @@ export default class Manager {
   private static setCacheAndHide(options: IRouterActionOptions, location: IInputLocation, router: RouterT, ctx: ILocationActionContext = {}) {
     let newLocation = location;
     let disableCaching: boolean | undefined;
+    console.log('IN SET CACHE AND HIDE', router.name, ctx)
 
     // figure out if caching should occur
     if (router.config.disableCaching !== undefined) {
@@ -63,13 +64,14 @@ export default class Manager {
         ctx.disableCaching = disableCaching;
 
         // call location action
-        newLocation = child.hide(options, newLocation, child, ctx);
+        newLocation = child.hide({}, newLocation, child, ctx);
       });
     });
 
     // use caching figured out above b/c the ctx object might get mutate when
     // transversing the router tree
-    if (!disableCaching) {
+    if (!disableCaching || options.disableCaching) {
+      console.log('SETTING CACHE', router.name)
       router.cache.setCacheFromLocation(newLocation, router);
     }
     return newLocation;
@@ -83,6 +85,7 @@ export default class Manager {
       if (existingLocation) {
         // set cache before location changes b/c cache info is derived from location path
         if (type === 'hide') {
+          console.log("HIDING", routerInstance.name, ctx)
           updatedLocation = Manager.setCacheAndHide(options, existingLocation, routerInstance, ctx);
         }
         

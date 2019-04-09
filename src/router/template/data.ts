@@ -1,14 +1,23 @@
 import { RouterAction, RouterReducer, IRouterCurrentState } from "../../types";
 
-const show: RouterAction = (options, location, router, ctx = {}) => {
+/**
+ * A data router will display data as the routeKey in either the pathname or queryparams
+ *   depending on if the router is a `pathRouter` or not.
+ * Furthermore, a data router will only be shown if data exits.
+ * This process involves:
+ *    1. Checking for data either passed in directly (via options) or existing
+ *       on the router state
+ *    2. Checking if the router is a path router or not
+ *    3. Adding the scene router to either the path or query params
+ */
+const show: RouterAction = (options, oldLocation, router, _ctx) => {
+  const location = {...oldLocation};
+
   const data = options && options.data ? options.data : router.state.data;
+  if (!data) { return location;}
   if (router.isPathRouter) {
     const { parent } = router;
-
-    // TODO document why this is necessary
-    // if (!ctx.addingDefaults && (!parent || (!parent.state.visible && !parent.isRootRouter))) { return location; }
-
-    location.pathname[router.pathLocation] = data; // TODO WHY IS THIS OFF BY ONE --- b/c not alll routers are present so it can't calc pathlocation correctly
+    location.pathname[router.pathLocation] = data; 
     // drop pathname after this pathLocation
     location.pathname = location.pathname.slice(0, router.pathLocation + 1);
   } else {
@@ -18,7 +27,9 @@ const show: RouterAction = (options, location, router, ctx = {}) => {
   return location;
 };
 
-const hide: RouterAction = (options, location, router, ctx) => {
+const hide: RouterAction = (_options, oldLocation, router, _ctx) => {
+  const location = {...oldLocation};
+
   if (router.isPathRouter) {
     location.pathname = location.pathname.slice(0, router.pathLocation);
   } else {
@@ -28,12 +39,12 @@ const hide: RouterAction = (options, location, router, ctx) => {
   return location;
 };
 
-const setData: RouterAction = (options, location, router, ctx = {}) => {
-  return router.show(options);
+const setData: RouterAction = (options, location, router, ctx) => {
+  return router.show(options, location, router, ctx);
 };
 
 
-const reducer: RouterReducer = (location, router, ctx) => {
+const reducer: RouterReducer = (location, router, _ctx) => {
   const newState: IRouterCurrentState = {};
 
   let routerData: string;

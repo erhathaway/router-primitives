@@ -1,20 +1,18 @@
 /**
- * The root template is used to construct the root router
+ * The root router has no state and by default is always visible
  * 
- * By default, it does not change the location when location actions are triggered,
- * and it is always visible.
  */
 import { RouterAction, RouterReducer, IRouterCurrentState } from "../../types";
 
-const show: RouterAction = (options, location, router, ctx = {}) => {
+const show: RouterAction = (_options, location, _router, _ctx) => {
   return location;
 };
 
-const hide: RouterAction = (options, location, router, ctx) => {
+const hide: RouterAction = (_options, location, _router, _ctx) => {
   return location;
 };
 
-const reducer: RouterReducer = (location, router, ctx) => {
+const reducer: RouterReducer = (_location, _router, _ctx) => {
   return { visible: true };
 };
 

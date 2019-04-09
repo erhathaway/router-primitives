@@ -441,6 +441,7 @@ var deserializer = function (serializedLocation) {
     var pathname = locationStringParts[0].split('/').filter(function (s) { return s !== ''; });
     return { search: search, pathname: pathname, options: {} };
 };
+//# sourceMappingURL=deserializer.js.map
 
 var DEFAULT_LOCATION = { pathname: [], search: {}, options: {} };
 var serializer = function (newLocation, oldLocation) {
@@ -462,6 +463,7 @@ var serializer = function (newLocation, oldLocation) {
     }
     return { location: location, options: newLocation.options };
 };
+//# sourceMappingURL=serializer.js.map
 
 var NativeStore = (function () {
     function NativeStore(config) {
@@ -524,6 +526,7 @@ var NativeStore = (function () {
     };
     return NativeStore;
 }());
+//# sourceMappingURL=nativeStore.js.map
 
 var BrowserStore = (function () {
     function BrowserStore(config) {
@@ -581,6 +584,9 @@ var BrowserStore = (function () {
     };
     return BrowserStore;
 }());
+//# sourceMappingURL=browserStore.js.map
+
+//# sourceMappingURL=index.js.map
 
 var DefaultRoutersStateStore = (function () {
     function DefaultRoutersStateStore(store, config) {
@@ -654,6 +660,7 @@ var DefaultRoutersStateStore = (function () {
     DefaultRoutersStateStore.prototype.getState = function () { return this.store; };
     return DefaultRoutersStateStore;
 }());
+//# sourceMappingURL=routerState.js.map
 
 var Cache = (function () {
     function Cache() {
@@ -694,6 +701,7 @@ var Cache = (function () {
     };
     return Cache;
 }());
+//# sourceMappingURL=cache.js.map
 
 var RouterBase = (function () {
     function RouterBase(init) {
@@ -819,11 +827,12 @@ var RouterBase = (function () {
     });
     return RouterBase;
 }());
+//# sourceMappingURL=base.js.map
 
-var show = function (options, location, router, ctx) {
-    if (ctx === void 0) { ctx = {}; }
+var show = function (options, oldLocation, router, ctx) {
+    var location = __assign({}, oldLocation);
     location = router.siblings.reduce(function (acc, s) {
-        return s.hide(options, acc, s, __assign({}, ctx, { disableCaching: true }));
+        return s.hide(__assign({}, options, { disableCaching: true }), acc, s, ctx);
     }, location);
     if (router.isPathRouter) {
         var parent_1 = router.parent;
@@ -838,7 +847,8 @@ var show = function (options, location, router, ctx) {
     }
     return location;
 };
-var hide = function (options, location, router, ctx) {
+var hide = function (_options, oldLocation, router, _ctx) {
+    var location = __assign({}, oldLocation);
     if (router.isPathRouter) {
         location.pathname = location.pathname.slice(0, router.pathLocation);
     }
@@ -847,7 +857,7 @@ var hide = function (options, location, router, ctx) {
     }
     return location;
 };
-var reducer = function (location, router, ctx) {
+var reducer = function (location, router, _ctx) {
     var newState = {};
     if (router.isPathRouter) {
         newState['visible'] = location.pathname[router.pathLocation] === router.routeKey;
@@ -861,6 +871,7 @@ var scene = {
     actions: { show: show, hide: hide },
     reducer: reducer,
 };
+//# sourceMappingURL=scene.js.map
 
 function getRouteKeyOrderings(router, location) {
     var routeKeyOrderObj = router.parent.routers[router.type].reduce(function (acc, r) {
@@ -992,10 +1003,14 @@ var stack = {
     actions: { show: show$1, hide: hide$1, forward: forward, backward: backward, toFront: toFront, toBack: toBack },
     reducer: reducer$1,
 };
+//# sourceMappingURL=stack.js.map
 
-var show$2 = function (options, location, router, ctx) {
-    if (ctx === void 0) { ctx = {}; }
+var show$2 = function (options, oldLocation, router, _ctx) {
+    var location = __assign({}, oldLocation);
     var data = options && options.data ? options.data : router.state.data;
+    if (!data) {
+        return location;
+    }
     if (router.isPathRouter) {
         var parent_1 = router.parent;
         location.pathname[router.pathLocation] = data;
@@ -1006,7 +1021,8 @@ var show$2 = function (options, location, router, ctx) {
     }
     return location;
 };
-var hide$2 = function (options, location, router, ctx) {
+var hide$2 = function (_options, oldLocation, router, _ctx) {
+    var location = __assign({}, oldLocation);
     if (router.isPathRouter) {
         location.pathname = location.pathname.slice(0, router.pathLocation);
     }
@@ -1016,10 +1032,9 @@ var hide$2 = function (options, location, router, ctx) {
     return location;
 };
 var setData = function (options, location, router, ctx) {
-    if (ctx === void 0) { ctx = {}; }
-    return router.show(options);
+    return router.show(options, location, router, ctx);
 };
-var reducer$2 = function (location, router, ctx) {
+var reducer$2 = function (location, router, _ctx) {
     var newState = {};
     var routerData;
     if (router.isPathRouter) {
@@ -1038,17 +1053,19 @@ var data = {
     actions: { show: show$2, hide: hide$2, setData: setData },
     reducer: reducer$2,
 };
+//# sourceMappingURL=data.js.map
 
-var show$3 = function (options, location, router, ctx) {
-    if (ctx === void 0) { ctx = {}; }
+var show$3 = function (_options, oldLocation, router, _ctx) {
+    var location = __assign({}, oldLocation);
     location.search[router.routeKey] = true;
     return location;
 };
-var hide$3 = function (options, location, router, ctx) {
+var hide$3 = function (options, oldLocation, router, _ctx) {
+    var location = __assign({}, oldLocation);
     location.search[router.routeKey] = undefined;
     return location;
 };
-var reducer$3 = function (location, router, ctx) {
+var reducer$3 = function (location, router, _ctx) {
     var newState = {};
     newState['visible'] = location.search[router.routeKey] === 'true';
     return newState;
@@ -1057,23 +1074,24 @@ var feature = {
     actions: { show: show$3, hide: hide$3 },
     reducer: reducer$3,
 };
+//# sourceMappingURL=feature.js.map
 
-var show$4 = function (options, location, router, ctx) {
-    if (ctx === void 0) { ctx = {}; }
+var show$4 = function (_options, location, _router, _ctx) {
     return location;
 };
-var hide$4 = function (options, location, router, ctx) {
+var hide$4 = function (_options, location, _router, _ctx) {
     return location;
 };
-var reducer$4 = function (location, router, ctx) {
+var reducer$4 = function (_location, _router, _ctx) {
     return { visible: true };
 };
 var root = {
     actions: { show: show$4, hide: hide$4 },
     reducer: reducer$4,
 };
+//# sourceMappingURL=root.js.map
 
-
+//# sourceMappingURL=index.js.map
 
 var defaultTemplates = /*#__PURE__*/Object.freeze({
     scene: scene,
@@ -1148,6 +1166,7 @@ var Manager = (function () {
         if (ctx === void 0) { ctx = {}; }
         var newLocation = location;
         var disableCaching;
+        console.log('IN SET CACHE AND HIDE', router.name, ctx);
         if (router.config.disableCaching !== undefined) {
             disableCaching = router.config.disableCaching;
         }
@@ -1157,10 +1176,11 @@ var Manager = (function () {
         Object.keys(router.routers).forEach(function (routerType) {
             router.routers[routerType].forEach(function (child) {
                 ctx.disableCaching = disableCaching;
-                newLocation = child.hide(options, newLocation, child, ctx);
+                newLocation = child.hide({}, newLocation, child, ctx);
             });
         });
-        if (!disableCaching) {
+        if (!disableCaching || options.disableCaching) {
+            console.log('SETTING CACHE', router.name);
             router.cache.setCacheFromLocation(newLocation, router);
         }
         return newLocation;
@@ -1173,6 +1193,7 @@ var Manager = (function () {
             var updatedLocation;
             if (existingLocation) {
                 if (type === 'hide') {
+                    console.log("HIDING", routerInstance.name, ctx);
                     updatedLocation = Manager.setCacheAndHide(options, existingLocation, routerInstance, ctx);
                 }
                 updatedLocation = action(options, existingLocation, routerInstance, ctx);
@@ -1323,12 +1344,15 @@ var Manager = (function () {
     };
     return Manager;
 }());
+//# sourceMappingURL=manager.js.map
 
-
+//# sourceMappingURL=index.js.map
 
 var index = /*#__PURE__*/Object.freeze({
 
 });
+
+//# sourceMappingURL=index.js.map
 
 exports.Manager = Manager;
 exports.Router = RouterBase;

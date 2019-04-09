@@ -8,6 +8,7 @@ export interface IOutputSearch {
 }
 export interface ILocationOptions {
     data?: string;
+    disableCaching?: boolean;
     replaceLocation?: boolean;
 }
 declare type Pathname = string[];

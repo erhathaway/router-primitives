@@ -1,11 +1,22 @@
 import { RouterAction, RouterReducer, IRouterCurrentState } from "../../types";
 
-const show: RouterAction = (options, location, router, ctx = {}) => {
-  // hide sibling routers
+/**
+ * A scene router will hide all its sibling routers when it is being shown
+ * This process involves:
+ *    1. Hiding the sibling routers and disabling cache for the specific router so it doesn't rehydrate
+ *    2. Checking whether the scene router is a pathRouter or not
+ *    3. Adding the scene router to either the path or query params
+ */
+const show: RouterAction = (options, oldLocation, router, ctx) => {
+  let location = {...oldLocation};
+  // Each sibling router needs to be hidden. The location is modified to reflect hiding all siblings
   location = router.siblings.reduce((acc, s) => { 
-    // disable caching of siblings b/c we dont want them to be shown if a parent rehydrates
-    // b/c the scene being shown is now the visible one and should be cached
-    return s.hide(options, acc, s, {...ctx, disableCaching: true});
+    // We disable caching of siblings b/c we dont want them to be shown if a parent rehydrates
+    // This is b/c the scene being shown is now the visible one and should be cached if a parent hides
+    // It is important to remember that `disableCaching` is passed to options not context 
+    //   b/c we only want it take affect for the immediate routers we call instead of the 
+    //   entire update cycle
+    return s.hide({ ...options, disableCaching: true }, acc, s, ctx);
   }, location);
 
   if (router.isPathRouter) {
@@ -17,7 +28,7 @@ const show: RouterAction = (options, location, router, ctx = {}) => {
     if (!ctx.addingDefaults && (!parent || (!parent.state.visible && !parent.isRootRouter))) { return location; }
 
     location.pathname[router.pathLocation] = router.routeKey;
-    // drop pathname after this pathLocation
+    // Drop pathname after this pathLocation
     location.pathname = location.pathname.slice(0, router.pathLocation + 1);
   } else {
     location.search[router.routeKey] = true;
@@ -26,7 +37,9 @@ const show: RouterAction = (options, location, router, ctx = {}) => {
   return location;
 };
 
-const hide: RouterAction = (options, location, router, ctx) => {
+const hide: RouterAction = (_options, oldLocation, router, _ctx) => {
+  const location = {...oldLocation};
+
   if (router.isPathRouter) {
     location.pathname = location.pathname.slice(0, router.pathLocation);
   } else {
@@ -36,7 +49,7 @@ const hide: RouterAction = (options, location, router, ctx) => {
   return location;
 };
 
-const reducer: RouterReducer = (location, router, ctx) => {
+const reducer: RouterReducer = (location, router, _ctx) => {
   const newState: IRouterCurrentState = {};
   if (router.isPathRouter) {
     newState['visible'] = location.pathname[router.pathLocation] === router.routeKey;
