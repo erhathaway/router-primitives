@@ -53,24 +53,22 @@ export interface IRouterState {
     current: IRouterCurrentState;
     historical: RouterHistoryState;
 }
-export interface IRouterDeclaration {
+export interface IRouterDeclaration extends IRouterConfig {
     name: string;
     routers?: {
         [key: string]: IRouterDeclaration[];
     };
     routeKey?: string;
     disableCaching?: boolean;
-    defaultShow?: boolean;
+    isPathRouter?: boolean;
     type?: string;
     parentName?: string;
-    defaultData?: string;
     defaultAction?: string[];
 }
 export interface IRouterConfig {
     routeKey?: string;
     isPathRouter?: boolean;
     disableCaching?: boolean;
-    defaultShow?: boolean;
     defaultAction?: string[];
 }
 export declare type Observer = (state: IRouterState) => any;

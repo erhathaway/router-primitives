@@ -712,8 +712,8 @@ var RouterBase = (function () {
         }
         this.name = name;
         this.config = config || {};
-        if (this.config.defaultShow === undefined) {
-            this.config.defaultShow = false;
+        if (this.config.disableCaching === undefined) {
+            this.config.disableCaching = false;
         }
         this.type = type;
         this.manager = manager;
@@ -1019,6 +1019,7 @@ var show$2 = function (options, oldLocation, router, _ctx) {
     else {
         location.search[router.routeKey] = data;
     }
+    console.log('TRYING TO SHOW', router.name, location);
     return location;
 };
 var hide$2 = function (_options, oldLocation, router, _ctx) {
@@ -1139,7 +1140,8 @@ var Manager = (function () {
         });
         this.addRouters(routerTree);
         this.serializedStateStore.subscribeToStateChanges(this.setNewRouterState.bind(this));
-        this.rootRouter.show();
+        var newLocation = this.rootRouter.show();
+        console.log('NEW LOCATION', newLocation);
     }
     Manager.setChildrenDefaults = function (options, location, router, ctx) {
         var newLocation = __assign({}, location);
@@ -1158,6 +1160,7 @@ var Manager = (function () {
                     var newContext = __assign({}, ctx, { addingDefaults: true });
                     child[action](__assign({}, options, { data: args[0] }), newLocation, child, newContext);
                 }
+                console.log(child.name, newLocation);
             });
         });
         return newLocation;
@@ -1215,6 +1218,7 @@ var Manager = (function () {
             }
             updatedLocation.options = __assign({}, updatedLocation.options, options);
             this.manager.serializedStateStore.setState(updatedLocation);
+            return updatedLocation;
         }
         return actionWrapper;
     };
@@ -1233,10 +1237,10 @@ var Manager = (function () {
         });
     };
     Manager.prototype.addRouter = function (_a) {
-        var name = _a.name, routeKey = _a.routeKey, disableCaching = _a.disableCaching, defaultShow = _a.defaultShow, type = _a.type, parentName = _a.parentName, defaultAction = _a.defaultAction;
+        var name = _a.name, routeKey = _a.routeKey, disableCaching = _a.disableCaching, isPathRouter = _a.isPathRouter, type = _a.type, parentName = _a.parentName, defaultAction = _a.defaultAction;
         var config = {
             disableCaching: disableCaching,
-            defaultShow: defaultShow || false,
+            isPathRouter: isPathRouter,
             defaultAction: defaultAction,
             routeKey: routeKey,
         };

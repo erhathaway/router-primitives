@@ -28,7 +28,7 @@ export default class Manager {
           // the cache has been 'used' so remove it
           child.cache.removeCache();
 
-          const newContext = { ...ctx, addingDefaults: true };
+          const newContext = { ...ctx, addingDefaults: true }; // TODO check if it makes sense to move addingDefaults to options
           newLocation = child.show(options, newLocation, child, newContext);
         }
 
@@ -40,6 +40,7 @@ export default class Manager {
 
           (child as any)[action]({ ...options, data: args[0] }, newLocation, child, newContext);
         }
+        console.log(child.name, newLocation)
       });
     });
 
@@ -125,6 +126,8 @@ export default class Manager {
 
       // set serialized state
       this.manager.serializedStateStore.setState(updatedLocation);
+      // return location so the function signature of the action is the same
+      return updatedLocation
     }
 
     return actionWrapper;
@@ -192,7 +195,8 @@ export default class Manager {
     // the subject (BehaviorSubject) will notify the observer of its existing state
     this.serializedStateStore.subscribeToStateChanges(this.setNewRouterState.bind(this));
 
-    this.rootRouter.show();
+    const newLocation = this.rootRouter.show();
+    console.log('NEW LOCATION', newLocation)
   }
 
   /**
@@ -213,10 +217,11 @@ export default class Manager {
   }
 
 
-  public addRouter({ name, routeKey, disableCaching, defaultShow, type, parentName, defaultAction }: IRouterDeclaration) {
+  public addRouter({ name, routeKey, disableCaching, isPathRouter, type, parentName, defaultAction }: IRouterDeclaration) {
     const config = {
       disableCaching,
-      defaultShow: defaultShow || false,
+      isPathRouter,
+      // defaultShow: defaultShow || false,
       defaultAction,
       routeKey,
     };

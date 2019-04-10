@@ -76,15 +76,16 @@ export interface IRouterState {
  * Router declaration object
  */
 
- export interface IRouterDeclaration {
+ export interface IRouterDeclaration extends IRouterConfig {
   name: string;
   routers?: { [key: string]: IRouterDeclaration[] };
   routeKey?: string;
   disableCaching?: boolean;
-  defaultShow?: boolean;
+  isPathRouter?: boolean;
+  // defaultShow?: boolean;
   type?: string;
   parentName?: string;
-  defaultData?: string;
+  // defaultData?: string;
   defaultAction?: string[] // (fn, ...args)
  }
 
@@ -93,7 +94,7 @@ export interface IRouterConfig {
   isPathRouter?: boolean;
   // default actions to call when immediate parent visibility changes from hidden -> visible
   disableCaching?: boolean;
-  defaultShow?: boolean;
+  // defaultShow?: boolean;
   defaultAction?: string[];
 }
 

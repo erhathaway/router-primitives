@@ -12,7 +12,7 @@ import { RouterAction, RouterReducer, IRouterCurrentState } from "../../types";
  */
 const show: RouterAction = (options, oldLocation, router, _ctx) => {
   const location = {...oldLocation};
-
+  
   const data = options && options.data ? options.data : router.state.data;
   if (!data) { return location;}
   if (router.isPathRouter) {
@@ -23,6 +23,7 @@ const show: RouterAction = (options, oldLocation, router, _ctx) => {
   } else {
     location.search[router.routeKey] = data;
   }
+  console.log('TRYING TO SHOW', router.name, location)
 
   return location;
 };

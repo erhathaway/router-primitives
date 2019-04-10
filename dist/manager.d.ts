@@ -27,7 +27,7 @@ export default class Manager {
     templates: IInit['templates'];
     constructor({ routerTree, serializedStateStore, routerStateStore, router, templates }?: IInit);
     addRouters(router?: IRouterDeclaration, type?: string, parentName?: string): void;
-    addRouter({ name, routeKey, disableCaching, defaultShow, type, parentName, defaultAction }: IRouterDeclaration): void;
+    addRouter({ name, routeKey, disableCaching, isPathRouter, type, parentName, defaultAction }: IRouterDeclaration): void;
     removeRouter(name: string): void;
     calcNewRouterState(location: IInputLocation, router: RouterT, ctx?: ILocationActionContext, newState?: {
         [routerName: string]: {};
