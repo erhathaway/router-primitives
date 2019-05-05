@@ -1019,7 +1019,6 @@ var show$2 = function (options, oldLocation, router, _ctx) {
     else {
         location.search[router.routeKey] = data;
     }
-    console.log('TRYING TO SHOW', router.name, location);
     return location;
 };
 var hide$2 = function (_options, oldLocation, router, _ctx) {
@@ -1141,7 +1140,6 @@ var Manager = (function () {
         this.addRouters(routerTree);
         this.serializedStateStore.subscribeToStateChanges(this.setNewRouterState.bind(this));
         var newLocation = this.rootRouter.show();
-        console.log('NEW LOCATION', newLocation);
     }
     Manager.setChildrenDefaults = function (options, location, router, ctx) {
         var newLocation = __assign({}, location);
@@ -1158,9 +1156,8 @@ var Manager = (function () {
                 else if (child.config.defaultAction && child.config.defaultAction.length > 0) {
                     var _a = child.config.defaultAction, action = _a[0], args = _a.slice(1);
                     var newContext = __assign({}, ctx, { addingDefaults: true });
-                    child[action](__assign({}, options, { data: args[0] }), newLocation, child, newContext);
+                    newLocation = child[action](__assign({}, options, { data: args[0] }), newLocation, child, newContext);
                 }
-                console.log(child.name, newLocation);
             });
         });
         return newLocation;

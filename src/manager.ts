@@ -34,13 +34,13 @@ export default class Manager {
 
         // if there is no cache state and there is a default action, apply the action
         else if (child.config.defaultAction && child.config.defaultAction.length > 0) {
+          
           const [action, ...args] = child.config.defaultAction;
-
+          
           const newContext = { ...ctx, addingDefaults: true };
 
-          (child as any)[action]({ ...options, data: args[0] }, newLocation, child, newContext);
+          newLocation = (child as any)[action]({ ...options, data: args[0] }, newLocation, child, newContext);
         }
-        console.log(child.name, newLocation)
       });
     });
 
@@ -85,7 +85,6 @@ export default class Manager {
       if (existingLocation) {
         // set cache before location changes b/c cache info is derived from location path
         if (type === 'hide') {
-          // console.log("HIDING", routerInstance.name, ctx)
           updatedLocation = Manager.setCacheAndHide(options, existingLocation, routerInstance, ctx);
         }
         
@@ -196,7 +195,6 @@ export default class Manager {
     this.serializedStateStore.subscribeToStateChanges(this.setNewRouterState.bind(this));
 
     const newLocation = this.rootRouter.show();
-    console.log('NEW LOCATION', newLocation)
   }
 
   /**

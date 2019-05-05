@@ -23,8 +23,6 @@ const show: RouterAction = (options, oldLocation, router, _ctx) => {
   } else {
     location.search[router.routeKey] = data;
   }
-  console.log('TRYING TO SHOW', router.name, location)
-
   return location;
 };
 
