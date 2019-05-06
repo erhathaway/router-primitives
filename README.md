@@ -1,9 +1,9 @@
-# Recursive Router     
+# Router Primitives     
 
 
-Recursive router is a different take on routing. 
+Router Primitives is a different take on routing. 
 
-With Recursive, the URL is a reflection of your app. Instead of defining how the URL is constructed you **define the visual elements of your app**. URL construction is automatically handled for you, based on the hierarchical arrangement of layout primitives (`Scene`, `Stack`, `Feature`, `Data`)! 
+With Router Primitives, the URL is a reflection of your app. Instead of defining how the URL is constructed you **define the visual elements of your app**. URL construction is automatically handled for you, based on the hierarchical arrangement of layout primitives (`Scene`, `Stack`, `Feature`, `Data`)! 
 
 If you work on a platform where there is no concept of a URL, you can still use this library. The URL is simiply managed serialized state - which is platform aware and configurable!
 
@@ -24,7 +24,7 @@ Bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)
 
 ##### TL;DR
 
-Describe the layout of your app in terms of `scene` `stack` `feature` and `data` routers
+Describe the layout of your app in terms of `scene`, `stack`, `feature`, and `data` routers
 
 #### Paradigm 
 
@@ -32,19 +32,126 @@ In the context of this library, a router should be thought of as a feature of yo
 
 For example, a router can be 'visible' when other routers are 'hidden'. This type of logic is what a scene router uses. Or, as another example, a router can be 'in front of' or 'behind' other routers. This type of logic is what a stack router uses. By defining your application in terms of visual elements like `scene` or `stack` (along with `feature` and `data`) you can implement variations of complex application routing. 
 
-#### Goals 
 
-The goal of this library is to provide declarative ways to perform complex routing, based on things like: sibling router state, neighborhood router state, historical state, deep linking, serialization of arbitrary data into router path, etc. 
+You can use this library directly in an app or web page, however there also exist bindings to React and Mobx.
 
-Recursive tries to be modular, extensible, and framework agnostic. Thus, it can work directly in your app or you can use bindings for Mobx and/or React. 
+#### Mobx Example
 
-#### Custom Router Logic
+Router logic defined in Javascript and JSX land
+
+`Note: The mobx bindings are required for this to work.`
+
+```typescript
+import {Manager} from 'router-primitives';
+
+const routerTree = { 
+  name: 'root',
+  routers: {
+    scene: [
+      { name: 'user' },
+      { 
+        name: 'docs',
+        routers: {
+          feature: [{ name: 'doc-nav' }],
+          scene: [
+            { name: 'doc-intro' },
+            { name: 'doc-help' }
+          ]
+        }
+      }
+    ]
+  }
+};
+
+const {routers} = new Manager({ routerTree })
+```
+
+```html
+<App>
+  <NavBar>
+    <Button onClick={routers['user'].show} />
+    <Button onClick={routers['docs'].show} />
+  </NavBar>
+  <Scenes>
+    <Docs visible={routers['docs'].visible}>
+      <DocsNav visible={routers['doc-nav'].visible} onClickHelp={routers['doc-help'].show} />
+      <MainContainer>
+        { routers['doc-intro'].visible ? <DocsIntro /> : <HelloMessage /> }
+      </MainContainer>
+      <DocsHelp visible={routers['doc-help'].visible} />
+    </Docs>
+    <User visible={routers['user'].visible} />
+  </Scenes>
+</App>
+```
+
+#### React Example
+
+All router logic defined in JSX land
+
+`Note: The react bindings are required for this to work.`
+
+```html
+<App>
+  <NavBar>
+    <Router name="user">{router => <Button onClick={router.show} />}</Router>
+    <Router name="docs">{router => <Button onClick={router.show} />}</Router>
+  </NavBar>
+  <Scenes>
+    <Router name="docs" parent="root" type="scene">
+      {docsRouter =>
+        docsRouter.visible && (
+          <Docs>
+            <Router
+              name="docs-nav"
+              parent="docs"
+              defaultShow={true}
+              type="feature"
+            >
+              {docNavRouter =>
+                docNavRouter.visible && (
+                  <Router name="docs-help">
+                    {docHelpRouter => (
+                      <DocsNav onClickHelp={docHelpRouter.show} />
+                    )}
+                  </Router>
+                )
+              }
+            </Router>
+            <MainContainer>
+              <Router
+                name="docs-intro"
+                parent="docs"
+                defaultShow={true}
+                type="scene"
+              >
+                {docIntroRouter => (
+                  docIntroRouter.visible ? <DocsIntro /> : <HelloMessage />
+                )}
+              </Router>
+            </MainContainer>
+            <Router name="docs-help" parent="docs" type="scene">
+              {docHelpRouter => docHelpRouter.visible && <DocsHelp />}
+            </Router>
+          </Docs>
+        )
+      }
+    </Router>
+    <Router name="user" parent="root" defaultShow={true} type="scene">
+      {router => router.visible && <User />}
+    </Router>
+  </Scenes>
+</App>;
+```
+
+
+#### Custom Router Primitives
 
 Should the existing router types not be enough, this library provides you with a way to create your own routers! See [Router templates](#extensions)
 
 ## How it works
 
-1. Recursive treats the URL as a namespace for the storage of a state tree representing `all routable state`™. 
+1. Router Primitives treats the URL as a namespace for the storage of a state tree representing `all routable state`™. 
 2. Writing to the URL is handled by the router and via direct user modification.
 3. Changes to the URL are reduced over the router state tree
 4. Various types of routers in the router state tree exist. The differences are used to control how their state will get updated when the URL changes.
@@ -52,7 +159,7 @@ Should the existing router types not be enough, this library provides you with a
 
 ## Summary
 
-|   | Recursive Router |
+|   | Router Primitives |
 | - | ------------ |
 | 😎 | View library agnostic - with bindings for React |
 | ✨ | Router state as a direct function of location (URL) |
@@ -76,24 +183,62 @@ Should the existing router types not be enough, this library provides you with a
 
 ## API Overview
 
-The API consists of 3 classes: `manager`, `router`, `serializedStateStore`, and 1 connfiguration object: `routerDeclaration`.
+The API consists of 3 classes: `manager`, `router`, `serializedStateStore`, and 1 configuration object, a `routerDeclaration`.
 
 `manager` class: 
-  - The manager is what ties various `router` types together. It is how you add, remove, and list routers.
+
+```typescript
+  const manager = new Manager({ routerTree });
+```
+
+  - The manager ties all the `routers` together. It is how you add, remove, and list routers.
 
 `router` class: 
-  - A router backs every router you define (via `routerDeclaration` objects. Routers all have a unique name and can be one of the 4 primitive types (scene, stack, data, feature).
+
+```typescript
+  const myRouter = manager.routers['myRouterName'];
+```
+
+  - A router backs every router you define (via `routerDeclaration` objects). Routers all have a unique name and can be one of the 4 primitive types (`scene`, `stack`, `data`, and `feature`).
 
 `serializedStateStore` class: 
- - The serialized state of the router tree is stored in this store. If your app runs in a web browser, this store is a wrapper around the native History API. The store changes to work with different platforms. You can use the serialized state store to move the app `forward` or `backwards` through history.
+
+```typescript
+  const {serializedStateStore} = manager;
+```
+
+ - The serialized state all routers is stored in this store. If your app runs in a web browser, this store is a wrapper around the native History API. The store changes to work with different platforms. You can use the serialized state store to move the app `forward` or `backwards` through history.
 
  
  `routerDeclaration` config:
- - An object that is used to specify how a router should be made. On manager initation, you can specify a tree of `routerDeclaration` objects. Or, once the manager is initialized, you can add them to the manager one by one.
+ ```typescript
+  const routerTree = {
+    name: 'root',
+    routers: {
+      scene: [
+        { name: 'myFirstScene'},
+        { name: 'mySecondScene'}
+      ]
+    }
+  };
+
+  const manager = new Manager({ routerTree });
+
+  const myNewRouter = { 
+    name: 'newRouter', 
+    type: 'scene', 
+    parent: 'root' 
+  };
+
+  manager.addRouter(myNewRouter);
+```
+
+ - Simply an object that is used to specify how a router should be made. On `Manager` initialization, you can specify a tree of `routerDeclaration` objects. Or, once the Manager is initialized, you can add them to the Manager one by one.
 
 ## Manager
 
-The manager is what you use to: `add routers`, `remove routers` 
+The manager is what you use to: `add` and `remove` routers.
+
 When using the manager to add routers, you can either add a tree of routers during initialization, or add them one at a time afterwards
 
 ### Addings routers
