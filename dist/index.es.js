@@ -437,7 +437,6 @@ var deserializer = function (serializedLocation) {
     var pathname = locationStringParts[0].split('/').filter(function (s) { return s !== ''; });
     return { search: search, pathname: pathname, options: {} };
 };
-//# sourceMappingURL=deserializer.js.map
 
 var DEFAULT_LOCATION = { pathname: [], search: {}, options: {} };
 var serializer = function (newLocation, oldLocation) {
@@ -459,7 +458,6 @@ var serializer = function (newLocation, oldLocation) {
     }
     return { location: location, options: newLocation.options };
 };
-//# sourceMappingURL=serializer.js.map
 
 var NativeStore = (function () {
     function NativeStore(config) {
@@ -522,7 +520,6 @@ var NativeStore = (function () {
     };
     return NativeStore;
 }());
-//# sourceMappingURL=nativeStore.js.map
 
 var BrowserStore = (function () {
     function BrowserStore(config) {
@@ -580,9 +577,6 @@ var BrowserStore = (function () {
     };
     return BrowserStore;
 }());
-//# sourceMappingURL=browserStore.js.map
-
-//# sourceMappingURL=index.js.map
 
 var DefaultRoutersStateStore = (function () {
     function DefaultRoutersStateStore(store, config) {
@@ -656,7 +650,6 @@ var DefaultRoutersStateStore = (function () {
     DefaultRoutersStateStore.prototype.getState = function () { return this.store; };
     return DefaultRoutersStateStore;
 }());
-//# sourceMappingURL=routerState.js.map
 
 var Cache = (function () {
     function Cache() {
@@ -697,7 +690,6 @@ var Cache = (function () {
     };
     return Cache;
 }());
-//# sourceMappingURL=cache.js.map
 
 var RouterBase = (function () {
     function RouterBase(init) {
@@ -791,6 +783,9 @@ var RouterBase = (function () {
                 }
             }
             else if (this.type === 'data' && this.parent && this.parent.isPathRouter) {
+                if (this.config.isPathRouter === false) {
+                    return false;
+                }
                 var neighboringSceneRouters = this.getNeighborsByType('scene');
                 return (neighboringSceneRouters.length === 0) && !this.siblings.reduce(function (acc, r) { return (acc || r.config.isPathRouter === true); }, false);
             }
@@ -823,7 +818,6 @@ var RouterBase = (function () {
     });
     return RouterBase;
 }());
-//# sourceMappingURL=base.js.map
 
 var show = function (options, oldLocation, router, ctx) {
     var location = __assign({}, oldLocation);
@@ -867,7 +861,6 @@ var scene = {
     actions: { show: show, hide: hide },
     reducer: reducer,
 };
-//# sourceMappingURL=scene.js.map
 
 function getRouteKeyOrderings(router, location) {
     var routeKeyOrderObj = router.parent.routers[router.type].reduce(function (acc, r) {
@@ -999,7 +992,6 @@ var stack = {
     actions: { show: show$1, hide: hide$1, forward: forward, backward: backward, toFront: toFront, toBack: toBack },
     reducer: reducer$1,
 };
-//# sourceMappingURL=stack.js.map
 
 var show$2 = function (options, oldLocation, router, _ctx) {
     var location = __assign({}, oldLocation);
@@ -1049,7 +1041,6 @@ var data = {
     actions: { show: show$2, hide: hide$2, setData: setData },
     reducer: reducer$2,
 };
-//# sourceMappingURL=data.js.map
 
 var show$3 = function (_options, oldLocation, router, _ctx) {
     var location = __assign({}, oldLocation);
@@ -1070,7 +1061,6 @@ var feature = {
     actions: { show: show$3, hide: hide$3 },
     reducer: reducer$3,
 };
-//# sourceMappingURL=feature.js.map
 
 var show$4 = function (_options, location, _router, _ctx) {
     return location;
@@ -1085,9 +1075,8 @@ var root = {
     actions: { show: show$4, hide: hide$4 },
     reducer: reducer$4,
 };
-//# sourceMappingURL=root.js.map
 
-//# sourceMappingURL=index.js.map
+
 
 var defaultTemplates = /*#__PURE__*/Object.freeze({
     scene: scene,
@@ -1338,14 +1327,11 @@ var Manager = (function () {
     };
     return Manager;
 }());
-//# sourceMappingURL=manager.js.map
 
-//# sourceMappingURL=index.js.map
+
 
 var index = /*#__PURE__*/Object.freeze({
 
 });
-
-//# sourceMappingURL=index.js.map
 
 export { Manager, RouterBase as Router, DefaultRoutersStateStore as RouterStore, NativeStore as NativeSerializedStore, BrowserStore as BrowserSerializedStore, serializer, deserializer, index as Types };

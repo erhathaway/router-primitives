@@ -128,8 +128,9 @@ export default class RouterBase {
       ), false);
       if (isSiblingRouterExplictlyAPathRouter === false) { return true };
     } else if (this.type === 'data' && this.parent && this.parent.isPathRouter) {
-      // TODO FIX ME - causes stack overflow
-      // if (this.isPathRouter === false) return false;
+      // if the router is explictly set to not be a path router, return false
+      if (this.config.isPathRouter === false) { return false; }
+      
       // check to make sure neighboring scene routers aren't present
       const neighboringSceneRouters = this.getNeighborsByType('scene');
 
