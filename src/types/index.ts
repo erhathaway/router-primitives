@@ -1,5 +1,9 @@
 import RouterBase from "../router/base";
 import Manager from '../manager';
+
+// Options are for a specific router within an update cycle
+// Context is for all routers within an update cycle
+
 /**
  * Location types
  */
@@ -13,6 +17,7 @@ export interface IOutputSearch {
 
 export interface ILocationOptions {
   data?: string;
+  disableCaching?: boolean; // the setting will only persist for the router
   replaceLocation?: boolean; // used to replace history location in URL
 };
 
@@ -30,7 +35,7 @@ export interface IInputLocation {
 };
 
 export interface ILocationActionContext {
-  disableCaching?: boolean;
+  disableCaching?: boolean; // the setting will persist for all routers in the update cycle
   addingDefaults?: boolean;
 }
 
@@ -71,14 +76,17 @@ export interface IRouterState {
  * Router declaration object
  */
 
- export interface IRouterDeclaration {
+ export interface IRouterDeclaration extends IRouterConfig {
   name: string;
   routers?: { [key: string]: IRouterDeclaration[] };
   routeKey?: string;
   disableCaching?: boolean;
-  defaultShow?: boolean;
+  isPathRouter?: boolean;
+  // defaultShow?: boolean;
   type?: string;
   parentName?: string;
+  // defaultData?: string;
+  defaultAction?: string[] // (fn, ...args)
  }
 
 export interface IRouterConfig {
@@ -86,7 +94,8 @@ export interface IRouterConfig {
   isPathRouter?: boolean;
   // default actions to call when immediate parent visibility changes from hidden -> visible
   disableCaching?: boolean;
-  defaultShow?: boolean;
+  // defaultShow?: boolean;
+  defaultAction?: string[];
 }
 
 export type Observer = (state: IRouterState) => any;

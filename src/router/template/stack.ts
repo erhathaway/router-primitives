@@ -1,10 +1,12 @@
-import { IRouter, RouterAction, RouterReducer } from "../../types";
+import { IRouter, RouterAction, RouterReducer, IInputLocation } from "../../types";
 
 // returns the routeKey names of visible routers based on the ordering of their 'order' state
-function getRouteKeyOrderings(router: IRouter) {
+function getRouteKeyOrderings(router: IRouter, location: IInputLocation) {
   // creates an object of { [visible router routeKey]: order }
   const routeKeyOrderObj = router.parent.routers[router.type].reduce((acc, r) => {
-    if (r.state.visible === false) { return acc; }
+    // check to make sure the stack is in the location and a bulk action affecting multiple siblings
+    // hasn't already removed it
+    if (r.state.visible === false || location.search[r.routeKey] === undefined) { return acc; }
     // TODO use generics to handle state type
     acc[r.routeKey] =  (r.state as { order: number }).order;
     return acc;
@@ -35,7 +37,7 @@ function getRouteKeyOrderings(router: IRouter) {
 const show: RouterAction = (options, location, router, ctx) => {
   if (!router.parent) { return location; }
 
-  const sortedKeys = getRouteKeyOrderings(router);
+  const sortedKeys = getRouteKeyOrderings(router, location);
 
   // find index of this routers routeKey
   const index = sortedKeys.indexOf(router.routeKey);
@@ -53,16 +55,14 @@ const show: RouterAction = (options, location, router, ctx) => {
   }, {} as { [key: string]: number });
 
   location.search = { ...location.search, ...search };
-    // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
-    // return { pathname: location.pathname, search, options };
   return location;
 };
 
 const hide: RouterAction = (options, location, router, ctx) => {
   if (!router.parent) { return location };
 
-  const sortedKeys = getRouteKeyOrderings(router);
+  const sortedKeys = getRouteKeyOrderings(router, location);
 
   // find index of this routers routeKey
   const index = sortedKeys.indexOf(router.routeKey);
@@ -70,28 +70,26 @@ const hide: RouterAction = (options, location, router, ctx) => {
     // remove routeKey if it exists
     sortedKeys.splice(index, 1);
   }
-
+  
   // create router type data obj
   const search = sortedKeys.reduce((acc, key, i) => {
     acc[key] = i + 1;
     return acc;
   }, {} as { [key: string]: number });
-
+  
   // remove this routeKey from the router type search
-  search[router.routeKey] = undefined;
+  const newLocation = { ...location }
+  
+  newLocation.search = { ...location.search, ...search };
+  newLocation.search[router.routeKey] = undefined;
 
-  location.search = { ...location.search, ...search };
-
-  // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-
-  // return { pathname: location.pathname, search, options };
-  return location;
+  return newLocation;
 };
 
 const forward: RouterAction = (options, location, router, ctx) => {
   if (!router.parent) { return location };
 
-  const sortedKeys = getRouteKeyOrderings(router);
+  const sortedKeys = getRouteKeyOrderings(router, location);
 
   // find index of this routers routeKey
   const index = sortedKeys.indexOf(router.routeKey);
@@ -110,22 +108,16 @@ const forward: RouterAction = (options, location, router, ctx) => {
     return acc;
   }, {} as { [key: string]: number });
 
-  // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
-
-  // return { pathname: location.pathname, search, options };
   location.search = { ...location.search, ...search };
 
-  // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-
-  // return { pathname: location.pathname, search, options };
   return location;
 }
 
 const backward: RouterAction = (options, location, router, ctx) => {
   if (!router.parent) { return location };
 
-  const sortedKeys = getRouteKeyOrderings(router);
+  const sortedKeys = getRouteKeyOrderings(router, location);
 
   // find index of this routers routeKey
   const index = sortedKeys.indexOf(router.routeKey);
@@ -144,28 +136,20 @@ const backward: RouterAction = (options, location, router, ctx) => {
     return acc;
   }, {} as { [key: string]: number });
 
-  // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
-  // return { pathname: location.pathname, search, options };
-  // return { pathname: location.pathname, search, options };
   location.search = { ...location.search, ...search };
 
-  // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-
-  // return { pathname: location.pathname, search, options };
   return location;
 }
 
 const toFront: RouterAction = (options, location, router, ctx) => {
-  // const newLocation = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
-
   return router.show(options, location, router, ctx);
 }
 
 const toBack: RouterAction = (options, location, router, ctx) => {
   if (!router.parent) { return location };
 
-  const sortedKeys = getRouteKeyOrderings(router);
+  const sortedKeys = getRouteKeyOrderings(router, location);
 
   // find index of this routers routeKey
   const index = sortedKeys.indexOf(router.routeKey);
@@ -183,14 +167,10 @@ const toBack: RouterAction = (options, location, router, ctx) => {
     return acc;
   }, {} as { [key: string]: number });
 
-  // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
-  // return { pathname: location.pathname, search, options };
   location.search = { ...location.search, ...search };
 
-  // const { options } = this.constructor.updateSetLocationOptions(location, { mutateExistingLocation: this.mutateLocationOnStackUpdate });
 
-  // return { pathname: location.pathname, search, options };
   return location;
 }
 

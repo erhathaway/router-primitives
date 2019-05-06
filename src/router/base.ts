@@ -39,7 +39,7 @@ export default class RouterBase {
     
     this.name = name;
     this.config = config || {};
-    if (this.config.defaultShow === undefined) { this.config.defaultShow = false };
+    if (this.config.disableCaching === undefined) { this.config.disableCaching = false };
 
     this.type = type;
     this.manager = manager;

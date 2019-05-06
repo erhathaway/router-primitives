@@ -64,7 +64,14 @@ export default class NativeStore {
 
   public getState() { return this.config.deserializer(this.history[this.currentLocationInHistory]); }
 
-  public subscribeToStateChanges(fn: StateObserver) { this.observers.push(fn); }
+  // is a BehaviorSubject
+  public subscribeToStateChanges(fn: StateObserver) { 
+    this.observers.push(fn); 
+
+    // send existing state to observer
+    const deserializedState = this.getState();
+    fn(deserializedState);
+  }
 
   public unsubscribeFromStateChanges(fn: StateObserver) { 
     this.observers = this.observers.filter(existingFn => existingFn !== fn);
