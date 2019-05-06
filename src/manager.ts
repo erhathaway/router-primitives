@@ -68,12 +68,13 @@ export default class Manager {
       });
     });
 
-    // Use caching figured out above b/c the ctx object might get mutate when
+    // Use caching figured out above b/c the ctx object might get mutated when
     //   transversing the router tree
     // Also make sure there is a local request to disableCaching for this particular router (via options)
-    if (!disableCaching && !options.disableCaching) {
+    if (!!disableCaching && !!(options.disableCaching || false)) {
       router.cache.setCacheFromLocation(newLocation, router);
-    }
+    } 
+
     return newLocation;
   }
 
