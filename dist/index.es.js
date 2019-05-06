@@ -1163,7 +1163,7 @@ var Manager = (function () {
                 newLocation = child.hide({}, newLocation, child, ctx);
             });
         });
-        if (!disableCaching && !options.disableCaching) {
+        if (!!disableCaching && !!(options.disableCaching || false)) {
             router.cache.setCacheFromLocation(newLocation, router);
         }
         return newLocation;
