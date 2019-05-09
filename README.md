@@ -185,7 +185,7 @@ Should the existing router types not be enough, this library provides you with a
 
 The API consists of 3 classes: `manager`, `router`, `serializedStateStore`, and 1 configuration object, a `routerDeclaration`.
 
-`manager` class: 
+#### `manager` class: 
 
 ```typescript
   const manager = new Manager({ routerTree });
@@ -193,7 +193,7 @@ The API consists of 3 classes: `manager`, `router`, `serializedStateStore`, and 
 
   - The manager ties all the `routers` together. It is how you add, remove, and list routers.
 
-`router` class: 
+#### `router` class: 
 
 ```typescript
   const myRouter = manager.routers['myRouterName'];
@@ -201,7 +201,7 @@ The API consists of 3 classes: `manager`, `router`, `serializedStateStore`, and 
 
   - A router backs every router you define (via `routerDeclaration` objects). Routers all have a unique name and can be one of the 4 primitive types (`scene`, `stack`, `data`, and `feature`).
 
-`serializedStateStore` class: 
+#### `serializedStateStore` class: 
 
 ```typescript
   const {serializedStateStore} = manager;
@@ -210,7 +210,8 @@ The API consists of 3 classes: `manager`, `router`, `serializedStateStore`, and 
  - The serialized state all routers is stored in this store. If your app runs in a web browser, this store is a wrapper around the native History API. The store changes to work with different platforms. You can use the serialized state store to move the app `forward` or `backwards` through history.
 
  
- `routerDeclaration` config:
+#### `routerDeclaration` config:
+
  ```typescript
   const routerTree = {
     name: 'root',
