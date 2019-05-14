@@ -21,24 +21,23 @@ Bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)
 | 👌 | Simple - Declare the route tree using a small but expressive syntax set |
 
 
-# Intro
+# About
 
 #### Documentation
 
-- **[Intro](#intro)** :point_left:
+- **[About](#about)** :point_left:
+- [Examples](#examples)
 - [API](#api)
 - [Primitives](#primitives)
 - [Configuration](#configuration)
 - [Architecture](#architecture)
 - [Extensions](#extensions)
 
-## About
-
-##### TL;DR
+#### TL;DR
 
 Describe the layout of your app in terms of `scene`, `stack`, `feature`, and `data` routers
 
-#### Paradigm 
+### Paradigm 
 
 In the context of this library, a router should be thought of as a feature of your application that responds to actions of other application features. 
 
@@ -47,7 +46,7 @@ For example, a router can be 'visible' when other routers are 'hidden'. This typ
 
 You can use this library directly in an app or web page, however there also exist bindings to React and Mobx.
 
-#### How it works
+### How it works
 
 1. Router Primitives treats the URL as a namespace for the storage of a state tree representing `all routable state`™. 
 2. Writing to the URL is handled by the router and via direct user modification.
@@ -56,7 +55,7 @@ You can use this library directly in an app or web page, however there also exis
 5. Once the router state tree has been updated, observers of only updated routers are notified.
 
 
-#### Custom Router Primitives
+### Custom Router Primitives
 
 Should the existing router primitives not be enough, this library provides you with a way to create your own routers! See [Router templates](#extensions)
 
@@ -64,7 +63,7 @@ Should the existing router primitives not be enough, this library provides you w
 
 #### Documentation
 
-- [Intro](#intro)
+- [About](#about)
 - **[Examples](#examples)** :point_left:
 - [API](#api)
 - [Primitives](#primitives)
@@ -187,7 +186,7 @@ All router logic defined in JSX land
 
 #### Documentation
 
-- [Intro](#intro)
+- [About](#about)
 - [Examples](#examples)
 - **[API](#api)** :point_left:
 - [Primitives](#primitives)
@@ -250,7 +249,7 @@ The API consists of 3 classes: `manager`, `router`, `serializedStateStore`, and 
 
  - Simply an object that is used to specify how a router should be made. On `Manager` initialization, you can specify a tree of `routerDeclaration` objects. Or, once the Manager is initialized, you can add them to the Manager one by one.
 
-## Manager
+## API: Manager
 
 ### Constructor
 
@@ -286,7 +285,7 @@ const manager = new Manager({ routerTree })
 | `primitives` | `manager.primitives: { [primitiveName: string]: RouterTemplate }` | The router primitives that exist. If you add a custom primitive you should see it here. |
 
 
-## Router
+## API: Router
 
 Once you have have added a router to the manager, using a router declaration object or tree of router declaration objects (see above), the manager will have created router instances to represent each node in the tee. These router instances are the main way you will control routing in your app.
 
@@ -347,7 +346,7 @@ Additonal methods may exist depending on the particular router primitive. For ex
 
 #### Documentation
 
-- [Intro](#intro)
+- [About](#about)
 - [Examples](#examples) 
 - [API](#api) 
 - **[Primitives](#primitives)** :point_left:
@@ -471,7 +470,7 @@ example url
 
 #### Documentation
 
-- [Intro](#intro)
+- [About](#about)
 - [Examples](#examples)
 - [API](#api)
 - **[Usage](#usage)** :point_left:
@@ -555,7 +554,7 @@ const routers = registerRouter(tree);
 
 #### Documentation
 
-- [Intro](#intro) 
+- [About](#about) 
 - [Examples](#examples)
 - [API](#api)
 - [Primitives](#primitives)
@@ -691,7 +690,7 @@ All routers will by default rehydrate children routers back to how the chidlren 
 
 # Architecture 
 
-- [Intro](#intro)
+- [About](#about)
 - [Examples](#examples)
 - [API](#api)
 - [Primitives](#primitives)
@@ -703,7 +702,7 @@ TODO
 
 # Extensions 
 
-- [Intro](#intro)
+- [About](#about)
 - [Examples](#examples)
 - [API](#api)
 - [Primitives](#primitives)
