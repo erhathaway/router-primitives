@@ -9,6 +9,17 @@ If you work on a platform where there is no concept of a URL, you can still use 
 
 Bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)**, and **[React](https://github.com/erhathaway/recursive-router-react)**.
 
+How do primitives define your app layout?
+
+> **Scene** primitives allow you to implement layout items that take the place of one another
+
+> **Stack** primitives allow you to implement layout items that have an ordering to them.
+
+> **Feature** primitives allow you to implement layout items that seamlessly coexist with one another
+
+> **Data** primitives allow you to markup the layout with arbitrary data
+
+
 |   | Summary |
 | - | ------------ |
 | 😎 | View library agnostic - with bindings for React |
@@ -323,7 +334,7 @@ All router instances have the following attributes:
 
 ### Primitive Specific Methods
 
-Additonal methods may exist depending on the particular router primitive. For example, `stack` routers also have the methods `forward`, `backward`, `toFront`, `toBack`. Also, `data` routers has the method `setData`.
+Additional methods may exist depending on the particular router primitive. For example, `stack` routers also have the methods `forward`, `backward`, `toFront`, `toBack`. Also, `data` routers has the method `setData`.
 
 #### Data Router
 
@@ -354,7 +365,7 @@ Additonal methods may exist depending on the particular router primitive. For ex
 - [Architecture](#architecture)
 - [Extensions](#extensions)
 
-Almost all apps can be expressed in terms of 4 predefined router types: `Stack`, `Scene`, `Feature`, and `Data`. The following will section surveying the types of primitives will help you understand how each router primitive can play a role in your app. Routers can be mixed and composed to give way to complex and easily maintainble dynamically routed apps.
+Almost all apps can be expressed in terms of 4 predefined router types: `Stack`, `Scene`, `Feature`, and `Data`. The following will section surveying the types of primitives will help you understand how each router primitive can play a role in your app. Routers can be mixed and composed to give way to complex and easily maintainable dynamically routed apps.
 
 ## Scene
 ```
@@ -374,7 +385,7 @@ Almost all apps can be expressed in terms of 4 predefined router types: `Stack`,
 +--------------------------------+                  +----------------------------------------------+
 ```                         
 
-**Scene primitives allow you to implement layout items that take the place of one another**
+> **Scene primitives allow you to implement layout items that take the place of one another**
 
 The scene router's purpose is to represent layouts where you only want 1 item in a certain view at a time. For example, you may want a `users` scene, a `info` scene, and a `product` scene, all with the same parent. Because these are all sibling scenes, only one of them will be visible at a time. Furthermore, because they are all `scene` primitives, they will occupy the same space in the location (URL) store. This allows you to have three URLs like: `mysite.com/users`, `mysite.com/info` and `mysite.com/product`. 
 
@@ -416,7 +427,7 @@ By default, a scene router will appear in the `pathname` part of the URL if:
                    +------------+
 ```                         
 
-**Stack primitives allow you to implement layout items that have an ordering to them.**
+> **Stack primitives allow you to implement layout items that have an ordering to them.**
 
 The stack router's purpose is to represent layouts where have multiple items that are visible but they need to have some order about them. For example, you may have a bunch of modals that you want to display only on a certain page. You could make a bunch of stack routers such they they all have the page router as their parent. You could then control the ordering of the modals via their `order` state. 
 
@@ -447,7 +458,7 @@ Note the order of `stack` is `0`, and the order of `stack2` is `1`
                            itz 
 ```   
 
-**Feature primitives allow you to implement layout items that seamlessly coexist with one another**
+> **Feature primitives allow you to implement layout items that seamlessly coexist with one another**
 
 The feature router's purpose is to coexist seamlessly with other routers of the same parent. Sibling feature routers (routers with the same parent) will not affect the presence of one another. For example, you could use a feature router to control whether a menu bar is opened or closed.
 
@@ -481,7 +492,7 @@ An example URL is:
                       __(oo)__,+/          \+,___
 
 ```
-**Data primitives allow you to markup the layout with arbitrary data**
+> **Data primitives allow you to markup the layout with arbitrary data**
 
 The data router's purpose is to allow you to store data in the URL. This makes it possible to implement `page numbers`, `item IDs`, `callback URLs` etc... For example, you could wrap a `userId` data router in a `user` scene router. This would allow you to construct the urls: `mysite.com/user` and `mysite.com/user/:userId` (where `:userId` is variable data).
 
@@ -638,7 +649,7 @@ With the [React bindings](https://github.com/erhathaway/recursive-router-react),
 
 ## Rehydration of state after visibility change
 
-All routers will by default rehydrate children routers back to how the chidlren were when the parent state changed. The exception to this is if a child in the branch had their state updated while said router was hidden. This setting can be overridden on a case-by-case basis during the router tree declaration. 
+All routers will by default rehydrate children routers back to how the children were when the parent state changed. The exception to this is if a child in the branch had their state updated while said router was hidden. This setting can be overridden on a case-by-case basis during the router tree declaration. 
 
 # Architecture 
 
@@ -664,7 +675,7 @@ TODO
 
 The extensions API is currently unstable. Certain behavior (caching of child state, setting initialization defaults, and rehydrating router tree from new URLs) is implicit and needs to be rearchitected so there is a public API.
 
-If need a customer router, you can make one by definting a router template.
+If need a customer router, you can make one by defining a router template.
 
 TODO
 
