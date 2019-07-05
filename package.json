@@ -1,6 +1,6 @@
 {
-  "name": "recursive-router",
-  "version": "0.0.1",
+  "name": "router-primitives",
+  "version": "1.0.0",
   "description": "A cross-platform application router. Declarative routing by way of layout primitives",
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.es.js",
@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/erhathaway/recursive-router.git"
+    "url": "git+https://github.com/erhathaway/router-primitives.git"
   },
   "keywords": [
     "router",
@@ -33,9 +33,9 @@
   "author": "Ethan Hathaway",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/erhathaway/recursive-router/issues"
+    "url": "https://github.com/erhathaway/router-primitives/issues"
   },
-  "homepage": "https://github.com/erhathaway/recursive-router#readme",
+  "homepage": "https://github.com/erhathaway/router-primitives#readme",
   "devDependencies": {
     "@types/jest": "^24.0.6",
     "@types/query-string": "^6.2.0",
@@ -56,7 +56,7 @@
     "rollup-plugin-commonjs": "^9.1.5",
     "rollup-plugin-node-resolve": "^3.3.0",
     "rollup-plugin-tslint": "^0.2.2",
-    "rollup-plugin-typescript2": "^0.19.2",
+    "rollup-plugin-typescript2": "^0.21.2",
     "rollup-watch": "^4.3.1",
     "ts-jest": "^23.10.5",
     "tslib": "^1.9.3",
