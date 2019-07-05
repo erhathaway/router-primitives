@@ -10,7 +10,7 @@ Similar to:
 <DataRouter name="callback-url" />
 <SceneRouter name="landing-page">
  <div>
-  <StackRouter name="welcome modal">
+  <StackRouter name="welcome-modal">
     ...modal dom elements
   </StackRouter>
   ...scene dom elements
