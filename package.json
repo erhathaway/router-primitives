@@ -1,6 +1,6 @@
 {
   "name": "router-primitives",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.0",
   "description": "A cross-platform application router. Declarative routing by way of layout primitives",
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.es.js",
