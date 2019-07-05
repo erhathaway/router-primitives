@@ -1,9 +1,27 @@
 # Router Primitives     
 
 
-Router Primitives is a different take on routing. 
+Router Primitives is a different take on application routing. 
 
 With Router Primitives, the URL is a reflection of your app. Instead of defining how the URL is constructed you **define the visual elements of your app**. URL construction is automatically handled for you, based on the hierarchical arrangement of router primitives (`Scene`, `Stack`, `Feature`, `Data`)! 
+
+Similar to:
+```xml
+<DataRouter name="callback-url" />
+<SceneRouter name="landing-page">
+ <div>
+  <StackRouter name="welcome modal">
+    ...modal dom elements
+  </StackRouter>
+  ...scene dom elements
+ </div>
+</SceneRouter>
+<SceneRouter name="user-page">
+ <div>
+  ...scene dom elements
+ </div>
+</SceneRouter>
+```
 
 If you work on a platform where there is no concept of a URL, you can still use this library. The URL is simply managed serialized state - which is platform aware and configurable!
 
@@ -11,13 +29,13 @@ Bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)
 
 How do primitives define your app layout?
 
-> **Scene** primitives allow you to implement layout items that take the place of one another
+- **Scene** primitives allow you to implement layout items that take the place of one another
 
-> **Stack** primitives allow you to implement layout items that have an ordering to them.
+-  **Stack** primitives allow you to implement layout items that have an ordering to them
 
-> **Feature** primitives allow you to implement layout items that seamlessly coexist with one another
+-  **Feature** primitives allow you to implement layout items that seamlessly coexist with one another
 
-> **Data** primitives allow you to markup the layout with arbitrary data
+-  **Data** primitives allow you to markup the layout with arbitrary data or record data in the URL that isn't visible in the UI
 
 
 |   | Summary |
@@ -85,7 +103,7 @@ Should the existing router primitives not be enough, this library provides you w
 
 #### Mobx Example
 
-Router logic defined in typescript and JSX land
+Router logic is defined in typescript and JSX land
 
 `Note: The mobx bindings are required for this to work.`
 
@@ -136,7 +154,7 @@ const routers = manager.routers
 
 #### React Example
 
-All router logic defined in JSX land
+All router logic is defined in JSX land
 
 `Note: The react bindings are required for this to work.`
 
@@ -211,30 +229,31 @@ The API consists of 3 classes: `manager`, `router`, `serializedStateStore`, and 
 
 #### `manager` class: 
 
+The manager ties all the `routers` together. It is how you add, remove, and list routers.
+
 ```typescript
   const manager = new Manager({ routerTree });
 ```
 
-  - The manager ties all the `routers` together. It is how you add, remove, and list routers.
-
 #### `router` class: 
+
+Routers are created when `routerDeclaration` objects are passed to the manager. Routers all have a unique name and can be one of the 4 primitive types (`scene`, `stack`, `data`, and `feature`).
 
 ```typescript
   const myRouter = manager.routers['myRouterName'];
 ```
 
-  - Routers are created when `routerDeclaration` objects are passed to the manager. Routers all have a unique name and can be one of the 4 primitive types (`scene`, `stack`, `data`, and `feature`).
-
 #### `serializedStateStore` class: 
+
+The serialized state of all routers is stored in this store. If your app runs in a web browser, this store is a wrapper around the native History API. The store changes to work with different platforms. You can use the serialized state store to move the app `forward` or `backwards` through history.
 
 ```typescript
   const {serializedStateStore} = manager;
 ```
 
- - The serialized state of all routers is stored in this store. If your app runs in a web browser, this store is a wrapper around the native History API. The store changes to work with different platforms. You can use the serialized state store to move the app `forward` or `backwards` through history.
-
- 
 #### `routerDeclaration` config:
+
+ Simply an object that is used to specify how a router should be made. On `Manager` initialization, you can specify a tree of `routerDeclaration` objects. Or, once the Manager is initialized, you can add them to the Manager one by one.
 
  ```typescript
   const routerTree = {
@@ -257,8 +276,6 @@ The API consists of 3 classes: `manager`, `router`, `serializedStateStore`, and 
 
   manager.addRouter(myNewRouter);
 ```
-
- - Simply an object that is used to specify how a router should be made. On `Manager` initialization, you can specify a tree of `routerDeclaration` objects. Or, once the Manager is initialized, you can add them to the Manager one by one.
 
 ## API: Manager
 
@@ -385,7 +402,7 @@ Almost all apps can be expressed in terms of 4 predefined router types: `Stack`,
 +--------------------------------+                  +----------------------------------------------+
 ```                         
 
-> **Scene primitives allow you to implement layout items that take the place of one another**
+**Scene primitives allow you to implement layout items that take the place of one another**
 
 The scene router's purpose is to represent layouts where you only want 1 item in a certain view at a time. For example, you may want a `users` scene, a `info` scene, and a `product` scene, all with the same parent. Because these are all sibling scenes, only one of them will be visible at a time. Furthermore, because they are all `scene` primitives, they will occupy the same space in the location (URL) store. This allows you to have three URLs like: `mysite.com/users`, `mysite.com/info` and `mysite.com/product`. 
 
@@ -427,7 +444,7 @@ By default, a scene router will appear in the `pathname` part of the URL if:
                    +------------+
 ```                         
 
-> **Stack primitives allow you to implement layout items that have an ordering to them.**
+**Stack primitives allow you to implement layout items that have an ordering to them.**
 
 The stack router's purpose is to represent layouts where have multiple items that are visible but they need to have some order about them. For example, you may have a bunch of modals that you want to display only on a certain page. You could make a bunch of stack routers such they they all have the page router as their parent. You could then control the ordering of the modals via their `order` state. 
 
@@ -458,7 +475,7 @@ Note the order of `stack` is `0`, and the order of `stack2` is `1`
                            itz 
 ```   
 
-> **Feature primitives allow you to implement layout items that seamlessly coexist with one another**
+**Feature primitives allow you to implement layout items that seamlessly coexist with one another**
 
 The feature router's purpose is to coexist seamlessly with other routers of the same parent. Sibling feature routers (routers with the same parent) will not affect the presence of one another. For example, you could use a feature router to control whether a menu bar is opened or closed.
 
@@ -492,7 +509,7 @@ An example URL is:
                       __(oo)__,+/          \+,___
 
 ```
-> **Data primitives allow you to markup the layout with arbitrary data**
+**Data primitives allow you to markup the layout with arbitrary data**
 
 The data router's purpose is to allow you to store data in the URL. This makes it possible to implement `page numbers`, `item IDs`, `callback URLs` etc... For example, you could wrap a `userId` data router in a `user` scene router. This would allow you to construct the urls: `mysite.com/user` and `mysite.com/user/:userId` (where `:userId` is variable data).
 
