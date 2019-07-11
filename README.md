@@ -30,7 +30,7 @@ React:
 VanillaJS
 
 ```javascript
-router.subscribe(({ visible }) => {
+welcomeModalRouter.subscribe(({ visible }) => {
   const el = document.getElementById("welcome-modal");
   if (visible) {
     el.style.visibility = "visible";
