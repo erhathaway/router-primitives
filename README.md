@@ -9,20 +9,20 @@ With Router Primitives, routing logic is defined through the hierarchical arrang
 
 Usage of router primitives looks something like:
 
-React:
+React: 
+
+> Note: Using both children control flag and children as a function patterns
 
 ```jsx
-<LandingPageRouter visibleChildrenOnShow>
+<LandingPageRouter showChildrenIfVisible>
   <Form>
     {({text}) => (
-      <FormDataRouter text={text} />
+      <FormDataRouter data={text} />
    )} 
   </Form>
   <div>
-    <WelcomeModalRouter>
-      {({state: {visible}}) => (
-         visible && <WelcomeModal>
-      )}
+    <WelcomeModalRouter showChildrenIfVisible>
+      <WelcomeModal>
     </WelcomeModalRouter>
   ...scene JSX elements
   </div>
