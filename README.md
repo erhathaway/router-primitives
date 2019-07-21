@@ -2,7 +2,10 @@
 
 Router Primitives is a different take on application routing.
 
-With Router Primitives, routing logic is defined through the hierarchical arrangement of router primitives (`Scene`, `Stack`, `Feature`, `Data`)! Simply (1) compose router primitives together and make a router declaration object, (2) subscribe to individual router state changes, (3) dispatch router actions that update the router state tree and trigger observer updates.
+With Router Primitives, routing logic is defined through the hierarchical arrangement of router primitives (`Scene`, `Stack`, `Feature`, `Data`)! Simply: 
+1. Compose router primitives together and make a router declaration object
+2. Subscribe to individual router state changes
+3. Dispatch router actions that update the router state tree and trigger observer updates.
 
 Usage of router primitives looks something like:
 
