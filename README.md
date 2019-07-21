@@ -11,23 +11,31 @@ Usage of router primitives looks something like:
 
 React:
 
-```xml
-<DataRouter name="callback-url" />
-<SceneRouter name="landing-page">
- <div>
-  <StackRouter name="welcome-modal">
-    {({state: {visible}}) => {
-       visible && <WelcomeModal>
-    }}
-  </StackRouter>
+```jsx
+<LandingPageRouter visibleChildrenOnShow>
+  <Form>
+    {({text}) => (
+      <FormDataRouter text={text} />
+   )} 
+  </Form>
+  <div>
+    <WelcomeModalRouter>
+      {({state: {visible}}) => (
+         visible && <WelcomeModal>
+      )}
+    </WelcomeModalRouter>
   ...scene JSX elements
- </div>
-</SceneRouter>
-<SceneRouter name="user-page">
- <div>
-  <ShowWelcomeModalAgainButton onClick={welcomeModalRouter.show}
- </div>
-</SceneRouter>
+  </div>
+</LandingPageRouter>
+<UserPageRouter>
+  {({state: {visible}}) => (
+     <WelcomeModalRouter>
+       {({show}) => (
+         <ShowWelcomeModalAgainButton onClick={show} />
+       )}
+    </WelcomeModalRouter>
+  )}
+</UserPageRouter>
 ```
 
 VanillaJS
