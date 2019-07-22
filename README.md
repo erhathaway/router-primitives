@@ -85,6 +85,8 @@ How do primitives define your app layout?
 
 - **Data** primitives allow you to markup the layout with arbitrary data or record data in the URL that isn't visible in the UI
 
+Primitives aren't limited to just these four. You can create your own using the extension API!
+
 ---
 
 
