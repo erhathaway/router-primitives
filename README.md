@@ -53,7 +53,7 @@ welcomeModalRouter.subscribe(({ visible }) => {
 welcomeModalRouter.show();
 ```
 
-...But, how do we create the actual Routers? Simple! With a router declaration object:
+...But, how do we create the actual Routers? Simple! With a router declaration object and composable primitives:
 
 ```
 import manager from 'router-primitives'
@@ -73,7 +73,6 @@ const manager = new Manager({routerTree});
 
 const {welcomeModalRouter} manager.routers;
 ```
-
 
 
 How do primitives define your app layout?
