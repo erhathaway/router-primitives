@@ -53,9 +53,28 @@ welcomeModalRouter.subscribe(({ visible }) => {
 welcomeModalRouter.show();
 ```
 
-If you work on a platform where there is no concept of a URL, you can still use this library. The URL is simply managed serialized state - which is platform aware and configurable!
+...But, how do we create the actual Routers? Simple! With a router declaration object:
 
-Bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)**, and **[React](https://github.com/erhathaway/recursive-router-react)**.
+```
+import manager from 'router-primitives'
+
+const routerTree = {
+  name: 'root',
+  routers: {
+    scene: [
+      { name: 'LandingPageRouter' },
+      { name: 'UserPageRouter' }
+    ],
+    stack: [{ name: 'WelcomeModalRouter' }]
+  }
+}
+
+const manager = new Manager({routerTree});
+
+const {welcomeModalRouter} manager.routers;
+```
+
+
 
 How do primitives define your app layout?
 
@@ -66,6 +85,14 @@ How do primitives define your app layout?
 - **Feature** primitives allow you to implement layout items that seamlessly coexist with one another
 
 - **Data** primitives allow you to markup the layout with arbitrary data or record data in the URL that isn't visible in the UI
+
+---
+
+
+If you work on a platform where there is no concept of a URL, you can still use this library. The URL is simply managed serialized state - which is platform aware and configurable!
+
+Bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)**, and **[React](https://github.com/erhathaway/recursive-router-react)**.
+
 
 |     | Summary                                                                                       |
 | --- | --------------------------------------------------------------------------------------------- |
