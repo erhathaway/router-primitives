@@ -71,7 +71,7 @@ const routerTree = {
 
 const manager = new Manager({routerTree});
 
-const {welcomeModalRouter} manager.routers;
+const {welcomeModalRouter} = manager.routers;
 ```
 
 
