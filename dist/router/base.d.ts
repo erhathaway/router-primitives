@@ -1,5 +1,5 @@
 import Cache from './cache';
-import { IRouterState, IRouter, IRouterConfig, IRouterCurrentState, RouterHistoryState, Observer } from '../types';
+import { IRouterState, IRouter, IRouterConfig, IRouterCurrentState, RouterHistoryState, Observer, IRouterDeclaration } from '../types';
 interface IChildRouters {
     [key: string]: IRouter[];
 }
@@ -8,7 +8,7 @@ interface InitParams {
     type: string;
     manager: any;
     config: IRouterConfig;
-    parent: IRouter;
+    parent?: IRouter;
     routers: IChildRouters;
     root: IRouter;
     getState: () => IRouterState;
@@ -32,6 +32,7 @@ export default class RouterBase {
     getNeighborsByType(type: string): IRouter[];
     readonly pathLocation: number;
     readonly isRootRouter: boolean;
+    serialize(): IRouterDeclaration;
     private _addChildRouter;
     readonly isPathRouter: boolean;
     readonly state: IRouterCurrentState;
