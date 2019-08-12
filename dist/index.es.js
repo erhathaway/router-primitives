@@ -755,6 +755,27 @@ var RouterBase = (function () {
         enumerable: true,
         configurable: true
     });
+    RouterBase.prototype.serialize = function () {
+        var _this = this;
+        var serialized = {
+            name: this.name,
+            routeKey: this.routeKey,
+            disableCaching: this.config.disableCaching,
+            isPathRouter: this.config.isPathRouter,
+            type: this.type,
+            parentName: this.parent ? this.parent.name : undefined,
+            defaultAction: this.config.defaultAction
+        };
+        var childRouterTypes = Object.keys(this.routers);
+        var childRouters = childRouterTypes.reduce(function (acc, type) {
+            acc[type] = _this.routers[type].map(function (childRouter) { return childRouter.serialize(); });
+            return acc;
+        }, {});
+        if (childRouterTypes.length > 0) {
+            serialized.routers = childRouters;
+        }
+        return serialized;
+    };
     RouterBase.prototype._addChildRouter = function (router) {
         if (!router.type) {
             throw new Error('Router is missing type');
@@ -773,11 +794,13 @@ var RouterBase = (function () {
                 return true;
             }
             if (this.config.isPathRouter) {
-                throw new Error(this.type + " router: " + this.name + " is explicitly set to modify the pathname\n        but one of its parent routers doesnt have this permission.\n        Make sure all parents have 'isPathRouter' attribute set to 'true' in the router config OR\n        Make sure all parents are of router type 'scene' or 'data'.\n        If the routers parents have siblings of both 'scene' and 'data' the 'scene' router will always be used for the pathname\n      ");
+                throw new Error(this.type + " router: " + this.name + " is explicitly set to modify the pathname\n\t\tbut one of its parent routers doesnt have this permission.\n\t\tMake sure all parents have 'isPathRouter' attribute set to 'true' in the router config OR\n\t\tMake sure all parents are of router type 'scene' or 'data'.\n\t\tIf the routers parents have siblings of both 'scene' and 'data' the 'scene' router will always be used for the pathname\n\t  ");
             }
             if (this.type === 'scene' && this.parent.isPathRouter) {
                 var neighboringDataRouters = this.getNeighborsByType('data');
-                var isSiblingRouterExplictlyAPathRouter = neighboringDataRouters.reduce(function (acc, r) { return (acc || r.config.isPathRouter === true); }, false);
+                var isSiblingRouterExplictlyAPathRouter = neighboringDataRouters.reduce(function (acc, r) {
+                    return acc || r.config.isPathRouter === true;
+                }, false);
                 if (isSiblingRouterExplictlyAPathRouter === false) {
                     return true;
                 }
@@ -787,7 +810,10 @@ var RouterBase = (function () {
                     return false;
                 }
                 var neighboringSceneRouters = this.getNeighborsByType('scene');
-                return (neighboringSceneRouters.length === 0) && !this.siblings.reduce(function (acc, r) { return (acc || r.config.isPathRouter === true); }, false);
+                return (neighboringSceneRouters.length === 0 &&
+                    !this.siblings.reduce(function (acc, r) {
+                        return acc || r.config.isPathRouter === true;
+                    }, false));
             }
             return false;
         },
