@@ -1,5 +1,5 @@
 import Cache from './cache';
-import { IRouterState, IRouter, IRouterConfig, IRouterCurrentState, RouterHistoryState, Observer, IRouterDeclaration } from '../types';
+import { IRouterState, IRouter, IRouterConfig, IRouterCurrentState, RouterHistoryState, Observer, IRouterDeclaration, ISerializeOptions } from '../types';
 interface IChildRouters {
     [key: string]: IRouter[];
 }
@@ -32,7 +32,9 @@ export default class RouterBase {
     getNeighborsByType(type: string): IRouter[];
     readonly pathLocation: number;
     readonly isRootRouter: boolean;
-    serialize(): IRouterDeclaration;
+    serialize(options?: ISerializeOptions): IRouterDeclaration & {
+        [key: string]: any;
+    };
     private _addChildRouter;
     readonly isPathRouter: boolean;
     readonly state: IRouterCurrentState;

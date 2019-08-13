@@ -759,25 +759,40 @@ var RouterBase = (function () {
         enumerable: true,
         configurable: true
     });
-    RouterBase.prototype.serialize = function () {
+    RouterBase.prototype.serialize = function (options) {
         var _this = this;
         var serialized = {
             name: this.name,
-            routeKey: this.routeKey,
-            disableCaching: this.config.disableCaching,
+            routeKey: options.alwaysShowRouteKey
+                ? this.routeKey
+                : this.routeKey === this.name
+                    ? undefined
+                    : this.routeKey,
+            disableCaching: options.showDefaults
+                ? this.config.disableCaching
+                : this.config.disableCaching === true
+                    ? true
+                    : undefined,
             isPathRouter: this.config.isPathRouter,
-            type: this.type,
-            parentName: this.parent ? this.parent.name : undefined,
-            defaultAction: this.config.defaultAction
+            type: options.showType ? this.type : undefined,
+            parentName: options.showParentName && this.parent ? this.parent.name : undefined,
+            defaultAction: options.showDefaults
+                ? this.config.defaultAction
+                : this.config.defaultAction !== undefined
+                    ? this.config.defaultAction
+                    : undefined
         };
         var childRouterTypes = Object.keys(this.routers);
         var childRouters = childRouterTypes.reduce(function (acc, type) {
-            acc[type] = _this.routers[type].map(function (childRouter) { return childRouter.serialize(); });
+            acc[type] = _this.routers[type].map(function (childRouter) { return childRouter.serialize(options); });
             return acc;
         }, {});
         if (childRouterTypes.length > 0) {
             serialized.routers = childRouters;
         }
+        Object.keys(serialized).forEach(function (key) {
+            return serialized[key] === undefined ? delete serialized[key] : '';
+        });
         return serialized;
     };
     RouterBase.prototype._addChildRouter = function (router) {

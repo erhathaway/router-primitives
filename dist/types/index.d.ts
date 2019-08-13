@@ -1,4 +1,4 @@
-import RouterBase from "../router/base";
+import RouterBase from '../router/base';
 import Manager from '../manager';
 export interface IInputSearch {
     [key: string]: any;
@@ -64,6 +64,12 @@ export interface IRouterDeclaration extends IRouterConfig {
     type?: string;
     parentName?: string;
     defaultAction?: string[];
+}
+export interface ISerializeOptions {
+    showDefaults: boolean;
+    showType: boolean;
+    alwaysShowRouteKey: boolean;
+    showParentName: boolean;
 }
 export interface IRouterConfig {
     routeKey?: string;
