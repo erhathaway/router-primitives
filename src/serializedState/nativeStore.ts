@@ -38,6 +38,7 @@ export default class NativeStore {
     const oldUnserializedLocation = this.getState();
     const { location: newState } = this.config.serializer(unserializedLocation, oldUnserializedLocation);
 
+    console.log('*****', unserializedLocation, newState)
     if (options.updateHistory !== false) {
       // clone history
       let newHistory = this.history.slice();
@@ -65,46 +66,46 @@ export default class NativeStore {
   public getState() { return this.config.deserializer(this.history[this.currentLocationInHistory]); }
 
   // is a BehaviorSubject
-  public subscribeToStateChanges(fn: StateObserver) { 
-    this.observers.push(fn); 
+  public subscribeToStateChanges(fn: StateObserver) {
+    this.observers.push(fn);
 
     // send existing state to observer
     const deserializedState = this.getState();
     fn(deserializedState);
   }
 
-  public unsubscribeFromStateChanges(fn: StateObserver) { 
+  public unsubscribeFromStateChanges(fn: StateObserver) {
     this.observers = this.observers.filter(existingFn => existingFn !== fn);
   }
   // unsubscribeToStateChanges // TODO fill me in!
-  
+
   public back() {
     this.go(-1);
   }
-  
+
   public forward() {
     this.go(1);
   }
-  
+
   public go(historyChange: number) {
     if (historyChange === 0) { throw new Error('No history size change specified'); }
-    
+
     // calcuate request history location
     const newLocation = this.currentLocationInHistory - historyChange;
-    
+
     // if within the range of recorded history, set as the new history location
     if (newLocation + 1 <= this.history.length && newLocation >= 0) {
       this.currentLocationInHistory = newLocation;
-      
+
       // if too far in the future, set as the most recent history
     } else if (newLocation + 1 <= this.history.length) {
       this.currentLocationInHistory = 0;
-      
+
       // if too far in the past, set as the last recorded history
     } else if (newLocation >= 0) {
       this.currentLocationInHistory = this.history.length - 1;
     }
-    
+
     this.setState(this.getState(), { updateHistory: false });
   }
 

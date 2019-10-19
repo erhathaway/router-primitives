@@ -99,10 +99,10 @@ export interface IRouterDeclaration extends IRouterConfig {
 }
 
 export interface ISerializeOptions {
-    showDefaults: boolean; // shows default options
-    showType: boolean; // shows the type even when it can be inferred from the parent type
-    alwaysShowRouteKey: boolean; // shows the route key even when its not different from the router name
-    showParentName: boolean;
+    showDefaults?: boolean; // shows default options
+    showType?: boolean; // shows the type even when it can be inferred from the parent type
+    alwaysShowRouteKey?: boolean; // shows the route key even when its not different from the router name
+    showParentName?: boolean;
 }
 
 export interface IRouterConfig {

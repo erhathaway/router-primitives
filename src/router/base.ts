@@ -114,7 +114,7 @@ export default class RouterBase {
         return !this.parent;
     }
 
-    public serialize(options?: ISerializeOptions) {
+    public serialize(options: ISerializeOptions = {}) {
         // create router declaration object
         const serialized = {
             name: this.name,
