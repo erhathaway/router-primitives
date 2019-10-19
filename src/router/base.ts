@@ -6,7 +6,8 @@ import {
     IRouterCurrentState,
     RouterHistoryState,
     Observer,
-    IRouterDeclaration
+    IRouterDeclaration,
+    ISerializeOptions
 } from '../types';
 
 interface IChildRouters {
@@ -113,23 +114,35 @@ export default class RouterBase {
         return !this.parent;
     }
 
-    public serialize() {
+    public serialize(options: ISerializeOptions = {}) {
         // create router declaration object
         const serialized = {
             name: this.name,
-            routeKey: this.routeKey,
-            disableCaching: this.config.disableCaching,
+            routeKey: options.alwaysShowRouteKey
+                ? this.routeKey
+                : this.routeKey === this.name
+                ? undefined
+                : this.routeKey,
+            disableCaching: options.showDefaults
+                ? this.config.disableCaching
+                : this.config.disableCaching === true
+                ? true
+                : undefined,
             isPathRouter: this.config.isPathRouter,
-            type: this.type,
-            parentName: this.parent ? this.parent.name : undefined,
-            defaultAction: this.config.defaultAction
-        } as IRouterDeclaration;
+            type: options.showType ? this.type : undefined,
+            parentName: options.showParentName && this.parent ? this.parent.name : undefined,
+            defaultAction: options.showDefaults
+                ? this.config.defaultAction
+                : this.config.defaultAction !== undefined
+                ? this.config.defaultAction
+                : undefined
+        } as IRouterDeclaration & {[key: string]: any};
 
         // recursively serialize child routers
         const childRouterTypes = Object.keys(this.routers);
         const childRouters = childRouterTypes.reduce(
             (acc, type) => {
-                acc[type] = this.routers[type].map(childRouter => childRouter.serialize());
+                acc[type] = this.routers[type].map(childRouter => childRouter.serialize(options));
                 return acc;
             },
             {} as {[routerType: string]: IRouterDeclaration[]}
@@ -138,6 +151,11 @@ export default class RouterBase {
         if (childRouterTypes.length > 0) {
             serialized.routers = childRouters;
         }
+
+        Object.keys(serialized).forEach(key =>
+            serialized[key] === undefined ? delete serialized[key] : ''
+        );
+
         return serialized;
     }
 

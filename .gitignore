@@ -62,3 +62,5 @@ typings/
 
 # Typescript Rollup Plugin
 .rpt2_cache/
+
+dist

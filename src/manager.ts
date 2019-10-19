@@ -34,9 +34,9 @@ export default class Manager {
 
         // if there is no cache state and there is a default action, apply the action
         else if (child.config.defaultAction && child.config.defaultAction.length > 0) {
-          
+
           const [action, ...args] = child.config.defaultAction;
-          
+
           const newContext = { ...ctx, addingDefaults: true };
 
           newLocation = (child as any)[action]({ ...options, data: args[0] }, newLocation, child, newContext);
@@ -73,7 +73,7 @@ export default class Manager {
     // Also make sure there is a local request to disableCaching for this particular router (via options)
     if (!!disableCaching && !!(options.disableCaching || false)) {
       router.cache.setCacheFromLocation(newLocation, router);
-    } 
+    }
 
     return newLocation;
   }
@@ -88,7 +88,7 @@ export default class Manager {
         if (type === 'hide') {
           updatedLocation = Manager.setCacheAndHide(options, existingLocation, routerInstance, ctx);
         }
-        
+
         updatedLocation = action(options, existingLocation, routerInstance, ctx);
 
         if (type === 'show') { // add location defaults from children
@@ -97,7 +97,7 @@ export default class Manager {
 
         return updatedLocation;
       }
-      
+
       // if the parent router isn't visible, but the child is shown, show all parents
       if (type === 'show' && routerInstance.parent && (routerInstance.parent.state.visible === false || routerInstance.parent.state.visible === undefined)) { // data routers dont have a visiblity state by default. FIX THIS
         routerInstance.parent.show();
@@ -166,7 +166,7 @@ export default class Manager {
       // create a RouterType off the base Router
 
       // extend router base for specific type
-      class RouterType extends Router {}
+      class RouterType extends Router { }
 
       // change the router name to include the type
       Object.defineProperty(RouterType, 'name', { value: `${capitalize(templateName)}Router` });
@@ -224,7 +224,7 @@ export default class Manager {
       defaultAction,
       routeKey,
     };
-    
+
     // create a router
     const router = this.createRouter({ name, config, type, parentName });
     // set as the parent router if this router has not parent and there is not yet a root
@@ -273,12 +273,16 @@ export default class Manager {
     delete this.routers[name];
   }
 
-  public calcNewRouterState(location: IInputLocation, router: RouterT, ctx: ILocationActionContext = {}, newState: { [routerName: string]: {}} = {}) {
+  public calcNewRouterState(location: IInputLocation, router: RouterT, ctx: ILocationActionContext = {}, newState: { [routerName: string]: {} } = {}) {
     if (!router) { return; }
 
     // calc new router state from new location and existing state
     if (!router.isRootRouter) { // TODO add tests for this
       newState[router.name] = router.reducer(location, router, ctx);
+    }
+    if (router.isRootRouter) {
+      console.log('Calculating new router state', location)
+
     }
 
     // recursive call all children to add their state
@@ -292,9 +296,9 @@ export default class Manager {
   }
 
   protected validateRouterDeclaration(name: string, type: string, config: IRouterConfig): void {
-        // check if the router type exists
+    // check if the router type exists
     // if (!this.routerTypes[type] && type !== 'root') {
-      // throw new Error(`The router type ${type} for router '${name}' does not exist. Consider creating a template for this type.`);
+    // throw new Error(`The router type ${type} for router '${name}' does not exist. Consider creating a template for this type.`);
     // }
     // check if the router type has a router template 
     if (this.routers[name]) {
@@ -312,7 +316,7 @@ export default class Manager {
     }
   }
 
-  protected createNewRouterInitArgs({ name, config, type, parentName}: IRouterInitParams): IRouterInitArgs {
+  protected createNewRouterInitArgs({ name, config, type, parentName }: IRouterInitParams): IRouterInitArgs {
     // TODO add test
     if (!type) { throw new Error('Type required'); }
 

@@ -11,13 +11,13 @@ import { RouterAction, RouterReducer, IRouterCurrentState } from "../../types";
  *    3. Adding the scene router to either the path or query params
  */
 const show: RouterAction = (options, oldLocation, router, _ctx) => {
-  const location = {...oldLocation};
-  
+  const location = { ...oldLocation };
+
   const data = options && options.data ? options.data : router.state.data;
-  if (!data) { return location;}
+  if (!data) { return location; }
   if (router.isPathRouter) {
     const { parent } = router;
-    location.pathname[router.pathLocation] = data; 
+    location.pathname[router.pathLocation] = data;
     // drop pathname after this pathLocation
     location.pathname = location.pathname.slice(0, router.pathLocation + 1);
   } else {
@@ -27,7 +27,7 @@ const show: RouterAction = (options, oldLocation, router, _ctx) => {
 };
 
 const hide: RouterAction = (_options, oldLocation, router, _ctx) => {
-  const location = {...oldLocation};
+  const location = { ...oldLocation };
 
   if (router.isPathRouter) {
     location.pathname = location.pathname.slice(0, router.pathLocation);
