@@ -1,3 +1,4 @@
 {
-  "eslint.enable": false
+  "editor.formatOnSave": true,
+  "tslint.run": "onType"
 }

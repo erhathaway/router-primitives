@@ -71,7 +71,12 @@ export default class Manager {
     // Use caching figured out above b/c the ctx object might get mutated when
     //   transversing the router tree
     // Also make sure there is a local request to disableCaching for this particular router (via options)
-    if (!!disableCaching && !!(options.disableCaching || false)) {
+    // const shouldCache = disableCaching === false && options.disableCaching === false
+
+    const shouldCache = !disableCaching && !(options.disableCaching || false);
+    router.name === 'imDataa' || router.name === 'imData2' && console.log(`shouldCache for: ${router.name}`, shouldCache, disableCaching, options.disableCaching) // tslint:disable-line
+
+    if (shouldCache) {
       router.cache.setCacheFromLocation(newLocation, router);
     }
 
@@ -273,19 +278,18 @@ export default class Manager {
     delete this.routers[name];
   }
 
+  /**
+   * Called on every location change
+   * TODO make this method not mutate `newState`
+   */
   public calcNewRouterState(location: IInputLocation, router: RouterT, ctx: ILocationActionContext = {}, newState: { [routerName: string]: {} } = {}) {
     if (!router) { return; }
 
-    // calc new router state from new location and existing state
-    if (!router.isRootRouter) { // TODO add tests for this
-      newState[router.name] = router.reducer(location, router, ctx);
-    }
-    if (router.isRootRouter) {
-      console.log('Calculating new router state', location)
+    // Call the routers reducer to calculate its state from the new location
+    newState[router.name] = router.reducer(location, router, ctx);
 
-    }
 
-    // recursive call all children to add their state
+    // Recursively call all children to add their state to the `newState` object
     Object.keys(router.routers)
       .forEach((type) => {
         router.routers[type]
@@ -300,12 +304,12 @@ export default class Manager {
     // if (!this.routerTypes[type] && type !== 'root') {
     // throw new Error(`The router type ${type} for router '${name}' does not exist. Consider creating a template for this type.`);
     // }
-    // check if the router type has a router template 
+    // Check if the router type has a router template 
     if (this.routers[name]) {
       throw new Error(`A router with the name '${name}' already exists.`);
     }
 
-    // check if the router routeKey is unique
+    // Check if the router routeKey is unique
     if (config.routeKey) {
       const alreadyExists = Object.values(this.routers).reduce((acc, r) => {
         return acc || r.routeKey === config.routeKey
@@ -341,8 +345,16 @@ export default class Manager {
     return new (routerClass as any)({ ...initalArgs, actions: routerActionNames }) as any as RouterT;
   }
 
-  // location -> newState
-  // newState -> routerStates :specify
+  /**
+   * Given a location change, set the new router state tree state
+   * AKA:new location -> new state
+   * 
+   * The method `calcNewRouterState` will recursively walk down the tree calling each
+   * routers reducer to calculate the state
+   * 
+   * Once the state of the entire tree is calculate, it is stored in a central store,
+   * the `routerStateStore`
+   */
   protected setNewRouterState(location: IInputLocation) {
     const newState = this.calcNewRouterState(location, this.rootRouter);
     this.routerStateStore.setState(newState);

@@ -9,11 +9,14 @@ const show: RouterAction = (_options, location, _router, _ctx) => {
 };
 
 const hide: RouterAction = (_options, location, _router, _ctx) => {
-  return location;
+  return { search: {}, pathname: [], options: location.options };
 };
 
-const reducer: RouterReducer = (_location, _router, _ctx) => {
-  return { visible: true };
+const reducer: RouterReducer = (location, _router, _ctx) => {
+  const hasSearchRouters = Object.keys(location.search).length > 0;
+  const hasPathRouters = location.pathname.length > 0;
+
+  return { visible: hasSearchRouters || hasPathRouters };
 };
 
 

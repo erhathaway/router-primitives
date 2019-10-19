@@ -38,7 +38,7 @@ export default class NativeStore {
     const oldUnserializedLocation = this.getState();
     const { location: newState } = this.config.serializer(unserializedLocation, oldUnserializedLocation);
 
-    console.log('*****', unserializedLocation, newState)
+    // console.log('*****', unserializedLocation, newState)
     if (options.updateHistory !== false) {
       // clone history
       let newHistory = this.history.slice();

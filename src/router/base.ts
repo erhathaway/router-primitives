@@ -114,6 +114,11 @@ export default class RouterBase {
         return !this.parent;
     }
 
+    /**
+     * Return serialized information about this router
+     * and all of its children routers.
+     * Useful for debugging.
+     */
     public serialize(options: ISerializeOptions = {}) {
         // create router declaration object
         const serialized = {
@@ -121,22 +126,22 @@ export default class RouterBase {
             routeKey: options.alwaysShowRouteKey
                 ? this.routeKey
                 : this.routeKey === this.name
-                ? undefined
-                : this.routeKey,
+                    ? undefined
+                    : this.routeKey,
             disableCaching: options.showDefaults
                 ? this.config.disableCaching
                 : this.config.disableCaching === true
-                ? true
-                : undefined,
+                    ? true
+                    : undefined,
             isPathRouter: this.config.isPathRouter,
             type: options.showType ? this.type : undefined,
             parentName: options.showParentName && this.parent ? this.parent.name : undefined,
             defaultAction: options.showDefaults
                 ? this.config.defaultAction
                 : this.config.defaultAction !== undefined
-                ? this.config.defaultAction
-                : undefined
-        } as IRouterDeclaration & {[key: string]: any};
+                    ? this.config.defaultAction
+                    : undefined
+        } as IRouterDeclaration & { [key: string]: any };
 
         // recursively serialize child routers
         const childRouterTypes = Object.keys(this.routers);
@@ -145,7 +150,7 @@ export default class RouterBase {
                 acc[type] = this.routers[type].map(childRouter => childRouter.serialize(options));
                 return acc;
             },
-            {} as {[routerType: string]: IRouterDeclaration[]}
+            {} as { [routerType: string]: IRouterDeclaration[] }
         );
 
         if (childRouterTypes.length > 0) {
@@ -188,7 +193,7 @@ export default class RouterBase {
         if (this.config.isPathRouter) {
             throw new Error(`${this.type} router: ${
                 this.name
-            } is explicitly set to modify the pathname
+                } is explicitly set to modify the pathname
 		but one of its parent routers doesnt have this permission.
 		Make sure all parents have 'isPathRouter' attribute set to 'true' in the router config OR
 		Make sure all parents are of router type 'scene' or 'data'.
@@ -237,7 +242,7 @@ export default class RouterBase {
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');
         }
-        const {current} = this.getState();
+        const { current } = this.getState();
         return current || {};
     }
 
@@ -245,7 +250,7 @@ export default class RouterBase {
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');
         }
-        const {historical} = this.getState();
+        const { historical } = this.getState();
         return historical || [];
     }
 }

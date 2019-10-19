@@ -4,7 +4,7 @@ import { IInputLocation } from '../types/index';
 const DEFAULT_LOCATION: IInputLocation = { pathname: [], search: {}, options: {} };
 
 const serializer = (newLocation: IInputLocation, oldLocation = DEFAULT_LOCATION) => {
-  console.log('$$', newLocation.search)
+  // console.log('$$', newLocation.search)
   const newPathname = newLocation.pathname || [];
   const newSearchObj = newLocation.search || {};
 
