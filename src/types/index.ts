@@ -68,6 +68,7 @@ export interface IRouterTemplateConfig {
     canBePathRouter?: boolean;
     isPathRouter?: boolean;
     shouldInverselyActivate?: boolean;
+    disableCaching?: boolean;
 }
 
 export interface IRouterTemplate {
@@ -98,10 +99,12 @@ export interface IRouterDeclaration {
     name: string;
     routers?: {[key: string]: IRouterDeclaration[]};
     routeKey?: string;
-    disableCaching?: boolean;
-    isPathRouter?: boolean;
     type?: string;
     parentName?: string;
+
+    isPathRouter?: boolean;
+    shouldInverselyActivate?: boolean;
+    disableCaching?: boolean;
     defaultAction?: string[]; // (fn, ...args)
 }
 
@@ -150,9 +153,14 @@ export interface IRouterCreationInfo {
     parentName?: string;
 }
 
+/**
+ * Computed from the template default config and router declaration
+ */
 export interface IRouterConfig {
     routeKey: string;
-    isPathRouter?: boolean;
-    disableCaching?: boolean;
-    defaultAction?: string[];
+
+    isPathRouter: boolean;
+    shouldInverselyActivate: boolean;
+    disableCaching: boolean;
+    defaultAction: string[];
 }

@@ -22,6 +22,6 @@ const reducer: RouterReducer = (location, _router, _ctx) => {
 const template: IRouterTemplate = {
     actions: {show, hide},
     reducer,
-    config: {canBePathRouter: true}
+    config: {canBePathRouter: true, isPathRouter: true}
 };
 export default template;
