@@ -1,4 +1,4 @@
-import { RouterAction, RouterReducer, IRouterCurrentState, IRouterTemplate } from "../../types";
+import {RouterAction, RouterReducer, IRouterCurrentState, IRouterTemplate} from '../../types';
 
 /**
  * A data router will display data as the routeKey in either the pathname or queryparams
@@ -11,60 +11,61 @@ import { RouterAction, RouterReducer, IRouterCurrentState, IRouterTemplate } fro
  *    3. Adding the scene router to either the path or query params
  */
 const show: RouterAction = (options, oldLocation, router, _ctx) => {
-  const location = { ...oldLocation };
+    const location = {...oldLocation};
 
-  const data = options && options.data ? options.data : router.state.data;
-  if (!data) { return location; }
-  if (router.isPathRouter) {
-    const { parent } = router;
-    location.pathname[router.pathLocation] = data;
-    // drop pathname after this pathLocation
-    location.pathname = location.pathname.slice(0, router.pathLocation + 1);
-  } else {
-    location.search[router.routeKey] = data;
-  }
-  return location;
+    const data = options && options.data ? options.data : router.state.data;
+    if (!data) {
+        return location;
+    }
+    if (router.isPathRouter) {
+        const {parent} = router;
+        location.pathname[router.pathLocation] = data;
+        // drop pathname after this pathLocation
+        location.pathname = location.pathname.slice(0, router.pathLocation + 1);
+    } else {
+        location.search[router.routeKey] = data;
+    }
+    return location;
 };
 
 const hide: RouterAction = (_options, oldLocation, router, _ctx) => {
-  const location = { ...oldLocation };
+    const location = {...oldLocation};
 
-  if (router.isPathRouter) {
-    location.pathname = location.pathname.slice(0, router.pathLocation);
-  } else {
-    location.search[router.routeKey] = undefined;
-  }
+    if (router.isPathRouter) {
+        location.pathname = location.pathname.slice(0, router.pathLocation);
+    } else {
+        location.search[router.routeKey] = undefined;
+    }
 
-  return location;
+    return location;
 };
 
 const setData: RouterAction = (options, location, router, ctx) => {
-  return router.show(options, location, router, ctx);
+    return router.show(options, location, router, ctx);
 };
 
-
 const reducer: RouterReducer = (location, router, _ctx) => {
-  const newState: IRouterCurrentState = {};
+    const newState: IRouterCurrentState = {};
 
-  let routerData: string;
-  if (router.isPathRouter) {
-    routerData = location.pathname[router.pathLocation];
-  } else {
-    routerData = location.search[router.routeKey];
-  }
+    let routerData: string;
+    if (router.isPathRouter) {
+        routerData = location.pathname[router.pathLocation];
+    } else {
+        routerData = location.search[router.routeKey];
+    }
 
-  if (routerData) {
-    newState['visible'] = true;
-  }
+    if (routerData) {
+        newState['visible'] = true;
+    }
 
-  newState['data'] = routerData || router.state.data;
+    newState['data'] = routerData || router.state.data;
 
-  return newState;
+    return newState;
 };
 
 const template: IRouterTemplate = {
-  actions: { show, hide, setData },
-  reducer,
-  config: { canBePathRouter: true, isPathRouter: false }
+    actions: {show, hide, setData},
+    reducer,
+    config: {canBePathRouter: true, isPathRouter: false}
 };
 export default template;

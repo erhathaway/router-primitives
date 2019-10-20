@@ -7,10 +7,20 @@
     "jsRules": {},
     "rules": {
         "ordered-imports": false,
-        "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"],
+        "variable-name": [
+            true,
+            "ban-keywords",
+            "check-format",
+            "allow-leading-underscore"
+        ],
         "no-string-literal": false,
         "max-classes-per-file": false,
-        "object-literal-sort-keys": false
+        "object-literal-sort-keys": false,
+        "arrow-parens": false,
+        "object-curly-spacing": [
+            "error",
+            "never"
+        ]
     },
     "rulesDirectory": []
 }

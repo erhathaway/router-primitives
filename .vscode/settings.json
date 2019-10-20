@@ -1,4 +1,5 @@
 {
   "editor.formatOnSave": true,
-  "tslint.run": "onType"
+  "tslint.run": "onType",
+  "prettier.bracketSpacing": false
 }

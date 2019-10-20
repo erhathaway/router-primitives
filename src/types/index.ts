@@ -48,7 +48,6 @@ export interface IRouter extends RouterBase {
     reducer: RouterReducer;
 }
 
-
 // at the moment these should be the same
 export type IRouterActionOptions = ILocationOptions;
 
@@ -62,8 +61,8 @@ export type RouterAction = (
 export type RouterReducer = (
     location: IInputLocation,
     router: IRouter,
-    ctx: { [key: string]: any }
-) => { [key: string]: any };
+    ctx: {[key: string]: any}
+) => {[key: string]: any};
 
 export interface IRouterTemplateConfig {
     canBePathRouter?: boolean;
@@ -71,9 +70,8 @@ export interface IRouterTemplateConfig {
     shouldInverselyActivate?: boolean;
 }
 
-
 export interface IRouterTemplate {
-    actions: { [actionName: string]: RouterAction };
+    actions: {[actionName: string]: RouterAction};
     reducer: RouterReducer;
     config: IRouterTemplateConfig;
 }
@@ -98,7 +96,7 @@ export interface IRouterState {
 
 export interface IRouterDeclaration {
     name: string;
-    routers?: { [key: string]: IRouterDeclaration[] };
+    routers?: {[key: string]: IRouterDeclaration[]};
     routeKey?: string;
     disableCaching?: boolean;
     isPathRouter?: boolean;
