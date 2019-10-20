@@ -26,7 +26,7 @@ export default class BrowserStore {
 
     // subscribe to location changes
     this.existingLocation = '';
-    this.stateWatcher = window.setInterval(() => {
+    this.stateWatcher = global.setInterval(() => {
       this._monitorLocation();
     }, 100);
   }
@@ -45,7 +45,7 @@ export default class BrowserStore {
 
     this.notifyObservers();
   }
-  
+
   public getState(): IOutputLocation {
     const searchString = window.location.search || '';
     const pathnameString = window.location.pathname || '';
@@ -53,7 +53,7 @@ export default class BrowserStore {
   }
 
   // is a BehaviorSubject
-  public subscribeToStateChanges(fn: StateObserver) { 
+  public subscribeToStateChanges(fn: StateObserver) {
     this.observers.push(fn);
 
     // send existing state to observer
@@ -61,7 +61,7 @@ export default class BrowserStore {
     fn(deserializedState);
   }
 
-  public unsubscribeFromStateChanges(fn: StateObserver) { 
+  public unsubscribeFromStateChanges(fn: StateObserver) {
     this.observers = this.observers.filter(existingFn => existingFn !== fn);
   }
 
@@ -76,7 +76,7 @@ export default class BrowserStore {
   public go(historyChange: number) {
     window.history.go(historyChange);
   }
-  
+
   private _monitorLocation() {
     const newLocation = (window.location.href);
     if (this.existingLocation !== newLocation) {
@@ -85,7 +85,7 @@ export default class BrowserStore {
     }
   }
 
-  
+
   private notifyObservers() {
     const deserializedState = this.getState();
     this.observers.forEach(fn => fn(deserializedState));

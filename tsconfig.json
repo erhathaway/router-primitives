@@ -8,7 +8,10 @@
     "moduleResolution": "node",
     "target": "es5",
     "module": "es2015",
-    "typeRoots": [ "./types", "./node_modules/@types"],
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types"
+    ],
     "removeComments": true,
     "sourceMap": true,
     "lib": [
@@ -20,5 +23,7 @@
   "include": [
     "src/**/*"
   ],
-  "exclude": ["node_modules",]
+  "exclude": [
+    "node_modules",
+  ]
 }

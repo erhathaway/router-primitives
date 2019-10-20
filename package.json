@@ -9,10 +9,10 @@
     "dist"
   ],
   "scripts": {
-    "test": "BABEL_ENV=test jest --watch",
+    "test": "jest --watch",
     "lint": "tslint --project ./tsconfig.json",
-    "build": "rm -rf ./dist; BABEL_ENV=prod rollup -c",
-    "watch": "BABEL_ENV=prod rollup -cw",
+    "build": "rm -rf ./dist && rollup -c",
+    "watch": "rollup -cw",
     "start": "watch"
   },
   "repository": {
@@ -38,21 +38,9 @@
   "homepage": "https://github.com/erhathaway/router-primitives#readme",
   "devDependencies": {
     "@types/jest": "^24.0.6",
-    "@types/query-string": "^6.2.0",
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.3",
-    "babel-plugin-external-helpers": "^6.22.0",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-plugin-transform-decorators-legacy": "^1.3.5",
-    "babel-plugin-transform-flow-strip-types": "^6.22.0",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-flow": "^6.23.0",
-    "flow-bin": "^0.82.0",
     "jest": "^23.1.0",
-    "prettier": "^1.16.4",
+    "prettier": "^1.18.2",
     "rollup": "^1.1.2",
-    "rollup-plugin-babel": "^3.0.7",
     "rollup-plugin-commonjs": "^9.1.5",
     "rollup-plugin-node-resolve": "^3.3.0",
     "rollup-plugin-tslint": "^0.2.2",
@@ -62,10 +50,10 @@
     "tslib": "^1.9.3",
     "tslint": "^5.12.1",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.3.3"
+    "typescript": "^3.6.4"
   },
   "dependencies": {
-    "query-string": "^5.1.1"
+    "query-string": "^6.8.3"
   },
   "peerDependencies": {}
 }

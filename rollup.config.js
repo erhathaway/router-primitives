@@ -1,4 +1,3 @@
-// import babel from 'rollup-plugin-babel';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import typescript from 'rollup-plugin-typescript2';
@@ -35,9 +34,6 @@ export default {
     commonjs({
       include: 'node_modules/**',
     }),
-    // babel({
-    //   babelrc: true,
-    // }),
   ],
   external: dependencies.filter(d => d !== 'query-string'),
 };
