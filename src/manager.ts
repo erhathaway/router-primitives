@@ -112,15 +112,11 @@ export default class Manager {
             disableCaching = ctx.disableCaching || false;
         }
 
-        // The `options.disableCaching` gives the caller of the direct action
-        // the ability to disable caching on a case by case basis will interacting
-        // with the router tree
-        const shouldCache = !disableCaching && !(options.disableCaching || false);
 
         Object.keys(router.routers).forEach(routerType => {
             router.routers[routerType].forEach(child => {
                 // Update ctx object's caching setting for this branch of the router tree
-                const newCtx = { ...ctx, disableCaching: !shouldCache };
+                const newCtx = { ...ctx, disableCaching };
 
                 // Call location 'hide' action if the child is visible
                 if (child.state.visible) {
@@ -128,6 +124,14 @@ export default class Manager {
                 }
             });
         });
+
+        // The `options.disableCaching` gives the caller of the direct action
+        // the ability to disable caching on a case by case basis will interacting
+        // with the router tree. We only want `options.disableCaching` to affect the immediate
+        // router. If we want to disable caching for all routers use the ctx object
+        // For example, `scene` routers use the `options.disableCaching` to disable sibling caches
+        // so they don't get reshown when a parent causes a rehydration
+        const shouldCache = !disableCaching && !(options.disableCaching || false);
 
 
         if (shouldCache) {
