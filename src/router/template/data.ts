@@ -1,4 +1,4 @@
-import { RouterAction, RouterReducer, IRouterCurrentState } from "../../types";
+import { RouterAction, RouterReducer, IRouterCurrentState, IRouterTemplate } from "../../types";
 
 /**
  * A data router will display data as the routeKey in either the pathname or queryparams
@@ -62,7 +62,9 @@ const reducer: RouterReducer = (location, router, _ctx) => {
   return newState;
 };
 
-export default {
+const template: IRouterTemplate = {
   actions: { show, hide, setData },
   reducer,
+  config: { canBePathRouter: true, isPathRouter: false }
 };
+export default template;

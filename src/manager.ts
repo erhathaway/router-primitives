@@ -2,7 +2,7 @@ import { NativeSerializedStore, BrowserSerializedStore } from './serializedState
 import DefaultRouterStateStore from './routerState';
 import DefaultRouter from './router/base';
 import * as defaultTemplates from './router/template';
-import { IRouterDeclaration, IRouter as RouterT, IRouterTemplate, IInputLocation, ILocationActionContext, RouterAction, IOutputLocation, IRouterInitParams, IRouterActionOptions, IRouterConfig, Observer, IRouterInitArgs, IRouter } from './types';
+import { IRouterDeclaration, IRouter as RouterT, IRouterTemplate, IInputLocation, ILocationActionContext, RouterAction, IOutputLocation, IRouterCreationInfo, IRouterActionOptions, IRouterConfig, Observer, IRouterInitArgs, IRouter } from './types';
 
 const capitalize = (name = '') => name.charAt(0).toUpperCase() + name.slice(1);
 
@@ -83,20 +83,30 @@ export default class Manager {
     return newLocation;
   }
 
-  // wrapper around action function
-  private static createActionWrapperFunction(action: RouterAction, type: string) {
+  /**
+   * Decorator around the `action` methods of a router. 
+   * Called every time an action is called.
+   * 
+   * Common tasks are caching current router state, setting any default state, 
+   * and changing visibility in response to a parent or sibling action
+   * 
+   * @param actionFn a router action function (RouterAction) that returns a location object (`IInputLocation`) 
+   * @param actionName name of the action. Usually `show` or `hide` but can be any custom action defined in a template
+   * 
+   */
+  private static createActionWrapperFunction(actionFn: RouterAction, actionName: string) {
     function actionWrapper(options: IRouterActionOptions = {}, existingLocation?: IOutputLocation, routerInstance = this, ctx: ILocationActionContext = {}) {
       // if called from another action wrapper
       let updatedLocation: IInputLocation;
       if (existingLocation) {
         // set cache before location changes b/c cache info is derived from location path
-        if (type === 'hide') {
+        if (actionName === 'hide') {
           updatedLocation = Manager.setCacheAndHide(options, existingLocation, routerInstance, ctx);
         }
 
-        updatedLocation = action(options, existingLocation, routerInstance, ctx);
+        updatedLocation = actionFn(options, existingLocation, routerInstance, ctx);
 
-        if (type === 'show') { // add location defaults from children
+        if (actionName === 'show') { // add location defaults from children
           updatedLocation = Manager.setChildrenDefaults(options, updatedLocation, routerInstance, ctx);
         }
 
@@ -104,7 +114,7 @@ export default class Manager {
       }
 
       // if the parent router isn't visible, but the child is shown, show all parents
-      if (type === 'show' && routerInstance.parent && (routerInstance.parent.state.visible === false || routerInstance.parent.state.visible === undefined)) { // data routers dont have a visiblity state by default. FIX THIS
+      if (actionName === 'show' && routerInstance.parent && (routerInstance.parent.state.visible === false || routerInstance.parent.state.visible === undefined)) { // data routers dont have a visiblity state by default. FIX THIS
         routerInstance.parent.show();
       }
 
@@ -112,17 +122,17 @@ export default class Manager {
       updatedLocation = this.manager.serializedStateStore.getState();
 
       // set cache before location changes b/c cache info is derived from location path
-      if (type === 'hide') {
+      if (actionName === 'hide') {
         updatedLocation = Manager.setCacheAndHide(options, updatedLocation, routerInstance, ctx);
       }
 
-      updatedLocation = action(options, updatedLocation, routerInstance, ctx);
+      updatedLocation = actionFn(options, updatedLocation, routerInstance, ctx);
 
-      if (type === 'hide' && routerInstance.state.visible === true) {
+      if (actionName === 'hide' && routerInstance.state.visible === true) {
         routerInstance.cache.setCache(false);
       }
 
-      if (type === 'show') { // add location defaults from children
+      if (actionName === 'show') { // add location defaults from children
         updatedLocation = Manager.setChildrenDefaults(options, updatedLocation, routerInstance, ctx);
       }
 
@@ -220,19 +230,28 @@ export default class Manager {
     });
   }
 
-
+  /**
+   * High level method for adding a router to the router state tree based on an input router declaration object
+   * 
+   * This method will add the router to the manager and correctly associate the router with 
+   * its parent and any child routers
+   */
   public addRouter({ name, routeKey, disableCaching, isPathRouter, type, parentName, defaultAction }: IRouterDeclaration) {
-    const config = {
+    const config: IRouterCreationInfo['config'] = {
       disableCaching,
       isPathRouter,
-      // defaultShow: defaultShow || false,
       defaultAction,
       routeKey,
     };
 
-    // create a router
-    const router = this.createRouter({ name, config, type, parentName });
-    // set as the parent router if this router has not parent and there is not yet a root
+    // Set the root router type if
+    const routerType = !parentName && !this.rootRouter ? 'root' : type;
+
+    // Create a router
+    const router = this.createRouter({ name, config, type: routerType, parentName });
+
+    // Set the created router as the parent router 
+    // if it has no parent and there is not yet a root
     if (!parentName && !this.rootRouter) {
       this.rootRouter = router;
     } else if (!parentName && this.rootRouter) {
@@ -240,41 +259,44 @@ export default class Manager {
     } else if (this.routers[parentName] === undefined) {
       throw new Error('Parent of to be created router not found');
     } else {
-      // fetch the parent, and assign a ref of it to this router
+      // Fetch the parent, and assign a ref of it to this router
       const parent = this.routers[parentName];
 
       router.parent = parent;
 
-      // add ref of new router to the parent
+      // Add ref of new router to the parent
       const siblingTypes = parent.routers[type] || [];
       siblingTypes.push(router);
       parent.routers[type] = siblingTypes;
     }
-    // add ref of new router to manager
+    // Add ref of new router to manager
     this.routers[name] = router;
   }
 
-  // removing a router will also unset all of its children
+  /**
+   * Remove a router from the routing tree and manager
+   * Removing a router will also remove all of its children
+   */
   public removeRouter(name: string) {
     const router = this.routers[name];
     const { parent, routers, type } = router;
 
-    // delete ref the parent (if any) stores
+    // Delete ref the parent (if any) stores
     if (parent) {
       const routersToKeep = parent.routers[type].filter(child => child.name !== name);
       parent.routers[type] = routersToKeep;
     }
 
-    // recursively call this method for all children
+    // Recursively call this method for all children
     const childrenTypes = Object.keys(routers);
     childrenTypes.forEach((childType) => {
       routers[childType].forEach(childRouter => this.removeRouter(childRouter.name));
     });
 
-    // remove router related state subscribers
+    // Remove router related state subscribers
     this.routerStateStore.unsubscribeAllObserversForRouter(name);
 
-    // delete ref the manager stores
+    // Delete ref the manager stores
     delete this.routers[name];
   }
 
@@ -300,11 +322,12 @@ export default class Manager {
   }
 
   protected validateRouterDeclaration(name: string, type: string, config: IRouterConfig): void {
-    // check if the router type exists
-    // if (!this.routerTypes[type] && type !== 'root') {
-    // throw new Error(`The router type ${type} for router '${name}' does not exist. Consider creating a template for this type.`);
-    // }
-    // Check if the router type has a router template 
+    // Check if the router type exists
+    if (!this.routerTypes[type] && type !== 'root') {
+      throw new Error(`The router type ${type} for router '${name}' does not exist. Consider creating a template for this type.`);
+    }
+
+    // Check to make sure a router with the same name hasn't already been added
     if (this.routers[name]) {
       throw new Error(`A router with the name '${name}' already exists.`);
     }
@@ -320,29 +343,41 @@ export default class Manager {
     }
   }
 
-  protected createNewRouterInitArgs({ name, config, type, parentName }: IRouterInitParams): IRouterInitArgs {
-    // TODO add test
-    if (!type) { throw new Error('Type required'); }
-
+  /**
+   * 
+   * Creates the arguments that the router object constructor expects
+   * 
+   * This method is overridden by libraries like `router-primitives-mobx` as it is a convenient 
+   * place to redefine the getters and setters `getState` and `subscribe`
+   */
+  protected createNewRouterInitArgs({ name, config, type, parentName }: IRouterCreationInfo): IRouterInitArgs {
     const parent = this.routers[parentName];
+    const actions = Object.keys(this.templates[type].actions);
 
     return {
       name,
       config: { ...config },
-      type: type || 'root', // TODO make root router an empty router
+      type,
       parent,
       routers: {},
       manager: this,
       root: this.rootRouter,
       getState: this.routerStateStore.createRouterStateGetter(name),
       subscribe: this.routerStateStore.createRouterStateSubscriber(name),
+      actions
     };
   }
 
-  protected createRouterFromInitArgs(initalArgs: ReturnType<Manager['createNewRouterInitArgs']>, routerActionNames: string[]) {
+  /**
+   * Create a router instance
+   * 
+   * Redefined by libraries like `router-primitives-mobx`. 
+   * Good place to change the base router prototype or decorate methods
+   */
+  protected createRouterFromInitArgs(initalArgs: IRouterInitArgs) {
     const routerClass = this.routerTypes[initalArgs.type];
     // TODO add tests for passing of action names
-    return new (routerClass as any)({ ...initalArgs, actions: routerActionNames }) as any as RouterT;
+    return new (routerClass as any)({ ...initalArgs }) as RouterT;
   }
 
   /**
@@ -360,19 +395,18 @@ export default class Manager {
     this.routerStateStore.setState(newState);
   }
 
-  // create router :specify
-  protected createRouter({ name, config, type, parentName }: IRouterInitParams): RouterT {
+  /**
+   * Method for creating a router. Routers created with this method
+   * aren't added to the manager and are missing connections to parent and child routers
+   * 
+   * To correctly add a router such that it can be managed by the manager and has
+   * parent and child router connections, use one of the `add` methods on the manager.
+   * Those methods use this `createRouter` method in turn.
+   */
+  protected createRouter({ name, config, type, parentName }: IRouterCreationInfo): RouterT {
     this.validateRouterDeclaration(name, type, config);
 
-    // TODO add tests for this
-    const routerType = !parentName && !this.rootRouter ? 'root' : type;
-
-    const initalArgs = this.createNewRouterInitArgs({ name, config, type: routerType, parentName });
-    // TODO add tests for extraction of action names
-    const routerActionNames = Object.keys(this.templates[initalArgs.type].actions);
-
-    const router = this.createRouterFromInitArgs(initalArgs, routerActionNames);
-
-    return router;
+    const initalArgs = this.createNewRouterInitArgs({ name, config, type, parentName });
+    return this.createRouterFromInitArgs({ ...initalArgs });
   }
 }

@@ -40,13 +40,14 @@ export interface ILocationActionContext {
 }
 
 /**
- * Rotuer template types
+ * Router template types
  */
 export interface IRouter extends RouterBase {
     show: RouterAction;
     hide: RouterAction;
     reducer: RouterReducer;
 }
+
 
 // at the moment these should be the same
 export type IRouterActionOptions = ILocationOptions;
@@ -57,15 +58,24 @@ export type RouterAction = (
     router?: IRouter,
     ctx?: ILocationActionContext
 ) => IInputLocation;
+
 export type RouterReducer = (
     location: IInputLocation,
     router: IRouter,
-    ctx: {[key: string]: any}
-) => {[key: string]: any};
+    ctx: { [key: string]: any }
+) => { [key: string]: any };
+
+export interface IRouterTemplateConfig {
+    canBePathRouter?: boolean;
+    isPathRouter?: boolean;
+    shouldInverselyActivate?: boolean;
+}
+
 
 export interface IRouterTemplate {
-    actions: {[actionName: string]: RouterAction};
+    actions: { [actionName: string]: RouterAction };
     reducer: RouterReducer;
+    config: IRouterTemplateConfig;
 }
 /**
  * Router state types
@@ -76,6 +86,7 @@ export interface IRouterCurrentState {
 }
 
 export type RouterHistoryState = IRouterCurrentState[];
+
 export interface IRouterState {
     current: IRouterCurrentState;
     historical: RouterHistoryState;
@@ -85,18 +96,20 @@ export interface IRouterState {
  * Router declaration object
  */
 
-export interface IRouterDeclaration extends IRouterConfig {
+export interface IRouterDeclaration {
     name: string;
-    routers?: {[key: string]: IRouterDeclaration[]};
+    routers?: { [key: string]: IRouterDeclaration[] };
     routeKey?: string;
     disableCaching?: boolean;
     isPathRouter?: boolean;
-    // defaultShow?: boolean;
     type?: string;
     parentName?: string;
-    // defaultData?: string;
     defaultAction?: string[]; // (fn, ...args)
 }
+
+/**
+ * Serialization options - for spitting out a json representation of the router tree
+ */
 
 export interface ISerializeOptions {
     showDefaults?: boolean; // shows default options
@@ -105,33 +118,43 @@ export interface ISerializeOptions {
     showParentName?: boolean;
 }
 
-export interface IRouterConfig {
-    routeKey?: string;
-    isPathRouter?: boolean;
-    // default actions to call when immediate parent visibility changes from hidden -> visible
-    disableCaching?: boolean;
-    // defaultShow?: boolean;
-    defaultAction?: string[];
+/**
+ * Arguments passed into a router constructor (by a manager) to initialize a router
+ */
+export interface IRouterInitArgs {
+    name: string;
+    type: string;
+    manager: Manager;
+    config: IRouterConfig;
+    parent?: IRouter;
+    routers: IChildRouters;
+    root?: IRouter;
+    getState?: () => IRouterState | undefined;
+    subscribe?: (observer: Observer) => void;
+    actions: string[]; // the router actions derived from the template. Usually 'show' and 'hide'
+}
+
+export interface IChildRouters {
+    [key: string]: IRouter[];
 }
 
 export type Observer = (state: IRouterState) => any;
 
-export interface IRouterInitParams {
-    name: string;
-    routeKey?: string;
-    config: IRouterConfig;
-    type?: string;
-    parentName?: string;
-}
-
-export interface IRouterInitArgs {
+/**
+ * Passed into the create router fn
+ * The minimal amount of information an instantiated manager needs
+ * to create the router init args and initialize a new router
+ */
+export interface IRouterCreationInfo {
     name: string;
     config: IRouterConfig;
     type: string;
-    parent?: IRouter;
-    routers: {[type: string]: [IRouter]};
-    manager: Manager;
-    root?: IRouter;
-    getState?: () => any;
-    subscribe?: (observer: Observer) => any;
+    parentName?: string;
+}
+
+export interface IRouterConfig {
+    routeKey: string;
+    isPathRouter?: boolean;
+    disableCaching?: boolean;
+    defaultAction?: string[];
 }

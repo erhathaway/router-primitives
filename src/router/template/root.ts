@@ -2,7 +2,7 @@
  * The root router has no state and by default is always visible
  * 
  */
-import { RouterAction, RouterReducer, IRouterCurrentState } from "../../types";
+import { RouterAction, RouterReducer, IRouterCurrentState, IRouterTemplate } from "../../types";
 
 const show: RouterAction = (_options, location, _router, _ctx) => {
   return location;
@@ -20,7 +20,10 @@ const reducer: RouterReducer = (location, _router, _ctx) => {
 };
 
 
-export default {
+const template: IRouterTemplate = {
   actions: { show, hide },
   reducer,
+  config: { canBePathRouter: true }
 };
+export default template;
+

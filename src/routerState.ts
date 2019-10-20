@@ -70,7 +70,7 @@ export default class DefaultRoutersStateStore {
       hasUpdatedTracker.push(routerName);
 
       return routerStates;
-    }, { ...this.getState()} );
+    }, { ...this.getState() });
 
     // call observers of all routers that have had state changes
     hasUpdatedTracker.forEach((routerName) => {
@@ -86,7 +86,7 @@ export default class DefaultRoutersStateStore {
    * The returned function is used for getting the router store state for a specific router.
    */
   public createRouterStateGetter(routerName: string) {
-    return () => this.store[routerName] || {};
+    return () => this.store[routerName];
   }
 
   /**
@@ -126,7 +126,7 @@ export default class DefaultRoutersStateStore {
       return;
     }
     delete this.observers[routerName];
-  } 
+  }
 
   /**
    * Returns the stores state for all routers

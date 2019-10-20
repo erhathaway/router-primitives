@@ -1,45 +1,26 @@
 import Cache from './cache';
 import {
-    IRouterState,
     IRouter,
-    IRouterConfig,
     IRouterCurrentState,
     RouterHistoryState,
-    Observer,
     IRouterDeclaration,
-    ISerializeOptions
+    ISerializeOptions,
+    IRouterInitArgs,
 } from '../types';
 
-interface IChildRouters {
-    [key: string]: IRouter[];
-}
-
-interface InitParams {
-    name: string;
-    type: string;
-    manager: any; // TODO replace once manager has a type def
-    config: IRouterConfig;
-    parent?: IRouter;
-    routers: IChildRouters;
-    root: IRouter;
-    getState: () => IRouterState;
-    subscribe: (observer: Observer) => void;
-    actions: string[]; // the router actions derived from the template. Usually 'show' and 'hide'
-}
-
 export default class RouterBase {
-    public name: InitParams['name'];
-    public type: InitParams['type'];
-    public manager: InitParams['manager'];
-    public parent: InitParams['parent'];
-    public routers: InitParams['routers'];
-    public root: InitParams['root'];
-    public getState: InitParams['getState'];
-    public subscribe: InitParams['subscribe'];
-    public config: InitParams['config'];
+    public name: IRouterInitArgs['name'];
+    public type: IRouterInitArgs['type'];
+    public manager: IRouterInitArgs['manager'];
+    public parent: IRouterInitArgs['parent'];
+    public routers: IRouterInitArgs['routers'];
+    public root: IRouterInitArgs['root'];
+    public getState: IRouterInitArgs['getState'];
+    public subscribe: IRouterInitArgs['subscribe'];
+    public config: IRouterInitArgs['config'];
     public cache: Cache;
 
-    constructor(init: InitParams) {
+    constructor(init: IRouterInitArgs) {
         const {
             name,
             config,
@@ -59,7 +40,7 @@ export default class RouterBase {
         }
 
         this.name = name;
-        this.config = config || {};
+        this.config = config;
         if (this.config.disableCaching === undefined) {
             this.config.disableCaching = false;
         }
@@ -81,6 +62,8 @@ export default class RouterBase {
 
         // TODO fix test so empty array isn't needed
         // TODO add tests for this
+        // Since actions come from the template and are decorated by the manager, we need to bind them
+        // to the router instance where they live
         (actions || []).forEach(actionName => {
             if ((this as any)[actionName]) {
                 (this as any)[actionName] = (this as any)[actionName].bind(this);
@@ -118,6 +101,8 @@ export default class RouterBase {
      * Return serialized information about this router
      * and all of its children routers.
      * Useful for debugging.
+     * 
+     * Returns a router serialization object tree
      */
     public serialize(options: ISerializeOptions = {}) {
         // create router declaration object
@@ -166,17 +151,17 @@ export default class RouterBase {
 
     // TODO Remove testing dependency - this shouldn't be used since it bypasses the manager
     // Create utility function instead to orchestrate relationships between routers
-    private _addChildRouter(router: IRouter) {
-        if (!router.type) {
-            throw new Error('Router is missing type');
-        }
+    // private _addChildRouter(router: IRouter) {
+    //     if (!router.type) {
+    //         throw new Error('Router is missing type');
+    //     }
 
-        const siblingTypes = (this.routers[router.type] || []) as IRouter[];
-        siblingTypes.push(router);
-        this.routers[router.type] = siblingTypes;
+    //     const siblingTypes = (this.routers[router.type] || []) as IRouter[];
+    //     siblingTypes.push(router);
+    //     this.routers[router.type] = siblingTypes;
 
-        router.parent = (this as any) as IRouter;
-    }
+    //     router.parent = (this as any) as IRouter;
+    // }
 
     get isPathRouter() {
         // if there is no parent, we are at the root. The root is by default a path router since

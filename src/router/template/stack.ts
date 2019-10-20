@@ -1,4 +1,4 @@
-import { IRouter, RouterAction, RouterReducer, IInputLocation } from "../../types";
+import { IRouter, RouterAction, RouterReducer, IInputLocation, IRouterTemplate } from "../../types";
 
 // returns the routeKey names of visible routers based on the ordering of their 'order' state
 function getRouteKeyOrderings(router: IRouter, location: IInputLocation) {
@@ -8,7 +8,7 @@ function getRouteKeyOrderings(router: IRouter, location: IInputLocation) {
     // hasn't already removed it
     if (r.state.visible === false || location.search[r.routeKey] === undefined) { return acc; }
     // TODO use generics to handle state type
-    acc[r.routeKey] =  (r.state as { order: number }).order;
+    acc[r.routeKey] = (r.state as { order: number }).order;
     return acc;
   }, {} as { [key: string]: number });
 
@@ -70,16 +70,16 @@ const hide: RouterAction = (options, location, router, ctx) => {
     // remove routeKey if it exists
     sortedKeys.splice(index, 1);
   }
-  
+
   // create router type data obj
   const search = sortedKeys.reduce((acc, key, i) => {
     acc[key] = i + 1;
     return acc;
   }, {} as { [key: string]: number });
-  
+
   // remove this routeKey from the router type search
   const newLocation = { ...location }
-  
+
   newLocation.search = { ...location.search, ...search };
   newLocation.search[router.routeKey] = undefined;
 
@@ -201,9 +201,10 @@ const reducer: RouterReducer = (location, router, ctx) => {
   // return newState;
 };
 
-const stack = {
+
+const template: IRouterTemplate = {
   actions: { show, hide, forward, backward, toFront, toBack },
   reducer,
+  config: { canBePathRouter: false }
 };
-
-export default stack;
+export default template;

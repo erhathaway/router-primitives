@@ -1,4 +1,4 @@
-import { RouterAction, RouterReducer, IRouterCurrentState } from "../../types";
+import { RouterAction, RouterReducer, IRouterCurrentState, IRouterTemplate } from "../../types";
 
 /**
  * A feature router does not interact with its sibling routers. It lives harmony with them
@@ -21,12 +21,14 @@ const hide: RouterAction = (options, oldLocation, router, _ctx) => {
 const reducer: RouterReducer = (location, router, _ctx) => {
   const newState: IRouterCurrentState = {};
   newState['visible'] = location.search[router.routeKey] === 'true';
-  
+
   return newState;
 };
 
 
-export default {
+const template: IRouterTemplate = {
   actions: { show, hide },
   reducer,
+  config: { canBePathRouter: false }
 };
+export default template;

@@ -2,6 +2,36 @@
 
 Router Primitives is a different take on application routing.
 
+Settings:
+
+#### isPathRouter
+
+A path router makes up the path part of a url. Determining which routers make up the path is done by looking for the path of visible routers with the option `isPathRouter: true` that branch off the root router. To qualify a router to be part of the path when visible, you should use a `scene` router or a`data` router with the option `isPathRouter` set to `true`. Additionally, all of the routers that you want to be part of the path need a parent that is also part of the path.
+
+##### isPathRouter usage in templates
+
+You can make a pathRouter in a template by returning the option `canBePathRouter: true`. Realize that in order to have a deterministic calculation of the path part of a url, you need to make sure your router template only allows a single path to occur at once. 
+
+For example, a `scene` router template will return `{canBePathRouter: true, isPathRouter: true}`, which implies that every scene router is part of the path if it is visible. However, only 1 sibling scene can be shown at once, thus you will never have a path divergence at the scene routers. As another example, a `data` router template will return `{canBePathRouter: true, isPathRouter: false}`. This mean's that a visible data router can be part of the path but only if a user sets the `isPathRouter: true` in the router config. Additionally, during router instantiation if any sibling data routers are set to `isPathRouter: true` an error will be thrown.
+
+
+#### inverseActivation
+
+A `hidden` router that is called to be `shown` will trigger `show` actions on all of its parents to make itself visible. When a parent is called to be `shown` it can trigger all of its children to rehydrate from their visibility state `cache` and potentially become visible too (if they were last visible when the parent was visible). This process is known as `inverseActivation`. `InverseActivation` is to off by default but you can turn it on by setting the option `shouldInverselyActivate: true` during router instantiation.
+
+##### inverseActivation usage in templates
+
+You can return the option ``shouldInverselyActivate: true` to make `inverseActivation` the default setting for your custom router type.
+
+#### disableChildCache
+
+
+
+
+
+
+
+
 With Router Primitives, routing logic is defined through the hierarchical arrangement of router primitives (`Scene`, `Stack`, `Feature`, `Data`)! Simply: 
 1. Compose router primitives together and make a router declaration object
 2. Subscribe to individual router state changes
