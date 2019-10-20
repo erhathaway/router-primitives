@@ -82,6 +82,18 @@ export default class RouterBase {
         return [];
     }
 
+    public getNeighbors(): IRouter[] {
+        if (!this.parent) {
+            return [];
+        }
+
+        const flattened = (arr: IRouter[]) => [].concat(...arr);
+        return Object.keys(this.parent.routers)
+            .filter(t => t !== this.type)
+            .map(t => this.parent.routers[t])
+            .reduce(flattened);
+    }
+
     get pathLocation(): number {
         if (!this.parent) {
             return -1;
@@ -107,22 +119,22 @@ export default class RouterBase {
             routeKey: options.alwaysShowRouteKey
                 ? this.routeKey
                 : this.routeKey === this.name
-                    ? undefined
-                    : this.routeKey,
+                ? undefined
+                : this.routeKey,
             disableCaching: options.showDefaults
                 ? this.config.disableCaching
                 : this.config.disableCaching === true
-                    ? true
-                    : undefined,
+                ? true
+                : undefined,
             isPathRouter: this.config.isPathRouter,
             type: options.showType ? this.type : undefined,
             parentName: options.showParentName && this.parent ? this.parent.name : undefined,
             defaultAction: options.showDefaults
                 ? this.config.defaultAction
                 : this.config.defaultAction !== undefined
-                    ? this.config.defaultAction
-                    : undefined
-        } as IRouterDeclaration & { [key: string]: any };
+                ? this.config.defaultAction
+                : undefined
+        } as IRouterDeclaration & {[key: string]: any};
 
         // recursively serialize child routers
         const childRouterTypes = Object.keys(this.routers);
@@ -131,7 +143,7 @@ export default class RouterBase {
                 acc[type] = this.routers[type].map(childRouter => childRouter.serialize(options));
                 return acc;
             },
-            {} as { [routerType: string]: IRouterDeclaration[] }
+            {} as {[routerType: string]: IRouterDeclaration[]}
         );
 
         if (childRouterTypes.length > 0) {
@@ -159,47 +171,13 @@ export default class RouterBase {
         // If this router is a path router but its parent isn't we need to throw an error.
         // It is impossible to construct a path if all the parents are also not path routers
         if (this.config.isPathRouter) {
-            // throw new Error(`${this.type} router: ${this.name} is explicitly set to modify the pathname
-            // 	but one of its parent routers doesnt have this permission.
-            // 	Make sure all parents have 'isPathRouter' attribute set to 'true' in the router config OR
-            // 	Make sure all parents are of router type 'scene' or 'data'.
-            // 	If the routers parents have siblings of both 'scene' and 'data' the 'scene' router will always be used for the pathname
-            //   `);
+            throw new Error(`${this.type} router: ${this.name} is explicitly set to modify the pathname
+            	but one of its parent routers doesnt have this permission.
+            	Make sure all parents have 'isPathRouter' attribute set to 'true' in the router config OR
+            	Make sure all parents are of router type 'scene' or 'data'.
+            	If the routers parents have siblings of both 'scene' and 'data' the 'scene' router will always be used for the pathname
+              `);
         }
-
-        // if (this.type === 'scene' && this.parent.isPathRouter) {
-        //     // check to make sure neighboring data routers arent explicitly set to modify the pathname
-        //     const neighboringDataRouters = this.getNeighborsByType('data');
-        //     const isSiblingRouterExplictlyAPathRouter = neighboringDataRouters.reduce(
-        //         (acc, r) =>
-        //             // check all data router neighbors and
-        //             // make sure none have been explicitly set to be a path router
-        //             acc || r.config.isPathRouter === true,
-        //         false
-        //     );
-        //     if (isSiblingRouterExplictlyAPathRouter === false) {
-        //         return true;
-        //     }
-        // } else if (this.type === 'data' && this.parent && this.parent.isPathRouter) {
-        //     // if the router is explictly set to not be a path router, return false
-        //     if (this.config.isPathRouter === false) {
-        //         return false;
-        //     }
-
-        //     // check to make sure neighboring scene routers aren't present
-        //     const neighboringSceneRouters = this.getNeighborsByType('scene');
-
-        //     return (
-        //         neighboringSceneRouters.length === 0 &&
-        //         !this.siblings.reduce(
-        //             (acc, r) =>
-        //                 // check all data router siblings and
-        //                 // make sure none are path routers
-        //                 acc || r.config.isPathRouter === true,
-        //             false
-        //         )
-        //     );
-        // }
 
         return false;
     }
@@ -208,7 +186,7 @@ export default class RouterBase {
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');
         }
-        const { current } = this.getState();
+        const {current} = this.getState();
         return current || {};
     }
 
@@ -216,7 +194,7 @@ export default class RouterBase {
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');
         }
-        const { historical } = this.getState();
+        const {historical} = this.getState();
         return historical || [];
     }
 }

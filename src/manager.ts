@@ -1,4 +1,4 @@
-import { NativeSerializedStore, BrowserSerializedStore } from './serializedState';
+import {NativeSerializedStore, BrowserSerializedStore} from './serializedState';
 import DefaultRouterStateStore from './routerState';
 import DefaultRouter from './router/base';
 import * as defaultTemplates from './router/template';
@@ -24,7 +24,7 @@ interface IInit {
     serializedStateStore?: NativeSerializedStore | BrowserSerializedStore;
     routerStateStore?: DefaultRouterStateStore;
     router?: typeof DefaultRouter;
-    templates?: { [templateName: string]: IRouterTemplate };
+    templates?: {[templateName: string]: IRouterTemplate};
 }
 
 export default class Manager {
@@ -34,7 +34,7 @@ export default class Manager {
         router: RouterT,
         ctx: ILocationActionContext
     ) {
-        let newLocation = { ...location };
+        let newLocation = {...location};
         Object.keys(router.routers).forEach(routerType => {
             router.routers[routerType].forEach(child => {
                 // if the cached visibility state is 'false' don't show on rehydration
@@ -47,7 +47,7 @@ export default class Manager {
                     // the cache has been 'used' so remove it
                     child.cache.removeCache();
 
-                    const newContext = { ...ctx, addingDefaults: true }; // TODO check if it makes sense to move addingDefaults to options
+                    const newContext = {...ctx, addingDefaults: true}; // TODO check if it makes sense to move addingDefaults to options
                     newLocation = child.show(options, newLocation, child, newContext);
                 }
 
@@ -55,10 +55,10 @@ export default class Manager {
                 else if (child.config.defaultAction && child.config.defaultAction.length > 0) {
                     const [action, ...args] = child.config.defaultAction;
 
-                    const newContext = { ...ctx, addingDefaults: true };
+                    const newContext = {...ctx, addingDefaults: true};
 
                     newLocation = (child as any)[action](
-                        { ...options, data: args[0] },
+                        {...options, data: args[0]},
                         newLocation,
                         child,
                         newContext
@@ -206,7 +206,7 @@ export default class Manager {
             }
 
             // add user options to new location options
-            updatedLocation.options = { ...updatedLocation.options, ...options };
+            updatedLocation.options = {...updatedLocation.options, ...options};
 
             // set serialized state
             this.manager.serializedStateStore.setState(updatedLocation);
@@ -217,11 +217,11 @@ export default class Manager {
         return actionWrapper;
     }
 
-    public routers: { [routerName: string]: RouterT };
+    public routers: {[routerName: string]: RouterT};
     public rootRouter: RouterT;
     public serializedStateStore: IInit['serializedStateStore'];
     public routerStateStore: IInit['routerStateStore'];
-    public routerTypes: { [routerType: string]: RouterT };
+    public routerTypes: {[routerType: string]: RouterT};
     public templates: IInit['templates'];
 
     constructor({
@@ -243,7 +243,7 @@ export default class Manager {
         }
 
         // router types
-        this.templates = { ...defaultTemplates, ...templates };
+        this.templates = {...defaultTemplates, ...templates};
         this.routerTypes = {};
 
         // TODO implement
@@ -256,10 +256,10 @@ export default class Manager {
             // create a RouterType off the base Router
 
             // extend router base for specific type
-            class RouterType extends Router { }
+            class RouterType extends Router {}
 
             // change the router name to include the type
-            Object.defineProperty(RouterType, 'name', { value: `${capitalize(templateName)}Router` });
+            Object.defineProperty(RouterType, 'name', {value: `${capitalize(templateName)}Router`});
 
             // fetch template
             const selectedTemplate = this.templates[templateName];
@@ -307,7 +307,7 @@ export default class Manager {
         // The type is derived by the relationship with the parent.
         //   Or has none, as is the case with the root router in essence
         //   Below, we are deriving the type and calling the add function recursively by type
-        this.addRouter({ ...router, type, parentName });
+        this.addRouter({...router, type, parentName});
         const childRouters = router.routers || {};
         Object.keys(childRouters).forEach(childType => {
             childRouters[childType].forEach(child =>
@@ -323,7 +323,7 @@ export default class Manager {
      * its parent and any child routers
      */
     public addRouter(routerDeclaration: IRouterDeclaration) {
-        const { name, parentName, type } = routerDeclaration;
+        const {name, parentName, type} = routerDeclaration;
 
         const parent = this.routers[parentName];
 
@@ -332,7 +332,7 @@ export default class Manager {
         const config = this.createRouterConfigArgs(routerDeclaration, routerType, parent);
 
         // Create a router
-        const router = this.createRouter({ name, config, type: routerType, parentName });
+        const router = this.createRouter({name, config, type: routerType, parentName});
 
         // Set the created router as the parent router
         // if it has no parent and there is not yet a root
@@ -353,8 +353,27 @@ export default class Manager {
             siblingTypes.push(router);
             parent.routers[type] = siblingTypes;
         }
+
         // Add ref of new router to manager
         this.routers[name] = router;
+
+        if (router.isPathRouter) {
+            this.validateNeighborsOfOtherTypesArentPathRouters(router);
+        }
+    }
+
+    public validateNeighborsOfOtherTypesArentPathRouters(router: RouterT) {
+        const nameOfNeighboorRouterThatIsPathRouter = router
+            .getNeighbors()
+            .reduce((acc, r) => (r.isPathRouter ? r.name : acc), undefined as string | undefined);
+        if (nameOfNeighboorRouterThatIsPathRouter) {
+            throw new Error(
+                `Cannot add ${router.name}. 
+                This router is supposed to be a path router but a neighbor (${nameOfNeighboorRouterThatIsPathRouter} is already a path router.
+                In order to make the router state tree deterministic only one type of neighbor should have isPathRouter set to true. 
+                To get rid of this error either use a different router type or set on neighbor router type to isPathRouter to false `
+            );
+        }
     }
 
     /**
@@ -363,7 +382,7 @@ export default class Manager {
      */
     public removeRouter(name: string) {
         const router = this.routers[name];
-        const { parent, routers, type } = router;
+        const {parent, routers, type} = router;
 
         // Delete ref the parent (if any) stores
         if (parent) {
@@ -392,7 +411,7 @@ export default class Manager {
         location: IInputLocation,
         router: RouterT,
         ctx: ILocationActionContext = {},
-        newState: { [routerName: string]: {} } = {}
+        newState: {[routerName: string]: {}} = {}
     ) {
         if (!router) {
             return;
@@ -417,7 +436,8 @@ export default class Manager {
         parent: RouterT
     ): IRouterCreationInfo['config'] {
         const templateConfig = this.templates[routerType].config;
-        const hasParentOrIsRoot = parent && parent.isPathRouter !== undefined ? parent.isPathRouter : true;
+        const hasParentOrIsRoot =
+            parent && parent.isPathRouter !== undefined ? parent.isPathRouter : true;
         const isSetToBePathRouter =
             routerDeclaration.isPathRouter !== undefined
                 ? routerDeclaration.isPathRouter
@@ -481,7 +501,7 @@ export default class Manager {
 
         return {
             name,
-            config: { ...config },
+            config: {...config},
             type,
             parent,
             routers: {},
@@ -502,7 +522,7 @@ export default class Manager {
     protected createRouterFromInitArgs(initalArgs: IRouterInitArgs) {
         const routerClass = this.routerTypes[initalArgs.type];
         // TODO add tests for passing of action names
-        return new (routerClass as any)({ ...initalArgs }) as RouterT;
+        return new (routerClass as any)({...initalArgs}) as RouterT;
     }
 
     /**
@@ -528,10 +548,10 @@ export default class Manager {
      * parent and child router connections, use one of the `add` methods on the manager.
      * Those methods use this `createRouter` method in turn.
      */
-    protected createRouter({ name, config, type, parentName }: IRouterCreationInfo): RouterT {
+    protected createRouter({name, config, type, parentName}: IRouterCreationInfo): RouterT {
         this.validateRouterCreationInfo(name, type, config);
 
-        const initalArgs = this.createNewRouterInitArgs({ name, config, type, parentName });
-        return this.createRouterFromInitArgs({ ...initalArgs });
+        const initalArgs = this.createNewRouterInitArgs({name, config, type, parentName});
+        return this.createRouterFromInitArgs({...initalArgs});
     }
 }
