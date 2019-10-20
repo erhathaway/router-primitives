@@ -121,11 +121,7 @@ export default class RouterBase {
                 : this.routeKey === this.name
                 ? undefined
                 : this.routeKey,
-            disableCaching: options.showDefaults
-                ? this.config.disableCaching
-                : this.config.disableCaching === true
-                ? true
-                : undefined,
+            disableCaching: options.showDefaults ? this.config.disableCaching : undefined,
             isPathRouter: this.config.isPathRouter,
             type: options.showType ? this.type : undefined,
             parentName: options.showParentName && this.parent ? this.parent.name : undefined,

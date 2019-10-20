@@ -15,35 +15,34 @@ class Cache {
         this._cacheStore = undefined;
     }
 
-    get hasCache() {
+    get wasVisible() {
         return !!this._cacheStore;
-    }
-
-    get state() {
-        return this._cacheStore;
     }
 
     public removeCache() {
         this._cacheStore = undefined;
     }
 
-    public setCacheFromLocation(location: IOutputLocation, routerInstance: IRouter) {
+    public setWasPreviouslyVisibleToFromLocation(
+        location: IOutputLocation,
+        routerInstance: IRouter
+    ) {
         // dont set cache if one already exists!
-        if (this.hasCache) {
+        if (this.wasVisible) {
             return;
         }
 
-        let cache;
+        let cache: CacheValue;
         if (routerInstance.isPathRouter) {
             cache = !!location.pathname[routerInstance.pathLocation];
         } else {
             cache = !!location.search[routerInstance.routeKey];
         }
 
-        this.setCache(cache);
+        this.setWasPreviouslyVisibleTo(cache);
     }
 
-    protected setCache(value: CacheValue) {
+    public setWasPreviouslyVisibleTo(value: CacheValue) {
         this._cacheStore = value;
     }
 }

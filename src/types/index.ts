@@ -161,6 +161,6 @@ export interface IRouterConfig {
 
     isPathRouter: boolean;
     shouldInverselyActivate: boolean;
-    disableCaching: boolean;
+    disableCaching?: boolean; // optional b/c the default is to use the parents
     defaultAction: string[];
 }

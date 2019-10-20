@@ -38,12 +38,12 @@ export default class Manager {
         Object.keys(router.routers).forEach(routerType => {
             router.routers[routerType].forEach(child => {
                 // if the cached visibility state is 'false' don't show on rehydration
-                if (child.cache.state === false) {
+                if (child.cache.wasVisible === false) {
                     return;
                 }
 
                 // if there is a cache state, show the router
-                if (child.cache.state === true) {
+                if (child.cache.wasVisible === true) {
                     // the cache has been 'used' so remove it
                     child.cache.removeCache();
 
@@ -70,6 +70,17 @@ export default class Manager {
         return newLocation;
     }
 
+    /**
+     * Called when a router's 'hide' action is called directly or the
+     * parent's 'hide' action is called.
+     *
+     * 1. Calculate whether caching is enabled by looking at explicit settings or defaulting to
+     * the parents `disableCaching` status
+     * 2. Hide child routers that are visible and pass along the current `disableCaching` status
+     * 3. If caching is enabled, store a record that the router was previously visible
+     *
+     * TODO: dont mutate location state
+     */
     private static setCacheAndHide(
         options: IRouterActionOptions,
         location: IInputLocation,
@@ -79,7 +90,11 @@ export default class Manager {
         let newLocation = location;
         let disableCaching: boolean | undefined;
 
-        // figure out if caching should occur
+        // Figure out if caching should occur:
+        // If the user hasn't set anything, we should fall back to the
+        // context object and inherit the setting from the parent.
+        // If the parent hasn't set a setting we are probably at root of the action call
+        // and should fall back to using the template.
         if (router.config.disableCaching !== undefined) {
             disableCaching = router.config.disableCaching;
         } else {
@@ -88,32 +103,19 @@ export default class Manager {
 
         Object.keys(router.routers).forEach(routerType => {
             router.routers[routerType].forEach(child => {
-                // update ctx object's caching attr for this branch
-                ctx.disableCaching = disableCaching;
+                // Update ctx object's caching setting for this branch of the router tree
+                const newCtx = {...ctx, disableCaching};
 
-                // call location action
-                newLocation = child.hide({}, newLocation, child, ctx);
+                // Call location 'hide' action if the child is visible
+                if (child.state.visible) {
+                    newLocation = child.hide({}, newLocation, child, newCtx);
+                }
             });
         });
 
-        // Use caching figured out above b/c the ctx object might get mutated when
-        //   transversing the router tree
-        // Also make sure there is a local request to disableCaching for this particular router (via options)
-        // const shouldCache = disableCaching === false && options.disableCaching === false
-
         const shouldCache = !disableCaching && !(options.disableCaching || false);
-        router.name === 'imDataa' ||
-            (router.name === 'imData2' &&
-                // tslint:disable-next-line
-                console.log(
-                    `shouldCache for: ${router.name}`,
-                    shouldCache,
-                    disableCaching,
-                    options.disableCaching
-                ));
-
         if (shouldCache) {
-            router.cache.setCacheFromLocation(newLocation, router);
+            router.cache.setWasPreviouslyVisibleToFromLocation(newLocation, router);
         }
 
         return newLocation;
@@ -134,7 +136,7 @@ export default class Manager {
         function actionWrapper(
             options: IRouterActionOptions = {},
             existingLocation?: IOutputLocation,
-            routerInstance = this,
+            routerInstance: RouterT = this,
             ctx: ILocationActionContext = {}
         ) {
             // if called from another action wrapper
@@ -172,7 +174,7 @@ export default class Manager {
                 (routerInstance.parent.state.visible === false ||
                     routerInstance.parent.state.visible === undefined)
             ) {
-                // data routers dont have a visiblity state by default. FIX THIS
+                // data routers dont have a visibility state by default. TODO FIX THIS
                 routerInstance.parent.show();
             }
 
@@ -191,8 +193,9 @@ export default class Manager {
 
             updatedLocation = actionFn(options, updatedLocation, routerInstance, ctx);
 
+            // If this action is a direct call from the user, remove all caching
             if (actionName === 'hide' && routerInstance.state.visible === true) {
-                routerInstance.cache.setCache(false);
+                routerInstance.cache.setWasPreviouslyVisibleTo(false);
             }
 
             if (actionName === 'show') {
@@ -362,20 +365,6 @@ export default class Manager {
         }
     }
 
-    public validateNeighborsOfOtherTypesArentPathRouters(router: RouterT) {
-        const nameOfNeighboorRouterThatIsPathRouter = router
-            .getNeighbors()
-            .reduce((acc, r) => (r.isPathRouter ? r.name : acc), undefined as string | undefined);
-        if (nameOfNeighboorRouterThatIsPathRouter) {
-            throw new Error(
-                `Cannot add ${router.name}. 
-                This router is supposed to be a path router but a neighbor (${nameOfNeighboorRouterThatIsPathRouter} is already a path router.
-                In order to make the router state tree deterministic only one type of neighbor should have isPathRouter set to true. 
-                To get rid of this error either use a different router type or set on neighbor router type to isPathRouter to false `
-            );
-        }
-    }
-
     /**
      * Remove a router from the routing tree and manager
      * Removing a router will also remove all of its children
@@ -449,7 +438,7 @@ export default class Manager {
         const isSetToDisableCaching =
             routerDeclaration.disableCaching !== undefined
                 ? routerDeclaration.disableCaching
-                : templateConfig.disableCaching || false;
+                : templateConfig.disableCaching;
 
         return {
             routeKey: routerDeclaration.routeKey || routerDeclaration.name,
@@ -459,6 +448,20 @@ export default class Manager {
             disableCaching: isSetToDisableCaching,
             defaultAction: routerDeclaration.defaultAction || []
         };
+    }
+
+    protected validateNeighborsOfOtherTypesArentPathRouters(router: RouterT) {
+        const nameOfNeighboorRouterThatIsPathRouter = router
+            .getNeighbors()
+            .reduce((acc, r) => (r.isPathRouter ? r.name : acc), undefined as string | undefined);
+        if (nameOfNeighboorRouterThatIsPathRouter) {
+            throw new Error(
+                `Cannot add ${router.name}. 
+                This router is supposed to be a path router but a neighbor (${nameOfNeighboorRouterThatIsPathRouter} is already a path router.
+                In order to make the router state tree deterministic only one type of neighbor should have isPathRouter set to true. 
+                To get rid of this error either use a different router type or set on neighbor router type to isPathRouter to false `
+            );
+        }
     }
 
     protected validateRouterCreationInfo(name: string, type: string, config: IRouterConfig): void {
