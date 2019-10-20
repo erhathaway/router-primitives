@@ -1,4 +1,4 @@
-import {RouterAction, RouterReducer, IRouterCurrentState, IRouterTemplate} from '../../types';
+import { RouterAction, RouterReducer, IRouterCurrentState, IRouterTemplate } from '../../types';
 
 /**
  * A scene router will hide all its sibling routers when it is being shown
@@ -8,7 +8,7 @@ import {RouterAction, RouterReducer, IRouterCurrentState, IRouterTemplate} from 
  *    3. Adding the scene router to either the path or query params
  */
 const show: RouterAction = (options, oldLocation, router, ctx) => {
-    let location = {...oldLocation};
+    let location = { ...oldLocation };
     // Each sibling router needs to be hidden. The location is modified to reflect hiding all siblings
     location = router.siblings.reduce((acc, s) => {
         // We disable caching of siblings b/c we dont want them to be shown if a parent rehydrates
@@ -16,11 +16,11 @@ const show: RouterAction = (options, oldLocation, router, ctx) => {
         // It is important to remember that `disableCaching` is passed to options not context
         //   b/c we only want it take affect for the immediate routers we call instead of the
         //   entire update cycle
-        return s.hide({...options, disableCaching: true}, acc, s, ctx);
+        return s.hide({ ...options, disableCaching: true }, acc, s, ctx);
     }, location);
 
     if (router.isPathRouter) {
-        const {parent} = router;
+        const { parent } = router;
 
         // If we are not adding defaults or the parent is not visible, use the existing location
         // This can happen when a router is called randomly. We don't want a router to become visible if it's
@@ -40,7 +40,7 @@ const show: RouterAction = (options, oldLocation, router, ctx) => {
 };
 
 const hide: RouterAction = (_options, oldLocation, router, _ctx) => {
-    const location = {...oldLocation};
+    const location = { ...oldLocation };
 
     if (router.isPathRouter) {
         location.pathname = location.pathname.slice(0, router.pathLocation);
@@ -63,8 +63,8 @@ const reducer: RouterReducer = (location, router, _ctx) => {
 };
 
 const template: IRouterTemplate = {
-    actions: {show, hide},
+    actions: { show, hide },
     reducer,
-    config: {canBePathRouter: true, isPathRouter: true}
+    config: { canBePathRouter: true, isPathRouter: true, shouldInverselyActivate: true }
 };
 export default template;

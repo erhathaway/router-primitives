@@ -37,6 +37,8 @@ export interface IInputLocation {
 export interface ILocationActionContext {
     disableCaching?: boolean; // the setting will persist for all routers in the update cycle
     addingDefaults?: boolean;
+    inverseActivation?: boolean;
+    activatedByChildType?: string;
 }
 
 /**
@@ -61,8 +63,8 @@ export type RouterAction = (
 export type RouterReducer = (
     location: IInputLocation,
     router: IRouter,
-    ctx: {[key: string]: any}
-) => {[key: string]: any};
+    ctx: { [key: string]: any }
+) => { [key: string]: any };
 
 export interface IRouterTemplateConfig {
     canBePathRouter?: boolean;
@@ -72,7 +74,7 @@ export interface IRouterTemplateConfig {
 }
 
 export interface IRouterTemplate {
-    actions: {[actionName: string]: RouterAction};
+    actions: { [actionName: string]: RouterAction };
     reducer: RouterReducer;
     config: IRouterTemplateConfig;
 }
@@ -97,7 +99,7 @@ export interface IRouterState {
 
 export interface IRouterDeclaration {
     name: string;
-    routers?: {[key: string]: IRouterDeclaration[]};
+    routers?: { [key: string]: IRouterDeclaration[] };
     routeKey?: string;
     type?: string;
     parentName?: string;
