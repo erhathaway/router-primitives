@@ -37,6 +37,7 @@ export default class Manager {
     ) {
         let newLocation = { ...location };
         // TODO don't mutate location
+        console.log('Found number of children types', Object.keys(router.routers).length)
         Object.keys(router.routers).forEach(routerType => {
             // skip routers that called the parent router
             if (routerType === ctx.activatedByChildType) {
@@ -205,6 +206,7 @@ export default class Manager {
                     );
                 }
 
+                const newLocation = { ...existingLocation, ...updatedLocation };
                 // if the parent router isn't visible, but the child is shown, show all parents
                 if (
                     actionName === 'show' &&
@@ -217,7 +219,7 @@ export default class Manager {
                     // data routers dont have a visibility state by default. TODO FIX THIS
                     updatedLocation = routerInstance.parent.show(
                         {},
-                        updatedLocation,
+                        { ...newLocation },
                         routerInstance.parent,
                         { ...ctx, callDirection: 'up', activatedByChildType: this.type }
                     );
@@ -225,7 +227,7 @@ export default class Manager {
 
                 console.log(`(pass) Calling actionFn for ${routerInstance.name}`)
                 // Call the router's action after any actions on the parent have been taken care of
-                updatedLocation = actionFn(options, { ...existingLocation, ...updatedLocation }, routerInstance, ctx);
+                updatedLocation = actionFn(options, { ...newLocation, ...updatedLocation }, routerInstance, ctx);
 
                 // Call actions on the children after this router's action have been taken care of
                 if (actionName === 'show') {
@@ -234,13 +236,13 @@ export default class Manager {
                     // add location defaults from children
                     updatedLocation = Manager.setChildrenDefaults(
                         options,
-                        updatedLocation,
+                        { ...newLocation, ...updatedLocation },
                         routerInstance,
                         ctx
                     );
                 }
 
-                return updatedLocation;
+                return { ...newLocation, ...updatedLocation };
             }
 
 
@@ -260,7 +262,7 @@ export default class Manager {
                 // data routers dont have a visibility state by default. TODO FIX THIS
                 updatedLocation = routerInstance.parent.show(
                     {},
-                    updatedLocation,
+                    { ...updatedLocation },
                     routerInstance.parent,
                     { ...ctx, callDirection: 'up', activatedByChildType: this.type }
                 );
@@ -270,7 +272,7 @@ export default class Manager {
             if (actionName === 'hide') {
                 updatedLocation = Manager.setCacheAndHide(
                     options,
-                    updatedLocation,
+                    { ...updatedLocation },
                     routerInstance,
                     ctx
                 );
@@ -278,7 +280,7 @@ export default class Manager {
 
             console.log(`(start) Calling actionFn for ${routerInstance.name}`)
             // Call the router's action after any actions on the parent have been taken care of
-            updatedLocation = actionFn(options, updatedLocation, routerInstance, ctx);
+            updatedLocation = actionFn(options, { ...updatedLocation }, routerInstance, ctx);
 
             // If this action is a direct call from the user, remove all caching
             if (actionName === 'hide' && routerInstance.state.visible === true) {
@@ -286,12 +288,12 @@ export default class Manager {
             }
 
             if (actionName === 'show') {
-                console.log(`(start) Calling child of router: ${routerInstance.name}`)
+                console.log(`(start) Calling child of router: ${routerInstance.name}`, options, ctx)
 
                 // add location defaults from children
                 updatedLocation = Manager.setChildrenDefaults(
                     options,
-                    updatedLocation,
+                    { ...updatedLocation },
                     routerInstance,
                     ctx
                 );
@@ -301,9 +303,9 @@ export default class Manager {
             updatedLocation.options = { ...updatedLocation.options, ...options };
 
             // set serialized state
-            this.manager.serializedStateStore.setState(updatedLocation);
+            this.manager.serializedStateStore.setState({ ...updatedLocation });
             // return location so the function signature of the action is the same
-            return updatedLocation;
+            return { ...updatedLocation };
         }
 
         return actionWrapper;
