@@ -1,4 +1,4 @@
-import {NativeSerializedStore, BrowserSerializedStore} from './serializedState';
+import { NativeSerializedStore, BrowserSerializedStore } from './serializedState';
 import DefaultRouterStateStore from './routerState';
 import DefaultRouter from './router/base';
 import * as defaultTemplates from './router/template';
@@ -16,7 +16,7 @@ import {
     IRouterInitArgs,
     IRouter
 } from './types';
-import {ECHILD} from 'constants';
+import { ECHILD } from 'constants';
 
 const capitalize = (name = '') => name.charAt(0).toUpperCase() + name.slice(1);
 
@@ -25,7 +25,7 @@ interface IInit {
     serializedStateStore?: NativeSerializedStore | BrowserSerializedStore;
     routerStateStore?: DefaultRouterStateStore;
     router?: typeof DefaultRouter;
-    templates?: {[templateName: string]: IRouterTemplate};
+    templates?: { [templateName: string]: IRouterTemplate };
 }
 
 export default class Manager {
@@ -35,46 +35,67 @@ export default class Manager {
         router: RouterT,
         ctx: ILocationActionContext
     ) {
-        let newLocation = {...location};
+        let newLocation = { ...location };
         // TODO don't mutate location
         Object.keys(router.routers).forEach(routerType => {
             // skip routers that called the parent router
             if (routerType === ctx.activatedByChildType) {
+                console.log(`Not calling router b/c same type of active child`)
+
                 return;
             }
 
             router.routers[routerType].forEach(child => {
                 // prevent inverse activation if it is turned off
                 if (ctx.callDirection === 'up' && child.config.shouldInverselyActivate === false) {
+                    console.log(`Not calling router b/c not inversely active: ${child.name}`)
+
                     return;
                 }
 
-                // if the cached visibility state is 'false' don't show on rehydration
-                if (child.cache.wasVisible === false) {
-                    return;
-                }
 
                 const newContext: ILocationActionContext = {
                     ...ctx,
                     addingDefaults: true,
                     activatedByChildType: undefined,
-                    callDirection: ctx.callDirection || 'down'
+                    callDirection: 'down'
                 }; // TODO check if it makes sense to move addingDefaults to options
+
+                // if the cached visibility state is 'false' don't show on rehydration
+                // if (child.cache.wasVisible === false) {
+                //     console.log(`Not calling router b/c has no cache indicating previous visibility: ${child.name}`)
+
+                //     // return;
+                //     if (child.config.defaultAction && child.config.defaultAction.length > 0) {
+                //         const [action, ...args] = child.config.defaultAction;
+                //         console.log(`Applying default action: ${action} for ${child.name}`)
+
+                //         newLocation = (child as any)[action](
+                //             { ...options, data: args[0] }, // TODO pass more than just the first arg
+                //             newLocation,
+                //             child,
+                //             newContext
+                //         );
+                //     }
+                // }
 
                 // if there is a cache state, show the router
                 if (child.cache.wasVisible === true) {
                     // the cache has been 'used' so remove it
                     child.cache.removeCache();
+                    console.log(`Applying show on router: ${child.name}`)
 
                     newLocation = child.show(options, newLocation, child, newContext);
                 }
 
-                // if there is no cache state and there is a default action, apply the action
+                // if the cached visibility state is 'false' don't show on rehydration
+                // or if there is no cache state and there is a default action, apply the action
                 else if (child.config.defaultAction && child.config.defaultAction.length > 0) {
                     const [action, ...args] = child.config.defaultAction;
+                    console.log(`Applying default action: ${action} for ${child.name}`)
 
                     newLocation = (child as any)[action](
-                        {...options, data: args[0]}, // TODO pass more than just the first arg
+                        { ...options, data: args[0] }, // TODO pass more than just the first arg
                         newLocation,
                         child,
                         newContext
@@ -114,16 +135,17 @@ export default class Manager {
         if (router.config.disableCaching !== undefined) {
             disableCaching = router.config.disableCaching;
         } else {
-            disableCaching = ctx.disableCaching || false;
+            disableCaching = ctx.disableCaching || router.lastDefinedParentsDisableChildCacheState || false;
         }
 
         Object.keys(router.routers).forEach(routerType => {
             router.routers[routerType].forEach(child => {
                 // Update ctx object's caching setting for this branch of the router tree
-                const newCtx = {...ctx, disableCaching};
+                const newCtx = { ...ctx, disableCaching };
 
                 // Call location 'hide' action if the child is visible
                 if (child.state.visible) {
+                    console.log(`Hiding router: ${child.name}`)
                     newLocation = child.hide({}, newLocation, child, newCtx);
                 }
             });
@@ -137,7 +159,9 @@ export default class Manager {
         // so they don't get reshown when a parent causes a rehydration
         const shouldCache = !disableCaching && !(options.disableCaching || false);
 
+        console.log(`SHOULD CACHE: ${router.name}`, shouldCache, disableCaching, options.disableCaching)
         if (shouldCache) {
+            console.log(`Cache: storing was previously visible for router: ${router.name}`)
             router.cache.setWasPreviouslyVisibleToFromLocation(newLocation, router);
         }
 
@@ -162,6 +186,12 @@ export default class Manager {
             routerInstance: RouterT = this,
             ctx: ILocationActionContext = {}
         ) {
+            if (!existingLocation) {
+                console.clear();
+            }
+            console.log('-------------------')
+            console.log(`Action: ${routerInstance.name}`)
+            // routerInstance.name === 'imData2' && console.log('IMDATA2', ctx)
             // if called from another action wrapper
             let updatedLocation: IInputLocation;
             if (existingLocation) {
@@ -185,16 +215,19 @@ export default class Manager {
                         routerInstance.parent.state.visible === undefined) &&
                     ctx.callDirection !== 'down'
                 ) {
+                    console.log(`(pass) Calling parent of router: ${routerInstance.name} ---- ${routerInstance.parent.name}`)
                     // data routers dont have a visibility state by default. TODO FIX THIS
                     updatedLocation = routerInstance.parent.show(
                         {},
                         updatedLocation,
                         routerInstance.parent,
-                        {...ctx, callDirection: 'up', activatedByChildType: this.type}
+                        { ...ctx, callDirection: 'up', activatedByChildType: this.type }
                     );
                 }
 
                 if (actionName === 'show') {
+                    console.log(`(pass) Calling child of router: ${routerInstance.name}`)
+
                     // add location defaults from children
                     updatedLocation = Manager.setChildrenDefaults(
                         options,
@@ -207,6 +240,7 @@ export default class Manager {
                 return updatedLocation;
             }
 
+
             // if called directly, fetch location
             updatedLocation = this.manager.serializedStateStore.getState();
 
@@ -218,12 +252,14 @@ export default class Manager {
                     routerInstance.parent.state.visible === undefined) &&
                 ctx.callDirection !== 'down'
             ) {
+                console.log(`(start) Calling parent of router: ${routerInstance.name} ---- ${routerInstance.parent.name}`)
+
                 // data routers dont have a visibility state by default. TODO FIX THIS
                 updatedLocation = routerInstance.parent.show(
                     {},
                     updatedLocation,
                     routerInstance.parent,
-                    {...ctx, callDirection: 'up', activatedByChildType: this.type}
+                    { ...ctx, callDirection: 'up', activatedByChildType: this.type }
                 );
             }
 
@@ -245,6 +281,8 @@ export default class Manager {
             }
 
             if (actionName === 'show') {
+                console.log(`(start) Calling child of router: ${routerInstance.name}`)
+
                 // add location defaults from children
                 updatedLocation = Manager.setChildrenDefaults(
                     options,
@@ -255,7 +293,7 @@ export default class Manager {
             }
 
             // add user options to new location options
-            updatedLocation.options = {...updatedLocation.options, ...options};
+            updatedLocation.options = { ...updatedLocation.options, ...options };
 
             // set serialized state
             this.manager.serializedStateStore.setState(updatedLocation);
@@ -266,11 +304,11 @@ export default class Manager {
         return actionWrapper;
     }
 
-    public routers: {[routerName: string]: RouterT};
+    public routers: { [routerName: string]: RouterT };
     public rootRouter: RouterT;
     public serializedStateStore: IInit['serializedStateStore'];
     public routerStateStore: IInit['routerStateStore'];
-    public routerTypes: {[routerType: string]: RouterT};
+    public routerTypes: { [routerType: string]: RouterT };
     public templates: IInit['templates'];
 
     constructor({
@@ -292,7 +330,7 @@ export default class Manager {
         }
 
         // router types
-        this.templates = {...defaultTemplates, ...templates};
+        this.templates = { ...defaultTemplates, ...templates };
         this.routerTypes = {};
 
         // TODO implement
@@ -305,10 +343,10 @@ export default class Manager {
             // create a RouterType off the base Router
 
             // extend router base for specific type
-            class RouterType extends Router {}
+            class RouterType extends Router { }
 
             // change the router name to include the type
-            Object.defineProperty(RouterType, 'name', {value: `${capitalize(templateName)}Router`});
+            Object.defineProperty(RouterType, 'name', { value: `${capitalize(templateName)}Router` });
 
             // fetch template
             const selectedTemplate = this.templates[templateName];
@@ -356,7 +394,7 @@ export default class Manager {
         // The type is derived by the relationship with the parent.
         //   Or has none, as is the case with the root router in essence
         //   Below, we are deriving the type and calling the add function recursively by type
-        this.addRouter({...router, type, parentName});
+        this.addRouter({ ...router, type, parentName });
         const childRouters = router.routers || {};
         Object.keys(childRouters).forEach(childType => {
             childRouters[childType].forEach(child =>
@@ -372,7 +410,7 @@ export default class Manager {
      * its parent and any child routers
      */
     public addRouter(routerDeclaration: IRouterDeclaration) {
-        const {name, parentName, type} = routerDeclaration;
+        const { name, parentName, type } = routerDeclaration;
 
         const parent = this.routers[parentName];
 
@@ -381,7 +419,7 @@ export default class Manager {
         const config = this.createRouterConfigArgs(routerDeclaration, routerType, parent);
 
         // Create a router
-        const router = this.createRouter({name, config, type: routerType, parentName});
+        const router = this.createRouter({ name, config, type: routerType, parentName });
 
         // Set the created router as the parent router
         // if it has no parent and there is not yet a root
@@ -417,7 +455,7 @@ export default class Manager {
      */
     public removeRouter(name: string) {
         const router = this.routers[name];
-        const {parent, routers, type} = router;
+        const { parent, routers, type } = router;
 
         // Delete ref the parent (if any) stores
         if (parent) {
@@ -446,7 +484,7 @@ export default class Manager {
         location: IInputLocation,
         router: RouterT,
         ctx: ILocationActionContext = {},
-        newState: {[routerName: string]: {}} = {}
+        newState: { [routerName: string]: {} } = {}
     ) {
         if (!router) {
             return;
@@ -550,7 +588,7 @@ export default class Manager {
 
         return {
             name,
-            config: {...config},
+            config: { ...config },
             type,
             parent,
             routers: {},
@@ -571,7 +609,7 @@ export default class Manager {
     protected createRouterFromInitArgs(initalArgs: IRouterInitArgs) {
         const routerClass = this.routerTypes[initalArgs.type];
         // TODO add tests for passing of action names
-        return new (routerClass as any)({...initalArgs}) as RouterT;
+        return new (routerClass as any)({ ...initalArgs }) as RouterT;
     }
 
     /**
@@ -597,10 +635,10 @@ export default class Manager {
      * parent and child router connections, use one of the `add` methods on the manager.
      * Those methods use this `createRouter` method in turn.
      */
-    protected createRouter({name, config, type, parentName}: IRouterCreationInfo): RouterT {
+    protected createRouter({ name, config, type, parentName }: IRouterCreationInfo): RouterT {
         this.validateRouterCreationInfo(name, type, config);
 
-        const initalArgs = this.createNewRouterInitArgs({name, config, type, parentName});
-        return this.createRouterFromInitArgs({...initalArgs});
+        const initalArgs = this.createNewRouterInitArgs({ name, config, type, parentName });
+        return this.createRouterFromInitArgs({ ...initalArgs });
     }
 }
