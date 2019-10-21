@@ -92,7 +92,7 @@ export default class Manager {
                 // or if there is no cache state and there is a default action, apply the action
                 else if (child.config.defaultAction && child.config.defaultAction.length > 0) {
                     const [action, ...args] = child.config.defaultAction;
-                    console.log(`Applying default action: ${action} for ${child.name}`)
+                    console.log(`(Applying default action: ${action} for ${child.name}`)
 
                     newLocation = (child as any)[action](
                         { ...options, data: args[0] }, // TODO pass more than just the first arg
@@ -205,8 +205,6 @@ export default class Manager {
                     );
                 }
 
-                updatedLocation = actionFn(options, existingLocation, routerInstance, ctx);
-
                 // if the parent router isn't visible, but the child is shown, show all parents
                 if (
                     actionName === 'show' &&
@@ -225,6 +223,11 @@ export default class Manager {
                     );
                 }
 
+                console.log(`(pass) Calling actionFn for ${routerInstance.name}`)
+                // Call the router's action after any actions on the parent have been taken care of
+                updatedLocation = actionFn(options, { ...existingLocation, ...updatedLocation }, routerInstance, ctx);
+
+                // Call actions on the children after this router's action have been taken care of
                 if (actionName === 'show') {
                     console.log(`(pass) Calling child of router: ${routerInstance.name}`)
 
@@ -273,6 +276,8 @@ export default class Manager {
                 );
             }
 
+            console.log(`(start) Calling actionFn for ${routerInstance.name}`)
+            // Call the router's action after any actions on the parent have been taken care of
             updatedLocation = actionFn(options, updatedLocation, routerInstance, ctx);
 
             // If this action is a direct call from the user, remove all caching
