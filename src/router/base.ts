@@ -114,25 +114,21 @@ export default class RouterBase {
      */
     public serialize(options: ISerializeOptions = {}) {
         // create router declaration object
-        const serialized: IRouterDeclaration & { [key: string]: any } = {
+        const serialized: IRouterDeclaration & {[key: string]: any} = {
             name: this.name,
             routeKey: options.alwaysShowRouteKey
                 ? this.routeKey
                 : this.routeKey === this.name
-                    ? undefined
-                    : this.routeKey,
+                ? undefined
+                : this.routeKey,
             type: options.showType ? this.type : undefined,
             parentName: options.showParentName && this.parent ? this.parent.name : undefined,
             isPathRouter: this.config.isPathRouter,
-            disableCaching: options.showDefaults
-                ? this.config.disableCaching
-                : undefined,
+            disableCaching: options.showDefaults ? this.config.disableCaching : undefined,
             shouldInverselyActivate: options.showDefaults
                 ? this.config.shouldInverselyActivate
                 : undefined,
-            defaultAction: options.showDefaults
-                ? this.config.defaultAction
-                : undefined
+            defaultAction: options.showDefaults ? this.config.defaultAction : undefined
         };
 
         // recursively serialize child routers
@@ -142,14 +138,14 @@ export default class RouterBase {
                 acc[type] = this.routers[type].map(childRouter => childRouter.serialize(options));
                 return acc;
             },
-            {} as { [routerType: string]: IRouterDeclaration[] }
+            {} as {[routerType: string]: IRouterDeclaration[]}
         );
 
         if (childRouterTypes.length > 0) {
             serialized.routers = childRouters;
         }
 
-        Object.keys(serialized).forEach((key) =>
+        Object.keys(serialized).forEach(key =>
             serialized[key] === undefined ? delete serialized[key] : ''
         );
 
@@ -185,7 +181,7 @@ export default class RouterBase {
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');
         }
-        const { current } = this.getState();
+        const {current} = this.getState();
         return current || {};
     }
 
@@ -193,7 +189,7 @@ export default class RouterBase {
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');
         }
-        const { historical } = this.getState();
+        const {historical} = this.getState();
         return historical || [];
     }
 }

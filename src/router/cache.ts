@@ -1,6 +1,6 @@
 import {IOutputLocation, IRouter} from '../types';
 
-type CacheValue = boolean;
+type CacheValue = boolean | undefined;
 
 /**
  * Used to manipulate the router cache
@@ -16,7 +16,7 @@ class Cache {
     }
 
     get wasVisible() {
-        return !!this._cacheStore;
+        return this._cacheStore;
     }
 
     public removeCache() {
