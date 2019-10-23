@@ -1,16 +1,19 @@
 /**
  * Tracking one or more TracerSessions. 
  */
-class TracerManager {
-
+export class TracerManager {
     public pastSessions: TracerSession[];
     public currentSessions: { [sessionName: string]: TracerSession };
 
+    constructor() {
+        this.pastSessions = [];
+        this.currentSessions = {};
+    }
     public get lastSession() { return this.pastSessions.sort((a: TracerSession, b: TracerSession) => a.startTime > b.startTime ? 1 : -1) }
 
-    public newSession(name: ITracerSession['name']) {
+    public newSession(name: ITracerSession['name']): TracerSession {
         if (this.currentSessions[name]) {
-            throw new Error(`Could not create a session. The name ${name} is already taken. Try 'newSession' with a different name`)
+            return this.currentSessions[name]
         }
         const session = new TracerSession(name);
         session.manager = this;
@@ -25,35 +28,37 @@ class TracerManager {
 
 }
 
-interface ITracerSession {
+export interface ITracerSession {
     manager: TracerManager;
     isActive: boolean;
     name: string;
     startTime: Date;
     endMessage: string;
     endTime: Date
-    tracerThings: { [tracerThingName: string]: ITracerThing }
+    tracerThings: { [tracerThingName: string]: TracerThing }
 }
+
 /**
  * Tracking one or more TracerThings. Can be started and stopped.
  */
-class TracerSession implements ITracerSession {
+export class TracerSession implements ITracerSession {
     public manager: TracerManager;
     public isActive: boolean;
     public name: string;
     public startTime: Date;
     public endMessage: string;
     public endTime: Date;
-    public tracerThings: { [tracerThingName: string]: ITracerThing }
+    public tracerThings: { [tracerThingName: string]: TracerThing }
 
     constructor(name: ITracerSession['name']) {
         this.name = name;
         this.startTime = new Date();
+        this.tracerThings = {};
     }
 
-    public traceAThing = (thingName: string) => {
+    public tracerThing(thingName: string): TracerThing {
         if (this.tracerThings[thingName]) {
-            throw new Error(`Could not create a tracer. The name ${thingName} is already taken. Try 'traceAThing' with a different name`)
+            return this.tracerThings[thingName]
         }
         const tracer = new TracerThing(thingName);
         this.tracerThings[thingName] = tracer;
@@ -61,19 +66,31 @@ class TracerSession implements ITracerSession {
     }
 
     public endWithMessage(message: ITracerSession['endMessage']) {
-        this.endMessage = message;
-        this.endTime = new Date();
-        this.isActive = false;
+
+        if (this.isActive) {
+            this.endMessage = message;
+            this.end();
+        }
     }
 
     public end() {
+        console.log(this.tracerThings) // tslint:disable-line
+
         this.manager._moveSessionToFinishedStorage(this);
-        this.isActive = false;
+        if (this.isActive) {
+            this.endTime = new Date();
+            Object.keys(this.tracerThings).forEach(thingName => {
+                this.tracerThings[thingName].end();
+            })
+            this.isActive = false;
+            console.log(this.tracerThings) // tslint:disable-line
+        }
     }
+
 
 }
 
-interface IStep {
+export interface IStep {
     time: Date;
     name: string;
     info: object;
@@ -109,7 +126,7 @@ class TracerThing implements ITracerThing {
 
     }
 
-    public logStep(name: IStep['name'], info: IStep['info']) {
+    public logStep(name: IStep['name'], info?: IStep['info']) {
         const step: IStep = {
             time: new Date(),
             name,
@@ -123,14 +140,18 @@ class TracerThing implements ITracerThing {
     }
 
     public endWithMessage(reason: ITracerThing['endMessage']) {
-        this.endMessage = reason;
-        this.endTime = new Date();
-        this.isActive = false;
+        if (this.isActive) {
+            this.endMessage = reason;
+            this.end();
+        }
     }
 
     public end() {
-        this.isActive = false;
+        if (this.isActive) {
+            this.endTime = new Date();
+            this.isActive = false;
+        }
     }
 }
 
-export { TracerManager, TracerThing }
+export const tracerManager = new TracerManager();

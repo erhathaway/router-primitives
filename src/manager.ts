@@ -1,6 +1,8 @@
 import { NativeSerializedStore, BrowserSerializedStore } from './serializedState';
 import DefaultRouterStateStore from './routerState';
 import DefaultRouter from './router/base';
+import { tracerManager, TracerSession, TracerManager } from './tracer';
+
 import * as defaultTemplates from './router/template';
 import {
     IRouterDeclaration,
@@ -35,22 +37,29 @@ export default class Manager {
         router: RouterT,
         ctx: ILocationActionContext
     ) {
+        const tracerSession = router.manager.tracerSession;
+        const tracer = tracerSession.tracerThing(router.name)
+
         let newLocation = { ...location };
         // TODO don't mutate location
-        console.log('Found number of children types', Object.keys(router.routers).length)
+        // console.log(
+        // tracer.logStep('Found number of children types', Object.keys(router.routers).length)
         Object.keys(router.routers).forEach(routerType => {
             // skip routers that called the parent router
             if (routerType === ctx.activatedByChildType) {
-                console.log(`Not calling router b/c same type of active child`)
+                tracer.logStep(`Not calling child router type: ${routerType} b/c it is the same type of activation origin`)
+                // console.log(`Not calling router b/c same type of active child`)
 
                 return;
             }
 
             router.routers[routerType].forEach(child => {
+                const childTracer = tracerSession.tracerThing(child.name)
+
                 // prevent inverse activation if it is turned off
                 if (ctx.callDirection === 'up' && child.config.shouldInverselyActivate === false) {
-                    console.log(`Not calling router b/c not inversely active: ${child.name}`)
-
+                    // console.log(`Not calling router b/c not inversely active: ${child.name}`)
+                    childTracer.logStep(`Not calling child router b/c it is not inversely active: ${child.name}`)
                     return;
                 }
 
@@ -84,7 +93,7 @@ export default class Manager {
                 if (child.cache.wasVisible === true) {
                     // the cache has been 'used' so remove it
                     child.cache.removeCache();
-                    console.log(`Applying show on router: ${child.name}`)
+                    tracer.logStep(`Calling show action of child router b/c it has a cached previous visibility: ${child.name}`)
 
                     newLocation = child.show(options, newLocation, child, newContext);
                 }
@@ -93,7 +102,7 @@ export default class Manager {
                 // or if there is no cache state and there is a default action, apply the action
                 else if (child.config.defaultAction && child.config.defaultAction.length > 0) {
                     const [action, ...args] = child.config.defaultAction;
-                    console.log(`(Applying default action: ${action} for ${child.name}`)
+                    tracer.logStep(`(Applying default action: ${action} for ${child.name}`)
 
                     newLocation = (child as any)[action](
                         { ...options, data: args[0] }, // TODO pass more than just the first arg
@@ -125,6 +134,10 @@ export default class Manager {
         router: RouterT,
         ctx: ILocationActionContext = {}
     ) {
+        const tracerSession = router.manager.tracerSession;
+        const tracer = tracerSession.tracerThing(router.name)
+
+
         let newLocation = location;
         let disableCaching: boolean | undefined;
 
@@ -138,6 +151,7 @@ export default class Manager {
         } else {
             disableCaching = ctx.disableCaching || router.lastDefinedParentsDisableChildCacheState || false;
         }
+        tracer.logStep('setting', { disableCaching })
 
         Object.keys(router.routers).forEach(routerType => {
             router.routers[routerType].forEach(child => {
@@ -146,7 +160,9 @@ export default class Manager {
 
                 // Call location 'hide' action if the child is visible
                 if (child.state.visible) {
-                    console.log(`Hiding router: ${child.name}`)
+                    const childTracer = tracerSession.tracerThing(child.name)
+                    childTracer.logStep('Calling `hide` action')
+                    // console.log(`Hiding router: ${child.name}`)
                     newLocation = child.hide({}, newLocation, child, newCtx);
                 }
             });
@@ -159,10 +175,11 @@ export default class Manager {
         // For example, `scene` routers use the `options.disableCaching` to disable sibling caches
         // so they don't get reshown when a parent causes a rehydration
         const shouldCache = !disableCaching && !(options.disableCaching || false);
+        tracer.logStep('setting', { shouldCache })
 
-        console.log(`SHOULD CACHE: ${router.name}`, shouldCache, disableCaching, options.disableCaching)
+        // console.log(`SHOULD CACHE: ${router.name}`, shouldCache, disableCaching, options.disableCaching)
         if (shouldCache) {
-            console.log(`Cache: storing was previously visible for router: ${router.name}`)
+            // console.log(`Cache: storing was previously visible for router: ${router.name}`)
             router.cache.setWasPreviouslyVisibleToFromLocation(newLocation, router);
         }
 
@@ -187,17 +204,31 @@ export default class Manager {
             routerInstance: RouterT = this,
             ctx: ILocationActionContext = {}
         ) {
-            if (!existingLocation) {
-                console.clear();
+            // routerInstance.manager.tracerSession = tracerManager.newSession('Action started');
+            // const tracer = routerInstance.manager.tracerSession.tracerThing(routerInstance.name)
+
+            if (routerInstance.manager.tracerSession) {
+                routerInstance.manager.tracerSession.end();
+                routerInstance.manager.tracerSession = tracerManager.newSession('Action started');
+            } else {
+                routerInstance.manager.tracerSession = tracerManager.newSession('Action started');
+
             }
-            console.log('-------------------')
-            console.log(`Action: ${routerInstance.name}`)
+            const tracer = routerInstance.manager.tracerSession.tracerThing(routerInstance.name)
+
+            // if (!existingLocation) {
+            //     console.clear();
+            // }
+            // console.log('-------------------')
+            // console.log(`Action: ${routerInstance.name}`)
             // routerInstance.name === 'imData2' && console.log('IMDATA2', ctx)
             // if called from another action wrapper
             let updatedLocation: IInputLocation;
             if (existingLocation) {
+                tracer.logStep('Called from an existing location')
                 // set cache before location changes b/c cache info is derived from location path
                 if (actionName === 'hide') {
+                    tracer.logStep('Hiding')
                     updatedLocation = Manager.setCacheAndHide(
                         options,
                         existingLocation,
@@ -215,7 +246,9 @@ export default class Manager {
                         routerInstance.parent.state.visible === undefined) &&
                     ctx.callDirection !== 'down'
                 ) {
-                    console.log(`(pass) Calling parent of router: ${routerInstance.name} ---- ${routerInstance.parent.name}`)
+                    tracer.logStep(`Calling 'show' action of router parent: ${routerInstance.parent.name}`)
+
+                    // console.log(`(pass) Calling parent of router: ${routerInstance.name} ---- ${routerInstance.parent.name}`)
                     // data routers dont have a visibility state by default. TODO FIX THIS
                     updatedLocation = routerInstance.parent.show(
                         {},
@@ -225,13 +258,16 @@ export default class Manager {
                     );
                 }
 
-                console.log(`(pass) Calling actionFn for ${routerInstance.name}`)
+                tracer.logStep(`Calling actionFn`)
+
+                // console.log(`(pass) Calling actionFn for ${routerInstance.name}`)
                 // Call the router's action after any actions on the parent have been taken care of
                 updatedLocation = actionFn(options, { ...newLocation, ...updatedLocation }, routerInstance, ctx);
 
                 // Call actions on the children after this router's action have been taken care of
                 if (actionName === 'show') {
-                    console.log(`(pass) Calling child of router: ${routerInstance.name}`)
+                    // console.log(`(pass) Calling child of router: ${routerInstance.name}`)
+                    tracer.logStep(`Calling 'show' action of router's children`)
 
                     // add location defaults from children
                     updatedLocation = Manager.setChildrenDefaults(
@@ -242,9 +278,12 @@ export default class Manager {
                     );
                 }
 
+                tracer.endWithMessage(`Returning location`)
                 return { ...newLocation, ...updatedLocation };
             }
 
+
+            tracer.logStep('Called from a new location')
 
             // if called directly, fetch location
             updatedLocation = this.manager.serializedStateStore.getState();
@@ -257,7 +296,9 @@ export default class Manager {
                     routerInstance.parent.state.visible === undefined) &&
                 ctx.callDirection !== 'down'
             ) {
-                console.log(`(start) Calling parent of router: ${routerInstance.name} ---- ${routerInstance.parent.name}`)
+                tracer.logStep(`Calling 'show' action of router parent: ${routerInstance.parent.name}`)
+
+                // console.log(`(start) Calling parent of router: ${routerInstance.name} ---- ${routerInstance.parent.name}`)
 
                 // data routers dont have a visibility state by default. TODO FIX THIS
                 updatedLocation = routerInstance.parent.show(
@@ -270,6 +311,7 @@ export default class Manager {
 
             // set cache before location changes b/c cache info is derived from location path
             if (actionName === 'hide') {
+                tracer.logStep('Hiding')
                 updatedLocation = Manager.setCacheAndHide(
                     options,
                     { ...updatedLocation },
@@ -278,7 +320,9 @@ export default class Manager {
                 );
             }
 
-            console.log(`(start) Calling actionFn for ${routerInstance.name}`)
+            // console.log(`(start) Calling actionFn for ${routerInstance.name}`)
+            tracer.logStep(`Calling actionFn`)
+
             // Call the router's action after any actions on the parent have been taken care of
             updatedLocation = actionFn(options, { ...updatedLocation }, routerInstance, ctx);
 
@@ -288,7 +332,8 @@ export default class Manager {
             }
 
             if (actionName === 'show') {
-                console.log(`(start) Calling child of router: ${routerInstance.name}`, options, ctx)
+                // console.log(`(start) Calling child of router: ${routerInstance.name}`, options, ctx)
+                tracer.logStep(`Calling 'show' action of router's children`)
 
                 // add location defaults from children
                 updatedLocation = Manager.setChildrenDefaults(
@@ -305,12 +350,15 @@ export default class Manager {
             // set serialized state
             this.manager.serializedStateStore.setState({ ...updatedLocation });
             // return location so the function signature of the action is the same
+            tracer.endWithMessage(`Returning location`)
+            routerInstance.manager.tracerSession.endWithMessage('Action complete')
             return { ...updatedLocation };
         }
 
         return actionWrapper;
     }
 
+    public tracerSession: TracerSession;
     public routers: { [routerName: string]: RouterT };
     public rootRouter: RouterT;
     public serializedStateStore: IInit['serializedStateStore'];
