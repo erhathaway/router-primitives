@@ -204,24 +204,15 @@ export default class Manager {
             routerInstance: RouterT = this,
             ctx: ILocationActionContext = {}
         ) {
-            // routerInstance.manager.tracerSession = tracerManager.newSession('Action started');
-            // const tracer = routerInstance.manager.tracerSession.tracerThing(routerInstance.name)
 
-            if (routerInstance.manager.tracerSession) {
-                routerInstance.manager.tracerSession.end();
+            if (!existingLocation) {
+                if (routerInstance.manager.tracerSession) { routerInstance.manager.tracerSession.end(); }
                 routerInstance.manager.tracerSession = tracerManager.newSession('Action started');
-            } else {
-                routerInstance.manager.tracerSession = tracerManager.newSession('Action started');
-
             }
+
             const tracer = routerInstance.manager.tracerSession.tracerThing(routerInstance.name)
 
-            // if (!existingLocation) {
-            //     console.clear();
-            // }
-            // console.log('-------------------')
-            // console.log(`Action: ${routerInstance.name}`)
-            // routerInstance.name === 'imData2' && console.log('IMDATA2', ctx)
+
             // if called from another action wrapper
             let updatedLocation: IInputLocation;
             if (existingLocation) {

@@ -32,9 +32,9 @@ export interface ITracerSession {
     manager: TracerManager;
     isActive: boolean;
     name: string;
-    startTime: Date;
+    startTime: number;
     endMessage: string;
-    endTime: Date
+    endTime: number;
     tracerThings: { [tracerThingName: string]: TracerThing }
 }
 
@@ -45,14 +45,14 @@ export class TracerSession implements ITracerSession {
     public manager: TracerManager;
     public isActive: boolean;
     public name: string;
-    public startTime: Date;
+    public startTime: number;
     public endMessage: string;
-    public endTime: Date;
+    public endTime: number;
     public tracerThings: { [tracerThingName: string]: TracerThing }
 
     constructor(name: ITracerSession['name']) {
         this.name = name;
-        this.startTime = new Date();
+        this.startTime = performance.now();
         this.tracerThings = {};
     }
 
@@ -74,24 +74,24 @@ export class TracerSession implements ITracerSession {
     }
 
     public end() {
-        console.log(this.tracerThings) // tslint:disable-line
-
+        console.log(this) // tslint:disable-line
+        // console.log('hi')
         this.manager._moveSessionToFinishedStorage(this);
-        if (this.isActive) {
-            this.endTime = new Date();
-            Object.keys(this.tracerThings).forEach(thingName => {
-                this.tracerThings[thingName].end();
-            })
-            this.isActive = false;
-            console.log(this.tracerThings) // tslint:disable-line
-        }
+        // if (this.isActive) {
+        this.endTime = performance.now();
+        Object.keys(this.tracerThings).forEach(thingName => {
+            this.tracerThings[thingName].end();
+        })
+        this.isActive = false;
+        console.log(this) // tslint:disable-line
+        // }
     }
 
 
 }
 
 export interface IStep {
-    time: Date;
+    time: number;
     name: string;
     info: object;
 }
@@ -99,26 +99,26 @@ export interface IStep {
 export interface ITracerThing {
     isActive: boolean;
     name: string;
-    startTime: Date;
+    startTime: number;
     steps: IStep[];
     postEndSteps: IStep[];
     endMessage: string;
-    endTime: Date
+    endTime: number;
 }
 
 class TracerThing implements ITracerThing {
     public isActive: boolean;
     public name: string;
-    public startTime: Date;
+    public startTime: number;
     public steps: IStep[];
     public postEndSteps: IStep[];
     public endMessage: string;
-    public endTime: Date
+    public endTime: number;
 
     constructor(thingName: ITracerThing['name']) {
         this.isActive = true;
         this.name = thingName;
-        this.startTime = new Date()
+        this.startTime = performance.now();
         this.steps = [];
         this.postEndSteps = [];
         this.endMessage = undefined;
@@ -128,7 +128,7 @@ class TracerThing implements ITracerThing {
 
     public logStep(name: IStep['name'], info?: IStep['info']) {
         const step: IStep = {
-            time: new Date(),
+            time: performance.now(),
             name,
             info
         }
@@ -148,7 +148,7 @@ class TracerThing implements ITracerThing {
 
     public end() {
         if (this.isActive) {
-            this.endTime = new Date();
+            this.endTime = performance.now();;
             this.isActive = false;
         }
     }
