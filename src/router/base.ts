@@ -11,9 +11,17 @@ import {
 } from '../types';
 
 interface IRouterBase {
-    [method: string]: any
-    // constructor: (init: IRouterInitArgs) => RouterBase;
+    [method: string]: any;
 }
+
+export interface IInternalState {
+    [field: string]: any;
+}
+export type InternalStateUpdateFn = (
+    existingInternalState: IInternalState
+) => {
+    [field: string]: any;
+};
 
 export default class RouterBase implements IRouterBase {
     public name: IRouterInitArgs['name'];
@@ -26,6 +34,7 @@ export default class RouterBase implements IRouterBase {
     public subscribe: IRouterInitArgs['subscribe'];
     public config: IRouterInitArgs['config'];
     public cache: Cache;
+    public _EXPERIMENTAL_internal_state: IInternalState; // tslint:disable-line
 
     constructor(init: IRouterInitArgs) {
         const {
@@ -63,6 +72,8 @@ export default class RouterBase implements IRouterBase {
         // store the routers location data for rehydration
         this.cache = new Cache();
 
+        this._EXPERIMENTAL_internal_state = {};
+
         // TODO fix test so empty array isn't needed
         // TODO add tests for this
         // Since actions come from the template and are decorated by the manager, we need to bind them
@@ -78,11 +89,11 @@ export default class RouterBase implements IRouterBase {
         if (!this.parent) {
             return false;
         }
-        const parentState = this.parent.config.disableCaching
+        const parentState = this.parent.config.disableCaching;
         if (parentState !== undefined) {
-            return parentState
+            return parentState;
         } else {
-            return this.parent.lastDefinedParentsDisableChildCacheState
+            return this.parent.lastDefinedParentsDisableChildCacheState;
         }
     }
 
@@ -122,6 +133,10 @@ export default class RouterBase implements IRouterBase {
 
     get isRootRouter() {
         return !this.parent;
+    }
+
+    set EXPERIMENTAL_internal_state(stateUpdateFn: InternalStateUpdateFn) {
+        this._EXPERIMENTAL_internal_state = stateUpdateFn({ ...this._EXPERIMENTAL_internal_state });
     }
 
     /**
@@ -201,7 +216,8 @@ export default class RouterBase implements IRouterBase {
             throw new Error('no getState function specified by the manager');
         }
         const { current } = this.getState();
-        return current || {};
+        const newState = current || {};
+        return { ...newState, ...this._EXPERIMENTAL_internal_state };
     }
 
     get history(): RouterHistoryState {
