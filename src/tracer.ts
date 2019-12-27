@@ -3,7 +3,7 @@
  */
 export class TracerManager {
     public pastSessions: TracerSession[];
-    public currentSessions: { [sessionName: string]: TracerSession };
+    public currentSessions: {[sessionName: string]: TracerSession};
 
     constructor() {
         this.pastSessions = [];
@@ -40,8 +40,8 @@ export interface ITracerSession {
     startTime: number;
     endMessage: string;
     endTime: number;
-    tracerThings: { [tracerThingName: string]: TracerThing };
-    thingSubscriptions: { [thingName: string]: ThingSubscription[] };
+    tracerThings: {[tracerThingName: string]: TracerThing};
+    thingSubscriptions: {[thingName: string]: ThingSubscription[]};
 }
 
 /**
@@ -54,8 +54,8 @@ export class TracerSession implements ITracerSession {
     public startTime: number;
     public endMessage: string;
     public endTime: number;
-    public tracerThings: { [tracerThingName: string]: TracerThing };
-    public thingSubscriptions: { [thingName: string]: ThingSubscription[] };
+    public tracerThings: {[tracerThingName: string]: TracerThing};
+    public thingSubscriptions: {[thingName: string]: ThingSubscription[]};
 
     constructor(name: ITracerSession['name']) {
         this.isActive = true;
@@ -114,10 +114,10 @@ export class TracerSession implements ITracerSession {
     }
 
     public end() {
-        console.log('ENDING TRACER SESSION'); // tslint:disable-line
+        // console.log('ENDING TRACER SESSION'); // tslint:disable-line
         // console.log('hi')
         if (this.isActive) {
-            console.log("ENDING AGAIN")
+            // console.log('ENDING AGAIN');
             Object.keys(this.tracerThings).forEach(thingName => {
                 this.tracerThings[thingName].end();
             });

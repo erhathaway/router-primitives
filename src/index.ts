@@ -1,4 +1,4 @@
-import Manager from './manager';
+import Manager, {IManagerInit} from './manager';
 import RouterStore from './routerState';
 import Router from './router/base';
 import * as Types from './types';
@@ -12,6 +12,7 @@ import {
 
 export {
     Manager,
+    IManagerInit,
     Router,
     RouterStore,
     NativeSerializedStore,

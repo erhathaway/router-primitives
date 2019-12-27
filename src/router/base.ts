@@ -83,6 +83,7 @@ export default class RouterBase implements IRouterBase {
                 (this as any)[actionName] = (this as any)[actionName].bind(this);
             }
         });
+        // this._state = this._state.bind(this);
     }
 
     get lastDefinedParentsDisableChildCacheState(): boolean {
@@ -136,7 +137,7 @@ export default class RouterBase implements IRouterBase {
     }
 
     set EXPERIMENTAL_internal_state(stateUpdateFn: InternalStateUpdateFn) {
-        this._EXPERIMENTAL_internal_state = stateUpdateFn({ ...this._EXPERIMENTAL_internal_state });
+        this._EXPERIMENTAL_internal_state = stateUpdateFn({...this._EXPERIMENTAL_internal_state});
     }
 
     /**
@@ -148,13 +149,13 @@ export default class RouterBase implements IRouterBase {
      */
     public serialize(options: ISerializeOptions = {}) {
         // create router declaration object
-        const serialized: IRouterDeclaration & { [key: string]: any } = {
+        const serialized: IRouterDeclaration & {[key: string]: any} = {
             name: this.name,
             routeKey: options.alwaysShowRouteKey
                 ? this.routeKey
                 : this.routeKey === this.name
-                    ? undefined
-                    : this.routeKey,
+                ? undefined
+                : this.routeKey,
             type: options.showType ? this.type : undefined,
             parentName: options.showParentName && this.parent ? this.parent.name : undefined,
             isPathRouter: this.config.isPathRouter,
@@ -172,7 +173,7 @@ export default class RouterBase implements IRouterBase {
                 acc[type] = this.routers[type].map(childRouter => childRouter.serialize(options));
                 return acc;
             },
-            {} as { [routerType: string]: IRouterDeclaration[] }
+            {} as {[routerType: string]: IRouterDeclaration[]}
         );
 
         if (childRouterTypes.length > 0) {
@@ -212,19 +213,27 @@ export default class RouterBase implements IRouterBase {
     }
 
     get state(): IRouterCurrentState {
-        if (!this.getState) {
-            throw new Error('no getState function specified by the manager');
-        }
-        const { current } = this.getState();
-        const newState = current || {};
-        return { ...newState, ...this._EXPERIMENTAL_internal_state };
+        return this._state();
     }
 
-    get history(): RouterHistoryState {
+    protected _state = (): IRouterCurrentState => {
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');
         }
-        const { historical } = this.getState();
-        return historical || [];
+        const {current} = this.getState();
+        const newState = current || {};
+        return {...newState, ...this._EXPERIMENTAL_internal_state};
+    };
+
+    public get history(): RouterHistoryState {
+        return this._history();
     }
+
+    protected _history = (): RouterHistoryState => {
+        if (!this.getState) {
+            throw new Error('no getState function specified by the manager');
+        }
+        const {historical} = this.getState();
+        return historical || [];
+    };
 }
