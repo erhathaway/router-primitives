@@ -223,12 +223,21 @@ export default class Manager {
                 Object.keys(routerInstance.manager.routers).forEach(routerName => {
                     const r = routerInstance.manager.routers[routerName];
                     const tracerUpdateFn = (thingInfo: ITracerThing) => {
-                        // console.log(`(${thingInfo.name})`, thingInfo.isActive);
-                        r.EXPERIMENTAL_internal_state = (currentInfo: IInternalState) => ({
-                            ...currentInfo,
-                            ...thingInfo
-                        });
-                        // console.log('NEW STATE', (r.state as any).isActive) // tslint:disable-line
+                        const lastStep = thingInfo.steps[thingInfo.steps.length - 1];
+                        console.log(`(${thingInfo.name}):`);
+
+                        console.log('....', lastStep && lastStep.name);
+                        r.EXPERIMENTAL_setInternalState({...thingInfo});
+                        // (currentInfo: IInternalState) => ({
+                        //     ...currentInfo,
+                        //     ...thingInfo
+                        // });
+                        console.log(
+                            '.... active:',
+                            (r.EXPERIMENTAL_internal_state as any).isActive
+                        ); // tslint:disable-line
+
+                        // console.log(`(${r.name}) active:`, (r.state as any).isActive); // tslint:disable-line
                     };
                     routerInstance.manager.tracerSession.subscribeToThing(
                         routerName,
@@ -378,6 +387,11 @@ export default class Manager {
             tracer.endWithMessage(`Returning location`);
             // setTimeout(() => {
             routerInstance.manager.tracerSession.endWithMessage('Action complete');
+            console.log(
+                'TOTAL TIME',
+                routerInstance.manager.tracerSession.endTime -
+                    routerInstance.manager.tracerSession.startTime
+            );
             // }, 3000);
             // const things = routerInstance.manager.tracerSession.tracerThings;
             // Object.keys(things).forEach(tName => console.log(tName, things[tName].isActive)) // tslint:disable-line
@@ -388,22 +402,31 @@ export default class Manager {
     }
 
     public tracerSession: TracerSession;
-    public routers: {[routerName: string]: RouterT};
+    public _routers: {[routerName: string]: RouterT};
     public rootRouter: RouterT;
     public serializedStateStore: IManagerInit['serializedStateStore'];
     public routerStateStore: IManagerInit['routerStateStore'];
     public routerTypes: {[routerType: string]: RouterT};
     public templates: IManagerInit['templates'];
 
-    constructor({
+    constructor(initArgs: IManagerInit = {}, shouldInitialize = true) {
+        shouldInitialize && this.initializeManager(initArgs);
+    }
+
+    protected initializeManager({
         routerTree,
         serializedStateStore,
         routerStateStore,
         router,
         templates
-    }: IManagerInit = {}) {
+    }: IManagerInit) {
         this.routerStateStore = routerStateStore || new DefaultRouterStateStore();
-        this.routers = {};
+        // this.routers = {};
+        this.addRouter = this.addRouter.bind(this);
+        this.addRouters = this.addRouters.bind(this);
+        // this.routers = this.routers.bind(this);
+        this.removeRouter = this.removeRouter.bind(this);
+        this._routers = {};
         this.rootRouter = null;
 
         // check if window
@@ -462,6 +485,10 @@ export default class Manager {
         this.rootRouter.show();
     }
 
+    get routers() {
+        return this._routers || {};
+    }
+
     /**
      * Adds the initial routers defined during initialization
      */
@@ -496,7 +523,10 @@ export default class Manager {
     public addRouter(routerDeclaration: IRouterDeclaration) {
         const {name, parentName, type} = routerDeclaration;
 
+        // console.log('*****BEFORE PARENT', this);
+
         const parent = this.routers[parentName];
+        // console.log('*****PARENT', parent);
 
         // Set the root router type if the router has no parent
         const routerType = !parentName && !this.rootRouter ? 'root' : type;
@@ -526,7 +556,8 @@ export default class Manager {
         }
 
         // Add ref of new router to manager
-        this.routers[name] = router;
+        // this.routers[name] = router;
+        this.registerRouter(name, router);
 
         if (router.isPathRouter) {
             this.validateNeighborsOfOtherTypesArentPathRouters(router);
@@ -557,7 +588,16 @@ export default class Manager {
         this.routerStateStore.unsubscribeAllObserversForRouter(name);
 
         // Delete ref the manager stores
-        delete this.routers[name];
+        // delete this.routers[name];
+        this.unregisterRouter(name);
+    }
+
+    protected registerRouter(name: string, router: RouterT) {
+        this._routers[name] = router;
+    }
+
+    protected unregisterRouter(name: string) {
+        delete this._routers[name];
     }
 
     /**

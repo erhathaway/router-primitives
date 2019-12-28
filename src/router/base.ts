@@ -17,11 +17,11 @@ interface IRouterBase {
 export interface IInternalState {
     [field: string]: any;
 }
-export type InternalStateUpdateFn = (
-    existingInternalState: IInternalState
-) => {
-    [field: string]: any;
-};
+// export type InternalStateUpdateFn = (
+//     existingInternalState: IInternalState
+// ) => {
+//     [field: string]: any;
+// };
 
 export default class RouterBase implements IRouterBase {
     public name: IRouterInitArgs['name'];
@@ -136,8 +136,16 @@ export default class RouterBase implements IRouterBase {
         return !this.parent;
     }
 
-    set EXPERIMENTAL_internal_state(stateUpdateFn: InternalStateUpdateFn) {
-        this._EXPERIMENTAL_internal_state = stateUpdateFn({...this._EXPERIMENTAL_internal_state});
+    // private set EXPERIMENTAL_internal_state(internalState: Object) {
+    //     this._EXPERIMENTAL_internal_state = internalState; // stateUpdateFn({...this._EXPERIMENTAL_internal_state});
+    // }
+
+    public EXPERIMENTAL_setInternalState(internalState: IInternalState) {
+        this._EXPERIMENTAL_internal_state = {...internalState};
+    }
+
+    public get EXPERIMENTAL_internal_state(): IInternalState {
+        return this._EXPERIMENTAL_internal_state;
     }
 
     /**
@@ -222,7 +230,7 @@ export default class RouterBase implements IRouterBase {
         }
         const {current} = this.getState();
         const newState = current || {};
-        return {...newState, ...this._EXPERIMENTAL_internal_state};
+        return {...newState, ...this.EXPERIMENTAL_internal_state};
     };
 
     public get history(): RouterHistoryState {

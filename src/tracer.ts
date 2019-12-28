@@ -1,5 +1,12 @@
 /**
  * Tracking one or more TracerSessions.
+ *
+ * Has the concept of 'tracer sessions'.
+ * There exists the ability to:
+ * - start a new session
+ * - view the last session
+ * - view all previous sessions
+ *
  */
 export class TracerManager {
     public pastSessions: TracerSession[];
