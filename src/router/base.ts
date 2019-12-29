@@ -118,11 +118,16 @@ export default class RouterBase implements IRouterBase {
             return [];
         }
 
-        const flattened = (arr: IRouter[]) => [].concat(...arr);
+        const flattened = (acc: IRouter[], arr: IRouter[]) => acc.concat(...arr);
+        console.log(
+            Object.keys(this.parent.routers)
+                .filter(t => t !== this.type)
+                .map(t => this.parent.routers[t])
+        );
         return Object.keys(this.parent.routers)
             .filter(t => t !== this.type)
             .map(t => this.parent.routers[t])
-            .reduce(flattened);
+            .reduce(flattened, []);
     }
 
     get pathLocation(): number {

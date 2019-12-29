@@ -9,7 +9,7 @@ type CacheValue = boolean | undefined;
  * cache when setting new state instead of a default value
  */
 class Cache {
-    private _cacheStore?: CacheValue;
+    public _cacheStore?: CacheValue;
 
     constructor() {
         this._cacheStore = undefined;

@@ -2,6 +2,7 @@ import Manager, {IManagerInit} from './manager';
 import RouterStore from './routerState';
 import Router, {IInternalState} from './router/base';
 import * as Types from './types';
+import RouterCache from './router/cache';
 
 import {
     NativeSerializedStore,
@@ -11,6 +12,7 @@ import {
 } from './serializedState';
 
 export {
+    RouterCache,
     Manager,
     IManagerInit,
     Router,

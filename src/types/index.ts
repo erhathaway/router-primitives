@@ -167,3 +167,12 @@ export interface IRouterConfig {
     disableCaching?: boolean; // optional b/c the default is to use the parents
     defaultAction: string[];
 }
+
+export type ActionWraperFn = (
+    options: IRouterActionOptions,
+    existingLocation: IOutputLocation,
+    routerInstance: IRouter,
+    ctx: ILocationActionContext
+) => void;
+
+export type ActionWraperFnDecorator = (fn: ActionWraperFn) => ActionWraperFn;

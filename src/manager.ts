@@ -15,7 +15,9 @@ import {
     IRouterCreationInfo,
     IRouterActionOptions,
     IRouterConfig,
-    IRouterInitArgs
+    IRouterInitArgs,
+    ActionWraperFn,
+    ActionWraperFnDecorator
     // IRouter
 } from './types';
 
@@ -30,12 +32,12 @@ export interface IManagerInit {
 }
 
 export default class Manager {
-    private static setChildrenDefaults(
+    public setChildrenDefaults = (
         options: IRouterActionOptions,
         location: IInputLocation,
         router: RouterT,
         ctx: ILocationActionContext
-    ) {
+    ) => {
         const tracerSession = router.manager.tracerSession;
         const tracer = tracerSession.tracerThing(router.name);
 
@@ -119,7 +121,7 @@ export default class Manager {
         });
 
         return newLocation;
-    }
+    };
 
     /**
      * Called when a router's 'hide' action is called directly or the
@@ -132,12 +134,12 @@ export default class Manager {
      *
      * TODO: dont mutate location state
      */
-    private static setCacheAndHide(
+    public setCacheAndHide = (
         options: IRouterActionOptions,
         location: IInputLocation,
         router: RouterT,
         ctx: ILocationActionContext = {}
-    ) {
+    ) => {
         const tracerSession = router.manager.tracerSession;
         const tracer = tracerSession.tracerThing(router.name);
 
@@ -192,7 +194,7 @@ export default class Manager {
         }
 
         return newLocation;
-    }
+    };
 
     /**
      * Decorator around the `action` methods of a router.
@@ -205,7 +207,7 @@ export default class Manager {
      * @param actionName name of the action. Usually `show` or `hide` but can be any custom action defined in a template
      *
      */
-    private static createActionWrapperFunction(actionFn: RouterAction, actionName: string) {
+    public createActionWrapperFunction = (actionFn: RouterAction, actionName: string) => {
         function actionWrapper(
             options: IRouterActionOptions = {},
             existingLocation?: IOutputLocation,
@@ -223,21 +225,18 @@ export default class Manager {
                 Object.keys(routerInstance.manager.routers).forEach(routerName => {
                     const r = routerInstance.manager.routers[routerName];
                     const tracerUpdateFn = (thingInfo: ITracerThing) => {
-                        const lastStep = thingInfo.steps[thingInfo.steps.length - 1];
-                        console.log(`(${thingInfo.name}):`);
+                        // const lastStep = thingInfo.steps[thingInfo.steps.length - 1];
+                        // console.log(`(${thingInfo.name}):`);
 
-                        console.log('....', lastStep && lastStep.name);
+                        // console.log('....', lastStep && lastStep.name);
                         r.EXPERIMENTAL_setInternalState({...thingInfo});
                         // (currentInfo: IInternalState) => ({
                         //     ...currentInfo,
                         //     ...thingInfo
                         // });
-                        console.log(
-                            '.... active:',
-                            (r.EXPERIMENTAL_internal_state as any).isActive
-                        ); // tslint:disable-line
+                        // console.log('.... active:', (r.state as any).isActive); // tslint:disable-line
 
-                        // console.log(`(${r.name}) active:`, (r.state as any).isActive); // tslint:disable-line
+                        console.log(`(${r.name}) active:`, (r.state as any).isActive); // tslint:disable-line
                     };
                     routerInstance.manager.tracerSession.subscribeToThing(
                         routerName,
@@ -255,7 +254,7 @@ export default class Manager {
                 // set cache before location changes b/c cache info is derived from location path
                 if (actionName === 'hide') {
                     tracer.logStep('Hiding');
-                    updatedLocation = Manager.setCacheAndHide(
+                    updatedLocation = routerInstance.manager.setCacheAndHide(
                         options,
                         existingLocation,
                         routerInstance,
@@ -303,7 +302,7 @@ export default class Manager {
                     tracer.logStep(`Calling 'show' action of router's children`);
 
                     // add location defaults from children
-                    updatedLocation = Manager.setChildrenDefaults(
+                    updatedLocation = routerInstance.manager.setChildrenDefaults(
                         options,
                         {...newLocation, ...updatedLocation},
                         routerInstance,
@@ -346,7 +345,7 @@ export default class Manager {
             // set cache before location changes b/c cache info is derived from location path
             if (actionName === 'hide') {
                 tracer.logStep('Hiding');
-                updatedLocation = Manager.setCacheAndHide(
+                updatedLocation = routerInstance.manager.setCacheAndHide(
                     options,
                     {...updatedLocation},
                     routerInstance,
@@ -370,7 +369,7 @@ export default class Manager {
                 tracer.logStep(`Calling 'show' action of router's children`);
 
                 // add location defaults from children
-                updatedLocation = Manager.setChildrenDefaults(
+                updatedLocation = routerInstance.manager.setChildrenDefaults(
                     options,
                     {...updatedLocation},
                     routerInstance,
@@ -398,9 +397,13 @@ export default class Manager {
             return {...updatedLocation};
         }
 
-        return actionWrapper;
-    }
+        if (this.actionFnDecorator) {
+            return this.actionFnDecorator(actionWrapper);
+        }
+        return actionWrapper as ActionWraperFn;
+    };
 
+    public actionFnDecorator?: ActionWraperFnDecorator;
     public tracerSession: TracerSession;
     public _routers: {[routerName: string]: RouterT};
     public rootRouter: RouterT;
@@ -409,8 +412,19 @@ export default class Manager {
     public routerTypes: {[routerType: string]: RouterT};
     public templates: IManagerInit['templates'];
 
-    constructor(initArgs: IManagerInit = {}, shouldInitialize = true) {
+    constructor(
+        initArgs: IManagerInit = {},
+        {
+            shouldInitialize,
+            actionFnDecorator
+        }: {shouldInitialize: boolean; actionFnDecorator?: ActionWraperFnDecorator} = {
+            shouldInitialize: true
+        }
+    ) {
         shouldInitialize && this.initializeManager(initArgs);
+        if (actionFnDecorator) {
+            this.actionFnDecorator = actionFnDecorator;
+        }
     }
 
     protected initializeManager({
@@ -460,7 +474,7 @@ export default class Manager {
 
             // add actions to RouterType
             Object.keys(selectedTemplate.actions).forEach(actionName => {
-                (RouterType as any).prototype[actionName] = Manager.createActionWrapperFunction(
+                (RouterType as any).prototype[actionName] = this.createActionWrapperFunction(
                     selectedTemplate.actions[actionName],
                     actionName
                 );
