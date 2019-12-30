@@ -1,43 +1,112 @@
-import {NativeSerializedStore, BrowserSerializedStore} from './serializedState';
-import DefaultRouterStateStore from './routerState';
-import DefaultRouter, {IInternalState} from './router/base';
-import {tracerManager, TracerSession, TracerManager, ITracerThing} from './tracer';
+import routerTemplates from './router/template';
 
-import * as defaultTemplates from './router/template';
+import {BrowserSerializedStore, NativeSerializedStore} from './serializedState';
+import {ITracerThing, TracerSession, tracerManager} from './tracer';
 import {
-    IRouterDeclaration,
-    IRouter as RouterT,
-    IRouterTemplate,
+    ActionWraperFn,
+    ActionWraperFnDecorator,
     IInputLocation,
     ILocationActionContext,
-    RouterAction,
     IOutputLocation,
-    IRouterCreationInfo,
+    IRouter as RouterT,
     IRouterActionOptions,
+    IRouterCreationInfo,
     IRouterConfig,
+    IRouterDeclaration,
     IRouterInitArgs,
-    ActionWraperFn,
-    ActionWraperFnDecorator
-    // IRouter
+    RouterAction,
+    IManagerInit,
+    IRouter,
+    IRouterTemplate,
+    IRouterTemplates,
+    IRouterCurrentState
 } from './types';
 
-const capitalize = (name = '') => name.charAt(0).toUpperCase() + name.slice(1);
+import DefaultRouter from './router/base';
+import DefaultRouterStateStore from './routerState';
 
-export interface IManagerInit {
-    routerTree?: IRouterDeclaration;
-    serializedStateStore?: NativeSerializedStore | BrowserSerializedStore;
-    routerStateStore?: DefaultRouterStateStore;
-    router?: typeof DefaultRouter;
-    templates?: {[templateName: string]: IRouterTemplate};
-}
+const capitalize = (name = ''): string => name.charAt(0).toUpperCase() + name.slice(1);
 
-export default class Manager {
+type Constructor<T = {}> = new (...args: any[]) => T; // eslint-disable-line
+
+// extend router base for specific type
+const createRouterFromTemplate = <
+    RouterCurrentState extends {},
+    T extends Constructor,
+    Template extends IRouterTemplate<RouterCurrentState>,
+    TemplateName,
+    Actions = Template['actions']
+>(
+    BaseRouter: T,
+    templateName: TemplateName,
+    template: Template,
+    actionWraperFn: (actionFn: RouterAction, actionName: string) => ActionWraperFn
+): IRouter & {[actionName in keyof Actions]: Actions[actionName]} => {
+    const {actions, reducer} = template;
+
+    const MixedInClass = class extends BaseRouter {
+        // change the router name to include the type
+
+        name = `${capitalize(templateName.toString())}Router`;
+
+        // eslint-disable-next-line
+        constructor(...args: any[]) {
+            super(...args);
+            // add actions to RouterType
+            (Object.keys(actions) as ['show']).forEach(actionName => {
+                Object.assign(this, {
+                    [actionName]: actionWraperFn(actions[actionName], actionName)
+                });
+            });
+
+            // add reducer to RouterType
+            Object.assign(this, {
+                reducer
+            });
+        }
+    };
+    // return C;
+    return (MixedInClass as unknown) as IRouter &
+        {[actionName in keyof Actions]: Actions[actionName]};
+};
+
+export default class Manager<
+    RouterCurrentState extends IRouterCurrentState = IRouterCurrentState,
+    CustomTemplates extends IRouterTemplates<RouterCurrentState> = {},
+    DefaultTemplates extends IRouterTemplates<RouterCurrentState> = typeof routerTemplates,
+    TemplateNames extends keyof CustomTemplates & DefaultTemplates = keyof CustomTemplates &
+        DefaultTemplates
+> {
+    public actionFnDecorator?: ActionWraperFnDecorator;
+    public tracerSession: TracerSession;
+    public _routers: Record<string, RouterT> = {};
+    public rootRouter: RouterT = undefined;
+    public serializedStateStore: IManagerInit['serializedStateStore'];
+    public routerStateStore: IManagerInit['routerStateStore'];
+    public routerTypes: {[routerTypeName in TemplateNames]: RouterT};
+    public templates: CustomTemplates & DefaultTemplates;
+
+    constructor(
+        initArgs: IManagerInit<CustomTemplates, DefaultTemplates> = {},
+        {
+            shouldInitialize,
+            actionFnDecorator
+        }: {shouldInitialize: boolean; actionFnDecorator?: ActionWraperFnDecorator} = {
+            shouldInitialize: true
+        }
+    ) {
+        shouldInitialize && this.initializeManager(initArgs);
+        if (actionFnDecorator) {
+            this.actionFnDecorator = actionFnDecorator;
+        }
+    }
+
     public setChildrenDefaults = (
         options: IRouterActionOptions,
         location: IInputLocation,
         router: RouterT,
         ctx: ILocationActionContext
-    ) => {
+    ): IInputLocation => {
         const tracerSession = router.manager.tracerSession;
         const tracer = tracerSession.tracerThing(router.name);
 
@@ -139,7 +208,7 @@ export default class Manager {
         location: IInputLocation,
         router: RouterT,
         ctx: ILocationActionContext = {}
-    ) => {
+    ): IInputLocation => {
         const tracerSession = router.manager.tracerSession;
         const tracer = tracerSession.tracerThing(router.name);
 
@@ -207,13 +276,16 @@ export default class Manager {
      * @param actionName name of the action. Usually `show` or `hide` but can be any custom action defined in a template
      *
      */
-    public createActionWrapperFunction = (actionFn: RouterAction, actionName: string) => {
+    public createActionWrapperFunction = (
+        actionFn: RouterAction,
+        actionName: string
+    ): ActionWraperFn => {
         function actionWrapper(
             options: IRouterActionOptions = {},
             existingLocation?: IOutputLocation,
             routerInstance: RouterT = this,
             ctx: ILocationActionContext = {}
-        ) {
+        ): IInputLocation {
             if (!existingLocation) {
                 if (routerInstance.manager.tracerSession) {
                     routerInstance.manager.tracerSession.end();
@@ -224,7 +296,7 @@ export default class Manager {
                 routerInstance.manager.tracerSession = tracerManager.newSession('Action started');
                 Object.keys(routerInstance.manager.routers).forEach(routerName => {
                     const r = routerInstance.manager.routers[routerName];
-                    const tracerUpdateFn = (thingInfo: ITracerThing) => {
+                    const tracerUpdateFn = (thingInfo: ITracerThing): void => {
                         // const lastStep = thingInfo.steps[thingInfo.steps.length - 1];
                         // console.log(`(${thingInfo.name}):`);
 
@@ -400,48 +472,18 @@ export default class Manager {
         if (this.actionFnDecorator) {
             return this.actionFnDecorator(actionWrapper);
         }
-        return actionWrapper as ActionWraperFn;
+        return actionWrapper;
     };
-
-    public actionFnDecorator?: ActionWraperFnDecorator;
-    public tracerSession: TracerSession;
-    public _routers: {[routerName: string]: RouterT};
-    public rootRouter: RouterT;
-    public serializedStateStore: IManagerInit['serializedStateStore'];
-    public routerStateStore: IManagerInit['routerStateStore'];
-    public routerTypes: {[routerType: string]: RouterT};
-    public templates: IManagerInit['templates'];
-
-    constructor(
-        initArgs: IManagerInit = {},
-        {
-            shouldInitialize,
-            actionFnDecorator
-        }: {shouldInitialize: boolean; actionFnDecorator?: ActionWraperFnDecorator} = {
-            shouldInitialize: true
-        }
-    ) {
-        shouldInitialize && this.initializeManager(initArgs);
-        if (actionFnDecorator) {
-            this.actionFnDecorator = actionFnDecorator;
-        }
-    }
 
     protected initializeManager({
         routerTree,
         serializedStateStore,
         routerStateStore,
         router,
-        templates
-    }: IManagerInit) {
+        customTemplates,
+        defaultTemplates
+    }: IManagerInit<CustomTemplates, DefaultTemplates>): void {
         this.routerStateStore = routerStateStore || new DefaultRouterStateStore();
-        // this.routers = {};
-        this.addRouter = this.addRouter.bind(this);
-        this.addRouters = this.addRouters.bind(this);
-        // this.routers = this.routers.bind(this);
-        this.removeRouter = this.removeRouter.bind(this);
-        this._routers = {};
-        this.rootRouter = null;
 
         // check if window
         if (typeof window === 'undefined') {
@@ -451,43 +493,35 @@ export default class Manager {
         }
 
         // router types
-        this.templates = {...defaultTemplates, ...templates};
-        this.routerTypes = {};
+        const defaults = defaultTemplates || routerTemplates;
+        this.templates = {...defaults, ...customTemplates} as DefaultTemplates & CustomTemplates;
 
         // TODO implement
         // Manager.validateTemplates(templates);
         // validate all template names are unique
         // validation should make sure action names dont collide with any Router method names
 
-        const Router = router || DefaultRouter; //tslint:disable-line
-        Object.keys(this.templates).forEach(templateName => {
-            // create a RouterType off the base Router
+        const BaseRouter = router || DefaultRouter;
+        this.routerTypes = (Object.keys(this.templates) as Array<TemplateNames>).reduce(
+            (acc, templateName) => {
+                // fetch template
+                const selectedTemplate = this.templates[templateName];
+                // get function used to wrape actions
+                const createActionWrapperFunction = this.createActionWrapperFunction;
+                // create router class from the template
+                const RouterFromTemplate = createRouterFromTemplate<
+                    RouterCurrentState,
+                    typeof BaseRouter,
+                    typeof selectedTemplate,
+                    typeof templateName
+                >(BaseRouter, templateName, selectedTemplate, createActionWrapperFunction);
 
-            // extend router base for specific type
-            class RouterType extends Router {}
-
-            // change the router name to include the type
-            Object.defineProperty(RouterType, 'name', {value: `${capitalize(templateName)}Router`});
-
-            // fetch template
-            const selectedTemplate = this.templates[templateName];
-
-            // add actions to RouterType
-            Object.keys(selectedTemplate.actions).forEach(actionName => {
-                (RouterType as any).prototype[actionName] = this.createActionWrapperFunction(
-                    selectedTemplate.actions[actionName],
-                    actionName
-                );
-            });
-
-            // add reducer to RouterType
-            (RouterType.prototype as RouterT).reducer = selectedTemplate.reducer;
-
-            // add parser to RouterType
-            // RouterType.prototype.parser = selectedTemplate.parser;
-
-            this.routerTypes[templateName] = (RouterType as any) as RouterT;
-        });
+                // add new Router type to accumulator
+                acc[templateName] = RouterFromTemplate;
+                return acc;
+            },
+            {} as {[routerTypeName in TemplateNames]: RouterT}
+        );
 
         // add initial routers
         this.addRouters(routerTree);
@@ -499,18 +533,18 @@ export default class Manager {
         this.rootRouter.show();
     }
 
-    get routers() {
-        return this._routers || {};
+    get routers(): Record<string, RouterT> {
+        return this._routers;
     }
 
     /**
      * Adds the initial routers defined during initialization
      */
-    public addRouters(
+    public addRouters = (
         router: IRouterDeclaration = null,
         type: string = null,
         parentName: string = null
-    ) {
+    ): void => {
         // If no router specified, there are no routers to add
         if (!router) {
             return;
@@ -526,7 +560,7 @@ export default class Manager {
                 this.addRouters(child, childType, router.name)
             );
         });
-    }
+    };
 
     /**
      * High level method for adding a router to the router state tree based on an input router declaration object
@@ -534,13 +568,9 @@ export default class Manager {
      * This method will add the router to the manager and correctly associate the router with
      * its parent and any child routers
      */
-    public addRouter(routerDeclaration: IRouterDeclaration) {
+    public addRouter(routerDeclaration: IRouterDeclaration): void {
         const {name, parentName, type} = routerDeclaration;
-
-        // console.log('*****BEFORE PARENT', this);
-
         const parent = this.routers[parentName];
-        // console.log('*****PARENT', parent);
 
         // Set the root router type if the router has no parent
         const routerType = !parentName && !this.rootRouter ? 'root' : type;
@@ -570,7 +600,6 @@ export default class Manager {
         }
 
         // Add ref of new router to manager
-        // this.routers[name] = router;
         this.registerRouter(name, router);
 
         if (router.isPathRouter) {
@@ -582,7 +611,7 @@ export default class Manager {
      * Remove a router from the routing tree and manager
      * Removing a router will also remove all of its children
      */
-    public removeRouter(name: string) {
+    public removeRouter = (name: string): void => {
         const router = this.routers[name];
         const {parent, routers, type} = router;
 
@@ -602,15 +631,14 @@ export default class Manager {
         this.routerStateStore.unsubscribeAllObserversForRouter(name);
 
         // Delete ref the manager stores
-        // delete this.routers[name];
         this.unregisterRouter(name);
-    }
+    };
 
-    protected registerRouter(name: string, router: RouterT) {
+    protected registerRouter(name: string, router: RouterT): void {
         this._routers[name] = router;
     }
 
-    protected unregisterRouter(name: string) {
+    protected unregisterRouter(name: string): void {
         delete this._routers[name];
     }
 
@@ -622,13 +650,11 @@ export default class Manager {
         location: IInputLocation,
         router: RouterT,
         ctx: ILocationActionContext = {},
-        newState: {[routerName: string]: {}} = {}
-    ) {
+        newState: Record<string, RouterCurrentState> = {}
+    ): Record<string, RouterCurrentState> {
         if (!router) {
             return;
         }
-
-        // console.log('Router info', router.name);
 
         // Call the routers reducer to calculate its state from the new location
         newState[router.name] = router.reducer(location, router, ctx);
@@ -639,8 +665,6 @@ export default class Manager {
                 this.calcNewRouterState(location, childRouter, ctx, newState)
             );
         });
-
-        // console.log('new state', newState, router.name);
 
         return newState;
     }
@@ -676,7 +700,7 @@ export default class Manager {
         };
     }
 
-    protected validateNeighborsOfOtherTypesArentPathRouters(router: RouterT) {
+    protected validateNeighborsOfOtherTypesArentPathRouters(router: RouterT): void {
         const nameOfNeighboorRouterThatIsPathRouter = router
             .getNeighbors()
             .reduce((acc, r) => (r.isPathRouter ? r.name : acc), undefined as string | undefined);
@@ -690,7 +714,11 @@ export default class Manager {
         }
     }
 
-    protected validateRouterCreationInfo(name: string, type: string, config: IRouterConfig): void {
+    protected validateRouterCreationInfo(
+        name: string,
+        type: TemplateNames,
+        config: IRouterConfig
+    ): void {
         // Check if the router type exists
         if (!this.routerTypes[type] && type !== 'root') {
             throw new Error(
@@ -724,7 +752,7 @@ export default class Manager {
         config,
         type,
         parentName
-    }: IRouterCreationInfo): IRouterInitArgs {
+    }: IRouterCreationInfo<TemplateNames>): IRouterInitArgs {
         const parent = this.routers[parentName];
         const actions = Object.keys(this.templates[type].actions);
 
@@ -748,10 +776,11 @@ export default class Manager {
      * Redefined by libraries like `router-primitives-mobx`.
      * Good place to change the base router prototype or decorate methods
      */
-    protected createRouterFromInitArgs(initalArgs: IRouterInitArgs) {
+    protected createRouterFromInitArgs(initalArgs: IRouterInitArgs<TemplateNames>): RouterT {
         const routerClass = this.routerTypes[initalArgs.type];
         // TODO add tests for passing of action names
-        return new (routerClass as any)({...initalArgs}) as RouterT;
+        // return new (routerClass as any)({...initalArgs}) as RouterT;
+        return new routerClass({...initalArgs});
     }
 
     /**
@@ -777,7 +806,12 @@ export default class Manager {
      * parent and child router connections, use one of the `add` methods on the manager.
      * Those methods use this `createRouter` method in turn.
      */
-    protected createRouter({name, config, type, parentName}: IRouterCreationInfo): RouterT {
+    protected createRouter({
+        name,
+        config,
+        type,
+        parentName
+    }: IRouterCreationInfo<TemplateNames>): RouterT {
         this.validateRouterCreationInfo(name, type, config);
 
         const initalArgs = this.createNewRouterInitArgs({name, config, type, parentName});

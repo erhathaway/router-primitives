@@ -1,59 +1,62 @@
 {
-  "name": "router-primitives",
-  "version": "1.0.0-beta.0",
-  "description": "A cross-platform application router. Declarative routing by way of layout primitives",
-  "main": "./dist/index.cjs.js",
-  "module": "./dist/index.es.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "test": "jest --watch",
-    "lint": "tslint --project ./tsconfig.json",
-    "build": "rm -rf ./dist && rollup -c",
-    "watch": "rollup -cw",
-    "start": "watch",
-    "prettier": "./node_modules/.bin/prettier \"src/**/*\" --write"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/erhathaway/router-primitives.git"
-  },
-  "keywords": [
-    "router",
-    "router-state",
-    "router-management",
-    "react",
-    "react-state",
-    "mobx",
-    "redux",
-    "primitives",
-    "declarative-routing"
-  ],
-  "author": "Ethan Hathaway",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/erhathaway/router-primitives/issues"
-  },
-  "homepage": "https://github.com/erhathaway/router-primitives#readme",
-  "devDependencies": {
-    "@types/jest": "^24.0.6",
-    "jest": "^23.1.0",
-    "prettier": "^1.18.2",
-    "rollup": "^1.1.2",
-    "rollup-plugin-commonjs": "^9.1.5",
-    "rollup-plugin-node-resolve": "^3.3.0",
-    "rollup-plugin-tslint": "^0.2.2",
-    "rollup-plugin-typescript2": "^0.21.2",
-    "rollup-watch": "^4.3.1",
-    "ts-jest": "^23.10.5",
-    "tslint": "^5.12.1",
-    "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.6.4"
-  },
-  "dependencies": {
-    "query-string": "^6.8.3"
-  },
-  "peerDependencies": {}
+    "name": "router-primitives",
+    "version": "1.0.0-beta.0",
+    "description": "A cross-platform application router. Declarative routing by way of layout primitives",
+    "main": "./dist/index.cjs.js",
+    "module": "./dist/index.es.js",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "test": "jest --watch",
+        "lint": "tslint --project ./tsconfig.json",
+        "build": "rm -rf ./dist && rollup -c",
+        "watch": "rollup -cw",
+        "start": "watch",
+        "prettier": "./node_modules/.bin/prettier \"src/**/*\" --write"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/erhathaway/router-primitives.git"
+    },
+    "keywords": [
+        "router",
+        "router-state",
+        "router-management",
+        "react",
+        "react-state",
+        "mobx",
+        "redux",
+        "primitives",
+        "declarative-routing"
+    ],
+    "author": "Ethan Hathaway",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/erhathaway/router-primitives/issues"
+    },
+    "homepage": "https://github.com/erhathaway/router-primitives#readme",
+    "devDependencies": {
+        "@types/jest": "^24.0.6",
+        "@typescript-eslint/eslint-plugin": "^2.13.0",
+        "@typescript-eslint/parser": "^2.13.0",
+        "eslint": "^6.8.0",
+        "eslint-config-prettier": "^6.9.0",
+        "eslint-plugin-jest": "^23.2.0",
+        "jest": "^23.1.0",
+        "prettier": "^1.18.2",
+        "rollup": "^1.1.2",
+        "rollup-plugin-commonjs": "^9.1.5",
+        "rollup-plugin-node-resolve": "^3.3.0",
+        "rollup-plugin-tslint": "^0.2.2",
+        "rollup-plugin-typescript2": "^0.21.2",
+        "rollup-watch": "^4.3.1",
+        "ts-jest": "^23.10.5",
+        "typescript": "^3.6.4"
+    },
+    "dependencies": {
+        "query-string": "^6.8.3"
+    },
+    "peerDependencies": {}
 }

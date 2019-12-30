@@ -1,5 +1,7 @@
 import RouterBase from '../router/base';
 import Manager from '../manager';
+import {NativeSerializedStore, BrowserSerializedStore} from '../serializedState';
+import DefaultRoutersStateStore from '../routerState';
 
 // Options are for a specific router within an update cycle
 // Context is for all routers within an update cycle
@@ -51,6 +53,20 @@ export interface IRouter extends RouterBase {
     reducer: RouterReducer;
 }
 
+export type RouterTest<
+    R extends RouterBase,
+    T extends IRouterTemplate = IRouterTemplate,
+    Actions = T['actions'],
+    ActionName extends string = Extract<keyof Actions, string> //keyof T['actions'] = keyof T['actions']
+> = {
+    // [action: ActionName]: Actions[ActionName];
+    reducer: T['reducer'];
+} & R;
+
+// export type RouterTestt<R extends RouterBase, T extends IRouterTemplate> = R & {
+//     [actionName: keyof T['actions']]: T['actions'][action];
+// } & {reducer: T['reducer']};
+
 // at the moment these should be the same
 export type IRouterActionOptions = ILocationOptions;
 
@@ -61,11 +77,11 @@ export type RouterAction = (
     ctx?: ILocationActionContext
 ) => IInputLocation;
 
-export type RouterReducer = (
+export type RouterReducer<RouterCurrentState extends {}> = (
     location: IInputLocation,
     router: IRouter,
     ctx: {[key: string]: any}
-) => {[key: string]: any};
+) => {[key: string]: RouterCurrentState};
 
 export interface IRouterTemplateConfig {
     canBePathRouter?: boolean;
@@ -74,9 +90,9 @@ export interface IRouterTemplateConfig {
     disableCaching?: boolean;
 }
 
-export interface IRouterTemplate {
+export interface IRouterTemplate<RouterCurrentState extends {}> {
     actions: {[actionName: string]: RouterAction};
-    reducer: RouterReducer;
+    reducer: RouterReducer<RouterCurrentState>;
     config: IRouterTemplateConfig;
 }
 /**
@@ -125,9 +141,9 @@ export interface ISerializeOptions {
 /**
  * Arguments passed into a router constructor (by a manager) to initialize a router
  */
-export interface IRouterInitArgs {
+export interface IRouterInitArgs<RouterType> {
     name: string;
-    type: string;
+    type: RouterType;
     manager: Manager;
     config: IRouterConfig;
     parent?: IRouter;
@@ -149,10 +165,10 @@ export type Observer = (state: IRouterState) => any;
  * The minimal amount of information an instantiated manager needs
  * to create the router init args and initialize a new router
  */
-export interface IRouterCreationInfo {
+export interface IRouterCreationInfo<RouterType> {
     name: string;
     config: IRouterConfig;
-    type: string;
+    type: RouterType;
     parentName?: string;
 }
 
@@ -176,3 +192,15 @@ export type ActionWraperFn = (
 ) => void;
 
 export type ActionWraperFnDecorator = (fn: ActionWraperFn) => ActionWraperFn;
+
+export interface IRouterTemplates<RouterCurrentState extends {}> {
+    [templateName: string]: IRouterTemplate<RouterCurrentState>;
+}
+export interface IManagerInit<CustomTemplates = {}, DefaultTemplates = {}> {
+    routerTree?: IRouterDeclaration;
+    serializedStateStore?: NativeSerializedStore | BrowserSerializedStore;
+    routerStateStore?: DefaultRoutersStateStore;
+    router?: typeof RouterBase;
+    customTemplates?: CustomTemplates;
+    defaultTemplates?: DefaultTemplates;
+}

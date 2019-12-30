@@ -5,14 +5,14 @@ import {
     RouterHistoryState,
     IRouterDeclaration,
     ISerializeOptions,
-    IRouterInitArgs,
-    RouterAction,
-    RouterReducer
+    IRouterInitArgs
+    // RouterAction,
+    // RouterReducer
 } from '../types';
 
-interface IRouterBase {
-    [method: string]: any;
-}
+// interface IRouterBase {
+//     [method: string]: any;
+// }
 
 export interface IInternalState {
     [field: string]: any;
@@ -23,7 +23,7 @@ export interface IInternalState {
 //     [field: string]: any;
 // };
 
-export default class RouterBase implements IRouterBase {
+export default class RouterBase {
     public name: IRouterInitArgs['name'];
     public type: IRouterInitArgs['type'];
     public manager: IRouterInitArgs['manager'];

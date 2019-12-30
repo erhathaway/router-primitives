@@ -1,5 +1,13 @@
 {
-  "editor.formatOnSave": true,
-  "tslint.run": "onType",
-  "prettier.bracketSpacing": false
+    "editor.formatOnSave": true,
+    "editor.detectIndentation": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    },
+    "eslint.trace.server": "messages",
+    "eslint.alwaysShowStatus": true,
+    "eslint.enable": true,
+    "eslint.validate": ["javascript", "typescript"]
 }
