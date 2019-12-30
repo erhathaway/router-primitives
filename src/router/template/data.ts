@@ -1,4 +1,4 @@
-import {RouterActionFn, RouterReducerFn, IRouterCurrentState, IRouterTemplate} from '../../types';
+import {RouterActionFn, RouterReducerFn, RouterCurrentState, IRouterTemplate} from '../../types';
 
 /**
  * A data router will display data as the routeKey in either the pathname or queryparams
@@ -44,8 +44,8 @@ const setData: RouterActionFn = (options, location, router, ctx) => {
     return router.show(options, location, router, ctx);
 };
 
-const reducer: RouterReducerFn<{data: string}> = (location, router, _ctx) => {
-    const newState: IRouterCurrentState = {};
+const reducer: RouterReducerFn<{data?: string}> = (location, router, _ctx) => {
+    const newState: RouterCurrentState = {};
 
     let routerData: string;
     if (router.isPathRouter) {
@@ -63,7 +63,7 @@ const reducer: RouterReducerFn<{data: string}> = (location, router, _ctx) => {
     return newState;
 };
 
-const template: IRouterTemplate<{data: string}, 'setData'> = {
+const template: IRouterTemplate<{data?: string}, 'setData'> = {
     actions: {show, hide, setData},
     reducer,
     config: {canBePathRouter: true, isPathRouter: false}

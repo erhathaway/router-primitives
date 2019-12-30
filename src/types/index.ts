@@ -75,11 +75,35 @@ export type Reducer<CurrentState> = {
 
 type a = Actions<'hello' | 'goodbye'>;
 
-export type RouterClass<
-    CustomState extends {},
+export type RouterInstance<
     ActionNames extends string = string,
+    CustomState extends {} = {},
+    CustomRouterBase extends RouterBase = RouterBase,
     RActions extends Actions<ActionNames> = Actions<ActionNames>
-> = RActions & Reducer<RouterCurrentState<CustomState>> & typeof RouterBase;
+> = RActions & Reducer<RouterCurrentState<CustomState>> & CustomRouterBase;
+
+export type RouterClass<
+    ActionNames extends string = string,
+    CustomState extends {} = {},
+    CustomRouterBasea extends RouterBase = RouterBase,
+    RActions extends Actions<ActionNames> = Actions<ActionNames>
+> = {
+    new (...args: ConstructorParameters<typeof RouterBase & CustomRouterBasea>): RouterInstance<
+        ActionNames,
+        CustomState,
+        CustomRouterBasea,
+        RActions
+    >;
+};
+
+class Hello extends RouterBase {}
+
+type f = InstanceType<RouterClass<'hello' | 'goodbye', {}, Hello>>;
+
+// type GetConstructorArgs<T> = T extends new (...args: infer U) => any ? U : never
+
+// type e = ConstructorParameters<typeof RouterBase>
+// RActions & Reducer<RouterCurrentState<CustomState>> & RouterBase;
 // // & {
 //         new (...args: any): any; // eslint-disable-line
 //     };
@@ -120,7 +144,7 @@ export type RouterReducerFn<CustomState extends {} = {}> = (
     location: IInputLocation,
     router: InstanceType<RouterClass>,
     ctx: {[key: string]: any}
-) => {[key: string]: RouterCurrentState<CustomState>};
+) => RouterCurrentState<CustomState>;
 
 export interface IRouterTemplateConfig {
     canBePathRouter?: boolean;
