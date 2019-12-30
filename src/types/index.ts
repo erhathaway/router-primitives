@@ -3,6 +3,8 @@ import Manager from '../manager';
 import {NativeSerializedStore, BrowserSerializedStore} from '../serializedState';
 import DefaultRoutersStateStore from '../routerState';
 
+export type Constructable<T = {}> = new (...args: any[]) => T; // eslint-disable-line
+
 // Options are for a specific router within an update cycle
 // Context is for all routers within an update cycle
 
@@ -47,21 +49,58 @@ export interface ILocationActionContext {
 /**
  * Router template types
  */
-export interface IRouter extends RouterBase {
-    show: RouterAction;
-    hide: RouterAction;
-    reducer: RouterReducer;
-}
+// export type = Constructable<RouterBase>
+// export interface IRouter<
+//     RActions extends Record<string, RouterAction>,
+//     RouterCurrentState extends {}
+// > extends RouterBase {
+//     // constructor: RouterBase['constructor'];
+//     // new(...args: RouterBase['constructor'])
+//     // show: RouterAction;
+//     // hide: RouterAction;
+//     [actionName in keyof RActions]: RActions[actionName];
+//     reducer: RouterReducer<RouterCurrentState>;
+// }
 
-export type RouterTest<
-    R extends RouterBase,
-    T extends IRouterTemplate = IRouterTemplate,
-    Actions = T['actions'],
-    ActionName extends string = Extract<keyof Actions, string> //keyof T['actions'] = keyof T['actions']
-> = {
-    // [action: ActionName]: Actions[ActionName];
-    reducer: T['reducer'];
-} & R;
+/**
+ * Template properties added to the base router class via mixins
+ */
+export type Actions<ActionNames extends string = string> = {
+    [actionName in ActionNames]: RouterActionFn;
+} & {show: RouterActionFn; hide: RouterActionFn};
+
+export type Reducer<CurrentState> = {
+    reducer: RouterReducerFn<CurrentState>;
+};
+
+type a = Actions<'hello' | 'goodbye'>;
+
+export type RouterClass<
+    CustomState extends {},
+    ActionNames extends string = string,
+    RActions extends Actions<ActionNames> = Actions<ActionNames>
+> = RActions & Reducer<RouterCurrentState<CustomState>> & typeof RouterBase;
+// // & {
+//         new (...args: any): any; // eslint-disable-line
+//     };
+//  extends RouterBase {
+//     // constructor: RouterBase['constructor'];
+//     // new(...args: RouterBase['constructor'])
+//     // show: RouterAction;
+//     // hide: RouterAction;
+//     [actionName in keyof RActions]: RActions[actionName];
+//     reducer: RouterReducer<RouterCurrentState>;
+// }
+
+// export type RouterTest<
+//     R extends RouterBase,
+//     T extends IRouterTemplate = IRouterTemplate,
+//     Actions = T['actions'],
+//     ActionName extends string = Extract<keyof Actions, string> //keyof T['actions'] = keyof T['actions']
+// > = {
+//     // [action: ActionName]: Actions[ActionName];
+//     reducer: T['reducer'];
+// } & R;
 
 // export type RouterTestt<R extends RouterBase, T extends IRouterTemplate> = R & {
 //     [actionName: keyof T['actions']]: T['actions'][action];
@@ -70,18 +109,18 @@ export type RouterTest<
 // at the moment these should be the same
 export type IRouterActionOptions = ILocationOptions;
 
-export type RouterAction = (
+export type RouterActionFn = (
     options?: IRouterActionOptions,
     location?: IInputLocation,
-    router?: IRouter,
+    router?: InstanceType<RouterClass>,
     ctx?: ILocationActionContext
 ) => IInputLocation;
 
-export type RouterReducer<RouterCurrentState extends {}> = (
+export type RouterReducerFn<CustomState extends {} = {}> = (
     location: IInputLocation,
-    router: IRouter,
+    router: InstanceType<RouterClass>,
     ctx: {[key: string]: any}
-) => {[key: string]: RouterCurrentState};
+) => {[key: string]: RouterCurrentState<CustomState>};
 
 export interface IRouterTemplateConfig {
     canBePathRouter?: boolean;
@@ -90,35 +129,35 @@ export interface IRouterTemplateConfig {
     disableCaching?: boolean;
 }
 
-export interface IRouterTemplate<RouterCurrentState extends {}> {
-    actions: {[actionName: string]: RouterAction};
-    reducer: RouterReducer<RouterCurrentState>;
+export interface IRouterTemplate<CustomState extends {} = {}, ActionNames extends string = string> {
+    actions: Actions<ActionNames>;
+    reducer: RouterReducerFn<RouterCurrentState<CustomState>>;
     config: IRouterTemplateConfig;
 }
 /**
  * Router state types
  */
-export interface IRouterCurrentState {
+export type RouterCurrentState<CustomState extends {} = {}> = CustomState & {
     visible?: boolean;
     data?: string;
-}
+};
 
-export type RouterHistoryState = IRouterCurrentState[];
+export type RouterHistoricalState<CustomState extends {} = {}> = RouterCurrentState<CustomState>[];
 
-export interface IRouterState {
-    current: IRouterCurrentState;
-    historical: RouterHistoryState;
+export interface IRouterCurrentAndHistoricalState<CustomState extends {} = {}> {
+    current: RouterCurrentState<CustomState>;
+    historical: RouterHistoricalState<CustomState>;
 }
 
 /**
  * Router declaration object
  */
 
-export interface IRouterDeclaration {
+export interface IRouterDeclaration<RouterType> {
     name: string;
-    routers?: {[key: string]: IRouterDeclaration[]};
+    routers?: {[key: string]: IRouterDeclaration<RouterType>[]};
     routeKey?: string;
-    type?: string;
+    type?: RouterType;
     parentName?: string;
 
     isPathRouter?: boolean;
@@ -141,14 +180,18 @@ export interface ISerializeOptions {
 /**
  * Arguments passed into a router constructor (by a manager) to initialize a router
  */
-export interface IRouterInitArgs<RouterType> {
+export interface IRouterInitArgs<
+    RouterType,
+    ParentRouter extends RouterClass,
+    RootRouter extends RouterClass
+> {
     name: string;
     type: RouterType;
     manager: Manager;
     config: IRouterConfig;
-    parent?: IRouter;
+    parent?: ParentRouter;
     routers: IChildRouters;
-    root?: IRouter;
+    root?: RootRouter;
     getState?: () => IRouterState | undefined;
     subscribe?: (observer: Observer) => void;
     actions: string[]; // the router actions derived from the template. Usually 'show' and 'hide'

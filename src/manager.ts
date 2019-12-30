@@ -8,7 +8,6 @@ import {
     IInputLocation,
     ILocationActionContext,
     IOutputLocation,
-    IRouter as RouterT,
     IRouterActionOptions,
     IRouterCreationInfo,
     IRouterConfig,
@@ -16,10 +15,11 @@ import {
     IRouterInitArgs,
     RouterAction,
     IManagerInit,
-    IRouter,
+    RouterClass,
     IRouterTemplate,
     IRouterTemplates,
-    IRouterCurrentState
+    IRouterCurrentState,
+    Constructable
 } from './types';
 
 import DefaultRouter from './router/base';
@@ -27,21 +27,19 @@ import DefaultRouterStateStore from './routerState';
 
 const capitalize = (name = ''): string => name.charAt(0).toUpperCase() + name.slice(1);
 
-type Constructor<T = {}> = new (...args: any[]) => T; // eslint-disable-line
-
 // extend router base for specific type
 const createRouterFromTemplate = <
     RouterCurrentState extends {},
-    T extends Constructor,
+    T extends Constructable,
     Template extends IRouterTemplate<RouterCurrentState>,
     TemplateName,
-    Actions = Template['actions']
+    Actions extends Record<string, RouterAction> = Template['actions']
 >(
     BaseRouter: T,
     templateName: TemplateName,
     template: Template,
     actionWraperFn: (actionFn: RouterAction, actionName: string) => ActionWraperFn
-): IRouter & {[actionName in keyof Actions]: Actions[actionName]} => {
+): RouterClass<Actions, RouterCurrentState> => {
     const {actions, reducer} = template;
 
     const MixedInClass = class extends BaseRouter {
@@ -65,25 +63,30 @@ const createRouterFromTemplate = <
             });
         }
     };
-    // return C;
-    return (MixedInClass as unknown) as IRouter &
-        {[actionName in keyof Actions]: Actions[actionName]};
+    return (MixedInClass as unknown) as RouterClass<Actions, RouterCurrentState>;
 };
 
 export default class Manager<
     RouterCurrentState extends IRouterCurrentState = IRouterCurrentState,
     CustomTemplates extends IRouterTemplates<RouterCurrentState> = {},
     DefaultTemplates extends IRouterTemplates<RouterCurrentState> = typeof routerTemplates,
-    TemplateNames extends keyof CustomTemplates & DefaultTemplates = keyof CustomTemplates &
-        DefaultTemplates
+    RouterTypeNames extends keyof CustomTemplates & DefaultTemplates = keyof CustomTemplates &
+        DefaultTemplates,
+    Actions extends Record<string, RouterAction> = {
+        [actionName in keyof (CustomTemplates &
+            DefaultTemplates)[RouterTypeNames]['actions']]: (CustomTemplates &
+            DefaultTemplates)[RouterTypeNames]['actions'][actionName];
+    }
 > {
     public actionFnDecorator?: ActionWraperFnDecorator;
     public tracerSession: TracerSession;
-    public _routers: Record<string, RouterT> = {};
-    public rootRouter: RouterT = undefined;
+    public _routers: Record<string, InstanceType<RouterClass<Actions, RouterCurrentState>>> = {};
+    public rootRouter: RouterClass<Actions, RouterCurrentState> = undefined;
     public serializedStateStore: IManagerInit['serializedStateStore'];
     public routerStateStore: IManagerInit['routerStateStore'];
-    public routerTypes: {[routerTypeName in TemplateNames]: RouterT};
+    public routerTypes: {
+        [routerTypeName in RouterTypeNames]: RouterClass<Actions, RouterCurrentState>;
+    };
     public templates: CustomTemplates & DefaultTemplates;
 
     constructor(
@@ -104,7 +107,7 @@ export default class Manager<
     public setChildrenDefaults = (
         options: IRouterActionOptions,
         location: IInputLocation,
-        router: RouterT,
+        router: InstanceType<RouterClass<Actions, RouterCurrentState>>,
         ctx: ILocationActionContext
     ): IInputLocation => {
         const tracerSession = router.manager.tracerSession;
@@ -206,7 +209,7 @@ export default class Manager<
     public setCacheAndHide = (
         options: IRouterActionOptions,
         location: IInputLocation,
-        router: RouterT,
+        router: InstanceType<RouterClass<Actions, RouterCurrentState>>,
         ctx: ILocationActionContext = {}
     ): IInputLocation => {
         const tracerSession = router.manager.tracerSession;
@@ -283,7 +286,7 @@ export default class Manager<
         function actionWrapper(
             options: IRouterActionOptions = {},
             existingLocation?: IOutputLocation,
-            routerInstance: RouterT = this,
+            routerInstance: InstanceType<RouterClass<Actions, RouterCurrentState>> = this,
             ctx: ILocationActionContext = {}
         ): IInputLocation {
             if (!existingLocation) {
@@ -308,7 +311,7 @@ export default class Manager<
                         // });
                         // console.log('.... active:', (r.state as any).isActive); // tslint:disable-line
 
-                        console.log(`(${r.name}) active:`, (r.state as any).isActive); // tslint:disable-line
+                        console.log(`(${r.name}) active:`, r.state.isActive); // tslint:disable-line
                     };
                     routerInstance.manager.tracerSession.subscribeToThing(
                         routerName,
@@ -502,7 +505,7 @@ export default class Manager<
         // validation should make sure action names dont collide with any Router method names
 
         const BaseRouter = router || DefaultRouter;
-        this.routerTypes = (Object.keys(this.templates) as Array<TemplateNames>).reduce(
+        this.routerTypes = (Object.keys(this.templates) as Array<RouterTypeNames>).reduce(
             (acc, templateName) => {
                 // fetch template
                 const selectedTemplate = this.templates[templateName];
@@ -520,7 +523,7 @@ export default class Manager<
                 acc[templateName] = RouterFromTemplate;
                 return acc;
             },
-            {} as {[routerTypeName in TemplateNames]: RouterT}
+            {} as {[routerTypeName in RouterTypeNames]: RouterClass<Actions, RouterCurrentState>}
         );
 
         // add initial routers
@@ -533,7 +536,7 @@ export default class Manager<
         this.rootRouter.show();
     }
 
-    get routers(): Record<string, RouterT> {
+    get routers(): Record<string, InstanceType<RouterClass<Actions, RouterCurrentState>>> {
         return this._routers;
     }
 
@@ -541,8 +544,8 @@ export default class Manager<
      * Adds the initial routers defined during initialization
      */
     public addRouters = (
-        router: IRouterDeclaration = null,
-        type: string = null,
+        router: IRouterDeclaration<RouterTypeNames> = null,
+        type: RouterTypeNames = null,
         parentName: string = null
     ): void => {
         // If no router specified, there are no routers to add
@@ -568,7 +571,7 @@ export default class Manager<
      * This method will add the router to the manager and correctly associate the router with
      * its parent and any child routers
      */
-    public addRouter(routerDeclaration: IRouterDeclaration): void {
+    public addRouter(routerDeclaration: IRouterDeclaration<RouterTypeNames>): void {
         const {name, parentName, type} = routerDeclaration;
         const parent = this.routers[parentName];
 
@@ -634,7 +637,10 @@ export default class Manager<
         this.unregisterRouter(name);
     };
 
-    protected registerRouter(name: string, router: RouterT): void {
+    protected registerRouter(
+        name: string,
+        router: InstanceType<RouterClass<Actions, RouterCurrentState>>
+    ): void {
         this._routers[name] = router;
     }
 
@@ -648,7 +654,7 @@ export default class Manager<
      */
     public calcNewRouterState(
         location: IInputLocation,
-        router: RouterT,
+        router: RouterClass<Actions, RouterCurrentState>,
         ctx: ILocationActionContext = {},
         newState: Record<string, RouterCurrentState> = {}
     ): Record<string, RouterCurrentState> {
@@ -670,10 +676,10 @@ export default class Manager<
     }
 
     protected createRouterConfigArgs(
-        routerDeclaration: IRouterDeclaration,
-        routerType: string,
-        parent: RouterT
-    ): IRouterCreationInfo['config'] {
+        routerDeclaration: IRouterDeclaration<RouterTypeNames>,
+        routerType: RouterTypeNames,
+        parent: RouterClass<Actions, RouterCurrentState>
+    ): IRouterCreationInfo<RouterTypeNames>['config'] {
         const templateConfig = this.templates[routerType].config;
         const hasParentOrIsRoot =
             parent && parent.isPathRouter !== undefined ? parent.isPathRouter : true;
@@ -700,7 +706,9 @@ export default class Manager<
         };
     }
 
-    protected validateNeighborsOfOtherTypesArentPathRouters(router: RouterT): void {
+    protected validateNeighborsOfOtherTypesArentPathRouters(
+        router: RouterClass<Actions, RouterCurrentState>
+    ): void {
         const nameOfNeighboorRouterThatIsPathRouter = router
             .getNeighbors()
             .reduce((acc, r) => (r.isPathRouter ? r.name : acc), undefined as string | undefined);
@@ -716,7 +724,7 @@ export default class Manager<
 
     protected validateRouterCreationInfo(
         name: string,
-        type: TemplateNames,
+        type: RouterTypeNames,
         config: IRouterConfig
     ): void {
         // Check if the router type exists
@@ -752,7 +760,7 @@ export default class Manager<
         config,
         type,
         parentName
-    }: IRouterCreationInfo<TemplateNames>): IRouterInitArgs {
+    }: IRouterCreationInfo<RouterTypeNames>): IRouterInitArgs<RouterTypeNames> {
         const parent = this.routers[parentName];
         const actions = Object.keys(this.templates[type].actions);
 
@@ -776,11 +784,14 @@ export default class Manager<
      * Redefined by libraries like `router-primitives-mobx`.
      * Good place to change the base router prototype or decorate methods
      */
-    protected createRouterFromInitArgs(initalArgs: IRouterInitArgs<TemplateNames>): RouterT {
+    protected createRouterFromInitArgs(
+        initalArgs: IRouterInitArgs<RouterTypeNames>
+    ): InstanceType<RouterClass<Actions, RouterCurrentState>> {
         const routerClass = this.routerTypes[initalArgs.type];
         // TODO add tests for passing of action names
         // return new (routerClass as any)({...initalArgs}) as RouterT;
-        return new routerClass({...initalArgs});
+        const a = new routerClass({...initalArgs});
+        return a;
     }
 
     /**
@@ -793,7 +804,7 @@ export default class Manager<
      * Once the state of the entire tree is calculate, it is stored in a central store,
      * the `routerStateStore`
      */
-    protected setNewRouterState(location: IInputLocation) {
+    protected setNewRouterState(location: IInputLocation): void {
         const newState = this.calcNewRouterState(location, this.rootRouter);
         this.routerStateStore.setState(newState);
     }
@@ -811,7 +822,9 @@ export default class Manager<
         config,
         type,
         parentName
-    }: IRouterCreationInfo<TemplateNames>): RouterT {
+    }: IRouterCreationInfo<RouterTypeNames>): InstanceType<
+        RouterClass<Actions, RouterCurrentState>
+    > {
         this.validateRouterCreationInfo(name, type, config);
 
         const initalArgs = this.createNewRouterInitArgs({name, config, type, parentName});

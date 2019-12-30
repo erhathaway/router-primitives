@@ -1,4 +1,4 @@
-import {RouterAction, RouterReducer, IRouterCurrentState, IRouterTemplate} from '../../types';
+import {RouterActionFn, RouterReducerFn, IRouterCurrentState, IRouterTemplate} from '../../types';
 
 /**
  * A data router will display data as the routeKey in either the pathname or queryparams
@@ -10,7 +10,7 @@ import {RouterAction, RouterReducer, IRouterCurrentState, IRouterTemplate} from 
  *    2. Checking if the router is a path router or not
  *    3. Adding the scene router to either the path or query params
  */
-const show: RouterAction = (options, oldLocation, router, _ctx) => {
+const show: RouterActionFn = (options, oldLocation, router, _ctx) => {
     const location = {...oldLocation};
 
     const data = options && options.data ? options.data : router.state.data;
@@ -28,7 +28,7 @@ const show: RouterAction = (options, oldLocation, router, _ctx) => {
     return location;
 };
 
-const hide: RouterAction = (_options, oldLocation, router, _ctx) => {
+const hide: RouterActionFn = (_options, oldLocation, router, _ctx) => {
     const location = {...oldLocation};
 
     if (router.isPathRouter) {
@@ -40,11 +40,11 @@ const hide: RouterAction = (_options, oldLocation, router, _ctx) => {
     return location;
 };
 
-const setData: RouterAction = (options, location, router, ctx) => {
+const setData: RouterActionFn = (options, location, router, ctx) => {
     return router.show(options, location, router, ctx);
 };
 
-const reducer: RouterReducer = (location, router, _ctx) => {
+const reducer: RouterReducerFn<{data: string}> = (location, router, _ctx) => {
     const newState: IRouterCurrentState = {};
 
     let routerData: string;
@@ -63,7 +63,7 @@ const reducer: RouterReducer = (location, router, _ctx) => {
     return newState;
 };
 
-const template: IRouterTemplate = {
+const template: IRouterTemplate<{data: string}, 'setData'> = {
     actions: {show, hide, setData},
     reducer,
     config: {canBePathRouter: true, isPathRouter: false}

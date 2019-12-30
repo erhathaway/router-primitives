@@ -28,6 +28,7 @@ module.exports = {
                 allowExpressions: true
             }
         ],
+        '@typescript-eslint/no-unused-vars': ['error', {argsIgnorePattern: '^_'}],
         camelcase: 'off',
         '@typescript-eslint/interface-name-prefix': ['error', {prefixWithI: 'always'}],
         '@typescript-eslint/camelcase': ['error', {properties: 'always'}], // enfore camelcase for property names
