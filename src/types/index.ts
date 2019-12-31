@@ -50,27 +50,14 @@ export interface ILocationActionContext {
 /**
  * Router template types
  */
-// export type = Constructable<RouterBase>
-// export interface IRouter<
-//     RActions extends Record<string, RouterAction>,
-//     RouterCurrentState extends {}
-// > extends RouterBase {
-//     // constructor: RouterBase['constructor'];
-//     // new(...args: RouterBase['constructor'])
-//     // show: RouterAction;
-//     // hide: RouterAction;
-//     [actionName in keyof RActions]: RActions[actionName];
-//     reducer: RouterReducer<RouterCurrentState>;
-// }
+
 
 /**
  * Template properties added to the base router class via mixins
  */
-export type Actions<CustomActionNames extends string = string> = CustomActionNames extends string
-    ? {
-          [actionName in CustomActionNames]: RouterActionFn;
-      } & {show: RouterActionFn; hide: RouterActionFn}
-    : {show: RouterActionFn; hide: RouterActionFn};
+export type Actions<CustomActionNames extends string = string> = 
+     { [actionName in CustomActionNames]: RouterActionFn } & 
+     {show: RouterActionFn; hide: RouterActionFn}
 
 export type Reducer<CurrentState> = {
     reducer: RouterReducerFn<CurrentState>;
@@ -119,99 +106,37 @@ type childsTest = Childs<typeof template>;
 
 export type RouterInstance<
     RouterTypeName extends string,
-    Templates extends IRouterTemplates,
-    CustomRouterBase extends RouterBase<
-        Parent<Templates>,
-        Root<Templates>,
-        RouterTypeName,
-        ExtractCustomStateFromTemplate<Templates[RouterTypeName]>,
-        Childs<Templates>
-    > = RouterBase<
-        Parent<Templates>,
-        Root<Templates>,
-        RouterTypeName,
-        ExtractCustomStateFromTemplate<Templates[RouterTypeName]>,
-        Childs<Templates>
-    >
-    // RActions extends Actions<CustonActionNames> = Actions<CustonActionNames>
+    Templates extends IRouterTemplates
 > = Actions<ExtractCustomActionsFromTemplate<Templates[RouterTypeName]>> &
     Reducer<RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>> &
-    CustomRouterBase;
+    RouterBase<RouterTypeName, Templates>;
 
 type routerInstanceTest = RouterInstance<'stack', typeof template>;
 type routerInstanceTestA = RouterInstance<'scene', typeof template>;
 
-export type RouterClass<
-    RouterTypeName extends string,
-    Templates extends IRouterTemplates,
-    CustomRouterBase extends RouterBase<
-        Parent<Templates>,
-        Root<Templates>,
+export type RouterClass<RouterTypeName extends string, Templates extends IRouterTemplates> = {
+    new (...args: ConstructorParameters<typeof RouterBase>): RouterInstance<
         RouterTypeName,
-        ExtractCustomStateFromTemplate<Templates[RouterTypeName]>,
-        Childs<Templates>
-    > = RouterBase<
-        Parent<Templates>,
-        Root<Templates>,
-        RouterTypeName,
-        ExtractCustomStateFromTemplate<Templates[RouterTypeName]>,
-        Childs<Templates>
-    >
-> = {
-    new (...args: ConstructorParameters<typeof RouterBase & CustomRouterBase>): RouterInstance<
-        RouterTypeName,
-        Templates,
-        CustomRouterBase
+        Templates
     >;
 };
 
-class Hello extends RouterBase<null, null, string> {}
-
-type f = InstanceType<RouterClass<'stack', typeof template, Hello>>;
-
-// type GetConstructorArgs<T> = T extends new (...args: infer U) => any ? U : never
-
-// type e = ConstructorParameters<typeof RouterBase>
-// RActions & Reducer<RouterCurrentState<CustomState>> & RouterBase;
-// // & {
-//         new (...args: any): any; // eslint-disable-line
-//     };
-//  extends RouterBase {
-//     // constructor: RouterBase['constructor'];
-//     // new(...args: RouterBase['constructor'])
-//     // show: RouterAction;
-//     // hide: RouterAction;
-//     [actionName in keyof RActions]: RActions[actionName];
-//     reducer: RouterReducer<RouterCurrentState>;
-// }
-
-// export type RouterTest<
-//     R extends RouterBase,
-//     T extends IRouterTemplate = IRouterTemplate,
-//     Actions = T['actions'],
-//     ActionName extends string = Extract<keyof Actions, string> //keyof T['actions'] = keyof T['actions']
-// > = {
-//     // [action: ActionName]: Actions[ActionName];
-//     reducer: T['reducer'];
-// } & R;
-
-// export type RouterTestt<R extends RouterBase, T extends IRouterTemplate> = R & {
-//     [actionName: keyof T['actions']]: T['actions'][action];
-// } & {reducer: T['reducer']};
+type routerClassTest = InstanceType<RouterClass<'feature', typeof template>>;
+type routerClassTestA = InstanceType<RouterClass<'stack', typeof template>>;
 
 // at the moment these should be the same
 export type IRouterActionOptions = ILocationOptions;
 
-export type RouterActionFn = (
+export type RouterActionFn = <RouterTypeName extends string, Templates extends IRouterTemplates>(
     options?: IRouterActionOptions,
     location?: IInputLocation,
-    router?: InstanceType<RouterClass>,
+    router?: RouterInstance<RouterTypeName, Templates>,
     ctx?: ILocationActionContext
 ) => IInputLocation;
 
-export type RouterReducerFn<CustomState extends {} = {}> = (
+export type RouterReducerFn<CustomState extends {} = {}> = <RouterTypeName extends string, Templates extends IRouterTemplates>(
     location: IInputLocation,
-    router: InstanceType<RouterClass>,
+    router: RouterInstance<RouterTypeName, Templates>
     ctx: {[key: string]: any}
 ) => RouterCurrentState<CustomState>;
 
@@ -313,10 +238,10 @@ export interface IRouterInitArgs<
     actions: string[]; // the router actions derived from the template. Usually 'show' and 'hide'
 }
 
-export type InstanceChildRouters<Routers extends RouterInstance[] = RouterInstance[]> = Record<
-    string,
-    Routers
->;
+// export type InstanceChildRouters<Routers extends RouterInstance[] = RouterInstance[]> = Record<
+//     string,
+//     Routers
+// >;
 // export interface IChildRouters {
 //     [key: string]: RouterInstance[];
 // }

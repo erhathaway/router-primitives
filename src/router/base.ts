@@ -6,7 +6,8 @@ import {
     RouterInstance,
     InstanceChildRouters,
     RouterCurrentState,
-    RouterHistoricalState
+    RouterHistoricalState,
+    IRouterTemplates
 } from '../types';
 
 export interface IInternalState {
@@ -14,18 +15,21 @@ export interface IInternalState {
 }
 
 export default class RouterBase<
-    ParentRouter extends RouterInstance | null,
-    RootRouter extends RouterInstance | null,
-    RouterType,
-    CustomState extends {} = {},
-    ChildRouters extends InstanceChildRouters = InstanceChildRouters,
-    InitArgs extends IRouterInitArgs<
-        CustomState,
-        RouterType,
-        ParentRouter,
-        RootRouter,
-        ChildRouters
-    > = IRouterInitArgs<CustomState, RouterType, ParentRouter, RootRouter, ChildRouters>
+    RouterTypeName extends string,
+    Templates extends IRouterTemplates
+
+    // ParentRouter extends RouterInstance | null,
+    // RootRouter extends RouterInstance | null,
+    // RouterType,
+    // CustomState extends {} = {},
+    // ChildRouters extends InstanceChildRouters = InstanceChildRouters,
+    // InitArgs extends IRouterInitArgs<
+    //     CustomState,
+    //     RouterType,
+    //     ParentRouter,
+    //     RootRouter,
+    //     ChildRouters
+    // > = IRouterInitArgs<CustomState, RouterType, ParentRouter, RootRouter, ChildRouters>
 > {
     public name: InitArgs['name'];
     public type: InitArgs['type'];
