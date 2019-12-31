@@ -19,27 +19,37 @@ import {
     IRouterTemplate,
     IRouterTemplates,
     IRouterCurrentState,
-    Constructable
+    Constructable,
+    RouterInstance
 } from './types';
 
 import DefaultRouter from './router/base';
 import DefaultRouterStateStore from './routerState';
+import RouterBase from './router/base';
 
 const capitalize = (name = ''): string => name.charAt(0).toUpperCase() + name.slice(1);
 
 // extend router base for specific type
 const createRouterFromTemplate = <
-    RouterCurrentState extends {},
+    CustomState extends {},
     T extends Constructable,
-    Template extends IRouterTemplate<RouterCurrentState>,
+    Template extends IRouterTemplate,
     TemplateName,
-    Actions extends Record<string, RouterAction> = Template['actions']
+    Actions extends Record<string, RouterAction> = Template['actions'],
+    ActionNames extends string = Extract<keyof Template['actions'], 'string'>
 >(
     BaseRouter: T,
     templateName: TemplateName,
     template: Template,
-    actionWraperFn: (actionFn: RouterAction, actionName: string) => ActionWraperFn
-): RouterClass<Actions, RouterCurrentState> => {
+    actionWraperFn: (
+        actionFn: RouterAction,
+        actionName: string
+    ) => ActionWraperFn<
+        ActionNames,
+        CustomState,
+        RouterInstance<ActionNames, CustomState, RouterBase>
+    >
+): RouterClass<Extract<keyof Actions, 'string'>, CustomState, typeof BaseRouter> => {
     const {actions, reducer} = template;
 
     const MixedInClass = class extends BaseRouter {
@@ -63,7 +73,7 @@ const createRouterFromTemplate = <
             });
         }
     };
-    return (MixedInClass as unknown) as RouterClass<Actions, RouterCurrentState>;
+    return (MixedInClass as unknown) as RouterClass<ActionNames, CustomState, typeof BaseRouter>;
 };
 
 export default class Manager<
@@ -279,10 +289,15 @@ export default class Manager<
      * @param actionName name of the action. Usually `show` or `hide` but can be any custom action defined in a template
      *
      */
-    public createActionWrapperFunction = (
+    public createActionWrapperFunction = <
+        A extends string = string,
+        C extends {} = {},
+        B extends RouterBase = RouterBase,
+        Fn extends ActionWraperFn<A, C, B> = ActionWraperFn<A, C, B>
+    >(
         actionFn: RouterAction,
         actionName: string
-    ): ActionWraperFn => {
+    ): Fn => {
         function actionWrapper(
             options: IRouterActionOptions = {},
             existingLocation?: IOutputLocation,
@@ -817,7 +832,7 @@ export default class Manager<
      * parent and child router connections, use one of the `add` methods on the manager.
      * Those methods use this `createRouter` method in turn.
      */
-    protected createRouter({
+    protected createRouter<T>({
         name,
         config,
         type,

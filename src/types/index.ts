@@ -187,7 +187,7 @@ export interface IRouterDeclaration<RouterType> {
     isPathRouter?: boolean;
     shouldInverselyActivate?: boolean;
     disableCaching?: boolean;
-    defaultAction?: string[]; // (fn, ...args)
+    defaultAction?: string[];
 }
 
 /**
@@ -205,9 +205,10 @@ export interface ISerializeOptions {
  * Arguments passed into a router constructor (by a manager) to initialize a router
  */
 export interface IRouterInitArgs<
+    CustomState extends {} = {},
     RouterType,
-    ParentRouter extends RouterClass,
-    RootRouter extends RouterClass
+    ParentRouter extends RouterInstance,
+    RootRouter extends RouterInstance
 > {
     name: string;
     type: RouterType;
@@ -216,8 +217,8 @@ export interface IRouterInitArgs<
     parent?: ParentRouter;
     routers: IChildRouters;
     root?: RootRouter;
-    getState?: () => IRouterState | undefined;
-    subscribe?: (observer: Observer) => void;
+    getState?: () => IRouterCurrentAndHistoricalState<CustomState>;
+    subscribe?: (observer: Observer<CustomState>) => void;
     actions: string[]; // the router actions derived from the template. Usually 'show' and 'hide'
 }
 
@@ -225,7 +226,9 @@ export interface IChildRouters {
     [key: string]: IRouter[];
 }
 
-export type Observer = (state: IRouterState) => any;
+export type Observer<CustomState extends {} = {}> = (
+    state: IRouterCurrentAndHistoricalState<CustomState>
+) => unknown;
 
 /**
  * Passed into the create router fn
@@ -251,14 +254,26 @@ export interface IRouterConfig {
     defaultAction: string[];
 }
 
-export type ActionWraperFn = (
+export type ActionWraperFn<
+    A extends string = string,
+    C extends {} = {},
+    B extends RouterBase = RouterBase,
+    R extends RouterInstance<A, C, B> = RouterInstance<A, C, B>
+> = (
     options: IRouterActionOptions,
     existingLocation: IOutputLocation,
-    routerInstance: IRouter,
+    routerInstance: R,
     ctx: ILocationActionContext
 ) => void;
 
-export type ActionWraperFnDecorator = (fn: ActionWraperFn) => ActionWraperFn;
+export type ActionWraperFnDecorator = <
+    A extends string = string,
+    C extends {} = {},
+    B extends RouterBase = RouterBase,
+    Fn extends ActionWraperFn<A, C, B> = ActionWraperFn<A, C, B>
+>(
+    fn: Fn
+) => Fn;
 
 export interface IRouterTemplates<RouterCurrentState extends {}> {
     [templateName: string]: IRouterTemplate<RouterCurrentState>;
