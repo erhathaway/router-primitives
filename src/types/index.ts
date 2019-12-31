@@ -47,63 +47,106 @@ export interface ILocationActionContext {
     activatedByChildType?: string;
 }
 
+// at the moment these should be the same
+export type IRouterActionOptions = ILocationOptions;
+
 /**
- * Router template types
+ * -------------------------------------------------
+ * Router actions and reducer
+ * -------------------------------------------------
  */
 
-
 /**
- * Template properties added to the base router class via mixins
+ * Types for action methods added to the base router class via mixins
  */
 export type Actions<CustomActionNames extends string = string> = 
      { [actionName in CustomActionNames]: RouterActionFn } & 
      {show: RouterActionFn; hide: RouterActionFn}
-
-export type Reducer<CurrentState> = {
-    reducer: RouterReducerFn<CurrentState>;
-};
-
 type actionsTest = Actions<'hello' | 'goodbye'>;
 type actionsTestA = Actions<undefined>;
 
-// Parent is an intersection of all router types
-// Root is the root router type
-// Children are an array of [routerType]: RouterInstanceType
+/**
+ * Type for the reducer methods added to the base router class via mixins
+ */
+export type Reducer<CurrentState> = { 
+    reducer: RouterReducerFn<CurrentState>;
+};  
 
-type OneOf<T extends IRouterTemplates> = {[K in keyof T]: Pick<T, K>}[keyof T];
+export type RouterActionFn = <RouterTypeName extends string, Templates extends IRouterTemplates>(
+    options?: IRouterActionOptions,
+    location?: IInputLocation,
+    router?: RouterInstance<RouterTypeName, Templates>,
+    ctx?: ILocationActionContext
+) => IInputLocation;
 
-type oneOfTest = OneOf<typeof template>;
+export type RouterReducerFn<CustomState extends {} = {}> = <RouterTypeName extends string, Templates extends IRouterTemplates>(
+    location: IInputLocation,
+    router: RouterInstance<RouterTypeName, Templates>
+    ctx: {[key: string]: any}
+) => RouterCurrentState<CustomState>;
 
-export type Parent<T extends IRouterTemplates> = {
-    [RouterType in keyof T]: RouterInstance<RouterTypeName<RouterType>, T>;
-}[keyof T];
 
-type parentTest = Parent<typeof template>;
 
-export type Root<T extends IRouterTemplates, NameOfRoot extends string = 'root'> = RouterInstance<
-    NameOfRoot,
-    T
->;
+/**
+ * -------------------------------------------------
+ * Router utilities
+ * -------------------------------------------------
+ */
 
-type rootTest = Root<typeof template>;
-
+/**
+ * Utility type to extract string literals of router type names from a templates object. A templates object is an
+ * object of templates with the type { [routerTypeName]: template }
+ */
 type RouterTypeName<Names extends string | number | symbol> = Names extends string ? Names : never;
+type routerTypeNameTest = RouterTypeName<keyof typeof template>;
 
-type routerTypeName = RouterTypeName<keyof typeof template>;
-
+/**
+ * Utility type to extract string literals of action names from the actions object in a template
+ */
 type ActionNames<
     Actions extends {},
     ActionNames extends string | number | symbol = keyof Actions
 > = ActionNames extends string ? ActionNames : never;
-
 type actionNamesTest = ActionNames<typeof template.root['actions']>;
 
+/**
+ * -------------------------------------------------
+ * Router parent, root, and children
+ * -------------------------------------------------
+ */
+/**
+ * The parent router type
+ * This type is an intersection of all possible router types found in the templates object
+ */
+export type Parent<T extends IRouterTemplates> = {
+    [RouterType in keyof T]: RouterInstance<RouterTypeName<RouterType>, T>;
+}[keyof T];
+type parentTest = Parent<typeof template>;
+
+/**
+ * The root router type
+ * The root router should be a specific router instance. Usually it has the name 'root' in the templates object
+ */
+export type Root<T extends IRouterTemplates, NameOfRoot extends string = 'root'> = RouterInstance<
+    NameOfRoot,
+    T
+>;
+type rootTest = Root<typeof template>;
+
+/**
+ * The child router types
+ * Child routers are an object with the type { [routerType]: Array<RouterInstance for type>}
+ */
 export type Childs<T extends IRouterTemplates> = {
     [RouterType in Exclude<keyof T, 'root'>]: Array<RouterInstance<RouterTypeName<RouterType>, T>>;
 };
-
 type childsTest = Childs<typeof template>;
 
+/**
+ * -------------------------------------------------
+ * Router instance and class
+ * -------------------------------------------------
+ */
 export type RouterInstance<
     RouterTypeName extends string,
     Templates extends IRouterTemplates
@@ -124,29 +167,28 @@ export type RouterClass<RouterTypeName extends string, Templates extends IRouter
 type routerClassTest = InstanceType<RouterClass<'feature', typeof template>>;
 type routerClassTestA = InstanceType<RouterClass<'stack', typeof template>>;
 
-// at the moment these should be the same
-export type IRouterActionOptions = ILocationOptions;
 
-export type RouterActionFn = <RouterTypeName extends string, Templates extends IRouterTemplates>(
-    options?: IRouterActionOptions,
-    location?: IInputLocation,
-    router?: RouterInstance<RouterTypeName, Templates>,
-    ctx?: ILocationActionContext
-) => IInputLocation;
 
-export type RouterReducerFn<CustomState extends {} = {}> = <RouterTypeName extends string, Templates extends IRouterTemplates>(
-    location: IInputLocation,
-    router: RouterInstance<RouterTypeName, Templates>
-    ctx: {[key: string]: any}
-) => RouterCurrentState<CustomState>;
 
-export interface IRouterTemplateConfig {
-    canBePathRouter?: boolean;
-    isPathRouter?: boolean;
-    shouldInverselyActivate?: boolean;
-    disableCaching?: boolean;
+/**
+ * -------------------------------------------------
+ * Router templates
+ * -------------------------------------------------
+ */
+
+/**
+ * The object holding all router templates keyed by router type
+ */
+export interface IRouterTemplates<
+    CustomState extends {} = {},
+    ActionNames extends string = string
+> {
+    [templateName: string]: IRouterTemplate<CustomState, ActionNames>;
 }
 
+/**
+ * The template that defines a specific router type
+ */
 export interface IRouterTemplate<
     CustomState extends {} = {},
     CustomActionNames extends string = string
@@ -155,8 +197,22 @@ export interface IRouterTemplate<
     reducer: RouterReducerFn<RouterCurrentState<CustomState>>;
     config: IRouterTemplateConfig;
 }
-
 type iRouterTemplateTest = IRouterTemplate<{hello: true}, 'big' | 'blue'>;
+
+/**
+ * Configuration information that controls defaults for routers instantiated from the template
+ */
+export interface IRouterTemplateConfig {
+    canBePathRouter?: boolean;
+    isPathRouter?: boolean;
+    shouldInverselyActivate?: boolean;
+    disableCaching?: boolean;
+}
+/**
+ * -------------------------------------------------
+ * Router template utilities
+ * -------------------------------------------------
+ */
 
 type ExtractCustomStateFromTemplate<T extends IRouterTemplate> = T extends IRouterTemplate<infer S>
     ? S
@@ -238,14 +294,6 @@ export interface IRouterInitArgs<
     actions: string[]; // the router actions derived from the template. Usually 'show' and 'hide'
 }
 
-// export type InstanceChildRouters<Routers extends RouterInstance[] = RouterInstance[]> = Record<
-//     string,
-//     Routers
-// >;
-// export interface IChildRouters {
-//     [key: string]: RouterInstance[];
-// }
-
 export type Observer<CustomState extends {} = {}> = (
     state: IRouterCurrentAndHistoricalState<CustomState>
 ) => unknown;
@@ -295,12 +343,6 @@ export type ActionWraperFnDecorator = <
     fn: Fn
 ) => Fn;
 
-export interface IRouterTemplates<
-    CustomState extends {} = {},
-    ActionNames extends string = string
-> {
-    [templateName: string]: IRouterTemplate<CustomState, ActionNames>;
-}
 export interface IManagerInit<CustomTemplates = {}, DefaultTemplates = {}> {
     routerTree?: IRouterDeclaration;
     serializedStateStore?: NativeSerializedStore | BrowserSerializedStore;
