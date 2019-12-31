@@ -2,6 +2,7 @@ import RouterBase from '../router/base';
 import Manager from '../manager';
 import {NativeSerializedStore, BrowserSerializedStore} from '../serializedState';
 import DefaultRoutersStateStore from '../routerState';
+import template from '../router/template';
 
 export type Constructable<T = {}> = new (...args: any[]) => T; // eslint-disable-line
 
@@ -75,22 +76,78 @@ export type Reducer<CurrentState> = {
 
 type a = Actions<'hello' | 'goodbye'>;
 
+// Parent is an intersection of all router types
+// Root is the root router type
+// Children are an array of [routerType]: RouterInstanceType
+
+type OneOf<T> = {[K in keyof T]: Pick<T, K>}[keyof T];
+
+// export type Parent<T extends IRouterTemplate> = {
+//     [RouterType in keyof T]:      RouterInstance<
+//     Extract<RouterType, 'string'>,
+//     Childs<T>,
+//     Extract<T[RouterType]['actions'], 'string'>
+// >
+
+//     Pick<T, K>
+// }[keyof T];
+
+export type Parent<T extends IRouterTemplates> = {
+    [RouterType in keyof T]: RouterInstance<
+        Extract<RouterType, 'string'>,
+        Childs<T>,
+        Extract<T[RouterType]['actions'], 'string'>
+    >;
+}[keyof T];
+
+type b = Root<typeof template>;
+
+export type Root<T extends IRouterTemplates> = RouterInstance<
+    'root',
+    Childs<T>,
+    Extract<T['root']['actions'], 'string'>,
+    null,
+    null
+>;
+
+type ActionNames<
+    Actions extends {},
+    ActionNames extends string | number | symbol = keyof Actions
+> = ActionNames extends string ? ActionNames : never;
+
+export type Childs<T extends IRouterTemplates> = {
+    [RouterType in Exclude<keyof T, 'root'>]: Array<
+        RouterInstance<
+            Extract<RouterType, 'string'>,
+            Childs<T>,
+            Extract<T[RouterType]['actions'], 'string'>,
+            Parent<T>,
+            Root<T>
+        >
+    >;
+    //  Array<T[routerType]['actions']> | undefined;
+};
+
+type z = Childs<typeof template>;
+
 export type RouterInstance<
-    ActionNames extends string = string,
-    ParentRouter extends RouterInstance | null = null,
-    RootRouter extends RouterInstance | null = null,
-    RouterType extends string = string,
+    RouterType extends string,
+    RouterChildern extends InstanceChildRouters | unknown,
+    CustonActionNames extends string | null = null,
+    ParentRouter extends RouterInstance<string, unknown> | null = null,
+    RootRouter extends RouterInstance<string, unknown> | null = null,
     CustomState extends {} = {},
     CustomRouterBase extends RouterBase<
         ParentRouter,
         RootRouter,
         RouterType,
-        CustomState
-    > = RouterBase<ParentRouter, RootRouter, RouterType, CustomState>,
-    RActions extends Actions<ActionNames> = Actions<ActionNames>
+        CustomState,
+        RouterChildern
+    > = RouterBase<ParentRouter, RootRouter, RouterType, CustomState, RouterChildern>,
+    RActions extends Actions<CustonActionNames> = Actions<CustonActionNames>
 > = RActions & Reducer<RouterCurrentState<CustomState>> & CustomRouterBase;
 
-type v = RouterInstance;
+type v = RouterInstance<'hello' | 'person'>;
 
 export type RouterClass<
     ActionNames extends string = string,
@@ -298,8 +355,11 @@ export type ActionWraperFnDecorator = <
     fn: Fn
 ) => Fn;
 
-export interface IRouterTemplates<RouterCurrentState extends {}> {
-    [templateName: string]: IRouterTemplate<RouterCurrentState>;
+export interface IRouterTemplates<
+    CustomState extends {} = {},
+    ActionNames extends string = string
+> {
+    [templateName: string]: IRouterTemplate<CustomState, ActionNames>;
 }
 export interface IManagerInit<CustomTemplates = {}, DefaultTemplates = {}> {
     routerTree?: IRouterDeclaration;
