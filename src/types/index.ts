@@ -100,27 +100,35 @@ export type Parent<T extends IRouterTemplates> = {
     >;
 }[keyof T];
 
-type b = Root<typeof template>;
+type parentTest = Parent<typeof template>;
 
-export type Root<T extends IRouterTemplates> = RouterInstance<
-    'root',
+export type Root<T extends IRouterTemplates, NameOfRoot extends string = 'root'> = RouterInstance<
+    NameOfRoot,
     Childs<T>,
-    Extract<T['root']['actions'], 'string'>,
+    ActionNames<T[NameOfRoot]['actions']>,
     null,
     null
 >;
+
+type rootTest = Root<typeof template>;
+
+type RouterTypeName<Names extends string | number | symbol> = Names extends string ? Names : never;
+
+type routerTypeName = RouterTypeName<keyof typeof template>;
 
 type ActionNames<
     Actions extends {},
     ActionNames extends string | number | symbol = keyof Actions
 > = ActionNames extends string ? ActionNames : never;
 
+type actionNamesTest = ActionNames<typeof template.root['actions']>;
+
 export type Childs<T extends IRouterTemplates> = {
     [RouterType in Exclude<keyof T, 'root'>]: Array<
         RouterInstance<
-            Extract<RouterType, 'string'>,
+            RouterTypeName<RouterType>,
             Childs<T>,
-            Extract<T[RouterType]['actions'], 'string'>,
+            ActionNames<T[RouterType]['actions']>,
             Parent<T>,
             Root<T>
         >
@@ -128,7 +136,7 @@ export type Childs<T extends IRouterTemplates> = {
     //  Array<T[routerType]['actions']> | undefined;
 };
 
-type z = Childs<typeof template>;
+type childsTest = Childs<typeof template>;
 
 export type RouterInstance<
     RouterType extends string,
