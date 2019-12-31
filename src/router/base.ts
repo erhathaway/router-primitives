@@ -105,7 +105,7 @@ export default class RouterBase<
         return this.config.routeKey;
     }
 
-    get siblings(): RouterInstance {
+    get siblings(): RouterInstance[] {
         return this.parent.routers[this.type].filter(r => r.name !== this.name);
     }
 
