@@ -77,28 +77,46 @@ type a = Actions<'hello' | 'goodbye'>;
 
 export type RouterInstance<
     ActionNames extends string = string,
+    ParentRouter extends RouterInstance | null = null,
+    RootRouter extends RouterInstance | null = null,
+    RouterType extends string = string,
     CustomState extends {} = {},
-    CustomRouterBase extends RouterBase = RouterBase,
+    CustomRouterBase extends RouterBase<
+        ParentRouter,
+        RootRouter,
+        RouterType,
+        CustomState
+    > = RouterBase<ParentRouter, RootRouter, RouterType, CustomState>,
     RActions extends Actions<ActionNames> = Actions<ActionNames>
 > = RActions & Reducer<RouterCurrentState<CustomState>> & CustomRouterBase;
 
+type v = RouterInstance;
+
 export type RouterClass<
     ActionNames extends string = string,
+    ParentRouter extends RouterInstance | null = null,
+    RootRouter extends RouterInstance | null = null,
+    RouterType extends string = string,
     CustomState extends {} = {},
-    CustomRouterBasea extends RouterBase = RouterBase,
+    CustomRouterBase extends RouterBase<
+        ParentRouter,
+        RootRouter,
+        RouterType,
+        CustomState
+    > = RouterBase<ParentRouter, RootRouter, RouterType, CustomState>,
     RActions extends Actions<ActionNames> = Actions<ActionNames>
 > = {
-    new (...args: ConstructorParameters<typeof RouterBase & CustomRouterBasea>): RouterInstance<
+    new (...args: ConstructorParameters<typeof RouterBase & CustomRouterBase>): RouterInstance<
         ActionNames,
         CustomState,
-        CustomRouterBasea,
+        CustomRouterBase,
         RActions
     >;
 };
 
-class Hello extends RouterBase {}
+class Hello extends RouterBase<null, null, string> {}
 
-type f = InstanceType<RouterClass<'hello' | 'goodbye', {}, Hello>>;
+type f = InstanceType<RouterClass<'hello' | 'goodbye', null, null, 'scene', {}, Hello>>;
 
 // type GetConstructorArgs<T> = T extends new (...args: infer U) => any ? U : never
 
@@ -205,26 +223,31 @@ export interface ISerializeOptions {
  * Arguments passed into a router constructor (by a manager) to initialize a router
  */
 export interface IRouterInitArgs<
-    CustomState extends {} = {},
+    CustomState extends {},
     RouterType,
     ParentRouter extends RouterInstance,
-    RootRouter extends RouterInstance
+    RootRouter extends RouterInstance,
+    ChildRouters extends InstanceChildRouters = InstanceChildRouters
 > {
     name: string;
     type: RouterType;
     manager: Manager;
     config: IRouterConfig;
     parent?: ParentRouter;
-    routers: IChildRouters;
+    routers: ChildRouters;
     root?: RootRouter;
     getState?: () => IRouterCurrentAndHistoricalState<CustomState>;
     subscribe?: (observer: Observer<CustomState>) => void;
     actions: string[]; // the router actions derived from the template. Usually 'show' and 'hide'
 }
 
-export interface IChildRouters {
-    [key: string]: IRouter[];
-}
+export type InstanceChildRouters<Routers extends RouterInstance[] = RouterInstance[]> = Record<
+    string,
+    Routers
+>;
+// export interface IChildRouters {
+//     [key: string]: RouterInstance[];
+// }
 
 export type Observer<CustomState extends {} = {}> = (
     state: IRouterCurrentAndHistoricalState<CustomState>

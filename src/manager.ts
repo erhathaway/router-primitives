@@ -20,7 +20,8 @@ import {
     IRouterTemplates,
     IRouterCurrentState,
     Constructable,
-    RouterInstance
+    RouterInstance,
+    RouterCurrentState
 } from './types';
 
 import DefaultRouter from './router/base';
@@ -77,25 +78,28 @@ const createRouterFromTemplate = <
 };
 
 export default class Manager<
-    RouterCurrentState extends IRouterCurrentState = IRouterCurrentState,
-    CustomTemplates extends IRouterTemplates<RouterCurrentState> = {},
-    DefaultTemplates extends IRouterTemplates<RouterCurrentState> = typeof routerTemplates,
+    CustomState extends {} = {},
+    CustomTemplates extends IRouterTemplates<RouterCurrentState<CustomState>> = {},
+    DefaultTemplates extends IRouterTemplates<
+        RouterCurrentState<CustomState>
+    > = typeof routerTemplates,
     RouterTypeNames extends keyof CustomTemplates & DefaultTemplates = keyof CustomTemplates &
         DefaultTemplates,
     Actions extends Record<string, RouterAction> = {
         [actionName in keyof (CustomTemplates &
             DefaultTemplates)[RouterTypeNames]['actions']]: (CustomTemplates &
             DefaultTemplates)[RouterTypeNames]['actions'][actionName];
-    }
+    },
+    ActionNames extends string = Extract<keyof Actions, 'string'>
 > {
     public actionFnDecorator?: ActionWraperFnDecorator;
     public tracerSession: TracerSession;
-    public _routers: Record<string, InstanceType<RouterClass<Actions, RouterCurrentState>>> = {};
-    public rootRouter: RouterClass<Actions, RouterCurrentState> = undefined;
+    public _routers: Record<string, RouterInstance<ActionNames, RouterCurrentState>> = {};
+    public rootRouter: RouterClass<ActionNames, RouterCurrentState> = undefined;
     public serializedStateStore: IManagerInit['serializedStateStore'];
     public routerStateStore: IManagerInit['routerStateStore'];
     public routerTypes: {
-        [routerTypeName in RouterTypeNames]: RouterClass<Actions, RouterCurrentState>;
+        [routerTypeName in RouterTypeNames]: RouterClass<ActionNames, RouterCurrentState>;
     };
     public templates: CustomTemplates & DefaultTemplates;
 
@@ -117,7 +121,7 @@ export default class Manager<
     public setChildrenDefaults = (
         options: IRouterActionOptions,
         location: IInputLocation,
-        router: InstanceType<RouterClass<Actions, RouterCurrentState>>,
+        router: RouterInstance<ActionNames, RouterCurrentState>,
         ctx: ILocationActionContext
     ): IInputLocation => {
         const tracerSession = router.manager.tracerSession;

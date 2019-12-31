@@ -1,42 +1,45 @@
 import Cache from './cache';
 import {
-    IRouter,
-    IRouterCurrentState,
-    RouterHistoryState,
     IRouterDeclaration,
     ISerializeOptions,
-    IRouterInitArgs
-    // RouterAction,
-    // RouterReducer
+    IRouterInitArgs,
+    RouterInstance,
+    InstanceChildRouters,
+    RouterCurrentState,
+    RouterHistoricalState
 } from '../types';
-
-// interface IRouterBase {
-//     [method: string]: any;
-// }
 
 export interface IInternalState {
     [field: string]: any;
 }
-// export type InternalStateUpdateFn = (
-//     existingInternalState: IInternalState
-// ) => {
-//     [field: string]: any;
-// };
 
-export default class RouterBase {
-    public name: IRouterInitArgs['name'];
-    public type: IRouterInitArgs['type'];
-    public manager: IRouterInitArgs['manager'];
-    public parent: IRouterInitArgs['parent'];
-    public routers: IRouterInitArgs['routers'];
-    public root: IRouterInitArgs['root'];
-    public getState: IRouterInitArgs['getState'];
-    public subscribe: IRouterInitArgs['subscribe'];
-    public config: IRouterInitArgs['config'];
+export default class RouterBase<
+    ParentRouter extends RouterInstance | null,
+    RootRouter extends RouterInstance | null,
+    RouterType,
+    CustomState extends {} = {},
+    ChildRouters extends InstanceChildRouters = InstanceChildRouters,
+    InitArgs extends IRouterInitArgs<
+        CustomState,
+        RouterType,
+        ParentRouter,
+        RootRouter,
+        ChildRouters
+    > = IRouterInitArgs<CustomState, RouterType, ParentRouter, RootRouter, ChildRouters>
+> {
+    public name: InitArgs['name'];
+    public type: InitArgs['type'];
+    public manager: InitArgs['manager'];
+    public parent: InitArgs['parent'];
+    public routers: InitArgs['routers'];
+    public root: InitArgs['root'];
+    public getState: InitArgs['getState'];
+    public subscribe: InitArgs['subscribe'];
+    public config: InitArgs['config'];
     public cache: Cache;
     public _EXPERIMENTAL_internal_state: IInternalState; // tslint:disable-line
 
-    constructor(init: IRouterInitArgs) {
+    constructor(init: InitArgs) {
         const {
             name,
             config,
@@ -98,11 +101,11 @@ export default class RouterBase {
         }
     }
 
-    get routeKey() {
+    get routeKey(): string {
         return this.config.routeKey;
     }
 
-    get siblings() {
+    get siblings(): RouterInstance {
         return this.parent.routers[this.type].filter(r => r.name !== this.name);
     }
 
@@ -137,7 +140,7 @@ export default class RouterBase {
         return 1 + this.parent.pathLocation;
     }
 
-    get isRootRouter() {
+    get isRootRouter(): boolean {
         return !this.parent;
     }
 
@@ -200,7 +203,7 @@ export default class RouterBase {
         return serialized;
     }
 
-    get isPathRouter() {
+    get isPathRouter(): boolean {
         // If there is no parent, we are at the root.
         // The root is by default a path router since
         // it represents the '/' in a pathname location
@@ -225,11 +228,11 @@ export default class RouterBase {
         return false;
     }
 
-    get state(): IRouterCurrentState {
+    get state(): RouterCurrentState<CustomState> {
         return this._state();
     }
 
-    protected _state = (): IRouterCurrentState => {
+    protected _state = (): RouterCurrentState<CustomState> => {
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');
         }
@@ -238,11 +241,11 @@ export default class RouterBase {
         return {...newState, ...this.EXPERIMENTAL_internal_state};
     };
 
-    public get history(): RouterHistoryState {
+    public get history(): RouterHistoricalState<CustomState> {
         return this._history();
     }
 
-    protected _history = (): RouterHistoryState => {
+    protected _history = (): RouterHistoricalState<CustomState> => {
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');
         }
