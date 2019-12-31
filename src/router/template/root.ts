@@ -2,17 +2,17 @@
  * The root router has no state and by default is always visible
  *
  */
-import {RouterAction, RouterReducer, IRouterCurrentState, IRouterTemplate} from '../../types';
+import {RouterActionFn, RouterReducerFn, IRouterTemplate} from '../../types';
 
-const show: RouterAction = (_options, location, _router, _ctx) => {
+const show: RouterActionFn = (_options, location, _router, _ctx) => {
     return location;
 };
 
-const hide: RouterAction = (_options, location, _router, _ctx) => {
+const hide: RouterActionFn = (_options, location, _router, _ctx) => {
     return {search: {}, pathname: [], options: location.options};
 };
 
-const reducer: RouterReducer = (location, _router, _ctx) => {
+const reducer: RouterReducerFn = (location, _router, _ctx) => {
     const hasSearchRouters = Object.keys(location.search).length > 0;
     const hasPathRouters = location.pathname.length > 0;
 

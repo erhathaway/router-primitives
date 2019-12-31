@@ -1,7 +1,16 @@
-import {IRouter, RouterAction, RouterReducer, IInputLocation, IRouterTemplate} from '../../types';
+import {
+    RouterActionFn,
+    RouterReducerFn,
+    IRouterTemplate,
+    RouterInstance,
+    IInputLocation
+} from '../../types';
 
 // returns the routeKey names of visible routers based on the ordering of their 'order' state
-function getRouteKeyOrderings(router: IRouter, location: IInputLocation) {
+function getRouteKeyOrderings<Router extends RouterInstance>(
+    router: Router,
+    location: IInputLocation
+): string[] {
     // creates an object of { [visible router routeKey]: order }
     const routeKeyOrderObj = router.parent.routers[router.type].reduce(
         (acc, r) => {
@@ -42,7 +51,7 @@ function getRouteKeyOrderings(router: IRouter, location: IInputLocation) {
     return sortedKeys;
 }
 
-const show: RouterAction = (options, location, router, ctx) => {
+const show: RouterActionFn = (_options, location, router, _ctx) => {
     if (!router.parent) {
         return location;
     }
@@ -72,7 +81,7 @@ const show: RouterAction = (options, location, router, ctx) => {
     return location;
 };
 
-const hide: RouterAction = (options, location, router, ctx) => {
+const hide: RouterActionFn = (_options, location, router, _ctx) => {
     if (!router.parent) {
         return location;
     }
@@ -104,7 +113,7 @@ const hide: RouterAction = (options, location, router, ctx) => {
     return newLocation;
 };
 
-const forward: RouterAction = (options, location, router, ctx) => {
+const forward: RouterActionFn = (_options, location, router, _ctx) => {
     if (!router.parent) {
         return location;
     }
@@ -136,7 +145,7 @@ const forward: RouterAction = (options, location, router, ctx) => {
     return location;
 };
 
-const backward: RouterAction = (options, location, router, ctx) => {
+const backward: RouterActionFn = (_options, location, router, _ctx) => {
     if (!router.parent) {
         return location;
     }
@@ -168,11 +177,11 @@ const backward: RouterAction = (options, location, router, ctx) => {
     return location;
 };
 
-const toFront: RouterAction = (options, location, router, ctx) => {
+const toFront: RouterActionFn = (options, location, router, ctx) => {
     return router.show(options, location, router, ctx);
 };
 
-const toBack: RouterAction = (options, location, router, ctx) => {
+const toBack: RouterActionFn = (_options, location, router, _ctx) => {
     if (!router.parent) {
         return location;
     }
@@ -203,8 +212,8 @@ const toBack: RouterAction = (options, location, router, ctx) => {
     return location;
 };
 
-const reducer: RouterReducer = (location, router, ctx) => {
-    const newState = {};
+const reducer: RouterReducerFn = (location, router, _ctx) => {
+    // const newState = {};
 
     const value = location.search[router.routeKey];
 
@@ -228,7 +237,7 @@ const reducer: RouterReducer = (location, router, ctx) => {
     // return newState;
 };
 
-const template: IRouterTemplate = {
+const template: IRouterTemplate<{}, 'forward' | 'backward' | 'toFront' | 'toBack'> = {
     actions: {show, hide, forward, backward, toFront, toBack},
     reducer,
     config: {canBePathRouter: false}

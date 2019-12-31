@@ -1,25 +1,25 @@
-import {RouterAction, RouterReducer, IRouterCurrentState, IRouterTemplate} from '../../types';
+import {RouterActionFn, RouterReducerFn, RouterCurrentState, IRouterTemplate} from '../../types';
 
 /**
  * A feature router does not interact with its sibling routers. It lives harmony with them
  *   making no judgements about their state.
  */
-const show: RouterAction = (_options, oldLocation, router, _ctx) => {
+const show: RouterActionFn = (_options, oldLocation, router, _ctx) => {
     const location = {...oldLocation};
     location.search[router.routeKey] = true;
 
     return location;
 };
 
-const hide: RouterAction = (options, oldLocation, router, _ctx) => {
+const hide: RouterActionFn = (options, oldLocation, router, _ctx) => {
     const location = {...oldLocation};
     location.search[router.routeKey] = undefined;
 
     return location;
 };
 
-const reducer: RouterReducer = (location, router, _ctx) => {
-    const newState: IRouterCurrentState = {};
+const reducer: RouterReducerFn = (location, router, _ctx) => {
+    const newState: RouterCurrentState = {};
     newState['visible'] = location.search[router.routeKey] === 'true';
 
     return newState;

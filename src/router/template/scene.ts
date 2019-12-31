@@ -1,4 +1,4 @@
-import {RouterAction, RouterReducer, IRouterCurrentState, IRouterTemplate} from '../../types';
+import {RouterActionFn, RouterReducerFn, RouterCurrentState, IRouterTemplate} from '../../types';
 
 /**
  * A scene router will hide all its sibling routers when it is being shown
@@ -7,7 +7,7 @@ import {RouterAction, RouterReducer, IRouterCurrentState, IRouterTemplate} from 
  *    2. Checking whether the scene router is a pathRouter or not
  *    3. Adding the scene router to either the path or query params
  */
-const show: RouterAction = (options, oldLocation, router, ctx) => {
+const show: RouterActionFn = (options, oldLocation, router, ctx) => {
     let location = {...oldLocation};
     // Each sibling router needs to be hidden. The location is modified to reflect hiding all siblings
     location = router.siblings.reduce((acc, s) => {
@@ -41,7 +41,7 @@ const show: RouterAction = (options, oldLocation, router, ctx) => {
     return location;
 };
 
-const hide: RouterAction = (_options, oldLocation, router, _ctx) => {
+const hide: RouterActionFn = (_options, oldLocation, router, _ctx) => {
     const location = {...oldLocation};
 
     if (router.isPathRouter) {
@@ -53,8 +53,8 @@ const hide: RouterAction = (_options, oldLocation, router, _ctx) => {
     return location;
 };
 
-const reducer: RouterReducer = (location, router, _ctx) => {
-    const newState: IRouterCurrentState = {};
+const reducer: RouterReducerFn = (location, router, _ctx) => {
+    const newState: RouterCurrentState = {};
     if (router.isPathRouter) {
         newState['visible'] = location.pathname[router.pathLocation] === router.routeKey;
     } else {
