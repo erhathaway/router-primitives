@@ -7,31 +7,27 @@ import {
     ExtractCustomStateFromTemplate,
     RouterCurrentState,
     RouterHistoricalState,
-    IRouterTemplates,
-    CacheClass
+    IRouterTemplates
 } from '../types';
-import {Manager} from '..';
 
 export interface IInternalState {
-    [field: string]: any;
+    [field: string]: {isActive: boolean};
 }
 
 export default class RouterBase<
     RouterTypeName extends string,
     Templates extends IRouterTemplates,
-    RouterManager extends Manager = Manager,
-    RouterCache extends Cache<RouterTypeName, Templates> = Cache<RouterTypeName, Templates>,
+    // RouterManager extends Manager = Manager,
+    // RouterCache extends Cache<RouterTypeName, Templates> = Cache<RouterTypeName, Templates>,
     // RouterCacheClass extends CacheClass<
     //     RouterTypeName,
     //     Templates,
     //     Cache<RouterTypeName, Templates>
     // > = CacheClass<RouterTypeName, Templates, Cache<RouterTypeName, Templates>>,
-    InitArgs extends IRouterInitArgs<
+    InitArgs extends IRouterInitArgs<RouterTypeName, Templates> = IRouterInitArgs<
         RouterTypeName,
-        Templates,
-        RouterManager,
-        RouterCache
-    > = IRouterInitArgs<RouterTypeName, Templates, RouterManager, RouterCache>
+        Templates
+    >
 > {
     public name: InitArgs['name'];
     public type: InitArgs['type'];
@@ -42,7 +38,7 @@ export default class RouterBase<
     public getState: InitArgs['getState'];
     public subscribe: InitArgs['subscribe'];
     public config: InitArgs['config'];
-    public cache: InstanceType<InitArgs['cache']>;
+    public cache: Cache<RouterTypeName, Templates>;
     public _EXPERIMENTAL_internal_state: IInternalState; // tslint:disable-line
 
     constructor(init: InitArgs) {
@@ -81,7 +77,7 @@ export default class RouterBase<
 
         // store the routers location data for rehydration
         const CacheClass = CustomCacheClass || Cache;
-        this.cache = new (CacheClass || Cache)();
+        this.cache = new CacheClass();
 
         this._EXPERIMENTAL_internal_state = {};
 
