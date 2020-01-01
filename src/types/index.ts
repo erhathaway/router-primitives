@@ -367,7 +367,7 @@ export interface IRouterInitArgs<
     M extends Manager = Manager
 > {
     name: string;
-    type: RouterTypeName;
+    type: NarrowRouterTypeName<RouterTypeName>;
     manager: M;
     config: IRouterConfig;
     parent?: Parent<Templates, M>;
@@ -418,7 +418,7 @@ export interface IRouterConfig {
     isPathRouter: boolean;
     shouldInverselyActivate: boolean;
     disableCaching?: boolean; // optional b/c the default is to use the parents
-    defaultAction: string[];
+    defaultAction?: string[];
 }
 
 /**

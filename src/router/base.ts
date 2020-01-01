@@ -13,7 +13,7 @@ import {
 import {Manager} from '..';
 
 export interface IInternalState {
-    [field: string]: {isActive: boolean};
+    isActive?: boolean;
 }
 
 export default class RouterBase<
@@ -81,7 +81,9 @@ export default class RouterBase<
         // Since actions come from the template and are decorated by the manager, we need to bind them
         // to the router instance where they live
         (actions || []).forEach(actionName => {
+            // eslint-disable-next-line
             if ((this as any)[actionName]) {
+                // eslint-disable-next-line
                 (this as any)[actionName] = (this as any)[actionName].bind(this);
             }
         });
@@ -105,7 +107,11 @@ export default class RouterBase<
     }
 
     get siblings(): RouterInstance<RouterTypeName, Templates, Manager>[] {
-        return this.parent.routers[this.type].filter(r => r.name !== this.name);
+        // TODO fix this any
+        // eslint-disable-next-line
+        return (this.parent.routers as Record<string, any[]>)[this.type].filter(
+            r => r.name !== this.name
+        );
     }
 
     /**
@@ -115,7 +121,9 @@ export default class RouterBase<
         type: DesiredType
     ): Array<RouterInstance<DesiredType, Templates, Manager>> {
         if (this.parent && this.parent.routers) {
-            return this.parent.routers[type] || [];
+            // TODO fix this any
+            // eslint-disable-next-line
+            return (this.parent.routers as Record<string, any[]>)[type] || [];
         }
         return [];
     }
@@ -152,11 +160,14 @@ export default class RouterBase<
     //     this._EXPERIMENTAL_internal_state = internalState; // stateUpdateFn({...this._EXPERIMENTAL_internal_state});
     // }
 
-    public EXPERIMENTAL_setInternalState(internalState: IInternalState) {
-        this._EXPERIMENTAL_internal_state = {...internalState};
+    // eslint-disable-next-line
+    public EXPERIMENTAL_setInternalState(internalState: IInternalState): void {
+        this._EXPERIMENTAL_internal_state = {...internalState}; // eslint-disable-line
     }
 
+    // eslint-disable-next-line
     public get EXPERIMENTAL_internal_state(): IInternalState {
+        // eslint-disable-next-line
         return this._EXPERIMENTAL_internal_state;
     }
 
@@ -167,9 +178,14 @@ export default class RouterBase<
      *
      * Returns a router serialization object tree
      */
-    public serialize(options: ISerializeOptions = {}) {
+    public serialize(
+        options: ISerializeOptions = {}
+        // eslint-disable-next-line
+    ): IRouterDeclaration<RouterTypeName> & {[key: string]: any} {
         // create router declaration object
-        const serialized: IRouterDeclaration & {[key: string]: any} = {
+        // TODO clean up this mess
+        // eslint-disable-next-line
+        const serialized: IRouterDeclaration<RouterTypeName> & {[key: string]: any} = {
             name: this.name,
             routeKey: options.alwaysShowRouteKey
                 ? this.routeKey
@@ -190,10 +206,13 @@ export default class RouterBase<
         const childRouterTypes = Object.keys(this.routers);
         const childRouters = childRouterTypes.reduce(
             (acc, type) => {
-                acc[type] = this.routers[type].map(childRouter => childRouter.serialize(options));
+                // eslint-disable-next-line
+                (acc as any)[type] = this.routers[type].map(childRouter =>
+                    childRouter.serialize(options)
+                );
                 return acc;
             },
-            {} as {[routerType: string]: IRouterDeclaration[]}
+            {} as {[routerType: string]: IRouterDeclaration<RouterTypeName>[]}
         );
 
         if (childRouterTypes.length > 0) {
@@ -238,13 +257,15 @@ export default class RouterBase<
 
     protected _state = (): RouterCurrentState<
         ExtractCustomStateFromTemplate<Templates[RouterTypeName]>
-    > => {
+    > & {isActive?: boolean} => {
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');
         }
         const {current} = this.getState();
         const newState = current || {};
-        return {...newState, ...this.EXPERIMENTAL_internal_state};
+        return {...newState, ...this.EXPERIMENTAL_internal_state} as RouterCurrentState<
+            ExtractCustomStateFromTemplate<Templates[RouterTypeName]>
+        > & {isActive?: boolean};
     };
 
     public get history(): RouterHistoricalState<
@@ -263,3 +284,16 @@ export default class RouterBase<
         return historical || [];
     };
 }
+
+// const managerTest = new Manager();
+// const baseTest = new RouterBase<'scene', typeof template>({
+//     name: 'test',
+//     type: 'scene',
+//     manager: managerTest,
+//     config: {routeKey: 'test', isPathRouter: true, shouldInverselyActivate: true}
+// } as any); // eslint-disable-line
+
+// baseTest.routers['stack'];
+// baseTest.parent.routers['stack'];
+// baseTest.root.routers['stack'];
+// baseTest.getNeighborsByType('stack');
