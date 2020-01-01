@@ -7,8 +7,10 @@ import {
     ExtractCustomStateFromTemplate,
     RouterCurrentState,
     RouterHistoricalState,
-    IRouterTemplates
+    IRouterTemplates,
+    NeighborsOfType
 } from '../types';
+import {Manager} from '..';
 
 export interface IInternalState {
     [field: string]: {isActive: boolean};
@@ -17,13 +19,6 @@ export interface IInternalState {
 export default class RouterBase<
     RouterTypeName extends string,
     Templates extends IRouterTemplates,
-    // RouterManager extends Manager = Manager,
-    // RouterCache extends Cache<RouterTypeName, Templates> = Cache<RouterTypeName, Templates>,
-    // RouterCacheClass extends CacheClass<
-    //     RouterTypeName,
-    //     Templates,
-    //     Cache<RouterTypeName, Templates>
-    // > = CacheClass<RouterTypeName, Templates, Cache<RouterTypeName, Templates>>,
     InitArgs extends IRouterInitArgs<RouterTypeName, Templates> = IRouterInitArgs<
         RouterTypeName,
         Templates
@@ -32,14 +27,14 @@ export default class RouterBase<
     public name: InitArgs['name'];
     public type: InitArgs['type'];
     public manager: InitArgs['manager'];
-    public parent: InitArgs['parent'];
+    public parent?: InitArgs['parent'];
     public routers: InitArgs['routers'];
     public root: InitArgs['root'];
-    public getState: InitArgs['getState'];
-    public subscribe: InitArgs['subscribe'];
+    public getState?: InitArgs['getState'];
+    public subscribe?: InitArgs['subscribe'];
     public config: InitArgs['config'];
     public cache: Cache<RouterTypeName, Templates>;
-    public _EXPERIMENTAL_internal_state: IInternalState; // tslint:disable-line
+    public _EXPERIMENTAL_internal_state: IInternalState; // eslint-disable-line
 
     constructor(init: InitArgs) {
         const {
@@ -57,8 +52,8 @@ export default class RouterBase<
         } = init;
 
         // required
-        if (!name || !type || !manager) {
-            throw new Error('Missing required kwargs: name, type, and/or manager');
+        if (!name || !type || !manager || !config) {
+            throw new Error('Missing required kwargs: name, type, config, and/or manager');
         }
 
         this.name = name;
@@ -79,14 +74,14 @@ export default class RouterBase<
         const CacheClass = CustomCacheClass || Cache;
         this.cache = new CacheClass();
 
-        this._EXPERIMENTAL_internal_state = {};
+        this._EXPERIMENTAL_internal_state = {}; // eslint-disable-line
 
         // TODO fix test so empty array isn't needed
         // TODO add tests for this
         // Since actions come from the template and are decorated by the manager, we need to bind them
         // to the router instance where they live
         (actions || []).forEach(actionName => {
-            if (((this as unknwon) as RouterInstance<RouterTypeName, Templates>)[actionName]) {
+            if ((this as any)[actionName]) {
                 (this as any)[actionName] = (this as any)[actionName].bind(this);
             }
         });
@@ -109,13 +104,16 @@ export default class RouterBase<
         return this.config.routeKey;
     }
 
-    get siblings(): RouterInstance<RouterTypeName, Templates>[] {
+    get siblings(): RouterInstance<RouterTypeName, Templates, Manager>[] {
         return this.parent.routers[this.type].filter(r => r.name !== this.name);
     }
 
+    /**
+     * Returns all neighbors of a certain router type. This could include the same router type of this router if desired.
+     */
     public getNeighborsByType<DesiredType extends string>(
         type: DesiredType
-    ): InitArgs['routers'][DesiredType] {
+    ): Array<RouterInstance<DesiredType, Templates, Manager>> {
         if (this.parent && this.parent.routers) {
             return this.parent.routers[type] || [];
         }
@@ -125,19 +123,14 @@ export default class RouterBase<
     /**
      * Returns all neighboring routers. That is, all routers that have the same parent but are not of this router type.
      */
-    public getNeighbors():
-        | Exclude<RouterInstance<RouterTypeName, Templates>['routers'], RouterTypeName>
-        | [] {
+    public getNeighbors(): NeighborsOfType<RouterTypeName, Templates, Manager> {
         if (!this.parent) {
             return [];
         }
 
-        const flattened = (acc: IRouter[], arr: IRouter[]) => acc.concat(...arr);
-        // console.log(
-        //     Object.keys(this.parent.routers)
-        //         .filter(t => t !== this.type)
-        //         .map(t => this.parent.routers[t])
-        // );
+        // eslint-disable-next-line
+        const flattened = (acc: any[], arr: any[]): any[] => acc.concat(...arr);
+
         return Object.keys(this.parent.routers)
             .filter(t => t !== this.type)
             .map(t => this.parent.routers[t])

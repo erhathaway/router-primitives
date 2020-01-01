@@ -365,7 +365,6 @@ export interface IRouterInitArgs<
     RouterTypeName extends string,
     Templates extends IRouterTemplates,
     M extends Manager = Manager
-    // C extends Cache<RouterTypeName, Templates> = Cache<RouterTypeName, Templates>,
 > {
     name: string;
     type: RouterTypeName;
@@ -448,7 +447,35 @@ export type CacheClass<
     RouterTypeName extends string,
     Templates extends IRouterTemplates,
     RouterCache extends Cache<RouterTypeName, Templates>
-> = {new (...args: ConstructorParameters<typeof Cache>[]): RouterCache};
+> = {new (...args: ConstructorParameters<typeof Cache>): RouterCache};
+
+/**
+ * -------------------------------------------------
+ * Router methods
+ * -------------------------------------------------
+ */
+
+/**
+ * Returns an array of a router instances neighbors. That is, all router instances that are not of this type
+ * in side an array.
+ */
+export type NeighborsOfType<
+    TypeName extends string,
+    T extends IRouterTemplates,
+    M extends Manager = Manager
+> = Array<
+    {
+        [RouterType in Exclude<keyof T, TypeName>]?: Array<
+            RouterInstance<
+                NarrowRouterTypeName<RouterType>,
+                T,
+                M,
+                Cache<NarrowRouterTypeName<RouterType>, T>
+            >
+        >;
+    }[Exclude<keyof T, TypeName>]
+>;
+type neighborsOfTypeTest = NeighborsOfType<'scene', typeof template>;
 
 /**
  * -------------------------------------------------
