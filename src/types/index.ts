@@ -225,7 +225,13 @@ type ExtractCustomActionsFromTemplate<T extends IRouterTemplate> = T extends IRo
 type extractCustomActionsFromTemplateTest = ExtractCustomActionsFromTemplate<iRouterTemplateTest>;
 
 /**
- * Router state types
+ * -------------------------------------------------
+ * Router state
+ * -------------------------------------------------
+ */
+
+/**
+ * The current router state is an intersection of custom state defined in the templates and default state.
  */
 export type RouterCurrentState<CustomState extends {} = {}> = CustomState & {
     visible?: boolean;
@@ -238,6 +244,29 @@ export interface IRouterCurrentAndHistoricalState<CustomState extends {} = {}> {
     current: RouterCurrentState<CustomState>;
     historical: RouterHistoricalState<CustomState>;
 }
+
+
+/**
+ * -------------------------------------------------
+ * Router serialization
+ * -------------------------------------------------
+ */
+
+/**
+ * Options used for configuring how the router tree can be serialized into a JSON object
+ */
+export interface ISerializeOptions {
+    showDefaults?: boolean; // shows default options
+    showType?: boolean; // shows the type even when it can be inferred from the parent type
+    alwaysShowRouteKey?: boolean; // shows the route key even when its not different from the router name
+    showParentName?: boolean;
+}
+
+/**
+ * -------------------------------------------------
+ * Router creation
+ * -------------------------------------------------
+ */
 
 /**
  * Router declaration object
@@ -257,43 +286,27 @@ export interface IRouterDeclaration<RouterType> {
 }
 
 /**
- * Serialization options - for spitting out a json representation of the router tree
- */
-
-export interface ISerializeOptions {
-    showDefaults?: boolean; // shows default options
-    showType?: boolean; // shows the type even when it can be inferred from the parent type
-    alwaysShowRouteKey?: boolean; // shows the route key even when its not different from the router name
-    showParentName?: boolean;
-}
-
-/**
  * Arguments passed into a router constructor (by a manager) to initialize a router
  */
 export interface IRouterInitArgs<
     RouterTypeName extends string,
-    Templates extends IRouterTemplates
-    // CustomState extends {},
-    // RouterType,
-    // ParentRouter extends RouterInstance,
-    // RootRouter extends RouterInstance,
-    // ChildRouters extends InstanceChildRouters = InstanceChildRouters
+    Templates extends IRouterTemplates,
+    M extends Manager = Manager,
+    C extends Cache = Cache,
 > {
     name: string;
     type: RouterTypeName;
-    manager: Manager;
+    manager: M;
     config: IRouterConfig;
-    parent?: ParentRouter;
-    routers: ChildRouters;
-    root?: RootRouter;
-    getState?: () => IRouterCurrentAndHistoricalState<CustomState>;
-    subscribe?: (observer: Observer<CustomState>) => void;
-    actions: string[]; // the router actions derived from the template. Usually 'show' and 'hide'
+    parent?: Parent<Templates>;
+    routers: Childs<Templates>;
+    root?: Root<Templates>;
+    getState?: () => IRouterCurrentAndHistoricalState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>;
+    subscribe?: (observer: Observer<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>) => void;
+    actions: ActionNames<Templates[RouterTypeName]>[]; // the router actions derived from the template. Usually 'show' and 'hide';
+    cache: C
 }
 
-export type Observer<CustomState extends {} = {}> = (
-    state: IRouterCurrentAndHistoricalState<CustomState>
-) => unknown;
 
 /**
  * Passed into the create router fn
@@ -318,8 +331,22 @@ export interface IRouterConfig {
     defaultAction: string[];
 }
 
-export type ActionWraperFn<
-    A extends string = string,
+/**
+ * -------------------------------------------------
+ * Router subscription
+ * -------------------------------------------------
+ */
+
+export type Observer<CustomState extends {} = {}> = (
+    state: IRouterCurrentAndHistoricalState<CustomState>
+) => unknown;
+
+
+/**
+ * -------------------------------------------------
+ * Manager
+ * -------------------------------------------------
+ */
     C extends {} = {},
     B extends RouterBase = RouterBase,
     R extends RouterInstance<A, C, B> = RouterInstance<A, C, B>
