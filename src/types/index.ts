@@ -125,6 +125,7 @@ export type NarrowActionNames<
     ActionNames extends string | number | symbol = keyof Actions
 > = ActionNames extends string ? ActionNames : never;
 type narrowActionNamesTest = NarrowActionNames<typeof template.stack['actions']>;
+type narrowActionNamesTestA = NarrowActionNames<typeof template.scene['actions']>;
 
 /**
  * -------------------------------------------------
@@ -136,8 +137,8 @@ type narrowActionNamesTest = NarrowActionNames<typeof template.stack['actions']>
  * The parent router instance. This router is the immediate parent of the current router.
  * This type is a union of all possible router types found in the templates object.
  */
-export type Parent<T extends IRouterTemplates> = {
-    [RouterType in keyof T]: RouterInstance<NarrowRouterTypeName<RouterType>, T>;
+export type Parent<T extends IRouterTemplates, M extends Manager = Manager> = {
+    [RouterType in keyof T]: RouterInstance<NarrowRouterTypeName<RouterType>, T, M, Cache<NarrowRouterTypeName<RouterType>, T>>;
 }[keyof T];
 type parentTest = Parent<typeof template>;
 
@@ -145,9 +146,14 @@ type parentTest = Parent<typeof template>;
  * The root router instance. This router is at the very top of the router tree.
  * The type should be a specific router instance. Usually it has the name 'root' in the templates object.
  */
-export type Root<T extends IRouterTemplates, NameOfRoot extends string = 'root'> = RouterInstance<
-    NameOfRoot,
-    T
+export type Root<
+T extends IRouterTemplates, 
+M extends Manager = Manager,
+> = RouterInstance<
+    'root',
+    T,
+    M,
+    Cache<'root', T>
 >;
 type rootTest = Root<typeof template>;
 
@@ -155,8 +161,8 @@ type rootTest = Root<typeof template>;
  * Child router instances. These are the children of the current router.
  * This type is an object with the type { [routerType]: Array<RouterInstance for type>}
  */
-export type Childs<T extends IRouterTemplates> = {
-    [RouterType in Exclude<keyof T, 'root'>]?: Array<RouterInstance<NarrowRouterTypeName<RouterType>, T>>;
+export type Childs<T extends IRouterTemplates, M extends Manager = Manager> = {
+    [RouterType in Exclude<keyof T, 'root'>]?: Array<RouterInstance<NarrowRouterTypeName<RouterType>, T, M, Cache<NarrowRouterTypeName<RouterType>, T>>>;
 };
 type childsTest = Childs<typeof template>;
 
@@ -172,10 +178,12 @@ type childsTest = Childs<typeof template>;
   */
 export type RouterInstance<
     RouterTypeName extends string,
-    Templates extends IRouterTemplates
+    Templates extends IRouterTemplates,
+    M extends Manager = Manager,
+    C extends Cache<RouterTypeName, Templates> = Cache<RouterTypeName, Templates>,
 > = Actions<ExtractCustomActionsFromTemplate<Templates[RouterTypeName]>> &
     Reducer<RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>> &
-    RouterBase<RouterTypeName, Templates>;
+    RouterBase<RouterTypeName, Templates, M, C>;
 
 type routerInstanceTest = RouterInstance<'stack', typeof template>;
 type routerInstanceTestA = RouterInstance<'scene', typeof template>;
@@ -184,10 +192,17 @@ type routerInstanceTestA = RouterInstance<'scene', typeof template>;
  * The router class.
  * A router is represented by a router template.
  */
-export type RouterClass<RouterTypeName extends string, Templates extends IRouterTemplates> = {
+export type RouterClass<
+    RouterTypeName extends string, 
+    Templates extends IRouterTemplates,    
+    M extends Manager = Manager,
+    C extends Cache<RouterTypeName, Templates> = Cache<RouterTypeName, Templates>,
+> = {
     new (...args: ConstructorParameters<typeof RouterBase>): RouterInstance<
         RouterTypeName,
-        Templates
+        Templates,
+        M,
+        C
     >;
 };
 
@@ -330,19 +345,19 @@ export interface IRouterInitArgs<
     RouterTypeName extends string,
     Templates extends IRouterTemplates,
     M extends Manager = Manager,
-    C extends typeof Cache = typeof Cache,
+    C extends Cache<RouterTypeName, Templates> = Cache<RouterTypeName, Templates>,
 > {
     name: string;
     type: RouterTypeName;
     manager: M;
     config: IRouterConfig;
-    parent?: Parent<Templates>;
-    routers: Childs<Templates>;
-    root: Root<Templates>;
+    parent?: Parent<Templates, M>;
+    routers: Childs<Templates, M>;
+    root: Root<Templates, M>;
     getState?: () => IRouterCurrentAndHistoricalState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>;
     subscribe?: (observer: Observer<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>) => void;
     actions: (keyof Templates[RouterTypeName]['actions'])[]; // the router actions derived from the template. Usually 'show' and 'hide';
-    cache: C
+    cache: CacheClass<RouterTypeName, Templates, C>
 }
 type iRouterInitArgsTest = IRouterInitArgs<'scene', typeof template>
 type iRouterInitArgsTestType = iRouterInitArgsTest['type']
@@ -351,7 +366,12 @@ type iRouterInitArgsTestRouters = iRouterInitArgsTest['routers']
 type iRouterInitArgsTestRoot = iRouterInitArgsTest['root']
 type iRouterInitArgsTestGetState = iRouterInitArgsTest['getState']
 type iRouterInitArgsTestSubscribe = iRouterInitArgsTest['subscribe']
-type iRouterInitArgsTestActions = iRouterInitArgsTest['actions'] // <----TODO FIX ME
+type iRouterInitArgsTestActions = iRouterInitArgsTest['actions']
+type iRouterInitArgsTestCache = InstanceType<iRouterInitArgsTest['cache']>
+type iRouterInitArgsTestCacheMethodWithRouter = Parameters<iRouterInitArgsTestCache['setWasPreviouslyVisibleToFromLocation']>
+
+type iRouterInitArgsTestA = IRouterInitArgs<'stack', typeof template>
+type iRouterInitArgsTestActionsB = iRouterInitArgsTestA['actions']
 
 
 /**
@@ -359,7 +379,7 @@ type iRouterInitArgsTestActions = iRouterInitArgsTest['actions'] // <----TODO FI
  * This is also the minimal amount of information an instantiated manager needs
  * to create the router init args and initialize a new router.
  */
-export interface IRouterCreationInfo<RouterType> {
+export interface IRouterCreationInfo<RouterType extends string> {
     name: string;
     config: IRouterConfig;
     type: RouterType;
@@ -390,6 +410,17 @@ export type Observer<CustomState extends {} = {}> = (
     state: IRouterCurrentAndHistoricalState<CustomState>
 ) => unknown;
 
+/**
+ * -------------------------------------------------
+ * Router Cache
+ * -------------------------------------------------
+ */
+
+/**
+ * The class type of a cache store instance
+ */
+export type CacheClass<    RouterTypeName extends string,
+Templates extends IRouterTemplates, RouterCache extends Cache<RouterTypeName, Templates>> = { new (...args: ConstructorParameters<typeof Cache>[]): RouterCache; }
 
 /**
  * -------------------------------------------------

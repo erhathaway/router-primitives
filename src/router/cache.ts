@@ -1,32 +1,39 @@
-import {IOutputLocation, IRouter} from '../types';
+import {IOutputLocation, IRouterTemplates, RouterInstance} from '../types';
 
 type CacheValue = boolean | undefined;
 
 /**
- * Used to manipulate the router cache
- * Cache is set when a router 'hides'
+ * A store for a routers previous visibliity state.
+ * The cache is set when a router 'hides'.
  * Depending on the router type logic, a router can use its
- * cache when setting new state instead of a default value
+ * cache when setting new state instead of a default value.
+ * This is how things like rehydration of a routers state when a parent becomes visible occurs.
  */
-class Cache {
+class Cache<RouterTypeName extends string, Templates extends IRouterTemplates> {
     public _cacheStore?: CacheValue;
 
     constructor() {
         this._cacheStore = undefined;
     }
 
-    get wasVisible() {
+    /**
+     * The last time a parent was visible, was this router also visible?
+     */
+    get wasVisible(): boolean {
         return this._cacheStore;
     }
 
-    public removeCache() {
+    /**
+     * Remove the cached visiblity state.
+     */
+    public removeCache(): void {
         this._cacheStore = undefined;
     }
 
     public setWasPreviouslyVisibleToFromLocation(
         location: IOutputLocation,
-        routerInstance: IRouter
-    ) {
+        routerInstance: RouterInstance<RouterTypeName, Templates>
+    ): void {
         // dont set cache if one already exists!
         if (this.wasVisible) {
             return;
@@ -42,7 +49,10 @@ class Cache {
         this.setWasPreviouslyVisibleTo(cache);
     }
 
-    public setWasPreviouslyVisibleTo(value: CacheValue) {
+    /**
+     * Cached visiblity state setter.
+     */
+    public setWasPreviouslyVisibleTo(value: CacheValue): void {
         this._cacheStore = value;
     }
 }

@@ -7,7 +7,8 @@ import {
     ExtractCustomStateFromTemplate,
     RouterCurrentState,
     RouterHistoricalState,
-    IRouterTemplates
+    IRouterTemplates,
+    CacheClass
 } from '../types';
 import {Manager} from '..';
 
@@ -19,7 +20,12 @@ export default class RouterBase<
     RouterTypeName extends string,
     Templates extends IRouterTemplates,
     RouterManager extends Manager = Manager,
-    RouterCache extends typeof Cache = typeof Cache,
+    RouterCache extends Cache<RouterTypeName, Templates> = Cache<RouterTypeName, Templates>,
+    // RouterCacheClass extends CacheClass<
+    //     RouterTypeName,
+    //     Templates,
+    //     Cache<RouterTypeName, Templates>
+    // > = CacheClass<RouterTypeName, Templates, Cache<RouterTypeName, Templates>>,
     InitArgs extends IRouterInitArgs<
         RouterTypeName,
         Templates,
@@ -51,7 +57,7 @@ export default class RouterBase<
             getState,
             subscribe,
             actions,
-            cache: CacheClass
+            cache: CustomCacheClass
         } = init;
 
         // required
@@ -74,6 +80,7 @@ export default class RouterBase<
         this.subscribe = subscribe;
 
         // store the routers location data for rehydration
+        const CacheClass = CustomCacheClass || Cache;
         this.cache = new (CacheClass || Cache)();
 
         this._EXPERIMENTAL_internal_state = {};
@@ -83,7 +90,7 @@ export default class RouterBase<
         // Since actions come from the template and are decorated by the manager, we need to bind them
         // to the router instance where they live
         (actions || []).forEach(actionName => {
-            if ((this as any)[actionName]) {
+            if (((this as unknwon) as RouterInstance<RouterTypeName, Templates>)[actionName]) {
                 (this as any)[actionName] = (this as any)[actionName].bind(this);
             }
         });
@@ -119,17 +126,22 @@ export default class RouterBase<
         return [];
     }
 
-    public getNeighbors(): IRouter[] {
+    /**
+     * Returns all neighboring routers. That is, all routers that have the same parent but are not of this router type.
+     */
+    public getNeighbors():
+        | Exclude<RouterInstance<RouterTypeName, Templates>['routers'], RouterTypeName>
+        | [] {
         if (!this.parent) {
             return [];
         }
 
         const flattened = (acc: IRouter[], arr: IRouter[]) => acc.concat(...arr);
-        console.log(
-            Object.keys(this.parent.routers)
-                .filter(t => t !== this.type)
-                .map(t => this.parent.routers[t])
-        );
+        // console.log(
+        //     Object.keys(this.parent.routers)
+        //         .filter(t => t !== this.type)
+        //         .map(t => this.parent.routers[t])
+        // );
         return Object.keys(this.parent.routers)
             .filter(t => t !== this.type)
             .map(t => this.parent.routers[t])
