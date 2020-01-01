@@ -18,7 +18,7 @@ const show: RouterActionFn = (options, oldLocation, router, _ctx) => {
         return location;
     }
     if (router.isPathRouter) {
-        const {parent} = router;
+        // const {parent} = router;
         location.pathname[router.pathLocation] = data;
         // drop pathname after this pathLocation
         location.pathname = location.pathname.slice(0, router.pathLocation + 1);

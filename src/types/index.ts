@@ -57,27 +57,38 @@ export type IRouterActionOptions = ILocationOptions;
  * -------------------------------------------------
  */
 
-type Intersect<T> = (T extends any ? ((x: T) => 0) : never) extends ((x: infer R) => 0) ? R : never;
+/**
+ * A utility function to intersect unioned actions together
+ */
+// eslint-disable-next-line
+type IntersectUnionedActions<T> = (T extends any ? ((x: T) => 0) : never) extends ((
+    x: infer R
+) => 0)
+    ? R
+    : DefaultRouterActions;
+
+/**
+ * The default actions all routers should have regardless of what template are based off of
+ */
+export type DefaultRouterActions = {show: RouterActionFn; hide: RouterActionFn};
 
 /**
  * A convience object used for defining the shape of a router.
  * This is how action methods are added to the base router class via mixins.
  * For the specific action type see `RouterActionFn`.
  */
-export type Actions<CustomActionNames extends string | null = null> = Intersect<
+export type Actions<CustomActionNames extends string | null = null> = IntersectUnionedActions<
     ActionsWithCustomUnioned<CustomActionNames>
 >;
 export type ActionsWithCustomUnioned<
     CustomActionNames extends string | null = null
 > = CustomActionNames extends null
-    ? {show: RouterActionFn; hide: RouterActionFn}
-    : {[actionName in CustomActionNames]: RouterActionFn} & {
-          show: RouterActionFn;
-          hide: RouterActionFn;
-      };
+    ? DefaultRouterActions
+    : {[actionName in CustomActionNames]: RouterActionFn} & DefaultRouterActions;
 
 type actionsTest = Actions<'hello' | 'goodbye'>;
 type actionsTestA = Actions;
+type actionsTestB = Actions<null>;
 
 /**
  * A convience object used for defining the shape of a router.
@@ -95,7 +106,10 @@ export type Reducer<CurrentState> = {
 export type RouterActionFn = <RouterTypeName extends string, Templates extends IRouterTemplates>(
     options?: IRouterActionOptions,
     location?: IInputLocation,
-    router?: RouterInstance<RouterTypeName, Templates>,
+    // TODO figured out why intersecting with default actions is required here.
+    // In the data template, `show` action isnt present without it, but all router instances
+    // should have it by default
+    router?: RouterInstance<RouterTypeName, Templates> & DefaultRouterActions,
     ctx?: ILocationActionContext
 ) => IInputLocation;
 
@@ -109,7 +123,7 @@ export type RouterReducerFn<CustomState extends {} = {}> = <
 >(
     location: IInputLocation,
     router: RouterInstance<RouterTypeName, Templates>,
-    ctx: {[key: string]: any}
+    ctx: {[key: string]: any} // eslint-disable-line
 ) => RouterCurrentState<CustomState>;
 
 /**
@@ -147,13 +161,8 @@ type narrowActionNamesTestA = NarrowActionNames<typeof template.scene['actions']
  * The parent router instance. This router is the immediate parent of the current router.
  * This type is a union of all possible router types found in the templates object.
  */
-export type Parent<T extends IRouterTemplates, M extends Manager = Manager> = {
-    [RouterType in keyof T]: RouterInstance<
-        NarrowRouterTypeName<RouterType>,
-        T,
-        M,
-        Cache<NarrowRouterTypeName<RouterType>, T>
-    >;
+export type Parent<T extends IRouterTemplates> = {
+    [RouterType in keyof T]: RouterInstance<NarrowRouterTypeName<RouterType>, T>;
 }[keyof T];
 type parentTest = Parent<typeof template>;
 
@@ -161,26 +170,16 @@ type parentTest = Parent<typeof template>;
  * The root router instance. This router is at the very top of the router tree.
  * The type should be a specific router instance. Usually it has the name 'root' in the templates object.
  */
-export type Root<T extends IRouterTemplates, M extends Manager = Manager> = RouterInstance<
-    'root',
-    T,
-    M,
-    Cache<'root', T>
->;
+export type Root<T extends IRouterTemplates> = RouterInstance<'root', T>;
 type rootTest = Root<typeof template>;
 
 /**
  * Child router instances. These are the children of the current router.
  * This type is an object with the type { [routerType]: Array<RouterInstance for type>}
  */
-export type Childs<T extends IRouterTemplates, M extends Manager = Manager> = {
+export type Childs<T extends IRouterTemplates> = {
     [RouterType in Exclude<keyof T, 'root'>]?: Array<
-        RouterInstance<
-            NarrowRouterTypeName<RouterType>,
-            T,
-            M,
-            Cache<NarrowRouterTypeName<RouterType>, T>
-        >
+        RouterInstance<NarrowRouterTypeName<RouterType>, T>
     >;
 };
 type childsTest = Childs<typeof template>;
@@ -197,15 +196,15 @@ type childsTest = Childs<typeof template>;
  */
 export type RouterInstance<
     RouterTypeName extends string,
-    Templates extends IRouterTemplates,
-    M extends Manager = Manager,
-    C extends Cache<RouterTypeName, Templates> = Cache<RouterTypeName, Templates>
+    Templates extends IRouterTemplates
 > = Actions<ExtractCustomActionsFromTemplate<Templates[RouterTypeName]>> &
     Reducer<RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>> &
     RouterBase<RouterTypeName, Templates>;
 
 type routerInstanceTest = RouterInstance<'stack', typeof template>;
 type routerInstanceTestA = RouterInstance<'scene', typeof template>;
+type routerInstanceTestShow = routerInstanceTest['toFront'];
+type routerInstanceTestShowA = routerInstanceTestA['show'];
 
 /**
  * The router class.
@@ -219,9 +218,7 @@ export type RouterClass<
 > = {
     new (...args: ConstructorParameters<typeof RouterBase>): RouterInstance<
         RouterTypeName,
-        Templates,
-        M,
-        C
+        Templates
     >;
 };
 
