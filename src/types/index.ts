@@ -58,7 +58,9 @@ export type IRouterActionOptions = ILocationOptions;
  */
 
 /**
- * Types for action methods added to the base router class via mixins
+ * A convience object used for defining the shape of a router.
+ * This is how action methods are added to the base router class via mixins.
+ * For the specific action type see `RouterActionFn`.
  */
 export type Actions<CustomActionNames extends string = string> = 
      { [actionName in CustomActionNames]: RouterActionFn } & 
@@ -67,12 +69,18 @@ type actionsTest = Actions<'hello' | 'goodbye'>;
 type actionsTestA = Actions<undefined>;
 
 /**
- * Type for the reducer methods added to the base router class via mixins
+ * A convience object used for defining the shape of a router.
+ * This is how the reducer method is added to the base router class via mixins.
+ * For the specific router type see `RouterReducerFn`.
  */
 export type Reducer<CurrentState> = { 
     reducer: RouterReducerFn<CurrentState>;
 };  
 
+/**
+ * The function that defines alterations on the router location.
+ * Actions take the existing location and return a new location.
+ */
 export type RouterActionFn = <RouterTypeName extends string, Templates extends IRouterTemplates>(
     options?: IRouterActionOptions,
     location?: IInputLocation,
@@ -80,6 +88,10 @@ export type RouterActionFn = <RouterTypeName extends string, Templates extends I
     ctx?: ILocationActionContext
 ) => IInputLocation;
 
+/**
+ * The function that defines a routers reducer function.
+ * The reducer is responsible for taking a new location and defining what the state of the router is from that location.
+ */
 export type RouterReducerFn<CustomState extends {} = {}> = <RouterTypeName extends string, Templates extends IRouterTemplates>(
     location: IInputLocation,
     router: RouterInstance<RouterTypeName, Templates>
@@ -98,13 +110,13 @@ export type RouterReducerFn<CustomState extends {} = {}> = <RouterTypeName exten
  * Utility type to extract string literals of router type names from a templates object. A templates object is an
  * object of templates with the type { [routerTypeName]: template }.
  */
-type RouterTypeName<Names extends string | number | symbol> = Names extends string ? Names : never;
+export type RouterTypeName<Names extends string | number | symbol> = Names extends string ? Names : never;
 type routerTypeNameTest = RouterTypeName<keyof typeof template>;
 
 /**
  * Utility type to extract string literals of action names from the actions object in a template
  */
-type ActionNames<
+export type ActionNames<
     Actions extends {},
     ActionNames extends string | number | symbol = keyof Actions
 > = ActionNames extends string ? ActionNames : never;
@@ -115,9 +127,10 @@ type actionNamesTest = ActionNames<typeof template.stack['actions']>;
  * Router parent, root, and children
  * -------------------------------------------------
  */
+
 /**
- * The parent router type.
- * This type is an union of all possible router types found in the templates object.
+ * The parent router instance. This router is the immediate parent of the current router.
+ * This type is a union of all possible router types found in the templates object.
  */
 export type Parent<T extends IRouterTemplates> = {
     [RouterType in keyof T]: RouterInstance<RouterTypeName<RouterType>, T>;
@@ -125,8 +138,8 @@ export type Parent<T extends IRouterTemplates> = {
 type parentTest = Parent<typeof template>;
 
 /**
- * The root router type.
- * The root router should be a specific router instance. Usually it has the name 'root' in the templates object.
+ * The root router instance. This router is at the very top of the router tree.
+ * The type should be a specific router instance. Usually it has the name 'root' in the templates object.
  */
 export type Root<T extends IRouterTemplates, NameOfRoot extends string = 'root'> = RouterInstance<
     NameOfRoot,
@@ -135,8 +148,8 @@ export type Root<T extends IRouterTemplates, NameOfRoot extends string = 'root'>
 type rootTest = Root<typeof template>;
 
 /**
- * The child router types
- * Child routers are an object with the type { [routerType]: Array<RouterInstance for type>}
+ * Child router instances. These are the children of the current router.
+ * This type is an object with the type { [routerType]: Array<RouterInstance for type>}
  */
 export type Childs<T extends IRouterTemplates> = {
     [RouterType in Exclude<keyof T, 'root'>]: Array<RouterInstance<RouterTypeName<RouterType>, T>>;
@@ -148,6 +161,11 @@ type childsTest = Childs<typeof template>;
  * Router instance and class
  * -------------------------------------------------
  */
+
+ /**
+  * The instantiated router class.
+  * A router is represented by a router template.
+  */
 export type RouterInstance<
     RouterTypeName extends string,
     Templates extends IRouterTemplates
@@ -158,6 +176,10 @@ export type RouterInstance<
 type routerInstanceTest = RouterInstance<'stack', typeof template>;
 type routerInstanceTestA = RouterInstance<'scene', typeof template>;
 
+/**
+ * The router class.
+ * A router is represented by a router template.
+ */
 export type RouterClass<RouterTypeName extends string, Templates extends IRouterTemplates> = {
     new (...args: ConstructorParameters<typeof RouterBase>): RouterInstance<
         RouterTypeName,
@@ -198,7 +220,7 @@ export interface IRouterTemplate<
 type iRouterTemplateTest = IRouterTemplate<{hello: true}, 'big' | 'blue'>;
 
 /**
- * Configuration information that controls defaults for routers instantiated from the template
+ * Configuration information that controls settings of routers instantiated from the template
  */
 export interface IRouterTemplateConfig {
     canBePathRouter?: boolean;
@@ -212,12 +234,18 @@ export interface IRouterTemplateConfig {
  * -------------------------------------------------
  */
 
-type ExtractCustomStateFromTemplate<T extends IRouterTemplate> = T extends IRouterTemplate<infer S>
+ /**
+  * Utility type for extracting custom state from the overall state object
+  */
+export type ExtractCustomStateFromTemplate<T extends IRouterTemplate> = T extends IRouterTemplate<infer S>
     ? S
     : never;
 type extractCustomStateFromTemplateTest = ExtractCustomStateFromTemplate<iRouterTemplateTest>;
 
-type ExtractCustomActionsFromTemplate<T extends IRouterTemplate> = T extends IRouterTemplate<
+/**
+ * Utility type for extracting custom action names from the actions defined in a template
+ */
+export type ExtractCustomActionsFromTemplate<T extends IRouterTemplate> = T extends IRouterTemplate<
     any, // eslint-disable-line
     infer A
 >
@@ -232,13 +260,18 @@ type extractCustomActionsFromTemplateTest = ExtractCustomActionsFromTemplate<iRo
  */
 
 /**
- * The current router state is an intersection of custom state defined in the templates and default state.
+ * The current router state.
+ * Defined as an intersection of custom state defined in the templates and default state.
  */
 export type RouterCurrentState<CustomState extends {} = {}> = CustomState & {
     visible?: boolean;
     data?: string;
 };
 
+/**
+ * The historical state of a router.
+ * Defined as an array of state objects with the smaller index being the more recent state
+ */
 export type RouterHistoricalState<CustomState extends {} = {}> = RouterCurrentState<CustomState>[];
 
 export interface IRouterCurrentAndHistoricalState<CustomState extends {} = {}> {
@@ -270,9 +303,9 @@ export interface ISerializeOptions {
  */
 
 /**
- * Router declaration object
+ * The router declaration object.
+ * This is a user defined object used to define routers used in an app.
  */
-
 export interface IRouterDeclaration<RouterType> {
     name: string;
     routers?: {[key: string]: IRouterDeclaration<RouterType>[]};
@@ -287,7 +320,7 @@ export interface IRouterDeclaration<RouterType> {
 }
 
 /**
- * Arguments passed into a router constructor (by a manager) to initialize a router
+ * The arguments passed into a router constructor (by a manager) to initialize a router.
  */
 export interface IRouterInitArgs<
     RouterTypeName extends string,
@@ -310,9 +343,9 @@ export interface IRouterInitArgs<
 
 
 /**
- * Passed into the create router fn
- * The minimal amount of information an instantiated manager needs
- * to create the router init args and initialize a new router
+ * The information passed into the create router function.
+ * This is also the minimal amount of information an instantiated manager needs
+ * to create the router init args and initialize a new router.
  */
 export interface IRouterCreationInfo<RouterType> {
     name: string;
@@ -322,7 +355,7 @@ export interface IRouterCreationInfo<RouterType> {
 }
 
 /**
- * Computed from the template default config and router declaration
+ * Computed information from the template default config and router declaration
  */
 export interface IRouterConfig {
     routeKey: string;
@@ -338,6 +371,9 @@ export interface IRouterConfig {
  * -------------------------------------------------
  */
 
+ /**
+  * The callback function that is passed through when a user subscribes to a specific router
+  */
 export type Observer<CustomState extends {} = {}> = (
     state: IRouterCurrentAndHistoricalState<CustomState>
 ) => unknown;
