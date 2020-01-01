@@ -3,6 +3,7 @@ import Manager from '../manager';
 import {NativeSerializedStore, BrowserSerializedStore} from '../serializedState';
 import DefaultRoutersStateStore from '../routerState';
 import template from '../router/template';
+import Cache from '../router/cache';
 
 export type Constructable<T = {}> = new (...args: any[]) => T; // eslint-disable-line
 
@@ -116,7 +117,7 @@ type actionNamesTest = ActionNames<typeof template.stack['actions']>;
  */
 /**
  * The parent router type.
- * This type is an intersection of all possible router types found in the templates object.
+ * This type is an union of all possible router types found in the templates object.
  */
 export type Parent<T extends IRouterTemplates> = {
     [RouterType in keyof T]: RouterInstance<RouterTypeName<RouterType>, T>;
@@ -292,7 +293,7 @@ export interface IRouterInitArgs<
     RouterTypeName extends string,
     Templates extends IRouterTemplates,
     M extends Manager = Manager,
-    C extends Cache = Cache,
+    C extends typeof Cache = typeof Cache,
 > {
     name: string;
     type: RouterTypeName;
@@ -347,6 +348,8 @@ export type Observer<CustomState extends {} = {}> = (
  * Manager
  * -------------------------------------------------
  */
+export type ActionWraperFn<
+    A extends string = string,
     C extends {} = {},
     B extends RouterBase = RouterBase,
     R extends RouterInstance<A, C, B> = RouterInstance<A, C, B>

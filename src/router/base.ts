@@ -4,11 +4,12 @@ import {
     ISerializeOptions,
     IRouterInitArgs,
     RouterInstance,
-    InstanceChildRouters,
+    ExtractCustomStateFromTemplate,
     RouterCurrentState,
     RouterHistoricalState,
     IRouterTemplates
 } from '../types';
+import {Manager} from '..';
 
 export interface IInternalState {
     [field: string]: any;
@@ -16,20 +17,15 @@ export interface IInternalState {
 
 export default class RouterBase<
     RouterTypeName extends string,
-    Templates extends IRouterTemplates
-
-    // ParentRouter extends RouterInstance | null,
-    // RootRouter extends RouterInstance | null,
-    // RouterType,
-    // CustomState extends {} = {},
-    // ChildRouters extends InstanceChildRouters = InstanceChildRouters,
-    // InitArgs extends IRouterInitArgs<
-    //     CustomState,
-    //     RouterType,
-    //     ParentRouter,
-    //     RootRouter,
-    //     ChildRouters
-    // > = IRouterInitArgs<CustomState, RouterType, ParentRouter, RootRouter, ChildRouters>
+    Templates extends IRouterTemplates,
+    RouterManager extends Manager = Manager,
+    RouterCache extends typeof Cache = typeof Cache,
+    InitArgs extends IRouterInitArgs<
+        RouterTypeName,
+        Templates,
+        RouterManager,
+        RouterCache
+    > = IRouterInitArgs<RouterTypeName, Templates, RouterManager, RouterCache>
 > {
     public name: InitArgs['name'];
     public type: InitArgs['type'];
@@ -40,7 +36,7 @@ export default class RouterBase<
     public getState: InitArgs['getState'];
     public subscribe: InitArgs['subscribe'];
     public config: InitArgs['config'];
-    public cache: Cache;
+    public cache: InstanceType<InitArgs['cache']>;
     public _EXPERIMENTAL_internal_state: IInternalState; // tslint:disable-line
 
     constructor(init: InitArgs) {
@@ -54,7 +50,8 @@ export default class RouterBase<
             root,
             getState,
             subscribe,
-            actions
+            actions,
+            cache: CacheClass
         } = init;
 
         // required
@@ -77,7 +74,7 @@ export default class RouterBase<
         this.subscribe = subscribe;
 
         // store the routers location data for rehydration
-        this.cache = new Cache();
+        this.cache = new (CacheClass || Cache)();
 
         this._EXPERIMENTAL_internal_state = {};
 
@@ -109,11 +106,13 @@ export default class RouterBase<
         return this.config.routeKey;
     }
 
-    get siblings(): RouterInstance[] {
+    get siblings(): RouterInstance<RouterTypeName, Templates>[] {
         return this.parent.routers[this.type].filter(r => r.name !== this.name);
     }
 
-    public getNeighborsByType(type: string): IRouter[] {
+    public getNeighborsByType<DesiredType extends string>(
+        type: DesiredType
+    ): InitArgs['routers'][DesiredType] {
         if (this.parent && this.parent.routers) {
             return this.parent.routers[type] || [];
         }
@@ -232,11 +231,13 @@ export default class RouterBase<
         return false;
     }
 
-    get state(): RouterCurrentState<CustomState> {
+    get state(): RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>> {
         return this._state();
     }
 
-    protected _state = (): RouterCurrentState<CustomState> => {
+    protected _state = (): RouterCurrentState<
+        ExtractCustomStateFromTemplate<Templates[RouterTypeName]>
+    > => {
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');
         }
@@ -245,11 +246,15 @@ export default class RouterBase<
         return {...newState, ...this.EXPERIMENTAL_internal_state};
     };
 
-    public get history(): RouterHistoricalState<CustomState> {
+    public get history(): RouterHistoricalState<
+        ExtractCustomStateFromTemplate<Templates[RouterTypeName]>
+    > {
         return this._history();
     }
 
-    protected _history = (): RouterHistoricalState<CustomState> => {
+    protected _history = (): RouterHistoricalState<
+        ExtractCustomStateFromTemplate<Templates[RouterTypeName]>
+    > => {
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');
         }
