@@ -167,11 +167,15 @@ export type Parent<T extends IRouterTemplates> = {
 }[keyof T];
 type parentTest = Parent<typeof template>;
 type parentTestChildren = parentTest['routers'];
+
 /**
  * The root router instance. This router is at the very top of the router tree.
  * The type should be a specific router instance. Usually it has the name 'root' in the templates object.
  */
-export type Root<T extends IRouterTemplates> = RouterInstance<T, 'root'>;
+export type Root<
+    T extends IRouterTemplates,
+    Name extends string = 'root'
+> = Name extends NarrowRouterTypeName<keyof T> ? RouterInstance<T, Name> : never;
 type rootTest = Root<typeof template>;
 
 /**
@@ -184,6 +188,7 @@ export type Childs<T extends IRouterTemplates> = {
     >;
 };
 type childsTest = Childs<typeof template>;
+type childsTestValues = childsTest['scene'];
 
 /**
  * -------------------------------------------------
@@ -197,7 +202,7 @@ type childsTest = Childs<typeof template>;
  */
 export type RouterInstance<
     Templates extends IRouterTemplates,
-    RouterTypeName extends NarrowRouterTypeName<keyof Templates> | 'root'
+    RouterTypeName extends NarrowRouterTypeName<keyof Templates>
 > = Actions<ExtractCustomActionsFromTemplate<Templates[RouterTypeName]>> &
     // TODO figured out why intersecting with default actions is required here.
     // In the data template, `show` action isnt present without it, but all router instances
@@ -366,6 +371,7 @@ export interface IRouterDeclaration<Templates extends IRouterTemplates> {
 export interface IRouterInitArgs<
     Templates extends IRouterTemplates,
     RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
+    // RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
     M extends Manager = Manager
 > {
     name: string;

@@ -23,7 +23,7 @@ import {
     Constructable,
     RouterInstance,
     RouterCurrentState,
-    DefaultRouterActions,
+    // DefaultRouterActions,
     UnionOfChildren,
     TemplateOfRouter
 } from './types';
@@ -691,6 +691,9 @@ export default class Manager<
         newState[router.name] = router.reducer(location, router, ctx);
 
         // Recursively call all children to add their state to the `newState` object
+        // Array<
+        //     NarrowRouterTypeName<keyof typeof router.routers>
+        // >
         Object.keys(router.routers).forEach(type => {
             router.routers[type].forEach(childRouter =>
                 this.calcNewRouterState(location, childRouter, ctx, newState)
