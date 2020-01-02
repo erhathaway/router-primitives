@@ -4,6 +4,7 @@ import {BrowserSerializedStore, NativeSerializedStore} from './serializedState';
 import {ITracerThing, TracerSession, tracerManager} from './tracer';
 import {
     ActionWraperFn,
+    RouterActionFn,
     ActionWraperFnDecorator,
     IInputLocation,
     ILocationActionContext,
@@ -13,12 +14,13 @@ import {
     IRouterConfig,
     IRouterDeclaration,
     IRouterInitArgs,
-    RouterAction,
+    NarrowRouterTypeName,
+    Root,
+    ManagerRouterTypes,
     IManagerInit,
     RouterClass,
-    IRouterTemplate,
     IRouterTemplates,
-    IRouterCurrentState,
+    ManagerRouters,
     Constructable,
     RouterInstance,
     RouterCurrentState
@@ -32,16 +34,17 @@ const capitalize = (name = ''): string => name.charAt(0).toUpperCase() + name.sl
 
 // extend router base for specific type
 const createRouterFromTemplate = <
-    CustomState extends {},
-    T extends Constructable,
-    Template extends IRouterTemplate,
-    TemplateName,
-    Actions extends Record<string, RouterAction> = Template['actions'],
-    ActionNames extends string = Extract<keyof Template['actions'], 'string'>
+    // CustomState extends {},
+    // T extends Constructable,
+    RouterTypeName extends string,
+    Templates extends IRouterTemplates,
+    // TODO figure out why RouterClass can't be used here instead.
+    // It has a similar but more specific signature.
+    RC extends Constructable = Constructable
 >(
-    BaseRouter: T,
-    templateName: TemplateName,
-    template: Template,
+    templateName: RouterTypeName,
+    template: Templates[RouterTypeName],
+    BaseRouter: RC,
     actionWraperFn: (
         actionFn: RouterAction,
         actionName: string
@@ -50,7 +53,7 @@ const createRouterFromTemplate = <
         CustomState,
         RouterInstance<ActionNames, CustomState, RouterBase>
     >
-): RouterClass<Extract<keyof Actions, 'string'>, CustomState, typeof BaseRouter> => {
+): RouterClass<RouterTypeName, Templates> => {
     const {actions, reducer} = template;
 
     const MixedInClass = class extends BaseRouter {
@@ -62,11 +65,13 @@ const createRouterFromTemplate = <
         constructor(...args: any[]) {
             super(...args);
             // add actions to RouterType
-            (Object.keys(actions) as ['show']).forEach(actionName => {
-                Object.assign(this, {
-                    [actionName]: actionWraperFn(actions[actionName], actionName)
-                });
-            });
+            (Object.keys(actions) as Array<keyof typeof template['actions']>).forEach(
+                actionName => {
+                    Object.assign(this, {
+                        [actionName]: actionWraperFn(actions[actionName], actionName)
+                    });
+                }
+            );
 
             // add reducer to RouterType
             Object.assign(this, {
@@ -74,33 +79,21 @@ const createRouterFromTemplate = <
             });
         }
     };
-    return (MixedInClass as unknown) as RouterClass<ActionNames, CustomState, typeof BaseRouter>;
+    return (MixedInClass as unknown) as RouterClass<RouterTypeName, Templates>;
 };
-
+type ObjKeysAsString<Objs> = keyof Objs;
 export default class Manager<
-    CustomState extends {} = {},
-    CustomTemplates extends IRouterTemplates<RouterCurrentState<CustomState>> = {},
-    DefaultTemplates extends IRouterTemplates<
-        RouterCurrentState<CustomState>
-    > = typeof routerTemplates,
-    RouterTypeNames extends keyof CustomTemplates & DefaultTemplates = keyof CustomTemplates &
-        DefaultTemplates,
-    Actions extends Record<string, RouterAction> = {
-        [actionName in keyof (CustomTemplates &
-            DefaultTemplates)[RouterTypeNames]['actions']]: (CustomTemplates &
-            DefaultTemplates)[RouterTypeNames]['actions'][actionName];
-    },
-    ActionNames extends string = Extract<keyof Actions, 'string'>
+    CustomTemplates extends IRouterTemplates = {},
+    DefaultTemplates extends IRouterTemplates = typeof routerTemplates
 > {
     public actionFnDecorator?: ActionWraperFnDecorator;
     public tracerSession: TracerSession;
-    public _routers: Record<string, RouterInstance<ActionNames, RouterCurrentState>> = {};
-    public rootRouter: RouterClass<ActionNames, RouterCurrentState> = undefined;
+    public _routers: Record<string, ManagerRouters<CustomTemplates & DefaultTemplates>> = {};
+    public rootRouter: Root<CustomTemplates & DefaultTemplates> = undefined;
     public serializedStateStore: IManagerInit['serializedStateStore'];
     public routerStateStore: IManagerInit['routerStateStore'];
-    public routerTypes: {
-        [routerTypeName in RouterTypeNames]: RouterClass<ActionNames, RouterCurrentState>;
-    };
+    public routerTypes: ManagerRouterTypes<CustomTemplates & DefaultTemplates>;
+
     public templates: CustomTemplates & DefaultTemplates;
 
     constructor(
@@ -118,10 +111,12 @@ export default class Manager<
         }
     }
 
-    public setChildrenDefaults = (
+    public setChildrenDefaults = <
+        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+    >(
         options: IRouterActionOptions,
         location: IInputLocation,
-        router: RouterInstance<ActionNames, RouterCurrentState>,
+        router: RouterInstance<Name, CustomTemplates & DefaultTemplates>,
         ctx: ILocationActionContext
     ): IInputLocation => {
         const tracerSession = router.manager.tracerSession;
@@ -220,10 +215,12 @@ export default class Manager<
      *
      * TODO: dont mutate location state
      */
-    public setCacheAndHide = (
+    public setCacheAndHide = <
+        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+    >(
         options: IRouterActionOptions,
         location: IInputLocation,
-        router: InstanceType<RouterClass<Actions, RouterCurrentState>>,
+        router: RouterInstance<Name, CustomTemplates & DefaultTemplates>,
         ctx: ILocationActionContext = {}
     ): IInputLocation => {
         const tracerSession = router.manager.tracerSession;
@@ -293,19 +290,16 @@ export default class Manager<
      * @param actionName name of the action. Usually `show` or `hide` but can be any custom action defined in a template
      *
      */
-    public createActionWrapperFunction = <
-        A extends string = string,
-        C extends {} = {},
-        B extends RouterBase = RouterBase,
-        Fn extends ActionWraperFn<A, C, B> = ActionWraperFn<A, C, B>
-    >(
-        actionFn: RouterAction,
+    public createActionWrapperFunction = <Fn extends RouterActionFn>(
+        actionFn: Fn,
         actionName: string
     ): Fn => {
-        function actionWrapper(
+        function actionWrapper<
+            Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+        >(
             options: IRouterActionOptions = {},
             existingLocation?: IOutputLocation,
-            routerInstance: InstanceType<RouterClass<Actions, RouterCurrentState>> = this,
+            routerInstance: RouterInstance<Name, CustomTemplates & DefaultTemplates> = this,
             ctx: ILocationActionContext = {}
         ): IInputLocation {
             if (!existingLocation) {
@@ -375,7 +369,7 @@ export default class Manager<
                         {},
                         {...newLocation},
                         routerInstance.parent,
-                        {...ctx, callDirection: 'up', activatedByChildType: this.type}
+                        {...ctx, callDirection: 'up', activatedByChildType: routerInstance.type}
                     );
                 }
 
@@ -432,7 +426,7 @@ export default class Manager<
                     {},
                     {...updatedLocation},
                     routerInstance.parent,
-                    {...ctx, callDirection: 'up', activatedByChildType: this.type}
+                    {...ctx, callDirection: 'up', activatedByChildType: routerInstance.type}
                 );
             }
 
@@ -524,7 +518,9 @@ export default class Manager<
         // validation should make sure action names dont collide with any Router method names
 
         const BaseRouter = router || DefaultRouter;
-        this.routerTypes = (Object.keys(this.templates) as Array<RouterTypeNames>).reduce(
+        this.routerTypes = (Object.keys(this.templates) as Array<
+            NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+        >).reduce(
             (acc, templateName) => {
                 // fetch template
                 const selectedTemplate = this.templates[templateName];
@@ -532,17 +528,19 @@ export default class Manager<
                 const createActionWrapperFunction = this.createActionWrapperFunction;
                 // create router class from the template
                 const RouterFromTemplate = createRouterFromTemplate<
-                    RouterCurrentState,
-                    typeof BaseRouter,
-                    typeof selectedTemplate,
-                    typeof templateName
-                >(BaseRouter, templateName, selectedTemplate, createActionWrapperFunction);
+                    typeof templateName,
+                    CustomTemplates & DefaultTemplates
+                >(templateName, selectedTemplate, BaseRouter, createActionWrapperFunction);
 
                 // add new Router type to accumulator
                 acc[templateName] = RouterFromTemplate;
                 return acc;
             },
-            {} as {[routerTypeName in RouterTypeNames]: RouterClass<Actions, RouterCurrentState>}
+            {} as {
+                [routerTypeName in NarrowRouterTypeName<
+                    keyof (CustomTemplates & DefaultTemplates)
+                >]: RouterClass<routerTypeName, CustomTemplates & DefaultTemplates>;
+            }
         );
 
         // add initial routers
@@ -555,7 +553,7 @@ export default class Manager<
         this.rootRouter.show();
     }
 
-    get routers(): Record<string, InstanceType<RouterClass<Actions, RouterCurrentState>>> {
+    get routers(): Record<string, ManagerRouters<CustomTemplates & DefaultTemplates>> {
         return this._routers;
     }
 
@@ -563,8 +561,8 @@ export default class Manager<
      * Adds the initial routers defined during initialization
      */
     public addRouters = (
-        router: IRouterDeclaration<RouterTypeNames> = null,
-        type: RouterTypeNames = null,
+        router: IRouterDeclaration<CustomTemplates & DefaultTemplates> = null,
+        type: NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)> = null,
         parentName: string = null
     ): void => {
         // If no router specified, there are no routers to add
@@ -590,7 +588,9 @@ export default class Manager<
      * This method will add the router to the manager and correctly associate the router with
      * its parent and any child routers
      */
-    public addRouter(routerDeclaration: IRouterDeclaration<RouterTypeNames>): void {
+    public addRouter(
+        routerDeclaration: IRouterDeclaration<CustomTemplates & DefaultTemplates>
+    ): void {
         const {name, parentName, type} = routerDeclaration;
         const parent = this.routers[parentName];
 

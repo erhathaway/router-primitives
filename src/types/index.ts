@@ -106,10 +106,8 @@ export type Reducer<CurrentState> = {
 export type RouterActionFn = <RouterTypeName extends string, Templates extends IRouterTemplates>(
     options?: IRouterActionOptions,
     location?: IInputLocation,
-    // TODO figured out why intersecting with default actions is required here.
-    // In the data template, `show` action isnt present without it, but all router instances
-    // should have it by default
-    router?: RouterInstance<RouterTypeName, Templates> & DefaultRouterActions,
+
+    router?: RouterInstance<RouterTypeName, Templates>,
     ctx?: ILocationActionContext
 ) => IInputLocation;
 
@@ -198,6 +196,10 @@ export type RouterInstance<
     RouterTypeName extends string,
     Templates extends IRouterTemplates
 > = Actions<ExtractCustomActionsFromTemplate<Templates[RouterTypeName]>> &
+    // TODO figured out why intersecting with default actions is required here.
+    // In the data template, `show` action isnt present without it, but all router instances
+    // should have it by default
+    DefaultRouterActions &
     Reducer<RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>> &
     RouterBase<RouterTypeName, Templates>;
 
@@ -210,12 +212,7 @@ type routerInstanceTestShowA = routerInstanceTestA['show'];
  * The router class.
  * A router is represented by a router template.
  */
-export type RouterClass<
-    RouterTypeName extends string,
-    Templates extends IRouterTemplates,
-    M extends Manager = Manager,
-    C extends Cache<RouterTypeName, Templates> = Cache<RouterTypeName, Templates>
-> = {
+export type RouterClass<RouterTypeName extends string, Templates extends IRouterTemplates> = {
     new (...args: ConstructorParameters<typeof RouterBase>): RouterInstance<
         RouterTypeName,
         Templates
@@ -303,6 +300,7 @@ type extractCustomActionsFromTemplateTest = ExtractCustomActionsFromTemplate<iRo
 export type RouterCurrentState<CustomState extends {} = {}> = CustomState & {
     visible?: boolean;
     data?: string;
+    isActive?: boolean;
 };
 
 /**
@@ -342,12 +340,12 @@ export interface ISerializeOptions {
  * The router declaration object.
  * This is a user defined object used to define routers used in an app.
  */
-export interface IRouterDeclaration<RouterType> {
+export interface IRouterDeclaration<Templates extends IRouterTemplates> {
     name: string;
-    routers?: {[key: string]: IRouterDeclaration<RouterType>[]};
+    routers?: Record<NarrowRouterTypeName<keyof Templates>, IRouterDeclaration<Templates>[]>;
     routeKey?: string;
-    type?: RouterType;
-    parentName?: string;
+    type?: NarrowRouterTypeName<keyof Templates>;
+    parentName?: NarrowRouterTypeName<keyof Templates>;
 
     isPathRouter?: boolean;
     shouldInverselyActivate?: boolean;
@@ -367,9 +365,9 @@ export interface IRouterInitArgs<
     type: NarrowRouterTypeName<RouterTypeName>;
     manager: M;
     config: IRouterConfig;
-    parent?: Parent<Templates, M>;
-    routers: Childs<Templates, M>;
-    root: Root<Templates, M>;
+    parent?: Parent<Templates>;
+    routers: Childs<Templates>;
+    root: Root<Templates>;
     getState?: () => IRouterCurrentAndHistoricalState<
         ExtractCustomStateFromTemplate<Templates[RouterTypeName]>
     >;
@@ -463,12 +461,7 @@ export type NeighborsOfType<
 > = Array<
     {
         [RouterType in Exclude<keyof T, TypeName>]?: Array<
-            RouterInstance<
-                NarrowRouterTypeName<RouterType>,
-                T,
-                M,
-                Cache<NarrowRouterTypeName<RouterType>, T>
-            >
+            RouterInstance<NarrowRouterTypeName<RouterType>, T>
         >;
     }[Exclude<keyof T, TypeName>]
 >;
@@ -500,11 +493,42 @@ export type ActionWraperFnDecorator = <
     fn: Fn
 ) => Fn;
 
-export interface IManagerInit<CustomTemplates = {}, DefaultTemplates = {}> {
-    routerTree?: IRouterDeclaration;
+export interface IManagerInit<
+    CustomTemplates extends IRouterTemplates = {},
+    DefaultTemplates extends IRouterTemplates = {}
+> {
+    routerTree?: IRouterDeclaration<CustomTemplates & DefaultTemplates>;
     serializedStateStore?: NativeSerializedStore | BrowserSerializedStore;
     routerStateStore?: DefaultRoutersStateStore;
-    router?: typeof RouterBase;
+    router?: RouterClass<
+        NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>,
+        CustomTemplates & DefaultTemplates
+    >;
     customTemplates?: CustomTemplates;
     defaultTemplates?: DefaultTemplates;
 }
+
+/**
+ * The routers of a manager.
+ * This type is a union of all possible router types found in the templates object.
+ */
+export type ManagerRouters<T extends IRouterTemplates> = {
+    [RouterType in keyof T]: RouterInstance<NarrowRouterTypeName<RouterType>, T>;
+}[keyof T];
+type managerRoutersTest = ManagerRouters<typeof template>;
+
+/**
+ * The router types of a manager.
+ * This type is a union of all possible router types found in the templates object. Each type
+ * is a class that can be used to instantiate a specific router from a declaration object that a user supplies.
+ */
+export type ManagerRouterTypes<T extends IRouterTemplates> = {
+    [RouterType in keyof T]: RouterClass<NarrowRouterTypeName<RouterType>, T>;
+};
+type managerRouterTypesTest = ManagerRouterTypes<typeof template>;
+
+/**
+ * -------------------------------------------------
+ * General Utilities
+ * -------------------------------------------------
+ */
