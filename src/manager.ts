@@ -31,6 +31,7 @@ import {
 
 import DefaultRouter from './router/base';
 import DefaultRouterStateStore from './routerState';
+import {objKeys} from './utilities';
 
 const capitalize = (name = ''): string => name.charAt(0).toUpperCase() + name.slice(1);
 
@@ -65,7 +66,7 @@ const createRouterFromTemplate = <
         constructor(...args: any[]) {
             super(...args);
             // add actions to RouterType
-            (Object.keys(actions) as Array<keyof Actions>).forEach(actionName => {
+            objKeys(actions).forEach(actionName => {
                 Object.assign(this, {
                     [actionName]: actionWraperFn(actions[actionName as ActionNames], actionName)
                 });
@@ -130,8 +131,8 @@ export default class Manager<
         let newLocation = {...location};
         // TODO don't mutate location
         // console.log(
-        // tracer.logStep('Found number of children types', Object.keys(router.routers).length)
-        (Object.keys(router.routers) as Array<keyof Router['routers']>).forEach(routerType => {
+        // tracer.logStep('Found number of children types', objKeys(router.routers).length)
+        objKeys(router.routers).forEach(routerType => {
             // skip routers that called the parent router
             if (routerType === ctx.activatedByChildType) {
                 tracer.logStep(
@@ -249,7 +250,7 @@ export default class Manager<
         }
         tracer.logStep('setting', {disableCaching});
 
-        Object.keys(router.routers).forEach(routerType => {
+        objKeys(router.routers).forEach(routerType => {
             router.routers[routerType].forEach(child => {
                 // Update ctx object's caching setting for this branch of the router tree
                 const newCtx = {...ctx, disableCaching};
@@ -322,7 +323,7 @@ export default class Manager<
                     // console.log('---------------------'); // tslint:disable-line
                 }
                 routerInstance.manager.tracerSession = tracerManager.newSession('Action started');
-                Object.keys(routerInstance.manager.routers).forEach(routerName => {
+                objKeys(routerInstance.manager.routers).forEach(routerName => {
                     const r = routerInstance.manager.routers[routerName];
                     const tracerUpdateFn = (thingInfo: ITracerThing): void => {
                         // const lastStep = thingInfo.steps[thingInfo.steps.length - 1];
@@ -493,7 +494,7 @@ export default class Manager<
             );
             // }, 3000);
             // const things = routerInstance.manager.tracerSession.tracerThings;
-            // Object.keys(things).forEach(tName => console.log(tName, things[tName].isActive)) // tslint:disable-line
+            // objKeys(things).forEach(tName => console.log(tName, things[tName].isActive)) // tslint:disable-line
             return {...updatedLocation};
         }
 
@@ -530,7 +531,7 @@ export default class Manager<
         // validation should make sure action names dont collide with any Router method names
 
         const BaseRouter = router || DefaultRouter;
-        this.routerTypes = (Object.keys(this.templates) as Array<
+        this.routerTypes = (objKeys(this.templates) as Array<
             NarrowRouterTypeName<keyof AllTemplates<CustomTemplates, DefaultTemplates>>
         >).reduce(
             (acc, templateName) => {
@@ -587,7 +588,7 @@ export default class Manager<
         //   Below, we are deriving the type and calling the add function recursively by type
         this.addRouter({...router, type, parentName});
         const childRouters = router.routers || {};
-        Object.keys(childRouters).forEach(childType => {
+        objKeys(childRouters).forEach(childType => {
             childRouters[childType].forEach(child =>
                 this.addRouters(child, childType, router.name)
             );
@@ -658,7 +659,7 @@ export default class Manager<
         }
 
         // Recursively call this method for all children
-        const childrenTypes = Object.keys(routers);
+        const childrenTypes = objKeys(routers);
         childrenTypes.forEach(childType => {
             routers[childType].forEach(childRouter => this.removeRouter(childRouter.name));
         });
@@ -693,6 +694,7 @@ export default class Manager<
         location: IInputLocation,
         router: RouterInstance<AllTemplates<CustomTemplates, DefaultTemplates>, Name>,
         ctx: ILocationActionContext = {},
+        // TODO fill in current state's custom state generic from the above router
         newState: Record<string, RouterCurrentState> = {}
     ): Record<string, RouterCurrentState> {
         if (!router) {
@@ -706,7 +708,7 @@ export default class Manager<
         // Array<
         //     NarrowRouterTypeName<keyof typeof router.routers>
         // >
-        Object.keys(router.routers).forEach(type => {
+        objKeys(router.routers).forEach(type => {
             router.routers[type].forEach(childRouter =>
                 this.calcNewRouterState(location, childRouter, ctx, newState)
             );
@@ -808,7 +810,7 @@ export default class Manager<
         this
     > {
         const parent = this.routers[parentName];
-        const actions = Object.keys(this.templates[type].actions);
+        const actions = objKeys(this.templates[type].actions);
 
         return {
             name,

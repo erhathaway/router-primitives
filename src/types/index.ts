@@ -196,13 +196,30 @@ type childsTestValues = childsTest['scene'];
  * -------------------------------------------------
  */
 
+export type RefineTypeName<
+    Templates extends IRouterTemplates,
+    Name extends string | NarrowRouterTypeName<keyof Templates>
+> = Name extends NarrowRouterTypeName<keyof Templates>
+    ? Name
+    : NarrowRouterTypeName<keyof Templates>;
+type refineTypeNameTest = RefineTypeName<typeof template, 'hello'>;
+type refineTypeNameTestA = RefineTypeName<typeof template, 'scene'>;
+type refineTypeNameTestB = RefineTypeName<typeof template, string>;
+
+export type G<T, N> = N extends NarrowRouterTypeName<keyof T> ? N : never;
 /**
  * The instantiated router class.
  * A router is represented by a router template.
  */
 export type RouterInstance<
     Templates extends IRouterTemplates,
-    RouterTypeName extends NarrowRouterTypeName<keyof Templates>
+    RouterTypeName extends NarrowRouterTypeName<keyof Templates> = NarrowRouterTypeName<
+        keyof Templates
+    >
+    // Name extends NarrowRouterTypeName<keyof Templates> = G<Templates, RefineTypeName<Templates, RouterTypeName>>
+    // = NarrowRouterTypeName<
+    //     keyof Templates
+    // >
 > = Actions<ExtractCustomActionsFromTemplate<Templates[RouterTypeName]>> &
     // TODO figured out why intersecting with default actions is required here.
     // In the data template, `show` action isnt present without it, but all router instances
@@ -215,7 +232,10 @@ type routerInstanceTest = RouterInstance<typeof template, 'stack'>;
 type routerInstanceTestA = RouterInstance<typeof template, 'scene'>;
 type routerInstanceTestToFront = routerInstanceTest['toFront'];
 type routerInstanceTestShowA = routerInstanceTestA['show'];
-type routerInstanceTestB = RouterInstance<{} & typeof template, 'stack'>['show'];
+type routerInstanceTestB = RouterInstance<
+    {} & typeof template,
+    RefineTypeName<typeof template, string>
+>['show'];
 
 /**
  * The router class.
