@@ -523,7 +523,10 @@ export default class Manager<
 
         // router types
         const defaults = defaultTemplates || routerTemplates;
-        this.templates = {...defaults, ...customTemplates} as DefaultTemplates & CustomTemplates;
+        this.templates = {...defaults, ...customTemplates} as AllTemplates<
+            CustomTemplates,
+            DefaultTemplates
+        >;
 
         // TODO implement
         // Manager.validateTemplates(templates);
@@ -531,9 +534,7 @@ export default class Manager<
         // validation should make sure action names dont collide with any Router method names
 
         const BaseRouter = router || DefaultRouter;
-        this.routerTypes = (objKeys(this.templates) as Array<
-            NarrowRouterTypeName<keyof AllTemplates<CustomTemplates, DefaultTemplates>>
-        >).reduce(
+        this.routerTypes = objKeys(this.templates).reduce(
             (acc, templateName) => {
                 // fetch template
                 const selectedTemplate = this.templates[templateName];

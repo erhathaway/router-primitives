@@ -1,7 +1,6 @@
 /**
- * Uses type inference to extract string literal keys from an object
+ * Utility to correctly extract keys from an object without loosing typing.
  *
- * From: https://github.com/microsoft/TypeScript/issues/24243
  */
 // eslint-disable-next-line
-export const getKeys = <T extends {}>(o: T): Array<keyof T> => <Array<keyof T>>Object.keys(o);
+export const objKeys = <T extends {}>(o: T): Array<keyof T> => <Array<keyof T>>Object.keys(o);

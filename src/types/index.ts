@@ -141,6 +141,7 @@ export type NarrowRouterTypeName<Names extends string | number | symbol> = Names
     ? Names
     : never;
 type narrowRouterTypeNameTest = NarrowRouterTypeName<keyof typeof template>;
+type narrowRouterTypeNameTestA = NarrowRouterTypeName<keyof {}>;
 
 /**
  * Utility type to extract string literals of action names from the actions object in a template
@@ -183,7 +184,7 @@ type rootTest = Root<typeof template>;
  * This type is an object with the type { [routerType]: Array<RouterInstance for type>}
  */
 export type Childs<T extends IRouterTemplates> = {
-    [RouterType in Exclude<keyof T, 'root'>]?: Array<
+    [RouterType in NarrowRouterTypeName<Exclude<keyof T, 'root'>>]?: Array<
         RouterInstance<T, NarrowRouterTypeName<RouterType>>
     >;
 };
@@ -213,29 +214,39 @@ export type G<T, N> = N extends NarrowRouterTypeName<keyof T> ? N : never;
  */
 export type RouterInstance<
     Templates extends IRouterTemplates,
-    RouterTypeName extends NarrowRouterTypeName<keyof Templates> = NarrowRouterTypeName<
+    RouterTypeName extends NarrowRouterTypeName<keyof Templates> | string = NarrowRouterTypeName<
         keyof Templates
     >
     // Name extends NarrowRouterTypeName<keyof Templates> = G<Templates, RefineTypeName<Templates, RouterTypeName>>
     // = NarrowRouterTypeName<
     //     keyof Templates
     // >
-> = Actions<ExtractCustomActionsFromTemplate<Templates[RouterTypeName]>> &
     // TODO figured out why intersecting with default actions is required here.
     // In the data template, `show` action isnt present without it, but all router instances
     // should have it by default
     // DefaultRouterActions &
-    Reducer<RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>> &
-    RouterBase<Templates, RouterTypeName>;
+> = RouterTypeName extends NarrowRouterTypeName<keyof Templates>
+    ? Actions<ExtractCustomActionsFromTemplate<Templates[RouterTypeName]>> &
+          Reducer<RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>> &
+          RouterBase<Templates, RouterTypeName>
+    : Actions<ExtractCustomActionsFromTemplate<Templates[NarrowRouterTypeName<keyof Templates>]>> &
+          Reducer<
+              RouterCurrentState<
+                  ExtractCustomStateFromTemplate<Templates[NarrowRouterTypeName<keyof Templates>]>
+              >
+          > &
+          RouterBase<Templates, NarrowRouterTypeName<keyof Templates>>;
 
 type routerInstanceTest = RouterInstance<typeof template, 'stack'>;
+type routerInstanceTestToFront = routerInstanceTest['toFront']; // <--- should not error
 type routerInstanceTestA = RouterInstance<typeof template, 'scene'>;
-type routerInstanceTestToFront = routerInstanceTest['toFront'];
+type routerInstanceTestAToFront = routerInstanceTestA['toFront']; // <--- should error
 type routerInstanceTestShowA = routerInstanceTestA['show'];
-type routerInstanceTestB = RouterInstance<
-    {} & typeof template,
-    RefineTypeName<typeof template, string>
->['show'];
+
+// A router instance given an open ended type name should be an intersection of all router types
+type routerInstanceTestB = RouterInstance<{} & typeof template, string>['show'];
+// A router instance given open ended template types should have the default actions
+type routerInstanceTestC = RouterInstance<{}, string>['show'];
 
 /**
  * The router class.
