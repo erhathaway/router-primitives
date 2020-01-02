@@ -166,7 +166,7 @@ export type Parent<T extends IRouterTemplates> = {
     [RouterType in keyof T]: RouterInstance<T, NarrowRouterTypeName<RouterType>>;
 }[keyof T];
 type parentTest = Parent<typeof template>;
-
+type parentTestChildren = parentTest['routers'];
 /**
  * The root router instance. This router is at the very top of the router tree.
  * The type should be a specific router instance. Usually it has the name 'root' in the templates object.
@@ -204,7 +204,7 @@ export type RouterInstance<
     // should have it by default
     // DefaultRouterActions &
     Reducer<RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>> &
-    RouterBase<RouterTypeName, Templates>;
+    RouterBase<Templates, RouterTypeName>;
 
 type routerInstanceTest = RouterInstance<typeof template, 'stack'>;
 type routerInstanceTestA = RouterInstance<typeof template, 'scene'>;
@@ -369,7 +369,7 @@ export interface IRouterInitArgs<
     M extends Manager = Manager
 > {
     name: string;
-    type: NarrowRouterTypeName<RouterTypeName>;
+    type: RouterTypeName;
     manager: M;
     config: IRouterConfig;
     parent?: Parent<Templates>;
@@ -473,6 +473,34 @@ export type NeighborsOfType<
     }[Exclude<keyof T, TypeName>]
 >;
 type neighborsOfTypeTest = NeighborsOfType<'scene', typeof template>;
+
+/**
+ * -------------------------------------------------
+ * Router utilities
+ * -------------------------------------------------
+ */
+
+/**
+ * Returns the union of all router children. This is useful when dynamically maping over
+ * children. For example Object.keys(router.routers)[routerType].map(<THIS TYPE> => ....)
+ */
+export type UnionOfChildren<T extends IRouterTemplates> = {
+    [RouterType in Exclude<keyof T, 'root'>]?: Array<
+        RouterInstance<T, NarrowRouterTypeName<RouterType>>
+    >;
+}[Exclude<keyof T, 'root'>];
+type unionOfChildrenTest = UnionOfChildren<typeof template>;
+
+/**
+ * Utility to extract the template type of a router instance.
+ */
+// eslint-disable-next-line
+export type TemplateOfRouter<R> = R extends RouterInstance<
+    infer T,
+    any // eslint-disable-line
+>
+    ? T
+    : never;
 
 /**
  * -------------------------------------------------

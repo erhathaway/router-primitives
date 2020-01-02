@@ -12,6 +12,7 @@ import {
     NarrowRouterTypeName
 } from '../types';
 import {Manager} from '..';
+import template from './template';
 
 export interface IInternalState {
     isActive?: boolean;
@@ -287,14 +288,9 @@ export default class RouterBase<
 }
 
 // const managerTest = new Manager();
-// const baseTest = new RouterBase<'scene', typeof template>({
-//     name: 'test',
-//     type: 'scene',
-//     manager: managerTest,
-//     config: {routeKey: 'test', isPathRouter: true, shouldInverselyActivate: true}
-// } as any); // eslint-disable-line
+const baseTest = new RouterBase<typeof template, 'scene'>({} as any); // eslint-disable-line
 
-// baseTest.routers['stack'];
-// baseTest.parent.routers['stack'];
-// baseTest.root.routers['stack'];
-// baseTest.getNeighborsByType('stack');
+baseTest.routers['stack'];
+baseTest.parent.routers['stack'];
+baseTest.root.routers['stack'];
+baseTest.getNeighborsByType('stack');
