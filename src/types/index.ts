@@ -364,8 +364,8 @@ export interface IRouterDeclaration<Templates extends IRouterTemplates> {
  * The arguments passed into a router constructor (by a manager) to initialize a router.
  */
 export interface IRouterInitArgs<
-    RouterTypeName extends string,
     Templates extends IRouterTemplates,
+    RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
     M extends Manager = Manager
 > {
     name: string;
@@ -382,9 +382,9 @@ export interface IRouterInitArgs<
         observer: Observer<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>
     ) => void;
     actions: (keyof Templates[RouterTypeName]['actions'])[]; // the router actions derived from the template. Usually 'show' and 'hide';
-    cache: CacheClass<RouterTypeName, Templates, Cache<RouterTypeName, Templates>>;
+    cache: CacheClass<Templates, RouterTypeName, Cache<Templates, RouterTypeName>>;
 }
-type iRouterInitArgsTest = IRouterInitArgs<'scene', typeof template>;
+type iRouterInitArgsTest = IRouterInitArgs<typeof template, 'scene'>;
 type iRouterInitArgsTestType = iRouterInitArgsTest['type'];
 type iRouterInitArgsTestParent = iRouterInitArgsTest['parent'];
 type iRouterInitArgsTestRouters = iRouterInitArgsTest['routers'];
@@ -397,7 +397,7 @@ type iRouterInitArgsTestCacheMethodWithRouter = Parameters<
     iRouterInitArgsTestCache['setWasPreviouslyVisibleToFromLocation']
 >;
 
-type iRouterInitArgsTestA = IRouterInitArgs<'stack', typeof template>;
+type iRouterInitArgsTestA = IRouterInitArgs<typeof template, 'stack'>;
 type iRouterInitArgsTestActionsB = iRouterInitArgsTestA['actions'];
 
 /**
@@ -446,9 +446,9 @@ export type Observer<CustomState extends {} = {}> = (
  * The class type of a cache store instance
  */
 export type CacheClass<
-    RouterTypeName extends string,
     Templates extends IRouterTemplates,
-    RouterCache extends Cache<RouterTypeName, Templates>
+    RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
+    RouterCache extends Cache<Templates, RouterTypeName>
 > = {new (...args: ConstructorParameters<typeof Cache>): RouterCache};
 
 /**
@@ -484,7 +484,7 @@ export type ActionWraperFnDecorator = <Fn extends RouterActionFn>(fn: Fn) => Fn;
 
 export interface IManagerInit<
     CustomTemplates extends IRouterTemplates = {},
-    DefaultTemplates extends IRouterTemplates = {}
+    DefaultTemplates extends IRouterTemplates = typeof template
 > {
     routerTree?: IRouterDeclaration<CustomTemplates & DefaultTemplates>;
     serializedStateStore?: NativeSerializedStore | BrowserSerializedStore;

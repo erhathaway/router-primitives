@@ -8,7 +8,8 @@ import {
     RouterCurrentState,
     RouterHistoricalState,
     IRouterTemplates,
-    NeighborsOfType
+    NeighborsOfType,
+    NarrowRouterTypeName
 } from '../types';
 import {Manager} from '..';
 
@@ -17,11 +18,11 @@ export interface IInternalState {
 }
 
 export default class RouterBase<
-    RouterTypeName extends string,
     Templates extends IRouterTemplates,
-    InitArgs extends IRouterInitArgs<RouterTypeName, Templates> = IRouterInitArgs<
-        RouterTypeName,
-        Templates
+    RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
+    InitArgs extends IRouterInitArgs<Templates, RouterTypeName> = IRouterInitArgs<
+        Templates,
+        RouterTypeName
     >
 > {
     public name: InitArgs['name'];
@@ -33,7 +34,7 @@ export default class RouterBase<
     public getState?: InitArgs['getState'];
     public subscribe?: InitArgs['subscribe'];
     public config: InitArgs['config'];
-    public cache: Cache<RouterTypeName, Templates>;
+    public cache: Cache<Templates, RouterTypeName>;
     public _EXPERIMENTAL_internal_state: IInternalState; // eslint-disable-line
 
     constructor(init: InitArgs) {
@@ -106,7 +107,7 @@ export default class RouterBase<
         return this.config.routeKey;
     }
 
-    get siblings(): RouterInstance<RouterTypeName, Templates, Manager>[] {
+    get siblings(): RouterInstance<Templates, RouterTypeName>[] {
         // TODO fix this any
         // eslint-disable-next-line
         return (this.parent.routers as Record<string, any[]>)[this.type].filter(
@@ -117,9 +118,9 @@ export default class RouterBase<
     /**
      * Returns all neighbors of a certain router type. This could include the same router type of this router if desired.
      */
-    public getNeighborsByType<DesiredType extends string>(
+    public getNeighborsByType<DesiredType extends NarrowRouterTypeName<keyof Templates>>(
         type: DesiredType
-    ): Array<RouterInstance<DesiredType, Templates, Manager>> {
+    ): Array<RouterInstance<Templates, DesiredType>> {
         if (this.parent && this.parent.routers) {
             // TODO fix this any
             // eslint-disable-next-line
@@ -181,11 +182,11 @@ export default class RouterBase<
     public serialize(
         options: ISerializeOptions = {}
         // eslint-disable-next-line
-    ): IRouterDeclaration<RouterTypeName> & {[key: string]: any} {
+    ): IRouterDeclaration<Templates> & {[key: string]: any} {
         // create router declaration object
         // TODO clean up this mess
         // eslint-disable-next-line
-        const serialized: IRouterDeclaration<RouterTypeName> & {[key: string]: any} = {
+        const serialized: IRouterDeclaration<Templates> & {[key: string]: any} = {
             name: this.name,
             routeKey: options.alwaysShowRouteKey
                 ? this.routeKey
@@ -212,7 +213,7 @@ export default class RouterBase<
                 );
                 return acc;
             },
-            {} as {[routerType: string]: IRouterDeclaration<RouterTypeName>[]}
+            {} as {[routerType: string]: IRouterDeclaration<Templates>[]}
         );
 
         if (childRouterTypes.length > 0) {

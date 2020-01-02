@@ -1,4 +1,4 @@
-import {IOutputLocation, IRouterTemplates, RouterInstance} from '../types';
+import {IOutputLocation, IRouterTemplates, RouterInstance, NarrowRouterTypeName} from '../types';
 
 type CacheValue = boolean | undefined;
 
@@ -9,7 +9,10 @@ type CacheValue = boolean | undefined;
  * cache when setting new state instead of a default value.
  * This is how things like rehydration of a routers state when a parent becomes visible occurs.
  */
-class Cache<RouterTypeName extends string, Templates extends IRouterTemplates> {
+class Cache<
+    Templates extends IRouterTemplates,
+    RouterTypeName extends NarrowRouterTypeName<keyof Templates>
+> {
     public _cacheStore?: CacheValue;
 
     constructor() {
@@ -32,7 +35,7 @@ class Cache<RouterTypeName extends string, Templates extends IRouterTemplates> {
 
     public setWasPreviouslyVisibleToFromLocation(
         location: IOutputLocation,
-        routerInstance: RouterInstance<RouterTypeName, Templates>
+        routerInstance: RouterInstance<Templates, RouterTypeName>
     ): void {
         // dont set cache if one already exists!
         if (this.wasVisible) {
