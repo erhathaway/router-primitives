@@ -3,7 +3,6 @@ import routerTemplates from './router/template';
 import {BrowserSerializedStore, NativeSerializedStore} from './serializedState';
 import {ITracerThing, TracerSession, tracerManager} from './tracer';
 import {
-    ActionWraperFn,
     RouterActionFn,
     ActionWraperFnDecorator,
     IInputLocation,
@@ -28,7 +27,6 @@ import {
 
 import DefaultRouter from './router/base';
 import DefaultRouterStateStore from './routerState';
-import RouterBase from './router/base';
 
 const capitalize = (name = ''): string => name.charAt(0).toUpperCase() + name.slice(1);
 
@@ -45,14 +43,10 @@ const createRouterFromTemplate = <
     templateName: RouterTypeName,
     template: Templates[RouterTypeName],
     BaseRouter: RC,
-    actionWraperFn: (
-        actionFn: RouterAction,
-        actionName: string
-    ) => ActionWraperFn<
-        ActionNames,
-        CustomState,
-        RouterInstance<ActionNames, CustomState, RouterBase>
-    >
+    actionWraperFn: <Fn extends RouterActionFn>(
+        actionFn: Fn,
+        actionName: keyof Templates[RouterTypeName]['actions']
+    ) => Fn
 ): RouterClass<RouterTypeName, Templates> => {
     const {actions, reducer} = template;
 
@@ -639,8 +633,10 @@ export default class Manager<
 
         // Delete ref the parent (if any) stores
         if (parent) {
-            const routersToKeep = parent.routers[type].filter(child => child.name !== name);
-            parent.routers[type] = routersToKeep;
+            const routersToKeep = parent.routers[type as string].filter(
+                child => child.name !== name
+            );
+            parent.routers[type as keyof typeof parent.routers] = routersToKeep;
         }
 
         // Recursively call this method for all children
@@ -656,10 +652,9 @@ export default class Manager<
         this.unregisterRouter(name);
     };
 
-    protected registerRouter(
-        name: string,
-        router: InstanceType<RouterClass<Actions, RouterCurrentState>>
-    ): void {
+    protected registerRouter<
+        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+    >(name: string, router: RouterInstance<Name, CustomTemplates & DefaultTemplates>): void {
         this._routers[name] = router;
     }
 
@@ -671,9 +666,11 @@ export default class Manager<
      * Called on every location change
      * TODO make this method not mutate `newState`
      */
-    public calcNewRouterState(
+    public calcNewRouterState<
+        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+    >(
         location: IInputLocation,
-        router: RouterClass<Actions, RouterCurrentState>,
+        router: RouterInstance<Name, CustomTemplates & DefaultTemplates>,
         ctx: ILocationActionContext = {},
         newState: Record<string, RouterCurrentState> = {}
     ): Record<string, RouterCurrentState> {
@@ -694,11 +691,13 @@ export default class Manager<
         return newState;
     }
 
-    protected createRouterConfigArgs(
-        routerDeclaration: IRouterDeclaration<RouterTypeNames>,
-        routerType: RouterTypeNames,
-        parent: RouterClass<Actions, RouterCurrentState>
-    ): IRouterCreationInfo<RouterTypeNames>['config'] {
+    protected createRouterConfigArgs<
+        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+    >(
+        routerDeclaration: IRouterDeclaration<CustomTemplates & DefaultTemplates>,
+        routerType: Name,
+        parent: RouterInstance<Name, CustomTemplates & DefaultTemplates>
+    ): IRouterCreationInfo<Name>['config'] {
         const templateConfig = this.templates[routerType].config;
         const hasParentOrIsRoot =
             parent && parent.isPathRouter !== undefined ? parent.isPathRouter : true;
@@ -725,9 +724,9 @@ export default class Manager<
         };
     }
 
-    protected validateNeighborsOfOtherTypesArentPathRouters(
-        router: RouterClass<Actions, RouterCurrentState>
-    ): void {
+    protected validateNeighborsOfOtherTypesArentPathRouters<
+        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+    >(router: RouterInstance<Name, CustomTemplates & DefaultTemplates>): void {
         const nameOfNeighboorRouterThatIsPathRouter = router
             .getNeighbors()
             .reduce((acc, r) => (r.isPathRouter ? r.name : acc), undefined as string | undefined);
@@ -741,11 +740,9 @@ export default class Manager<
         }
     }
 
-    protected validateRouterCreationInfo(
-        name: string,
-        type: RouterTypeNames,
-        config: IRouterConfig
-    ): void {
+    protected validateRouterCreationInfo<
+        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+    >(name: string, type: Name, config: IRouterConfig): void {
         // Check if the router type exists
         if (!this.routerTypes[type] && type !== 'root') {
             throw new Error(
@@ -774,12 +771,14 @@ export default class Manager<
      * This method is overridden by libraries like `router-primitives-mobx` as it is a convenient
      * place to redefine the getters and setters `getState` and `subscribe`
      */
-    protected createNewRouterInitArgs({
+    protected createNewRouterInitArgs<
+        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+    >({
         name,
         config,
         type,
         parentName
-    }: IRouterCreationInfo<RouterTypeNames>): IRouterInitArgs<RouterTypeNames> {
+    }: IRouterCreationInfo<Name>): IRouterInitArgs<Name, CustomTemplates & DefaultTemplates, this> {
         const parent = this.routers[parentName];
         const actions = Object.keys(this.templates[type].actions);
 
@@ -803,9 +802,11 @@ export default class Manager<
      * Redefined by libraries like `router-primitives-mobx`.
      * Good place to change the base router prototype or decorate methods
      */
-    protected createRouterFromInitArgs(
-        initalArgs: IRouterInitArgs<RouterTypeNames>
-    ): InstanceType<RouterClass<Actions, RouterCurrentState>> {
+    protected createRouterFromInitArgs<
+        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+    >(
+        initalArgs: IRouterInitArgs<Name, CustomTemplates & DefaultTemplates>
+    ): RouterInstance<Name, CustomTemplates & DefaultTemplates> {
         const routerClass = this.routerTypes[initalArgs.type];
         // TODO add tests for passing of action names
         // return new (routerClass as any)({...initalArgs}) as RouterT;
@@ -836,14 +837,14 @@ export default class Manager<
      * parent and child router connections, use one of the `add` methods on the manager.
      * Those methods use this `createRouter` method in turn.
      */
-    protected createRouter<T>({
+    protected createRouter<
+        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+    >({
         name,
         config,
         type,
         parentName
-    }: IRouterCreationInfo<RouterTypeNames>): InstanceType<
-        RouterClass<Actions, RouterCurrentState>
-    > {
+    }: IRouterCreationInfo<Name>): RouterInstance<Name, CustomTemplates & DefaultTemplates> {
         this.validateRouterCreationInfo(name, type, config);
 
         const initalArgs = this.createNewRouterInitArgs({name, config, type, parentName});
