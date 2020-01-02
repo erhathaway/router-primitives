@@ -11,7 +11,6 @@ import {
     NeighborsOfType,
     NarrowRouterTypeName
 } from '../types';
-import {Manager} from '..';
 import template from './template';
 
 export interface IInternalState {
@@ -133,7 +132,7 @@ export default class RouterBase<
     /**
      * Returns all neighboring routers. That is, all routers that have the same parent but are not of this router type.
      */
-    public getNeighbors(): NeighborsOfType<RouterTypeName, Templates, Manager> {
+    public getNeighbors(): NeighborsOfType<RouterTypeName, Templates> {
         if (!this.parent) {
             return [];
         }

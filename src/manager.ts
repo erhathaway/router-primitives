@@ -25,7 +25,8 @@ import {
     RouterCurrentState,
     // DefaultRouterActions,
     UnionOfChildren,
-    TemplateOfRouter
+    TemplateOfRouter,
+    AllTemplates
 } from './types';
 
 import DefaultRouter from './router/base';
@@ -85,13 +86,16 @@ export default class Manager<
 > {
     public actionFnDecorator?: ActionWraperFnDecorator;
     public tracerSession: TracerSession;
-    public _routers: Record<string, ManagerRouters<CustomTemplates & DefaultTemplates>> = {};
-    public rootRouter: Root<CustomTemplates & DefaultTemplates> = undefined;
+    public _routers: Record<
+        string,
+        ManagerRouters<AllTemplates<CustomTemplates, DefaultTemplates>>
+    > = {};
+    public rootRouter: Root<AllTemplates<CustomTemplates, DefaultTemplates>> = undefined;
     public serializedStateStore: IManagerInit['serializedStateStore'];
     public routerStateStore: IManagerInit['routerStateStore'];
-    public routerTypes: ManagerRouterTypes<CustomTemplates & DefaultTemplates>;
+    public routerTypes: ManagerRouterTypes<AllTemplates<CustomTemplates, DefaultTemplates>>;
 
-    public templates: CustomTemplates & DefaultTemplates;
+    public templates: AllTemplates<CustomTemplates, DefaultTemplates>;
 
     constructor(
         initArgs: IManagerInit<CustomTemplates, DefaultTemplates> = {},
@@ -109,11 +113,11 @@ export default class Manager<
     }
 
     public setChildrenDefaults = <
-        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>,
-        Router extends RouterInstance<CustomTemplates & DefaultTemplates, Name> = RouterInstance<
-            CustomTemplates & DefaultTemplates,
+        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates, DefaultTemplates>)>,
+        Router extends RouterInstance<
+            AllTemplates<CustomTemplates, DefaultTemplates>,
             Name
-        >
+        > = RouterInstance<AllTemplates<CustomTemplates, DefaultTemplates>, Name>
     >(
         options: IRouterActionOptions,
         location: IInputLocation,
@@ -219,11 +223,11 @@ export default class Manager<
      * TODO: dont mutate location state
      */
     public setCacheAndHide = <
-        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates, DefaultTemplates>)>
     >(
         options: IRouterActionOptions,
         location: IInputLocation,
-        router: RouterInstance<CustomTemplates & DefaultTemplates, Name>,
+        router: RouterInstance<AllTemplates<CustomTemplates, DefaultTemplates>, Name>,
         ctx: ILocationActionContext = {}
     ): IInputLocation => {
         const tracerSession = router.manager.tracerSession;
@@ -298,11 +302,16 @@ export default class Manager<
         actionName: string
     ): Fn => {
         function actionWrapper<
-            Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+            Name extends NarrowRouterTypeName<
+                keyof (AllTemplates<CustomTemplates, DefaultTemplates>)
+            >
         >(
             options: IRouterActionOptions = {},
             existingLocation?: IOutputLocation,
-            routerInstance: RouterInstance<CustomTemplates & DefaultTemplates, Name> = this,
+            routerInstance: RouterInstance<
+                AllTemplates<CustomTemplates, DefaultTemplates>,
+                Name
+            > = this,
             ctx: ILocationActionContext = {}
         ): IInputLocation {
             if (!existingLocation) {
@@ -522,7 +531,7 @@ export default class Manager<
 
         const BaseRouter = router || DefaultRouter;
         this.routerTypes = (Object.keys(this.templates) as Array<
-            NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+            NarrowRouterTypeName<keyof AllTemplates<CustomTemplates, DefaultTemplates>>
         >).reduce(
             (acc, templateName) => {
                 // fetch template
@@ -532,7 +541,7 @@ export default class Manager<
                 // create router class from the template
                 const RouterFromTemplate = createRouterFromTemplate<
                     typeof templateName,
-                    CustomTemplates & DefaultTemplates
+                    AllTemplates<CustomTemplates, DefaultTemplates>
                 >(templateName, selectedTemplate, BaseRouter, createActionWrapperFunction);
 
                 // add new Router type to accumulator
@@ -541,8 +550,8 @@ export default class Manager<
             },
             {} as {
                 [routerTypeName in NarrowRouterTypeName<
-                    keyof (CustomTemplates & DefaultTemplates)
-                >]: RouterClass<CustomTemplates & DefaultTemplates, routerTypeName>;
+                    keyof AllTemplates<CustomTemplates, DefaultTemplates>
+                >]: RouterClass<AllTemplates<CustomTemplates, DefaultTemplates>, routerTypeName>;
             }
         );
 
@@ -556,7 +565,7 @@ export default class Manager<
         this.rootRouter.show();
     }
 
-    get routers(): Record<string, ManagerRouters<CustomTemplates & DefaultTemplates>> {
+    get routers(): Record<string, ManagerRouters<AllTemplates<CustomTemplates, DefaultTemplates>>> {
         return this._routers;
     }
 
@@ -564,8 +573,8 @@ export default class Manager<
      * Adds the initial routers defined during initialization
      */
     public addRouters = (
-        router: IRouterDeclaration<CustomTemplates & DefaultTemplates> = null,
-        type: NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)> = null,
+        router: IRouterDeclaration<AllTemplates<CustomTemplates, DefaultTemplates>> = null,
+        type: NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates, DefaultTemplates>)> = null,
         parentName: string = null
     ): void => {
         // If no router specified, there are no routers to add
@@ -592,7 +601,7 @@ export default class Manager<
      * its parent and any child routers
      */
     public addRouter(
-        routerDeclaration: IRouterDeclaration<CustomTemplates & DefaultTemplates>
+        routerDeclaration: IRouterDeclaration<AllTemplates<CustomTemplates, DefaultTemplates>>
     ): void {
         const {name, parentName, type} = routerDeclaration;
         const parent = this.routers[parentName];
@@ -662,8 +671,11 @@ export default class Manager<
     };
 
     protected registerRouter<
-        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
-    >(name: string, router: RouterInstance<CustomTemplates & DefaultTemplates, Name>): void {
+        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates, DefaultTemplates>)>
+    >(
+        name: string,
+        router: RouterInstance<AllTemplates<CustomTemplates, DefaultTemplates>, Name>
+    ): void {
         this._routers[name] = router;
     }
 
@@ -676,10 +688,10 @@ export default class Manager<
      * TODO make this method not mutate `newState`
      */
     public calcNewRouterState<
-        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates, DefaultTemplates>)>
     >(
         location: IInputLocation,
-        router: RouterInstance<CustomTemplates & DefaultTemplates, Name>,
+        router: RouterInstance<AllTemplates<CustomTemplates, DefaultTemplates>, Name>,
         ctx: ILocationActionContext = {},
         newState: Record<string, RouterCurrentState> = {}
     ): Record<string, RouterCurrentState> {
@@ -704,12 +716,12 @@ export default class Manager<
     }
 
     protected createRouterConfigArgs<
-        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates, DefaultTemplates>)>
     >(
-        routerDeclaration: IRouterDeclaration<CustomTemplates & DefaultTemplates>,
+        routerDeclaration: IRouterDeclaration<AllTemplates<CustomTemplates, DefaultTemplates>>,
         routerType: Name,
-        parent: RouterInstance<CustomTemplates & DefaultTemplates, Name>
-    ): IRouterCreationInfo<Name>['config'] {
+        parent: RouterInstance<AllTemplates<CustomTemplates, DefaultTemplates>, Name>
+    ): IRouterCreationInfo<AllTemplates<CustomTemplates, DefaultTemplates>, Name>['config'] {
         const templateConfig = this.templates[routerType].config;
         const hasParentOrIsRoot =
             parent && parent.isPathRouter !== undefined ? parent.isPathRouter : true;
@@ -737,8 +749,8 @@ export default class Manager<
     }
 
     protected validateNeighborsOfOtherTypesArentPathRouters<
-        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
-    >(router: RouterInstance<CustomTemplates & DefaultTemplates, Name>): void {
+        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates, DefaultTemplates>)>
+    >(router: RouterInstance<AllTemplates<CustomTemplates, DefaultTemplates>, Name>): void {
         const nameOfNeighboorRouterThatIsPathRouter = router
             .getNeighbors()
             .reduce((acc, r) => (r.isPathRouter ? r.name : acc), undefined as string | undefined);
@@ -753,7 +765,7 @@ export default class Manager<
     }
 
     protected validateRouterCreationInfo<
-        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates, DefaultTemplates>)>
     >(name: string, type: Name, config: IRouterConfig): void {
         // Check if the router type exists
         if (!this.routerTypes[type] && type !== 'root') {
@@ -784,13 +796,17 @@ export default class Manager<
      * place to redefine the getters and setters `getState` and `subscribe`
      */
     protected createNewRouterInitArgs<
-        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates, DefaultTemplates>)>
     >({
         name,
         config,
         type,
         parentName
-    }: IRouterCreationInfo<Name>): IRouterInitArgs<CustomTemplates & DefaultTemplates, Name, this> {
+    }: IRouterCreationInfo<AllTemplates<CustomTemplates, DefaultTemplates>, Name>): IRouterInitArgs<
+        AllTemplates<CustomTemplates, DefaultTemplates>,
+        Name,
+        this
+    > {
         const parent = this.routers[parentName];
         const actions = Object.keys(this.templates[type].actions);
 
@@ -815,10 +831,10 @@ export default class Manager<
      * Good place to change the base router prototype or decorate methods
      */
     protected createRouterFromInitArgs<
-        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates, DefaultTemplates>)>
     >(
-        initalArgs: IRouterInitArgs<CustomTemplates & DefaultTemplates, Name>
-    ): RouterInstance<CustomTemplates & DefaultTemplates, Name> {
+        initalArgs: IRouterInitArgs<AllTemplates<CustomTemplates, DefaultTemplates>, Name>
+    ): RouterInstance<AllTemplates<CustomTemplates, DefaultTemplates>, Name> {
         const routerClass = this.routerTypes[initalArgs.type];
         // TODO add tests for passing of action names
         // return new (routerClass as any)({...initalArgs}) as RouterT;
@@ -850,13 +866,16 @@ export default class Manager<
      * Those methods use this `createRouter` method in turn.
      */
     protected createRouter<
-        Name extends NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates, DefaultTemplates>)>
     >({
         name,
         config,
         type,
         parentName
-    }: IRouterCreationInfo<Name>): RouterInstance<CustomTemplates & DefaultTemplates, Name> {
+    }: IRouterCreationInfo<AllTemplates<CustomTemplates, DefaultTemplates>, Name>): RouterInstance<
+        AllTemplates<CustomTemplates, DefaultTemplates>,
+        Name
+    > {
         this.validateRouterCreationInfo(name, type, config);
 
         const initalArgs = this.createNewRouterInitArgs({name, config, type, parentName});

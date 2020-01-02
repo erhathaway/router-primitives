@@ -411,10 +411,13 @@ type iRouterInitArgsTestActionsB = iRouterInitArgsTestA['actions'];
  * This is also the minimal amount of information an instantiated manager needs
  * to create the router init args and initialize a new router.
  */
-export interface IRouterCreationInfo<RouterType extends string> {
+export interface IRouterCreationInfo<
+    Templates extends IRouterTemplates,
+    RouterTypeName extends NarrowRouterTypeName<keyof Templates>
+> {
     name: string;
     config: IRouterConfig;
-    type: RouterType;
+    type: RouterTypeName;
     parentName?: string;
 }
 
@@ -467,11 +470,7 @@ export type CacheClass<
  * Returns an array of a router instances neighbors. That is, all router instances that are not of this type
  * in side an array.
  */
-export type NeighborsOfType<
-    TypeName extends string,
-    T extends IRouterTemplates,
-    M extends Manager = Manager
-> = Array<
+export type NeighborsOfType<TypeName extends string, T extends IRouterTemplates> = Array<
     {
         [RouterType in Exclude<keyof T, TypeName>]?: Array<
             RouterInstance<T, NarrowRouterTypeName<RouterType>>
@@ -516,16 +515,25 @@ export type TemplateOfRouter<R> = R extends RouterInstance<
 
 export type ActionWraperFnDecorator = <Fn extends RouterActionFn>(fn: Fn) => Fn;
 
+/**
+ * Utility function for combining custom and default templates
+ */
+export type AllTemplates<
+    CustomTemplates extends IRouterTemplates,
+    DefaultTemplates extends IRouterTemplates
+> = JoinIntersection<CustomTemplates & DefaultTemplates>;
+type allTemplatesTest = AllTemplates<{other: typeof template['data']}, typeof template>;
+
 export interface IManagerInit<
     CustomTemplates extends IRouterTemplates = {},
     DefaultTemplates extends IRouterTemplates = typeof template
 > {
-    routerTree?: IRouterDeclaration<CustomTemplates & DefaultTemplates>;
+    routerTree?: IRouterDeclaration<AllTemplates<CustomTemplates, DefaultTemplates>>;
     serializedStateStore?: NativeSerializedStore | BrowserSerializedStore;
     routerStateStore?: DefaultRoutersStateStore;
     router?: RouterClass<
-        CustomTemplates & DefaultTemplates,
-        NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
+        AllTemplates<CustomTemplates, DefaultTemplates>,
+        NarrowRouterTypeName<keyof AllTemplates<CustomTemplates, DefaultTemplates>>
     >;
     customTemplates?: CustomTemplates;
     defaultTemplates?: DefaultTemplates;
@@ -555,6 +563,11 @@ type managerRouterTypesTest = ManagerRouterTypes<typeof template>;
  * General Utilities
  * -------------------------------------------------
  */
+
+type JoinIntersection<T extends {}> = {
+    [k in keyof T]: T[k];
+};
+type joinIntersectionTest = JoinIntersection<{other: typeof template['data']} & typeof template>;
 
 /**
  * From https://github.com/Microsoft/TypeScript/pull/21316#issuecomment-359574388
