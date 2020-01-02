@@ -103,11 +103,14 @@ export type Reducer<CurrentState> = {
  * The function that defines alterations on the router location.
  * Actions take the existing location and return a new location.
  */
-export type RouterActionFn = <RouterTypeName extends string, Templates extends IRouterTemplates>(
+export type RouterActionFn = <
+    Templates extends IRouterTemplates,
+    RouterTypeName extends NarrowRouterTypeName<keyof Templates>
+>(
     options?: IRouterActionOptions,
     location?: IInputLocation,
 
-    router?: RouterInstance<RouterTypeName, Templates>,
+    router?: RouterInstance<Templates, RouterTypeName>,
     ctx?: ILocationActionContext
 ) => IInputLocation;
 
@@ -116,11 +119,11 @@ export type RouterActionFn = <RouterTypeName extends string, Templates extends I
  * The reducer is responsible for taking a new location and defining what the state of the router is from that location.
  */
 export type RouterReducerFn<CustomState extends {} = {}> = <
-    RouterTypeName extends string,
-    Templates extends IRouterTemplates
+    Templates extends IRouterTemplates,
+    RouterTypeName extends NarrowRouterTypeName<keyof Templates>
 >(
     location: IInputLocation,
-    router: RouterInstance<RouterTypeName, Templates>,
+    router: RouterInstance<Templates, RouterTypeName>,
     ctx: {[key: string]: any} // eslint-disable-line
 ) => RouterCurrentState<CustomState>;
 
@@ -160,7 +163,7 @@ type narrowActionNamesTestA = NarrowActionNames<typeof template.scene['actions']
  * This type is a union of all possible router types found in the templates object.
  */
 export type Parent<T extends IRouterTemplates> = {
-    [RouterType in keyof T]: RouterInstance<NarrowRouterTypeName<RouterType>, T>;
+    [RouterType in keyof T]: RouterInstance<T, NarrowRouterTypeName<RouterType>>;
 }[keyof T];
 type parentTest = Parent<typeof template>;
 
@@ -168,7 +171,7 @@ type parentTest = Parent<typeof template>;
  * The root router instance. This router is at the very top of the router tree.
  * The type should be a specific router instance. Usually it has the name 'root' in the templates object.
  */
-export type Root<T extends IRouterTemplates> = RouterInstance<'root', T>;
+export type Root<T extends IRouterTemplates> = RouterInstance<T, 'root'>;
 type rootTest = Root<typeof template>;
 
 /**
@@ -177,7 +180,7 @@ type rootTest = Root<typeof template>;
  */
 export type Childs<T extends IRouterTemplates> = {
     [RouterType in Exclude<keyof T, 'root'>]?: Array<
-        RouterInstance<NarrowRouterTypeName<RouterType>, T>
+        RouterInstance<T, NarrowRouterTypeName<RouterType>>
     >;
 };
 type childsTest = Childs<typeof template>;
@@ -193,34 +196,38 @@ type childsTest = Childs<typeof template>;
  * A router is represented by a router template.
  */
 export type RouterInstance<
-    RouterTypeName extends string,
-    Templates extends IRouterTemplates
+    Templates extends IRouterTemplates,
+    RouterTypeName extends NarrowRouterTypeName<keyof Templates> | 'root'
 > = Actions<ExtractCustomActionsFromTemplate<Templates[RouterTypeName]>> &
     // TODO figured out why intersecting with default actions is required here.
     // In the data template, `show` action isnt present without it, but all router instances
     // should have it by default
-    DefaultRouterActions &
+    // DefaultRouterActions &
     Reducer<RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>> &
     RouterBase<RouterTypeName, Templates>;
 
-type routerInstanceTest = RouterInstance<'stack', typeof template>;
-type routerInstanceTestA = RouterInstance<'scene', typeof template>;
-type routerInstanceTestShow = routerInstanceTest['toFront'];
+type routerInstanceTest = RouterInstance<typeof template, 'stack'>;
+type routerInstanceTestA = RouterInstance<typeof template, 'scene'>;
+type routerInstanceTestToFront = routerInstanceTest['toFront'];
 type routerInstanceTestShowA = routerInstanceTestA['show'];
+type routerInstanceTestB = RouterInstance<{} & typeof template, 'stack'>['show'];
 
 /**
  * The router class.
  * A router is represented by a router template.
  */
-export type RouterClass<RouterTypeName extends string, Templates extends IRouterTemplates> = {
+export type RouterClass<
+    Templates extends IRouterTemplates,
+    RouterTypeName extends NarrowRouterTypeName<keyof Templates>
+> = {
     new (...args: ConstructorParameters<typeof RouterBase>): RouterInstance<
-        RouterTypeName,
-        Templates
+        Templates,
+        RouterTypeName
     >;
 };
 
-type routerClassTest = InstanceType<RouterClass<'feature', typeof template>>;
-type routerClassTestA = InstanceType<RouterClass<'stack', typeof template>>;
+type routerClassTest = InstanceType<RouterClass<typeof template, 'feature'>>;
+type routerClassTestA = InstanceType<RouterClass<typeof template, 'stack'>>;
 
 /**
  * -------------------------------------------------
@@ -461,7 +468,7 @@ export type NeighborsOfType<
 > = Array<
     {
         [RouterType in Exclude<keyof T, TypeName>]?: Array<
-            RouterInstance<NarrowRouterTypeName<RouterType>, T>
+            RouterInstance<T, NarrowRouterTypeName<RouterType>>
         >;
     }[Exclude<keyof T, TypeName>]
 >;
@@ -483,8 +490,8 @@ export interface IManagerInit<
     serializedStateStore?: NativeSerializedStore | BrowserSerializedStore;
     routerStateStore?: DefaultRoutersStateStore;
     router?: RouterClass<
-        NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>,
-        CustomTemplates & DefaultTemplates
+        CustomTemplates & DefaultTemplates,
+        NarrowRouterTypeName<keyof (CustomTemplates & DefaultTemplates)>
     >;
     customTemplates?: CustomTemplates;
     defaultTemplates?: DefaultTemplates;
@@ -495,7 +502,7 @@ export interface IManagerInit<
  * This type is a union of all possible router types found in the templates object.
  */
 export type ManagerRouters<T extends IRouterTemplates> = {
-    [RouterType in keyof T]: RouterInstance<NarrowRouterTypeName<RouterType>, T>;
+    [RouterType in keyof T]: RouterInstance<T, NarrowRouterTypeName<RouterType>>;
 }[keyof T];
 type managerRoutersTest = ManagerRouters<typeof template>;
 
@@ -505,7 +512,7 @@ type managerRoutersTest = ManagerRouters<typeof template>;
  * is a class that can be used to instantiate a specific router from a declaration object that a user supplies.
  */
 export type ManagerRouterTypes<T extends IRouterTemplates> = {
-    [RouterType in keyof T]: RouterClass<NarrowRouterTypeName<RouterType>, T>;
+    [RouterType in keyof T]: RouterClass<T, NarrowRouterTypeName<RouterType>>;
 };
 type managerRouterTypesTest = ManagerRouterTypes<typeof template>;
 
