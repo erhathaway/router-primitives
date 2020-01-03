@@ -16,7 +16,7 @@ export class TracerManager {
         this.pastSessions = [];
         this.currentSessions = {};
     }
-    public get lastSession() {
+    public get lastSession(): TracerSession {
         return this.pastSessions.sort((a: TracerSession, b: TracerSession) =>
             a.startTime > b.startTime ? 1 : -1
         )[0];
@@ -32,7 +32,7 @@ export class TracerManager {
         return session;
     }
 
-    public _moveSessionToFinishedStorage(session: TracerSession) {
+    public _moveSessionToFinishedStorage(session: TracerSession): void {
         delete this.currentSessions[session.name];
         this.pastSessions.push(session);
     }
@@ -72,7 +72,7 @@ export class TracerSession implements ITracerSession {
         this.thingSubscriptions = {};
     }
 
-    public subscribeToThing(thingName: string, callbackFn: ThingSubscription) {
+    public subscribeToThing(thingName: string, callbackFn: ThingSubscription): void {
         const subscriptions = this.thingSubscriptions[thingName] || [];
         subscriptions.push(callbackFn);
         this.thingSubscriptions[thingName] = subscriptions;
@@ -83,16 +83,11 @@ export class TracerSession implements ITracerSession {
         }
     }
 
-    public removeAllSubscriptions() {
-        // console.log('removing all subs$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-        // const thingName = Object.keys(this.thingSubscriptions) || [];
-        // thingName.forEach(n => {
-        //     (this.thingSubscriptions[n] || []).forEach(s => s && (s as any)({ isActive: false }))
-        // })
+    public removeAllSubscriptions(): void {
         this.thingSubscriptions = {};
     }
 
-    public notifySubscribersOfThingUpdate(nameOfUpdatedThing: string) {
+    public notifySubscribersOfThingUpdate(nameOfUpdatedThing: string): void {
         const subscriptions = this.thingSubscriptions[nameOfUpdatedThing] || [];
         const thing = this.tracerThings[nameOfUpdatedThing];
         subscriptions.forEach(notifySubscriber => {
@@ -113,14 +108,14 @@ export class TracerSession implements ITracerSession {
         return tracer;
     }
 
-    public endWithMessage(message: ITracerSession['endMessage']) {
+    public endWithMessage(message: ITracerSession['endMessage']): void {
         if (this.isActive) {
             this.endMessage = message;
             this.end();
         }
     }
 
-    public end() {
+    public end(): void {
         // console.log('ENDING TRACER SESSION'); // tslint:disable-line
         // console.log('hi')
         if (this.isActive) {
@@ -172,13 +167,13 @@ class TracerThing implements ITracerThing {
         this.endTime = undefined;
     }
 
-    public start() {
+    public start(): void {
         this.startTime = performance.now();
         this.isActive = true;
         this.session.notifySubscribersOfThingUpdate(this.name);
     }
 
-    public logStep(name: IStep['name'], info?: IStep['info']) {
+    public logStep(name: IStep['name'], info?: IStep['info']): void {
         const step: IStep = {
             time: performance.now(),
             name,
@@ -192,14 +187,14 @@ class TracerThing implements ITracerThing {
         this.session.notifySubscribersOfThingUpdate(this.name);
     }
 
-    public endWithMessage(reason: ITracerThing['endMessage']) {
+    public endWithMessage(reason: ITracerThing['endMessage']): void {
         if (this.isActive) {
             this.endMessage = reason;
             this.end();
         }
     }
 
-    public end() {
+    public end(): void {
         if (this.isActive) {
             // console.log('ENDING THING TRACER:', this.name);
             this.endTime = performance.now();

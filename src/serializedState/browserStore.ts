@@ -1,13 +1,11 @@
 import deserializer from './deserializer';
 import serializer from './serializer';
-import {IOutputLocation, IInputLocation} from '../types/index';
+import {IOutputLocation, IInputLocation, StateObserver} from '../types/index';
 
 interface IBrowserStoreConfig {
     serializer: typeof serializer;
     deserializer: typeof deserializer;
 }
-type State = ReturnType<typeof deserializer>;
-type StateObserver = (state: State) => any;
 
 /**
  * The store that the router manager uses to write and read from the serialized state
@@ -33,7 +31,7 @@ export default class BrowserStore {
 
     // unserialized state = { pathname: [], search: {}, options: {} }
     // options = { updateHistory }
-    public setState(unserializedLocation: IInputLocation) {
+    public setState(unserializedLocation: IInputLocation): void {
         const oldUnserializedLocation = this.getState();
         const {location: newState} = this.config.serializer(
             unserializedLocation,
@@ -56,7 +54,7 @@ export default class BrowserStore {
     }
 
     // is a BehaviorSubject
-    public subscribeToStateChanges(fn: StateObserver) {
+    public subscribeToStateChanges(fn: StateObserver): void {
         this.observers.push(fn);
 
         // send existing state to observer
@@ -64,23 +62,23 @@ export default class BrowserStore {
         fn(deserializedState);
     }
 
-    public unsubscribeFromStateChanges(fn: StateObserver) {
+    public unsubscribeFromStateChanges(fn: StateObserver): void {
         this.observers = this.observers.filter(existingFn => existingFn !== fn);
     }
 
-    public back() {
+    public back(): void {
         window.history.back();
     }
 
-    public forward() {
+    public forward(): void {
         window.history.forward();
     }
 
-    public go(historyChange: number) {
+    public go(historyChange: number): void {
         window.history.go(historyChange);
     }
 
-    private _monitorLocation() {
+    private _monitorLocation(): void {
         const newLocation = window.location.href;
         if (this.existingLocation !== newLocation) {
             this.existingLocation = newLocation;
@@ -88,7 +86,7 @@ export default class BrowserStore {
         }
     }
 
-    private notifyObservers() {
+    private notifyObservers(): void {
         const deserializedState = this.getState();
         this.observers.forEach(fn => fn(deserializedState));
     }

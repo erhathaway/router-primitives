@@ -565,6 +565,7 @@ export default class Manager<
                     templateName as NarrowRouterTypeName<
                         keyof AllTemplates<CustomTemplates, DefaultTemplates>
                     >
+                    // eslint-disable-next-line
                 ] = RouterFromTemplate as any; // TODO Fix this any
 
                 return acc;

@@ -1,14 +1,13 @@
 import deserializer from './deserializer';
 import serializer from './serializer';
-import {IInputLocation} from '../types';
+import {IInputLocation, IOutputLocation, StateObserver} from '../types';
 
 interface INativeStoreConfig {
     serializer: typeof serializer;
     deserializer: typeof deserializer;
     historySize: number;
 }
-type State = ReturnType<typeof deserializer>;
-type StateObserver = (state: State) => any;
+
 interface ISetStateOptions {
     updateHistory?: boolean;
 }
@@ -34,7 +33,7 @@ export default class NativeStore {
 
     // unserialized state = { pathname: [], search: {}, options: {} }
     // options = { updateHistory }
-    public setState(unserializedLocation: IInputLocation, options: ISetStateOptions = {}) {
+    public setState(unserializedLocation: IInputLocation, options: ISetStateOptions = {}): void {
         const oldUnserializedLocation = this.getState();
         const {location: newState} = this.config.serializer(
             unserializedLocation,
@@ -71,12 +70,12 @@ export default class NativeStore {
         this.notifyObservers();
     }
 
-    public getState() {
+    public getState(): IOutputLocation {
         return this.config.deserializer(this.history[this.currentLocationInHistory]);
     }
 
     // is a BehaviorSubject
-    public subscribeToStateChanges(fn: StateObserver) {
+    public subscribeToStateChanges(fn: StateObserver): void {
         this.observers.push(fn);
 
         // send existing state to observer
@@ -84,20 +83,20 @@ export default class NativeStore {
         fn(deserializedState);
     }
 
-    public unsubscribeFromStateChanges(fn: StateObserver) {
+    public unsubscribeFromStateChanges(fn: StateObserver): void {
         this.observers = this.observers.filter(existingFn => existingFn !== fn);
     }
     // unsubscribeToStateChanges // TODO fill me in!
 
-    public back() {
+    public back(): void {
         this.go(-1);
     }
 
-    public forward() {
+    public forward(): void {
         this.go(1);
     }
 
-    public go(historyChange: number) {
+    public go(historyChange: number): void {
         if (historyChange === 0) {
             throw new Error('No history size change specified');
         }
@@ -121,7 +120,7 @@ export default class NativeStore {
         this.setState(this.getState(), {updateHistory: false});
     }
 
-    private notifyObservers() {
+    private notifyObservers(): void {
         const deserializedState = this.getState();
         this.observers.forEach(fn => fn(deserializedState));
     }

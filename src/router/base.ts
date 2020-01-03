@@ -11,7 +11,6 @@ import {
     NeighborsOfType,
     NarrowRouterTypeName
 } from '../types';
-import template from './template';
 
 export interface IInternalState {
     isActive?: boolean;

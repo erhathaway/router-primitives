@@ -1,5 +1,5 @@
 import * as queryString from 'query-string';
-import {IInputLocation} from '../types/index';
+import {IInputLocation, IOutputLocation} from '../types/index';
 
 const DEFAULT_LOCATION: IInputLocation = {pathname: [], search: {}, options: {}};
 

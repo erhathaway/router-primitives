@@ -34,7 +34,7 @@ module.exports = {
         '@typescript-eslint/camelcase': ['error', {properties: 'always'}], // enfore camelcase for property names
         'sort-imports': 'off',
         // 'variable-name': [true, 'ban-keywords', 'check-format', 'allow-leading-underscore'],
-        'max-classes-per-file': ['error', 2], // allow 2 class per file max
+        'max-classes-per-file': ['error', 3], // allow 3 class per file max
         'object-literal-sort-keys': 'off', // don't requre object keys to be sorted
         'arrow-parens': 'off', // don't require parens around arrow functions
         'object-curly-spacing': ['error', 'never'] // don't allow spacing inside brackets

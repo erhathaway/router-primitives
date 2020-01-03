@@ -262,7 +262,7 @@ export type RouterInstance<
 type routerInstanceTest = RouterInstance<typeof template, 'stack'>;
 type routerInstanceTestToFront = routerInstanceTest['toFront']; // <--- should not error
 type routerInstanceTestA = RouterInstance<typeof template, 'scene'>;
-type routerInstanceTestAToFront = routerInstanceTestA['toFront']; // <--- should error
+// type routerInstanceTestAToFront = routerInstanceTestA['toFront']; // <--- should error
 type routerInstanceTestShowA = routerInstanceTestA['show'];
 
 // A router instance given an open ended type name should be an intersection of all router types
@@ -585,7 +585,9 @@ export interface IManagerInit<
 > {
     routerTree?: IRouterDeclaration<AllTemplates<CustomTemplates, DefaultTemplates>>;
     serializedStateStore?: NativeSerializedStore | BrowserSerializedStore;
-    routerStateStore?: DefaultRoutersStateStore;
+    routerStateStore?: DefaultRoutersStateStore<
+        ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates, DefaultTemplates>>
+    >;
     router?: RouterClass<
         AllTemplates<CustomTemplates, DefaultTemplates>,
         NarrowRouterTypeName<keyof AllTemplates<CustomTemplates, DefaultTemplates>>
@@ -612,6 +614,14 @@ export type ManagerRouterTypes<T extends IRouterTemplates> = {
     [RouterType in keyof T]: RouterClass<T, NarrowRouterTypeName<RouterType>>;
 };
 type managerRouterTypesTest = ManagerRouterTypes<typeof template>;
+
+/**
+ * -------------------------------------------------
+ * Serialized state store
+ * -------------------------------------------------
+ */
+
+export type StateObserver = (state: IOutputLocation) => any;
 
 /**
  * -------------------------------------------------
