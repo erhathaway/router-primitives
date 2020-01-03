@@ -633,7 +633,11 @@ export default class Manager<
         const routerType = (!parentName && !this.rootRouter
             ? 'root'
             : type) as NarrowRouterTypeName<keyof AllTemplates<CustomTemplates, DefaultTemplates>>;
-        const config = this.createRouterConfigArgs(routerDeclaration, routerType, parent);
+        const config = this.createRouterConfigArgs(
+            routerDeclaration,
+            routerType,
+            parent
+        ) as IRouterConfig; // TODO figure out why this assertion is necessary
 
         // Create a router
         const router = this.createRouter({name, config, type: routerType, parentName});
@@ -641,7 +645,10 @@ export default class Manager<
         // Set the created router as the parent router
         // if it has no parent and there is not yet a root
         if (!parentName && !this.rootRouter) {
-            this.rootRouter = router;
+            // TODO figure out why this assertion doesnt sufficently overlap with the `router` type above
+            this.rootRouter = (router as unknown) as Root<
+                AllTemplates<CustomTemplates, DefaultTemplates>
+            >;
         } else if (!parentName && this.rootRouter) {
             throw new Error(
                 'Root router already exists. You likely forgot to specify a parentName'
@@ -750,7 +757,7 @@ export default class Manager<
         routerDeclaration: IRouterDeclaration<AllTemplates<CustomTemplates, DefaultTemplates>>,
         routerType: Name,
         parent: RouterInstance<AllTemplates<CustomTemplates, DefaultTemplates>, Name>
-    ): IRouterCreationInfo<AllTemplates<CustomTemplates, DefaultTemplates>, Name>['config'] {
+    ): IRouterConfig {
         const templateConfig = this.templates[routerType].config;
         const hasParentOrIsRoot =
             parent && parent.isPathRouter !== undefined ? parent.isPathRouter : true;
@@ -825,8 +832,8 @@ export default class Manager<
      * place to redefine the getters and setters `getState` and `subscribe`
      */
     protected createNewRouterInitArgs<
-        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates, DefaultTemplates>)>,
-        M extends Manager
+        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates, DefaultTemplates>)>
+        // M extends Manager
     >({
         name,
         config,
@@ -834,8 +841,8 @@ export default class Manager<
         parentName
     }: IRouterCreationInfo<AllTemplates<CustomTemplates, DefaultTemplates>, Name>): IRouterInitArgs<
         AllTemplates<CustomTemplates, DefaultTemplates>,
-        Name,
-        M
+        Name
+        // M
     > {
         const parent = this.routers[parentName];
         const actions = objKeys(this.templates[type].actions);
@@ -882,7 +889,9 @@ export default class Manager<
      * the `routerStateStore`
      */
     protected setNewRouterState(location: IInputLocation): void {
-        const newState = this.calcNewRouterState(location, this.rootRouter);
+        // TODO fix this any assertion
+        // eslint-disable-next-line
+        const newState = this.calcNewRouterState(location, this.rootRouter as any);
         this.routerStateStore.setState(newState);
     }
 

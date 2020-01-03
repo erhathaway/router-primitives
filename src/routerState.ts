@@ -1,8 +1,4 @@
-import {IRouterState, IRouterCurrentState, Observer} from './types';
-
-interface IStore {
-    [key: string]: IRouterState;
-}
+import {Observer, RouterCurrentState, IRouterCurrentAndHistoricalState} from './types';
 
 interface IConfig {
     historySize: number;
@@ -18,12 +14,15 @@ interface IConfig {
  *   createRouterStateGetter
  *   createRouterStateSubscriber
  */
-export default class DefaultRoutersStateStore {
-    private store: IStore;
+export default class DefaultRoutersStateStore<CustomState extends {}> {
+    private store: Record<string, IRouterCurrentAndHistoricalState<CustomState>>;
     private config: IConfig;
     private observers: {[key: string]: Observer[]};
 
-    constructor(store?: IStore, config: IConfig = {historySize: 2}) {
+    constructor(
+        store?: Record<string, IRouterCurrentAndHistoricalState<CustomState>>,
+        config: IConfig = {historySize: 2}
+    ) {
         this.store = store || {};
         this.config = config;
         this.observers = {}; // key is routerName
@@ -36,7 +35,7 @@ export default class DefaultRoutersStateStore {
      *   the router callbacks wont be called for this router. Otherwise, if the state
      *   has changed in any way, callback will be fired off for the router.
      */
-    public setState(desiredRouterStates: {[key: string]: IRouterCurrentState}) {
+    public setState(desiredRouterStates: Record<string, RouterCurrentState<CustomState>>): void {
         const routerNames = Object.keys(desiredRouterStates);
         // Keeps track of which routers have new state.
         // Used to notify observers of new state changes on a router by router level
@@ -45,10 +44,10 @@ export default class DefaultRoutersStateStore {
         this.store = routerNames.reduce(
             (routerStates, routerName) => {
                 // extract current and historical states
-                const {current: prevCurrent, historical} = routerStates[routerName] || {
+                const {current: prevCurrent, historical} = (routerStates[routerName] || {
                     current: {},
                     historical: []
-                };
+                }) as IRouterCurrentAndHistoricalState<CustomState>;
                 const newCurrent = desiredRouterStates[routerName];
 
                 // skip routers who haven't been updated
@@ -103,11 +102,11 @@ export default class DefaultRoutersStateStore {
      * The returned function is used subscribe observers to changes in
      *   a single routers state.
      */
-    public createRouterStateSubscriber(routerName: string) {
+    public createRouterStateSubscriber(routerName: string): (fn: Observer<CustomState>) => void {
         if (!this.observers[routerName]) {
             this.observers[routerName] = [];
         }
-        return (fn: Observer) => {
+        return (fn: Observer<CustomState>) => {
             if (Array.isArray(this.observers[routerName])) {
                 this.observers[routerName].push(fn);
             } else {
@@ -116,8 +115,8 @@ export default class DefaultRoutersStateStore {
         };
     }
 
-    public createRouterStateUnsubscriber(routerName: string) {
-        return (fn: Observer) => {
+    public createRouterStateUnsubscriber(routerName: string): (fn: Observer<CustomState>) => void {
+        return (fn: Observer<CustomState>) => {
             if (!this.observers[routerName]) {
                 // TODO add to logger
                 // console.warn('No subscribers present to unscribe from store');
@@ -125,12 +124,13 @@ export default class DefaultRoutersStateStore {
             }
             const observers = this.observers[routerName];
             this.observers[routerName] = observers.filter(
+                // TODO validate that this works
                 presentObservers => presentObservers !== fn
             );
         };
     }
 
-    public unsubscribeAllObserversForRouter(routerName: string) {
+    public unsubscribeAllObserversForRouter(routerName: string): void {
         if (!this.observers[routerName]) {
             // TODO add to logger
             // console.warn('No subscribers present to unscribe from store');
@@ -142,7 +142,7 @@ export default class DefaultRoutersStateStore {
     /**
      * Returns the stores state for all routers
      */
-    public getState() {
+    public getState(): Record<string, IRouterCurrentAndHistoricalState<CustomState>> {
         return this.store;
     }
 }

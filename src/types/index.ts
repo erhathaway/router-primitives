@@ -424,7 +424,6 @@ export interface IRouterDeclaration<Templates extends IRouterTemplates> {
 export interface IRouterInitArgs<
     Templates extends IRouterTemplates,
     RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
-    // RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
     M extends Manager = Manager
 > {
     name: string;
