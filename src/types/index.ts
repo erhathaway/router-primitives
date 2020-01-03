@@ -407,10 +407,10 @@ export interface ISerializeOptions {
  */
 export interface IRouterDeclaration<Templates extends IRouterTemplates> {
     name: string;
-    routers?: Record<NarrowRouterTypeName<keyof Templates>, IRouterDeclaration<Templates>[]>;
+    routers?: Record<string, IRouterDeclaration<Templates>[]>;
     routeKey?: string;
     type?: NarrowRouterTypeName<keyof Templates>;
-    parentName?: NarrowRouterTypeName<keyof Templates>;
+    parentName?: string;
 
     isPathRouter?: boolean;
     shouldInverselyActivate?: boolean;
@@ -566,7 +566,7 @@ export type TemplateOfRouter<R> = R extends RouterInstance<
  * -------------------------------------------------
  */
 
-export type ActionWraperFnDecorator = <Fn extends RouterActionFn>(fn: Fn) => Fn;
+export type ActionWraperFnDecorator = <Fn extends any>(fn: Fn) => Fn;
 
 /**
  * Utility function for combining custom and default templates
@@ -645,3 +645,11 @@ export type Spread<L, R> =
         Pick<R, Diff<OptionalPropertyNames<R>, keyof L>> &
         // Properties in R, with types that include undefined, that exist in L
         SpreadProperties<L, R, OptionalPropertyNames<R> & keyof L>;
+
+type Unpacked<T> = T extends (infer U)[]
+    ? U // eslint-disable-next-line
+    : T extends (...args: any[]) => infer U
+    ? U
+    : T extends Promise<infer U>
+    ? U
+    : T;

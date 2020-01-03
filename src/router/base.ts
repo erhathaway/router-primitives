@@ -287,11 +287,11 @@ export default class RouterBase<
 }
 
 // const managerTest = new Manager();
-const baseTest = new RouterBase<typeof template, 'scene'>({} as any); // eslint-disable-line
+// const baseTest = new RouterBase<typeof template, 'scene'>({} as any); // eslint-disable-line
 
-baseTest.routers['stack'];
-baseTest.parent.routers['stack'];
-baseTest.root.routers['stack'];
-const nbt = baseTest.getNeighborsByType('stack').forEach(r => r);
+// baseTest.routers['stack'];
+// baseTest.parent.routers['stack'];
+// baseTest.root.routers['stack'];
+// const nbt = baseTest.getNeighborsByType('stack').forEach(r => r);
 
-const baseTest2 = new RouterBase<{}, string>({} as any);
+// const baseTest2 = new RouterBase<{}, string>({} as any);
