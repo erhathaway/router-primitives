@@ -790,7 +790,7 @@ export default class Manager<
     >(router: RouterInstance<AllTemplates<CustomTemplates, DefaultTemplates>, Name>): void {
         const nameOfNeighboorRouterThatIsPathRouter = router
             .getNeighbors()
-            .reduce((acc, r) => (r.isPathRouter ? r.name : acc), undefined as string | undefined);
+            .reduce((acc, r) => (r.isPathRouter ? r.name : acc), undefined);
         if (nameOfNeighboorRouterThatIsPathRouter) {
             throw new Error(
                 `Cannot add ${router.name}. 
@@ -875,7 +875,6 @@ export default class Manager<
     ): RouterInstance<AllTemplates<CustomTemplates, DefaultTemplates>, NarrowRouterTypeName<Name>> {
         const routerClass = this.routerTypes[initalArgs.type];
         // TODO add tests for passing of action names
-        // return new (routerClass as any)({...initalArgs}) as RouterT;
         return new routerClass({...initalArgs});
     }
 

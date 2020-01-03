@@ -211,6 +211,8 @@ export type G<T, N> = N extends NarrowRouterTypeName<keyof T> ? N : never;
 /**
  * The instantiated router class.
  * A router is represented by a router template.
+ *
+ * $$$$ TODO $$$$ CHANGE THIS TO A UNION WHEN NAME IS NOT SPECIFIC
  */
 export type RouterInstance<
     Templates extends IRouterTemplates,
@@ -266,9 +268,10 @@ type routerInstanceTestA = RouterInstance<typeof template, 'scene'>;
 type routerInstanceTestShowA = routerInstanceTestA['show'];
 
 // A router instance given an open ended type name should be an intersection of all router types
-type routerInstanceTestB = RouterInstance<{} & typeof template, string>['show'];
+type routerInstanceTestB = RouterInstance<{} & typeof template, string>;
+type routerInstanceTestC = RouterInstance<{} & typeof template, string>['show'];
 // A router instance given open ended template types should have the default actions
-type routerInstanceTestC = RouterInstance<{}, string>['show'];
+type routerInstanceTestD = RouterInstance<{}, string>['show'];
 
 /**
  * The router class.
