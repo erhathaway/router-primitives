@@ -292,4 +292,6 @@ const baseTest = new RouterBase<typeof template, 'scene'>({} as any); // eslint-
 baseTest.routers['stack'];
 baseTest.parent.routers['stack'];
 baseTest.root.routers['stack'];
-baseTest.getNeighborsByType('stack');
+const nbt = baseTest.getNeighborsByType('stack').forEach(r => r);
+
+const baseTest2 = new RouterBase<{}, string>({} as any);

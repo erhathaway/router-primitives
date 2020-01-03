@@ -23,10 +23,10 @@ import {
     Constructable,
     RouterInstance,
     RouterCurrentState,
-    // DefaultRouterActions,
     UnionOfChildren,
     TemplateOfRouter,
-    AllTemplates
+    AllTemplates,
+    DefaultRouterActions
 } from './types';
 
 import DefaultRouter from './router/base';
@@ -84,6 +84,7 @@ type ObjKeysAsString<Objs> = keyof Objs;
 export default class Manager<
     CustomTemplates extends IRouterTemplates = {},
     DefaultTemplates extends IRouterTemplates = typeof routerTemplates
+    //  & {root: IRouterTemplate} = typeof routerTemplates
 > {
     public actionFnDecorator?: ActionWraperFnDecorator;
     public tracerSession: TracerSession;
@@ -143,7 +144,7 @@ export default class Manager<
                 return;
             }
 
-            ((router.routers as any)[routerType] as UnionOfChildren<
+            (router.routers[routerType] as UnionOfChildren<
                 TemplateOfRouter<Router['routers']>
             >).forEach(child => {
                 const childTracer = tracerSession.tracerThing(child.name);
@@ -199,7 +200,7 @@ export default class Manager<
                     const [action, ...args] = child.config.defaultAction;
                     tracer.logStep(`(Applying default action: ${action} for ${child.name}`);
 
-                    newLocation = child[action](
+                    newLocation = child[action as keyof DefaultRouterActions](
                         {...options, data: args[0]}, // TODO pass more than just the first arg
                         newLocation,
                         child,
@@ -311,6 +312,7 @@ export default class Manager<
             existingLocation?: IOutputLocation,
             routerInstance: RouterInstance<
                 AllTemplates<CustomTemplates, DefaultTemplates>,
+                // AllTemplates<CustomTemplates, DefaultTemplates>,
                 Name
             > = this,
             ctx: ILocationActionContext = {}
@@ -418,7 +420,7 @@ export default class Manager<
             tracer.logStep('Called from a new location');
 
             // if called directly, fetch location
-            updatedLocation = this.manager.serializedStateStore.getState();
+            updatedLocation = routerInstance.manager.serializedStateStore.getState();
 
             // if the parent router isn't visible, but the child is shown, show all parents
             if (
@@ -482,7 +484,7 @@ export default class Manager<
             updatedLocation.options = {...updatedLocation.options, ...options};
 
             // set serialized state
-            this.manager.serializedStateStore.setState({...updatedLocation});
+            routerInstance.manager.serializedStateStore.setState({...updatedLocation});
             // return location so the function signature of the action is the same
             tracer.endWithMessage(`Returning location`);
             // setTimeout(() => {
@@ -885,3 +887,6 @@ export default class Manager<
         return this.createRouterFromInitArgs({...initalArgs});
     }
 }
+
+const test = new Manager<{}>({} as any);
+test.rootRouter.routers['stack'];

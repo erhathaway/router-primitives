@@ -6,8 +6,10 @@ import {
     IInputLocation
 } from '../../types';
 
+import allTemplates from '../template';
+
 // returns the routeKey names of visible routers based on the ordering of their 'order' state
-function getRouteKeyOrderings<Router extends RouterInstance>(
+function getRouteKeyOrderings<Router extends RouterInstance<typeof allTemplates, 'stack'>>(
     router: Router,
     location: IInputLocation
 ): string[] {

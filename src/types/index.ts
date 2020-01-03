@@ -217,25 +217,47 @@ export type RouterInstance<
     RouterTypeName extends NarrowRouterTypeName<keyof Templates> | string = NarrowRouterTypeName<
         keyof Templates
     >
-    // Name extends NarrowRouterTypeName<keyof Templates> = G<Templates, RefineTypeName<Templates, RouterTypeName>>
-    // = NarrowRouterTypeName<
-    //     keyof Templates
-    // >
-    // TODO figured out why intersecting with default actions is required here.
-    // In the data template, `show` action isnt present without it, but all router instances
-    // should have it by default
-    // DefaultRouterActions &
-> = RouterTypeName extends NarrowRouterTypeName<keyof Templates>
-    ? Actions<ExtractCustomActionsFromTemplate<Templates[RouterTypeName]>> &
-          Reducer<RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>> &
-          RouterBase<Templates, RouterTypeName>
-    : Actions<ExtractCustomActionsFromTemplate<Templates[NarrowRouterTypeName<keyof Templates>]>> &
-          Reducer<
-              RouterCurrentState<
-                  ExtractCustomStateFromTemplate<Templates[NarrowRouterTypeName<keyof Templates>]>
-              >
-          > &
-          RouterBase<Templates, NarrowRouterTypeName<keyof Templates>>;
+> = Templates extends {[routerTypeName: string]: infer T}
+    ? (T extends IRouterTemplate
+          ? RouterTypeName extends NarrowRouterTypeName<keyof Templates>
+              ? Actions<ExtractCustomActionsFromTemplate<Templates[RouterTypeName]>> &
+                    Reducer<
+                        RouterCurrentState<
+                            ExtractCustomStateFromTemplate<Templates[RouterTypeName]>
+                        >
+                    > &
+                    RouterBase<Templates, RouterTypeName>
+              : Actions<
+                    ExtractCustomActionsFromTemplate<
+                        Templates[NarrowRouterTypeName<keyof Templates>]
+                    >
+                > &
+                    Reducer<
+                        RouterCurrentState<
+                            ExtractCustomStateFromTemplate<
+                                Templates[NarrowRouterTypeName<keyof Templates>]
+                            >
+                        >
+                    > &
+                    RouterBase<Templates, NarrowRouterTypeName<keyof Templates>> //       : never) // : never;
+          : never) //   : DefaultRouterActions & //         Reducer<{}> & //         RouterBase<Templates, NarrowRouterTypeName<keyof Templates>>)
+    : never;
+// : DefaultRouterActions &
+//       Reducer<{}> &
+//       RouterBase<Templates, NarrowRouterTypeName<keyof Templates>>;
+
+// RouterTypeName extends NarrowRouterTypeName<keyof Templates>
+//     ? Actions<ExtractCustomActionsFromTemplate<Templates[RouterTypeName]>> &
+//           Reducer<RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>> &
+//           RouterBase<Templates, RouterTypeName>
+//     : Actions<ExtractCustomActionsFromTemplate<Templates[NarrowRouterTypeName<keyof Templates>]>> &
+//           Reducer<
+//               RouterCurrentState<
+//                   ExtractCustomStateFromTemplate<Templates[NarrowRouterTypeName<keyof Templates>]>
+//               >
+//           > &
+//           RouterBase<Templates, NarrowRouterTypeName<keyof Templates>>
+//           : never
 
 type routerInstanceTest = RouterInstance<typeof template, 'stack'>;
 type routerInstanceTestToFront = routerInstanceTest['toFront']; // <--- should not error
@@ -552,7 +574,9 @@ export type ActionWraperFnDecorator = <Fn extends RouterActionFn>(fn: Fn) => Fn;
 export type AllTemplates<
     CustomTemplates extends IRouterTemplates,
     DefaultTemplates extends IRouterTemplates
-> = JoinIntersection<CustomTemplates & DefaultTemplates>;
+> = CustomTemplates & DefaultTemplates;
+
+// > = JoinIntersection<CustomTemplates & DefaultTemplates>;
 type allTemplatesTest = AllTemplates<{other: typeof template['data']}, typeof template>;
 
 export interface IManagerInit<
@@ -595,10 +619,10 @@ type managerRouterTypesTest = ManagerRouterTypes<typeof template>;
  * -------------------------------------------------
  */
 
-type JoinIntersection<T extends {}> = {
-    [k in keyof T]: T[k];
-};
-type joinIntersectionTest = JoinIntersection<{other: typeof template['data']} & typeof template>;
+// type JoinIntersection<T extends {}> = {
+//     [k in keyof T]: T[k];
+// };
+// type joinIntersectionTest = JoinIntersection<{other: typeof template['data']} & typeof template>;
 
 /**
  * From https://github.com/Microsoft/TypeScript/pull/21316#issuecomment-359574388
