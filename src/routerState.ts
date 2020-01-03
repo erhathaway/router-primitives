@@ -1,8 +1,13 @@
-import {Observer, RouterCurrentState, IRouterCurrentAndHistoricalState} from './types';
-
-interface IConfig {
-    historySize: number;
-}
+import {
+    Observer,
+    RouterCurrentState,
+    IRouterCurrentAndHistoricalState,
+    RouterStateObserver,
+    RouterStateObservers,
+    IRouterStateStoreConfig,
+    RouterStateStoreStore
+} from './types';
+import {objKeys} from './utilities';
 
 /**
  * The default router state store.
@@ -15,16 +20,13 @@ interface IConfig {
  *   createRouterStateSubscriber
  */
 export default class DefaultRoutersStateStore<CustomState extends {}> {
-    private store: Record<string, IRouterCurrentAndHistoricalState<CustomState>>;
-    private config: IConfig;
-    private observers: {[key: string]: Observer[]};
+    private store: RouterStateStoreStore<CustomState>;
+    private config: IRouterStateStoreConfig;
+    private observers: RouterStateObservers<CustomState>;
 
-    constructor(
-        store?: Record<string, IRouterCurrentAndHistoricalState<CustomState>>,
-        config: IConfig = {historySize: 2}
-    ) {
+    constructor(store?: RouterStateStoreStore<CustomState>, config?: IRouterStateStoreConfig) {
         this.store = store || {};
-        this.config = config;
+        this.config = {historySize: 2, ...config};
         this.observers = {}; // key is routerName
     }
 
@@ -36,7 +38,7 @@ export default class DefaultRoutersStateStore<CustomState extends {}> {
      *   has changed in any way, callback will be fired off for the router.
      */
     public setState(desiredRouterStates: Record<string, RouterCurrentState<CustomState>>): void {
-        const routerNames = Object.keys(desiredRouterStates);
+        const routerNames = objKeys(desiredRouterStates);
         // Keeps track of which routers have new state.
         // Used to notify observers of new state changes on a router by router level
         const hasUpdatedTracker = [] as string[];
@@ -44,10 +46,12 @@ export default class DefaultRoutersStateStore<CustomState extends {}> {
         this.store = routerNames.reduce(
             (routerStates, routerName) => {
                 // extract current and historical states
-                const {current: prevCurrent, historical} = (routerStates[routerName] || {
-                    current: {},
-                    historical: []
-                }) as IRouterCurrentAndHistoricalState<CustomState>;
+                const {current: prevCurrent, historical} =
+                    routerStates[routerName] ||
+                    ({
+                        current: {},
+                        historical: []
+                    } as IRouterCurrentAndHistoricalState<CustomState>);
                 const newCurrent = desiredRouterStates[routerName];
 
                 // skip routers who haven't been updated
@@ -60,7 +64,7 @@ export default class DefaultRoutersStateStore<CustomState extends {}> {
                 let newHistorical = historical.slice();
 
                 // check to make sure there is state to record into history
-                if (Object.keys(prevCurrent).length > 0) {
+                if (objKeys(prevCurrent).length > 0) {
                     // add current to historical states
                     newHistorical.unshift(prevCurrent);
                 }
@@ -102,7 +106,7 @@ export default class DefaultRoutersStateStore<CustomState extends {}> {
      * The returned function is used subscribe observers to changes in
      *   a single routers state.
      */
-    public createRouterStateSubscriber(routerName: string): (fn: Observer<CustomState>) => void {
+    public createRouterStateSubscriber(routerName: string): RouterStateObserver<CustomState> {
         if (!this.observers[routerName]) {
             this.observers[routerName] = [];
         }
@@ -115,7 +119,7 @@ export default class DefaultRoutersStateStore<CustomState extends {}> {
         };
     }
 
-    public createRouterStateUnsubscriber(routerName: string): (fn: Observer<CustomState>) => void {
+    public createRouterStateUnsubscriber(routerName: string): RouterStateObserver<CustomState> {
         return (fn: Observer<CustomState>) => {
             if (!this.observers[routerName]) {
                 // TODO add to logger
@@ -142,7 +146,7 @@ export default class DefaultRoutersStateStore<CustomState extends {}> {
     /**
      * Returns the stores state for all routers
      */
-    public getState(): Record<string, IRouterCurrentAndHistoricalState<CustomState>> {
+    public getState(): RouterStateStoreStore<CustomState> {
         return this.store;
     }
 }

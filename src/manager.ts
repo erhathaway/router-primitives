@@ -1,4 +1,4 @@
-import routerTemplates from './router/template';
+import defaultRouterTemplates from './router/template';
 
 import {BrowserSerializedStore, NativeSerializedStore} from './serializedState';
 import {ITracerThing, TracerSession, tracerManager} from './tracer';
@@ -22,11 +22,11 @@ import {
     ManagerRouters,
     Constructable,
     RouterInstance,
-    RouterCurrentState,
     UnionOfChildren,
     TemplateOfRouter,
     AllTemplates,
-    DefaultRouterActions
+    DefaultRouterActions,
+    RouterCurrentStateFromTemplates
 } from './types';
 
 import DefaultRouter from './router/base';
@@ -79,7 +79,7 @@ const createRouterFromTemplate = <
 
 export default class Manager<
     CustomTemplates extends IRouterTemplates = {},
-    DefaultTemplates extends IRouterTemplates = typeof routerTemplates
+    DefaultTemplates extends typeof defaultRouterTemplates = typeof defaultRouterTemplates
 > {
     public actionFnDecorator?: ActionWraperFnDecorator;
     public tracerSession: TracerSession;
@@ -88,8 +88,11 @@ export default class Manager<
         ManagerRouters<AllTemplates<CustomTemplates, DefaultTemplates>>
     > = {};
     public rootRouter: Root<AllTemplates<CustomTemplates, DefaultTemplates>> = undefined;
-    public serializedStateStore: IManagerInit['serializedStateStore'];
-    public routerStateStore: IManagerInit['routerStateStore'];
+    public serializedStateStore: IManagerInit<
+        CustomTemplates,
+        DefaultTemplates
+    >['serializedStateStore'];
+    public routerStateStore: IManagerInit<CustomTemplates, DefaultTemplates>['routerStateStore'];
     public routerTypes: ManagerRouterTypes<AllTemplates<CustomTemplates, DefaultTemplates>>;
 
     public templates: AllTemplates<CustomTemplates, DefaultTemplates>;
@@ -521,7 +524,7 @@ export default class Manager<
         }
 
         // router types
-        const defaults = defaultTemplates || routerTemplates;
+        const defaults = defaultTemplates || defaultRouterTemplates;
         this.templates = {...defaults, ...customTemplates} as AllTemplates<
             CustomTemplates,
             DefaultTemplates
@@ -727,8 +730,11 @@ export default class Manager<
         router: RouterInstance<AllTemplates<CustomTemplates, DefaultTemplates>, Name>,
         ctx: ILocationActionContext = {},
         // TODO fill in current state's custom state generic from the above router
-        newState: Record<string, RouterCurrentState> = {}
-    ): Record<string, RouterCurrentState> {
+        newState: Record<
+            string,
+            RouterCurrentStateFromTemplates<CustomTemplates, DefaultTemplates>
+        > = {}
+    ): Record<string, RouterCurrentStateFromTemplates<CustomTemplates, DefaultTemplates>> {
         if (!router) {
             return;
         }
@@ -921,5 +927,8 @@ export default class Manager<
     }
 }
 
-const test = new Manager<{}>({} as any);
-test.rootRouter.routers['stack'];
+const test = new Manager<{custom: typeof defaultRouterTemplates['stack']}>({} as any);
+// test.rootRouter.routers['custom'];
+test.rootRouter;
+test.routers;
+test.routerTypes['custom'];

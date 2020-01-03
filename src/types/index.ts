@@ -95,8 +95,8 @@ type actionsTestB = Actions<null>;
  * This is how the reducer method is added to the base router class via mixins.
  * For the specific router type see `RouterReducerFn`.
  */
-export type Reducer<CurrentState> = {
-    reducer: RouterReducerFn<CurrentState>;
+export type Reducer<CustomState> = {
+    reducer: RouterReducerFn<CustomState>;
 };
 
 /**
@@ -118,14 +118,14 @@ export type RouterActionFn = <
  * The function that defines a routers reducer function.
  * The reducer is responsible for taking a new location and defining what the state of the router is from that location.
  */
-export type RouterReducerFn<CustomState extends {} = {}> = <
+export type RouterReducerFn = <
     Templates extends IRouterTemplates,
     RouterTypeName extends NarrowRouterTypeName<keyof Templates>
 >(
     location: IInputLocation,
     router: RouterInstance<Templates, RouterTypeName>,
     ctx: {[key: string]: any} // eslint-disable-line
-) => RouterCurrentState<CustomState>;
+) => RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>;
 
 /**
  * -------------------------------------------------
@@ -314,7 +314,7 @@ export interface IRouterTemplate<
     CustomActionNames extends string = null
 > {
     actions: Actions<CustomActionNames>;
-    reducer: RouterReducerFn<RouterCurrentState<CustomState>>;
+    reducer: RouterReducerFn<CustomState>;
     config: IRouterTemplateConfig;
 }
 type iRouterTemplateTest = IRouterTemplate<{hello: true}, 'big' | 'blue'>;
@@ -328,6 +328,18 @@ export interface IRouterTemplateConfig {
     shouldInverselyActivate?: boolean;
     disableCaching?: boolean;
 }
+
+/**
+ * The union of all router templates
+ */
+export type RouterTemplateUnion<T extends IRouterTemplates> = {
+    [RouterType in keyof T]: RouterInstance<T, NarrowRouterTypeName<RouterType>>;
+}[keyof T];
+type routerTemplateUnionTest = RouterTemplateUnion<typeof template>;
+type routerTemplateUnionTestRoot = routerTemplateUnionTest['root'];
+type routerTemplateUnionTestRouters = routerTemplateUnionTest['routers'];
+type routerTemplateUnionTestParent = routerTemplateUnionTest['parent'];
+
 /**
  * -------------------------------------------------
  * Router template utilities
@@ -365,7 +377,7 @@ type extractCustomActionsFromTemplateTest = ExtractCustomActionsFromTemplate<iRo
  * The current router state.
  * Defined as an intersection of custom state defined in the templates and default state.
  */
-export type RouterCurrentState<CustomState extends {} = {}> = CustomState & {
+export type RouterCurrentState<CustomState extends {}> = CustomState & {
     visible?: boolean;
     data?: string;
     isActive?: boolean;
@@ -375,9 +387,9 @@ export type RouterCurrentState<CustomState extends {} = {}> = CustomState & {
  * The historical state of a router.
  * Defined as an array of state objects with the smaller index being the more recent state
  */
-export type RouterHistoricalState<CustomState extends {} = {}> = RouterCurrentState<CustomState>[];
+export type RouterHistoricalState<CustomState extends {}> = RouterCurrentState<CustomState>[];
 
-export interface IRouterCurrentAndHistoricalState<CustomState extends {} = {}> {
+export interface IRouterCurrentAndHistoricalState<CustomState extends {}> {
     current: RouterCurrentState<CustomState>;
     historical: RouterHistoricalState<CustomState>;
 }
@@ -489,19 +501,6 @@ export interface IRouterConfig {
 
 /**
  * -------------------------------------------------
- * Router subscription
- * -------------------------------------------------
- */
-
-/**
- * The callback function that is passed through when a user subscribes to a specific router
- */
-export type Observer<CustomState extends {} = {}> = (
-    state: IRouterCurrentAndHistoricalState<CustomState>
-) => unknown;
-
-/**
- * -------------------------------------------------
  * Router Cache
  * -------------------------------------------------
  */
@@ -576,20 +575,22 @@ export type ActionWraperFnDecorator = <Fn extends any>(fn: Fn) => Fn;
  */
 export type AllTemplates<
     CustomTemplates extends IRouterTemplates,
-    DefaultTemplates extends IRouterTemplates
+    DefaultTemplates extends typeof template
 > = CustomTemplates & DefaultTemplates;
 
 // > = JoinIntersection<CustomTemplates & DefaultTemplates>;
 type allTemplatesTest = AllTemplates<{other: typeof template['data']}, typeof template>;
 
 export interface IManagerInit<
-    CustomTemplates extends IRouterTemplates = {},
-    DefaultTemplates extends IRouterTemplates = typeof template
+    CustomTemplates extends IRouterTemplates,
+    DefaultTemplates extends typeof template
 > {
     routerTree?: IRouterDeclaration<AllTemplates<CustomTemplates, DefaultTemplates>>;
     serializedStateStore?: NativeSerializedStore | BrowserSerializedStore;
     routerStateStore?: DefaultRoutersStateStore<
-        ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates, DefaultTemplates>>
+        ExtractCustomStateFromTemplate<
+            RouterTemplateUnion<AllTemplates<CustomTemplates, DefaultTemplates>>
+        >
     >;
     router?: RouterClass<
         AllTemplates<CustomTemplates, DefaultTemplates>,
@@ -598,6 +599,13 @@ export interface IManagerInit<
     customTemplates?: CustomTemplates;
     defaultTemplates?: DefaultTemplates;
 }
+
+export type RouterCurrentStateFromTemplates<
+    CustomTemplates extends IRouterTemplates,
+    DefaultTemplates extends typeof template
+> = ExtractCustomStateFromTemplate<
+    RouterTemplateUnion<AllTemplates<CustomTemplates, DefaultTemplates>>
+>;
 
 /**
  * The routers of a manager.
@@ -626,6 +634,46 @@ type managerRouterTypesTest = ManagerRouterTypes<typeof template>;
 
 export type StateObserver = (state: IOutputLocation) => any;
 
+/**
+ * -------------------------------------------------
+ * Router state store
+ * -------------------------------------------------
+ */
+
+/**
+ * The callback function that is passed through when a user subscribes to a specific router.
+ */
+export type Observer<CustomState extends {}> = (
+    state: IRouterCurrentAndHistoricalState<CustomState>
+) => unknown;
+
+/**
+ * A function created that can be used to register observer functions for a specific router that a manager oversees.
+ */
+export type RouterStateObserver<CustomState extends {}> = (fn: Observer<CustomState>) => void;
+
+/**
+ * An object representing all observers of routers keyed on router name
+ */
+export type RouterStateObservers<CustomState extends {}> = Record<
+    string,
+    Array<Observer<CustomState>>
+>;
+
+/**
+ * Configuration options that can be passed to a router state store
+ */
+export interface IRouterStateStoreConfig {
+    historySize?: number;
+}
+
+/**
+ * The store object of the router state store
+ */
+export type RouterStateStoreStore<CustomState extends {}> = Record<
+    string,
+    IRouterCurrentAndHistoricalState<CustomState>
+>;
 /**
  * -------------------------------------------------
  * General Utilities
@@ -659,7 +707,7 @@ export type Spread<L, R> =
         // Properties in R, with types that include undefined, that exist in L
         SpreadProperties<L, R, OptionalPropertyNames<R> & keyof L>;
 
-type Unpacked<T> = T extends (infer U)[]
+export type Unpacked<T> = T extends (infer U)[]
     ? U // eslint-disable-next-line
     : T extends (...args: any[]) => infer U
     ? U
