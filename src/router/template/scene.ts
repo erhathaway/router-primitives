@@ -20,7 +20,7 @@ const show: RouterActionFn = (options, oldLocation, router, ctx) => {
     }, location);
 
     if (router.isPathRouter) {
-        const {parent} = router;
+        // const {parent} = router;
 
         // If we are not adding defaults or the parent is not visible, use the existing location
         // This can happen when a router is called randomly. We don't want a router to become visible if it's

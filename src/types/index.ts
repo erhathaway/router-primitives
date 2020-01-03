@@ -523,14 +523,15 @@ export type CacheClass<
  * Returns an array of a router instances neighbors. That is, all router instances that are not of this type
  * in side an array.
  */
-export type NeighborsOfType<TypeName extends string, T extends IRouterTemplates> = Array<
+export type NeighborsOfType<
+    T extends IRouterTemplates,
+    N extends NarrowRouterTypeName<keyof T>
+> = Array<
     {
-        [RouterType in Exclude<keyof T, TypeName>]?: Array<
-            RouterInstance<T, NarrowRouterTypeName<RouterType>>
-        >;
-    }[Exclude<keyof T, TypeName>]
+        [RouterType in Exclude<keyof T, N>]?: RouterInstance<T, NarrowRouterTypeName<RouterType>>;
+    }[Exclude<keyof T, N>]
 >;
-type neighborsOfTypeTest = NeighborsOfType<'scene', typeof template>;
+type neighborsOfTypeTest = NeighborsOfType<typeof template, 'scene'>;
 
 /**
  * -------------------------------------------------

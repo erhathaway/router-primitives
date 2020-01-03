@@ -765,7 +765,7 @@ export default class Manager<
     }
 
     protected validateNeighborsOfOtherTypesArentPathRouters<
-        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates, DefaultTemplates>)>
+        Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates, DefaultTemplates>>
     >(router: RouterInstance<AllTemplates<CustomTemplates, DefaultTemplates>, Name>): void {
         const nameOfNeighboorRouterThatIsPathRouter = router
             .getNeighbors()
@@ -812,7 +812,8 @@ export default class Manager<
      * place to redefine the getters and setters `getState` and `subscribe`
      */
     protected createNewRouterInitArgs<
-        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates, DefaultTemplates>)>
+        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates, DefaultTemplates>)>,
+        M extends Manager
     >({
         name,
         config,
@@ -821,7 +822,7 @@ export default class Manager<
     }: IRouterCreationInfo<AllTemplates<CustomTemplates, DefaultTemplates>, Name>): IRouterInitArgs<
         AllTemplates<CustomTemplates, DefaultTemplates>,
         Name,
-        this
+        M
     > {
         const parent = this.routers[parentName];
         const actions = objKeys(this.templates[type].actions);

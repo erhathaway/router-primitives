@@ -132,7 +132,10 @@ export default class RouterBase<
     /**
      * Returns all neighboring routers. That is, all routers that have the same parent but are not of this router type.
      */
-    public getNeighbors(): NeighborsOfType<RouterTypeName, Templates> {
+    public getNeighbors(): NeighborsOfType<
+        Templates,
+        NarrowRouterTypeName<Exclude<keyof Templates, RouterTypeName>>
+    > {
         if (!this.parent) {
             return [];
         }
