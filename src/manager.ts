@@ -540,20 +540,36 @@ export default class Manager<
                 // get function used to wrape actions
                 const createActionWrapperFunction = this.createActionWrapperFunction;
                 // create router class from the template
-                const RouterFromTemplate = createRouterFromTemplate<
-                    typeof templateName,
-                    AllTemplates<CustomTemplates, DefaultTemplates>
-                >(templateName, selectedTemplate, BaseRouter, createActionWrapperFunction);
+                const RouterFromTemplate = createRouterFromTemplate(
+                    templateName as NarrowRouterTypeName<
+                        keyof AllTemplates<CustomTemplates, DefaultTemplates>
+                    >,
+                    selectedTemplate as AllTemplates<
+                        CustomTemplates,
+                        DefaultTemplates
+                    >[NarrowRouterTypeName<keyof AllTemplates<CustomTemplates, DefaultTemplates>>],
+                    BaseRouter,
+                    createActionWrapperFunction as <Fn extends RouterActionFn>(
+                        actionFn: Fn,
+                        actionName: keyof AllTemplates<
+                            CustomTemplates,
+                            DefaultTemplates
+                        >[NarrowRouterTypeName<
+                            keyof AllTemplates<CustomTemplates, DefaultTemplates>
+                        >]['actions']
+                    ) => Fn
+                );
 
                 // add new Router type to accumulator
-                acc[templateName] = RouterFromTemplate;
+                acc[
+                    templateName as NarrowRouterTypeName<
+                        keyof AllTemplates<CustomTemplates, DefaultTemplates>
+                    >
+                ] = RouterFromTemplate as any; // TODO Fix this any
+
                 return acc;
             },
-            {} as {
-                [routerTypeName in NarrowRouterTypeName<
-                    keyof AllTemplates<CustomTemplates, DefaultTemplates>
-                >]: RouterClass<AllTemplates<CustomTemplates, DefaultTemplates>, routerTypeName>;
-            }
+            {} as ManagerRouterTypes<AllTemplates<CustomTemplates, DefaultTemplates>>
         );
 
         // add initial routers
@@ -713,9 +729,6 @@ export default class Manager<
         newState[router.name] = router.reducer(location, router, ctx);
 
         // Recursively call all children to add their state to the `newState` object
-        // Array<
-        //     NarrowRouterTypeName<keyof typeof router.routers>
-        // >
         objKeys(router.routers).forEach(type => {
             router.routers[type].forEach(childRouter =>
                 this.calcNewRouterState(
