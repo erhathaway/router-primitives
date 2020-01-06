@@ -64,8 +64,8 @@ const reducer: RouterReducerFn = (location, router, _ctx) => {
     return newState;
 };
 
-const template: IRouterTemplate = {
-    actions: {show, hide},
+const template: IRouterTemplate<{blueWorld: boolean}, 'testAction'> = {
+    actions: {show, hide, testAction: show},
     reducer,
     config: {canBePathRouter: true, isPathRouter: true, shouldInverselyActivate: true}
 };

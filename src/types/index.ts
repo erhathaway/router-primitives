@@ -118,14 +118,14 @@ export type RouterActionFn = <
  * The function that defines a routers reducer function.
  * The reducer is responsible for taking a new location and defining what the state of the router is from that location.
  */
-export type RouterReducerFn = <
+export type RouterReducerFn<CustomState extends {}> = <
     Templates extends IRouterTemplates,
     RouterTypeName extends NarrowRouterTypeName<keyof Templates>
 >(
     location: IInputLocation,
     router: RouterInstance<Templates, RouterTypeName>,
     ctx: {[key: string]: any} // eslint-disable-line
-) => RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>;
+) => RouterCurrentState<CustomState>;
 
 /**
  * -------------------------------------------------
@@ -207,71 +207,49 @@ type refineTypeNameTest = RefineTypeName<typeof template, 'hello'>;
 type refineTypeNameTestA = RefineTypeName<typeof template, 'scene'>;
 type refineTypeNameTestB = RefineTypeName<typeof template, string>;
 
-export type G<T, N> = N extends NarrowRouterTypeName<keyof T> ? N : never;
 /**
  * The instantiated router class.
  * A router is represented by a router template.
  *
- * $$$$ TODO $$$$ CHANGE THIS TO A UNION WHEN NAME IS NOT SPECIFIC
+ * If the router type name isn't specified, or is a string, the router instance is a union of all routers
+ * that could be constructed from the templates
  */
 export type RouterInstance<
-    Templates extends IRouterTemplates,
+    Templates extends IRouterTemplates, // eslint-disable-line
     RouterTypeName extends NarrowRouterTypeName<keyof Templates> | string = NarrowRouterTypeName<
         keyof Templates
     >
-> = Templates extends {[routerTypeName: string]: infer T}
-    ? (T extends IRouterTemplate
-          ? RouterTypeName extends NarrowRouterTypeName<keyof Templates>
-              ? Actions<ExtractCustomActionsFromTemplate<Templates[RouterTypeName]>> &
-                    Reducer<
-                        RouterCurrentState<
-                            ExtractCustomStateFromTemplate<Templates[RouterTypeName]>
-                        >
-                    > &
-                    RouterBase<Templates, RouterTypeName>
-              : Actions<
-                    ExtractCustomActionsFromTemplate<
-                        Templates[NarrowRouterTypeName<keyof Templates>]
-                    >
-                > &
-                    Reducer<
-                        RouterCurrentState<
-                            ExtractCustomStateFromTemplate<
-                                Templates[NarrowRouterTypeName<keyof Templates>]
-                            >
-                        >
-                    > &
-                    RouterBase<Templates, NarrowRouterTypeName<keyof Templates>> //       : never) // : never;
-          : never) //   : DefaultRouterActions & //         Reducer<{}> & //         RouterBase<Templates, NarrowRouterTypeName<keyof Templates>>)
-    : never;
-// : DefaultRouterActions &
-//       Reducer<{}> &
-//       RouterBase<Templates, NarrowRouterTypeName<keyof Templates>>;
+> = RouterTypeName extends NarrowRouterTypeName<keyof Templates>
+    ? Actions<ExtractCustomActionsFromTemplate<Templates[RouterTypeName]>> &
+          Reducer<RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>> &
+          RouterBase<Templates, RouterTypeName>
+    : {
+          [routerName in NarrowRouterTypeName<keyof Templates>]: Actions<
+              ExtractCustomActionsFromTemplate<Templates[routerName]>
+          > &
+              Reducer<RouterCurrentState<ExtractCustomStateFromTemplate<Templates[routerName]>>> &
+              RouterBase<Templates, routerName>;
+      }[NarrowRouterTypeName<keyof Templates>];
 
-// RouterTypeName extends NarrowRouterTypeName<keyof Templates>
-//     ? Actions<ExtractCustomActionsFromTemplate<Templates[RouterTypeName]>> &
-//           Reducer<RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>> &
-//           RouterBase<Templates, RouterTypeName>
-//     : Actions<ExtractCustomActionsFromTemplate<Templates[NarrowRouterTypeName<keyof Templates>]>> &
-//           Reducer<
-//               RouterCurrentState<
-//                   ExtractCustomStateFromTemplate<Templates[NarrowRouterTypeName<keyof Templates>]>
-//               >
-//           > &
-//           RouterBase<Templates, NarrowRouterTypeName<keyof Templates>>
-//           : never
+// custom templates
+type routerInstanceTestCustom = RouterInstance<Record<'stack', typeof template['stack']>, 'stack'>;
+// invalid template
+// TODO the following test should error out since {test:string} isnt a valid template
+type routerInstanceTestInvalidTemplate = RouterInstance<typeof template & {test: 'string'}, string>;
+// stack
+type routerInstanceTestStack = RouterInstance<typeof template & {test: 'string'}, 'stack'>;
+type routerInstanceTestStackMethod = routerInstanceTestStack['toFront']; // <--- should not error
 
-type routerInstanceTest = RouterInstance<typeof template, 'stack'>;
-type routerInstanceTestToFront = routerInstanceTest['toFront']; // <--- should not error
-type routerInstanceTestA = RouterInstance<typeof template, 'scene'>;
-// type routerInstanceTestAToFront = routerInstanceTestA['toFront']; // <--- should error
-type routerInstanceTestShowA = routerInstanceTestA['show'];
+// scene
+type routerInstanceTestScene = RouterInstance<typeof template, 'scene'>;
+// type routerInstanceTestAToFront = routerInstanceTestScene['toFront']; // <--- should error
+type routerInstanceTestShowA = routerInstanceTestScene['show'];
 
 // A router instance given an open ended type name should be an intersection of all router types
-type routerInstanceTestB = RouterInstance<{} & typeof template, string>;
-type routerInstanceTestC = RouterInstance<{} & typeof template, string>['show'];
+type routerInstanceTestUnion = RouterInstance<{} & typeof template, string>;
+// type routerInstanceTestUnionError = routerInstanceTestUnion['toFront']; // <--- should error
 // A router instance given open ended template types should have the default actions
-type routerInstanceTestD = RouterInstance<{}, string>['show'];
+type routerInstanceTestUnionSuccess = routerInstanceTestUnion['show']; // <--- should not error
 
 /**
  * The router class.
@@ -299,12 +277,10 @@ type routerClassTestA = InstanceType<RouterClass<typeof template, 'stack'>>;
 /**
  * The object holding all router templates keyed by router type
  */
-export interface IRouterTemplates<
+export type IRouterTemplates<
     CustomState extends {} = {},
     CustomActionNames extends string = null
-> {
-    [templateName: string]: IRouterTemplate<CustomState, CustomActionNames>;
-}
+> = Record<string, IRouterTemplate<CustomState, CustomActionNames>>;
 
 /**
  * The template that defines a specific router type
@@ -333,12 +309,9 @@ export interface IRouterTemplateConfig {
  * The union of all router templates
  */
 export type RouterTemplateUnion<T extends IRouterTemplates> = {
-    [RouterType in keyof T]: RouterInstance<T, NarrowRouterTypeName<RouterType>>;
+    [RouterType in keyof T]: T[RouterType];
 }[keyof T];
 type routerTemplateUnionTest = RouterTemplateUnion<typeof template>;
-type routerTemplateUnionTestRoot = routerTemplateUnionTest['root'];
-type routerTemplateUnionTestRouters = routerTemplateUnionTest['routers'];
-type routerTemplateUnionTestParent = routerTemplateUnionTest['parent'];
 
 /**
  * -------------------------------------------------
@@ -355,6 +328,9 @@ export type ExtractCustomStateFromTemplate<T extends IRouterTemplate> = T extend
     ? S
     : never;
 type extractCustomStateFromTemplateTest = ExtractCustomStateFromTemplate<iRouterTemplateTest>;
+type extractCustomStateFromTemplateTestUnions = ExtractCustomStateFromTemplate<
+    RouterTemplateUnion<typeof template>
+>;
 
 /**
  * Utility type for extracting custom action names from the actions defined in a template
@@ -556,11 +532,16 @@ type unionOfChildrenTest = UnionOfChildren<typeof template>;
  */
 // eslint-disable-next-line
 export type TemplateOfRouter<R> = R extends RouterInstance<
-    infer T,
-    any // eslint-disable-line
+    infer Templates,
+    infer Name // eslint-disable-line
 >
-    ? T
+    ? Templates[Name]
     : never;
+
+type templateOfRouterTestAllRouters = RouterInstance<typeof template>;
+type templateOfRouterTestAllRoutersAllTemplates = TemplateOfRouter<templateOfRouterTestAllRouters>;
+type templateOfRouterTestStackRouter = RouterInstance<typeof template, 'stack'>;
+type templateOfRouterTestStackRouterTemplate = TemplateOfRouter<templateOfRouterTestStackRouter>;
 
 /**
  * -------------------------------------------------

@@ -740,7 +740,8 @@ export default class Manager<
         }
 
         // Call the routers reducer to calculate its state from the new location
-        newState[router.name] = router.reducer(location, router, ctx);
+        const a = router.reducer<{test: boolean}>(location, router, ctx);
+        newState[router.name] = a;
 
         // Recursively call all children to add their state to the `newState` object
         objKeys(router.routers).forEach(type => {
@@ -928,7 +929,7 @@ export default class Manager<
 }
 
 const test = new Manager<{custom: typeof defaultRouterTemplates['stack']}>({} as any);
-// test.rootRouter.routers['custom'];
+test.rootRouter.routers['custom'];
 test.rootRouter;
 test.routers;
 test.routerTypes['custom'];
