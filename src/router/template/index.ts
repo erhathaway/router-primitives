@@ -9,6 +9,7 @@ import stack from './stack';
 import data from './data';
 import feature from './feature';
 import root from './root';
-// import {IRouterTemplates} from '../../types';
+// import {IDefaultTemplates} from '../../types';
 
-export default {scene, stack, data, feature, root}; //as IRouterTemplates;
+const all = {scene, stack, data, feature, root};
+export default all;

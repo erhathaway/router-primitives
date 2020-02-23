@@ -2,7 +2,7 @@ import RouterBase from '../router/base';
 import Manager from '../manager';
 import {NativeSerializedStore, BrowserSerializedStore} from '../serializedState';
 import DefaultRoutersStateStore from '../routerState';
-import template from '../router/template';
+import defaultTemplates from '../router/template';
 import Cache from '../router/cache';
 
 export type Constructable<T = {}> = new (...args: any[]) => T; // eslint-disable-line
@@ -27,7 +27,7 @@ export interface ILocationOptions {
     replaceLocation?: boolean; // used to replace history location in URL
 }
 
-type Pathname = string[];
+export type Pathname = string[];
 
 export interface IOutputLocation {
     pathname: Pathname;
@@ -61,7 +61,7 @@ export type IRouterActionOptions = ILocationOptions;
  * A utility function to intersect unioned actions together
  */
 // eslint-disable-next-line
-type IntersectUnionedActions<T> = (T extends any ? ((x: T) => 0) : never) extends ((
+export type IntersectUnionedActions<T> = (T extends any ? ((x: T) => 0) : never) extends ((
     x: infer R
 ) => 0)
     ? R
@@ -118,7 +118,7 @@ export type RouterActionFn = <
  * The function that defines a routers reducer function.
  * The reducer is responsible for taking a new location and defining what the state of the router is from that location.
  */
-export type RouterReducerFn<CustomState extends {}> = <
+export type RouterReducerFn<CustomState extends {} = {}> = <
     Templates extends IRouterTemplates,
     RouterTypeName extends NarrowRouterTypeName<keyof Templates>
 >(
@@ -140,7 +140,7 @@ export type RouterReducerFn<CustomState extends {}> = <
 export type NarrowRouterTypeName<Names extends string | number | symbol> = Names extends string
     ? Names
     : never;
-type narrowRouterTypeNameTest = NarrowRouterTypeName<keyof typeof template>;
+type narrowRouterTypeNameTest = NarrowRouterTypeName<keyof IDefaultTemplates>;
 type narrowRouterTypeNameTestA = NarrowRouterTypeName<keyof {}>;
 
 /**
@@ -150,8 +150,8 @@ export type NarrowActionNames<
     Actions extends {},
     ActionNames extends string | number | symbol = keyof Actions
 > = ActionNames extends string ? ActionNames : never;
-type narrowActionNamesTest = NarrowActionNames<typeof template.stack['actions']>;
-type narrowActionNamesTestA = NarrowActionNames<typeof template.scene['actions']>;
+type narrowActionNamesTest = NarrowActionNames<IDefaultTemplates['stack']['actions']>;
+type narrowActionNamesTestA = NarrowActionNames<IDefaultTemplates['scene']['actions']>;
 
 /**
  * -------------------------------------------------
@@ -166,7 +166,7 @@ type narrowActionNamesTestA = NarrowActionNames<typeof template.scene['actions']
 export type Parent<T extends IRouterTemplates> = {
     [RouterType in keyof T]: RouterInstance<T, NarrowRouterTypeName<RouterType>>;
 }[keyof T];
-type parentTest = Parent<typeof template>;
+type parentTest = Parent<IDefaultTemplates>;
 type parentTestChildren = parentTest['routers'];
 
 /**
@@ -177,7 +177,7 @@ export type Root<
     T extends IRouterTemplates,
     Name extends string = 'root'
 > = Name extends NarrowRouterTypeName<keyof T> ? RouterInstance<T, Name> : never;
-type rootTest = Root<typeof template>;
+type rootTest = Root<IDefaultTemplates>;
 
 /**
  * Child router instances. These are the children of the current router.
@@ -188,7 +188,7 @@ export type Childs<T extends IRouterTemplates> = {
         RouterInstance<T, NarrowRouterTypeName<RouterType>>
     >;
 };
-type childsTest = Childs<typeof template>;
+type childsTest = Childs<IDefaultTemplates>;
 type childsTestValues = childsTest['scene'];
 
 /**
@@ -203,9 +203,9 @@ export type RefineTypeName<
 > = Name extends NarrowRouterTypeName<keyof Templates>
     ? Name
     : NarrowRouterTypeName<keyof Templates>;
-type refineTypeNameTest = RefineTypeName<typeof template, 'hello'>;
-type refineTypeNameTestA = RefineTypeName<typeof template, 'scene'>;
-type refineTypeNameTestB = RefineTypeName<typeof template, string>;
+type refineTypeNameTest = RefineTypeName<IDefaultTemplates, 'hello'>;
+type refineTypeNameTestA = RefineTypeName<IDefaultTemplates, 'scene'>;
+type refineTypeNameTestB = RefineTypeName<IDefaultTemplates, string>;
 
 /**
  * The instantiated router class.
@@ -232,24 +232,37 @@ export type RouterInstance<
       }[NarrowRouterTypeName<keyof Templates>];
 
 // custom templates
-type routerInstanceTestCustom = RouterInstance<Record<'stack', typeof template['stack']>, 'stack'>;
+type routerInstanceTestCustom = RouterInstance<
+    Record<'stack', IDefaultTemplates['stack']>,
+    'stack'
+>;
 // invalid template
 // TODO the following test should error out since {test:string} isnt a valid template
-type routerInstanceTestInvalidTemplate = RouterInstance<typeof template & {test: 'string'}, string>;
+type routerInstanceTestInvalidTemplate = RouterInstance<
+    IDefaultTemplates & {test: 'string'},
+    string
+>;
+
 // stack
-type routerInstanceTestStack = RouterInstance<typeof template & {test: 'string'}, 'stack'>;
+type routerInstanceTestStack = RouterInstance<IDefaultTemplates & {test: 'string'}, 'stack'>;
 type routerInstanceTestStackMethod = routerInstanceTestStack['toFront']; // <--- should not error
 
 // scene
-type routerInstanceTestScene = RouterInstance<typeof template, 'scene'>;
+type routerInstanceTestScene = RouterInstance<IDefaultTemplates, 'scene'>;
 // type routerInstanceTestAToFront = routerInstanceTestScene['toFront']; // <--- should error
 type routerInstanceTestShowA = routerInstanceTestScene['show'];
 
 // A router instance given an open ended type name should be an intersection of all router types
-type routerInstanceTestUnion = RouterInstance<{} & typeof template, string>;
+type routerInstanceTestUnion = RouterInstance<
+    {custom: IDefaultTemplates['data']} & IDefaultTemplates,
+    string
+>;
 // type routerInstanceTestUnionError = routerInstanceTestUnion['toFront']; // <--- should error
 // A router instance given open ended template types should have the default actions
 type routerInstanceTestUnionSuccess = routerInstanceTestUnion['show']; // <--- should not error
+type routerInstanceTestUnionParent = routerInstanceTestUnion['parent']['show'];
+type routerInstanceTestUnionRoot = routerInstanceTestUnion['root']['show'];
+type routerInstanceTestUnionChildren = routerInstanceTestUnion['routers'];
 
 /**
  * The router class.
@@ -265,8 +278,8 @@ export type RouterClass<
     >;
 };
 
-type routerClassTest = InstanceType<RouterClass<typeof template, 'feature'>>;
-type routerClassTestA = InstanceType<RouterClass<typeof template, 'stack'>>;
+type routerClassTest = InstanceType<RouterClass<IDefaultTemplates, 'feature'>>;
+type routerClassTestA = InstanceType<RouterClass<IDefaultTemplates, 'stack'>>;
 
 /**
  * -------------------------------------------------
@@ -280,8 +293,10 @@ type routerClassTestA = InstanceType<RouterClass<typeof template, 'stack'>>;
 export type IRouterTemplates<
     CustomState extends {} = {},
     CustomActionNames extends string = null
-> = Record<string, IRouterTemplate<CustomState, CustomActionNames>>;
-
+    // > Record<string, IRouterTemplate<CustomState, CustomActionNames>>;
+> = {
+    [name: string]: IRouterTemplate<CustomState, CustomActionNames>;
+};
 /**
  * The template that defines a specific router type
  */
@@ -296,6 +311,29 @@ export interface IRouterTemplate<
 type iRouterTemplateTest = IRouterTemplate<{hello: true}, 'big' | 'blue'>;
 
 /**
+ * Default router templates
+ */
+
+export type IDefaultTemplates = typeof defaultTemplates
+// = {
+//     scene: IRouterTemplate<
+//         {
+//             blueWorld: boolean;
+//         },
+//         'testAction'
+//     >;
+//     stack: IRouterTemplate<{}, 'forward' | 'backward' | 'toFront' | 'toBack'>;
+//     data: IRouterTemplate<
+//         {
+//             data?: string;
+//         },
+//         'setData'
+//     >;
+//     feature: IRouterTemplate<{}, null>;
+//     root: IRouterTemplate<{}, 'rootAction'>;
+// };
+
+/**
  * Configuration information that controls settings of routers instantiated from the template
  */
 export interface IRouterTemplateConfig {
@@ -305,14 +343,26 @@ export interface IRouterTemplateConfig {
     disableCaching?: boolean;
 }
 
+// type B<V> = V extends {[infer T]: any} ? T : undefined;
+// type C = B<IRouterTemplateConfig>;
 /**
  * The union of all router templates
  */
-export type RouterTemplateUnion<T extends IRouterTemplates> = {
-    [RouterType in keyof T]: T[RouterType];
-}[keyof T];
-type routerTemplateUnionTest = RouterTemplateUnion<typeof template>;
+export type RouterTemplateUnion<
+    T extends IRouterTemplates> = T[keyof T]
+    // V = Pick<T, keyof T extends string ? null : keyof T >
+// > = {
+//     [RouterType in keyof V]: V[RouterType];
+// }[keyof V] ;
+// type routerTemplateUnionTest = RouterTemplateUnion<IDefaultTemplates & IRouterTemplates>;
+type routerTemplateUnionTest = RouterTemplateUnion<IDefaultTemplates>;
 
+type EventTypeMap<T extends object> = {[K in keyof T]: T[K]};
+
+type CallbackEventTypes<T extends object> = T; //EventTypeMap<T>[keyof EventTypeMap<T>];
+type ttt = CallbackEventTypes<IDefaultTemplates>;
+
+// https://stackoverflow.com/questions/57125961/how-to-extend-a-type-in-a-type-formula-in-typescript
 /**
  * -------------------------------------------------
  * Router template utilities
@@ -320,17 +370,19 @@ type routerTemplateUnionTest = RouterTemplateUnion<typeof template>;
  */
 
 /**
- * Utility type for extracting custom state from the overall state object
+ * Utility type for extracting custom state from the overall state object in a template
  */
 export type ExtractCustomStateFromTemplate<T extends IRouterTemplate> = T extends IRouterTemplate<
     infer S
 >
     ? S
     : never;
-type extractCustomStateFromTemplateTest = ExtractCustomStateFromTemplate<iRouterTemplateTest>;
-type extractCustomStateFromTemplateTestUnions = ExtractCustomStateFromTemplate<
-    RouterTemplateUnion<typeof template>
->;
+
+// type extractCustomStateFromTemplateTest = ExtractCustomStateFromTemplate<iRouterTemplateTest>;
+// type extractCustomStateFromTemplateTestUnions = ExtractCustomStateFromTemplate<
+//     RouterTemplateUnion<IDefaultTemplates>
+// >;
+// type extractCustomStateFromTemplateMap = ExtractCustomStateFromTemplate<RouterTemplateUnion<AllTemplates>>
 
 /**
  * Utility type for extracting custom action names from the actions defined in a template
@@ -353,7 +405,7 @@ type extractCustomActionsFromTemplateTest = ExtractCustomActionsFromTemplate<iRo
  * The current router state.
  * Defined as an intersection of custom state defined in the templates and default state.
  */
-export type RouterCurrentState<CustomState extends {}> = CustomState & {
+export type RouterCurrentState<CustomState extends {} = {}> = CustomState & {
     visible?: boolean;
     data?: string;
     isActive?: boolean;
@@ -433,7 +485,7 @@ export interface IRouterInitArgs<
     actions: (keyof Templates[RouterTypeName]['actions'])[]; // the router actions derived from the template. Usually 'show' and 'hide';
     cache: CacheClass<Templates, RouterTypeName, Cache<Templates, RouterTypeName>>;
 }
-type iRouterInitArgsTest = IRouterInitArgs<typeof template, 'scene'>;
+type iRouterInitArgsTest = IRouterInitArgs<IDefaultTemplates, 'scene'>;
 type iRouterInitArgsTestType = iRouterInitArgsTest['type'];
 type iRouterInitArgsTestParent = iRouterInitArgsTest['parent'];
 type iRouterInitArgsTestRouters = iRouterInitArgsTest['routers'];
@@ -446,7 +498,7 @@ type iRouterInitArgsTestCacheMethodWithRouter = Parameters<
     iRouterInitArgsTestCache['setWasPreviouslyVisibleToFromLocation']
 >;
 
-type iRouterInitArgsTestA = IRouterInitArgs<typeof template, 'stack'>;
+type iRouterInitArgsTestA = IRouterInitArgs<IDefaultTemplates, 'stack'>;
 type iRouterInitArgsTestActionsB = iRouterInitArgsTestA['actions'];
 
 /**
@@ -508,7 +560,7 @@ export type NeighborsOfType<
         [RouterType in Exclude<keyof T, N>]?: RouterInstance<T, NarrowRouterTypeName<RouterType>>;
     }[Exclude<keyof T, N>]
 >;
-type neighborsOfTypeTest = NeighborsOfType<typeof template, 'scene'>;
+type neighborsOfTypeTest = NeighborsOfType<IDefaultTemplates, 'scene'>;
 
 /**
  * -------------------------------------------------
@@ -525,7 +577,7 @@ export type UnionOfChildren<T extends IRouterTemplates> = {
         RouterInstance<T, NarrowRouterTypeName<RouterType>>
     >;
 }[Exclude<keyof T, 'root'>];
-type unionOfChildrenTest = UnionOfChildren<typeof template>;
+type unionOfChildrenTest = UnionOfChildren<IDefaultTemplates>;
 
 /**
  * Utility to extract the template type of a router instance.
@@ -538,9 +590,9 @@ export type TemplateOfRouter<R> = R extends RouterInstance<
     ? Templates[Name]
     : never;
 
-type templateOfRouterTestAllRouters = RouterInstance<typeof template>;
+type templateOfRouterTestAllRouters = RouterInstance<IDefaultTemplates>;
 type templateOfRouterTestAllRoutersAllTemplates = TemplateOfRouter<templateOfRouterTestAllRouters>;
-type templateOfRouterTestStackRouter = RouterInstance<typeof template, 'stack'>;
+type templateOfRouterTestStackRouter = RouterInstance<IDefaultTemplates, 'stack'>;
 type templateOfRouterTestStackRouterTemplate = TemplateOfRouter<templateOfRouterTestStackRouter>;
 
 /**
@@ -552,60 +604,86 @@ type templateOfRouterTestStackRouterTemplate = TemplateOfRouter<templateOfRouter
 export type ActionWraperFnDecorator = <Fn extends any>(fn: Fn) => Fn;
 
 /**
- * Utility function for combining custom and default templates
+ * A map of all templates.
+ * Custom templates are spread into the default templates allowing for overrides. 
  */
 export type AllTemplates<
-    CustomTemplates extends IRouterTemplates,
-    DefaultTemplates extends typeof template
-> = CustomTemplates & DefaultTemplates;
+    CustomTemplates extends IRouterTemplates = {},
+    // DefaultTemplates extends IDefaultTemplates
+> = Spread<IDefaultTemplates, CustomTemplates>;
+
 
 // > = JoinIntersection<CustomTemplates & DefaultTemplates>;
-type allTemplatesTest = AllTemplates<{other: typeof template['data']}, typeof template>;
+type allTemplatesTestNoCustom = AllTemplates
+type allTemplatesTest = AllTemplates<{other: IDefaultTemplates['stack']}>;
+type allTemplatesTestSceneShow = allTemplatesTest['scene']['actions']['show']
+type allTemplatesTestSceneCustomAction = allTemplatesTest['scene']['actions']['testAction']
+type allTemplatesTestOtherShow = allTemplatesTest['other']['actions']['show']
+type allTemplatesTestInstance = RouterInstance<allTemplatesTest, 'scene'>['testAction'];
 
+type allTemplatesTestOverride = AllTemplates<{scene: IDefaultTemplates['stack']}>;
+type allTemplatesTestOverrideSceneShow = allTemplatesTestOverride['scene']
+type allTemplatesTestOverrideInstanceSpecific = RouterInstance<allTemplatesTestOverride, 'scene'>['toFront'];
+type allTemplatesTestOverrideInstanceAll = RouterInstance<allTemplatesTestOverride>['show'];
+
+/**
+ * Types associated with initializing the manager
+ */
 export interface IManagerInit<
     CustomTemplates extends IRouterTemplates,
-    DefaultTemplates extends typeof template
 > {
-    routerTree?: IRouterDeclaration<AllTemplates<CustomTemplates, DefaultTemplates>>;
+    routerTree?: IRouterDeclaration<AllTemplates<CustomTemplates>>;
     serializedStateStore?: NativeSerializedStore | BrowserSerializedStore;
-    routerStateStore?: DefaultRoutersStateStore<
-        ExtractCustomStateFromTemplate<
-            RouterTemplateUnion<AllTemplates<CustomTemplates, DefaultTemplates>>
-        >
-    >;
+    routerStateStore?: DefaultRoutersStateStore<RouterCurrentStateFromTemplates<CustomTemplates>>;
     router?: RouterClass<
-        AllTemplates<CustomTemplates, DefaultTemplates>,
-        NarrowRouterTypeName<keyof AllTemplates<CustomTemplates, DefaultTemplates>>
+        AllTemplates<CustomTemplates>,
+        NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
     >;
     customTemplates?: CustomTemplates;
-    defaultTemplates?: DefaultTemplates;
+    defaultTemplates?: IDefaultTemplates;
 }
 
+/**
+ * Returns a union of all state defined in the map of default and custom templates
+ */
 export type RouterCurrentStateFromTemplates<
     CustomTemplates extends IRouterTemplates,
-    DefaultTemplates extends typeof template
 > = ExtractCustomStateFromTemplate<
-    RouterTemplateUnion<AllTemplates<CustomTemplates, DefaultTemplates>>
+    RouterTemplateUnion<AllTemplates<CustomTemplates>>
 >;
 
 /**
  * The routers of a manager.
  * This type is a union of all possible router types found in the templates object.
+ * 
+ * TODO: figure out which typing is better.
  */
-export type ManagerRouters<T extends IRouterTemplates> = {
-    [RouterType in keyof T]: RouterInstance<T, NarrowRouterTypeName<RouterType>>;
-}[keyof T];
-type managerRoutersTest = ManagerRouters<typeof template>;
+export type ManagerRouters<T extends IRouterTemplates> = 
+RouterInstance<T, NarrowRouterTypeName<keyof T>>
+
+//  Record<
+//     keyof T,
+//     {
+//         [RouterType in keyof T]: RouterInstance<T, NarrowRouterTypeName<RouterType>>;
+//     }[keyof T]
+// >[keyof T];
+
+type managerRoutersTest = ManagerRouters<{other: IDefaultTemplates['data']} & IDefaultTemplates>;
+type managerRoutersTestAction = managerRoutersTest['setData']
+type managerRoutersTestAction = managerRoutersTest['show']
 
 /**
  * The router types of a manager.
- * This type is a union of all possible router types found in the templates object. Each type
+ * This type is a map of all possible router types found in the templates object. Each value
  * is a class that can be used to instantiate a specific router from a declaration object that a user supplies.
  */
 export type ManagerRouterTypes<T extends IRouterTemplates> = {
     [RouterType in keyof T]: RouterClass<T, NarrowRouterTypeName<RouterType>>;
 };
-type managerRouterTypesTest = ManagerRouterTypes<typeof template>;
+type managerRouterTypesTest = ManagerRouterTypes<
+    {otherType: IDefaultTemplates['stack']} & IDefaultTemplates
+>;
+type managerRouterTypesTestA = managerRouterTypesTest['scene']
 
 /**
  * -------------------------------------------------
@@ -664,29 +742,32 @@ export type RouterStateStoreStore<CustomState extends {}> = Record<
 // type JoinIntersection<T extends {}> = {
 //     [k in keyof T]: T[k];
 // };
-// type joinIntersectionTest = JoinIntersection<{other: typeof template['data']} & typeof template>;
+// type joinIntersectionTest = JoinIntersection<{other: IDefaultTemplates['data']} & IDefaultTemplates>;
 
 /**
  * From https://github.com/Microsoft/TypeScript/pull/21316#issuecomment-359574388
  */
+export type Diff<T, U> = T extends U ? never : T;  // Remove types from T that are assignable to U
+
 // Names of properties in T with types that include undefined
-type OptionalPropertyNames<T> = {[K in keyof T]: undefined extends T[K] ? K : never}[keyof T];
+export type OptionalPropertyNames<T> =
+    { [K in keyof T]: undefined extends T[K] ? K : never }[keyof T];
 
 // Common properties from L and R with undefined in R[K] replaced by type in L[K]
-type SpreadProperties<L, R, K extends keyof L & keyof R> = {[P in K]: L[P] | Diff<R[P], undefined>};
-
-type Diff<T, U> = T extends U ? never : T; // Remove types from T that are assignable to U
+export type SpreadProperties<L, R, K extends keyof L & keyof R> =
+    { [P in K]: L[P] | Diff<R[P], undefined> };
 
 // Type of { ...L, ...R }
 export type Spread<L, R> =
     // Properties in L that don't exist in R
-    Pick<L, Diff<keyof L, keyof R>> &
-        // Properties in R with types that exclude undefined
-        Pick<R, Diff<keyof R, OptionalPropertyNames<R>>> &
-        // Properties in R, with types that include undefined, that don't exist in L
-        Pick<R, Diff<OptionalPropertyNames<R>, keyof L>> &
-        // Properties in R, with types that include undefined, that exist in L
-        SpreadProperties<L, R, OptionalPropertyNames<R> & keyof L>;
+    & Pick<L, Diff<keyof L, keyof R>>
+    // Properties in R with types that exclude undefined
+    & Pick<R, Diff<keyof R, OptionalPropertyNames<R>>>
+    // Properties in R, with types that include undefined, that don't exist in L
+    & Pick<R, Diff<OptionalPropertyNames<R>, keyof L>>
+    // Properties in R, with types that include undefined, that exist in L
+    & SpreadProperties<L, R, OptionalPropertyNames<R> & keyof L>;
+
 
 export type Unpacked<T> = T extends (infer U)[]
     ? U // eslint-disable-next-line
@@ -695,3 +776,50 @@ export type Unpacked<T> = T extends (infer U)[]
     : T extends Promise<infer U>
     ? U
     : T;
+
+
+
+    /**
+     * TESTTT
+     */
+
+    // type KnownKeys<T> = {
+    //     [K in keyof T]: string extends K ? never : number extends K ? never : K
+    //   } extends { [_ in keyof T]: infer U } ? U : never;
+      
+
+    // type KnownKeys<T> = {
+    //     [K in keyof T]: string extends K ? never : number extends K ? never : K
+    // } extends {[_ in keyof T]: infer U} ? ({} extends U ? never : U) : never;
+
+    //   type A = {
+    //       a: number;
+    //       b: number;
+    //   }
+      
+    //   type E = {
+    //       [a: string]: any;    
+    //       d: number;
+    //       b: string;
+    //       z: 'blue';
+    //   }
+
+      
+    //   type D = KnownKeys<E>
+
+    //   type CC = Pick<E, D> & Pick<A, KnownKeys<A>>
+
+    //   type Merge<T, U> = 
+    // // Picking the known keys from T, requires the introduction of K as a new type parameter
+    // // We do this in order to make TS know K is a keyof T on the branch we do the pick
+    // // (Exclude<KnownKeys<T>, keyof U> extends infer K? K extends keyof T ? Pick<T, K> : never: never )
+    // Pick<T, KnownKeys<T>>
+    // // Pick the string index signature if any 
+    // & (T extends Record<string, any> ? Pick<T, string> : never) 
+    // // We can also pick the numeric index
+    // & (T extends Record<number, any> ? Pick<T, number> : never) 
+    // // Intersect with U 
+    // & Pick<U, KnownKeys<U>>;
+
+    // type Y = Merge<E, A>
+    // type YY = Y['z']

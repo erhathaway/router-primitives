@@ -12,10 +12,6 @@ const hide: RouterActionFn = (_options, location, _router, _ctx) => {
     return {search: {}, pathname: [], options: location.options};
 };
 
-const test: RouterActionFn = (_options, location, _router, _ctx) => {
-    return {search: {}, pathname: [], options: location.options};
-};
-
 const reducer: RouterReducerFn = (location, _router, _ctx) => {
     const hasSearchRouters = Object.keys(location.search).length > 0;
     const hasPathRouters = location.pathname.length > 0;
@@ -23,8 +19,8 @@ const reducer: RouterReducerFn = (location, _router, _ctx) => {
     return {visible: hasSearchRouters || hasPathRouters};
 };
 
-const template: IRouterTemplate<{}, 'test'> = {
-    actions: {show, hide, test},
+const template: IRouterTemplate<{}, 'rootAction'> = {
+    actions: {show, hide, rootAction: hide},
     reducer,
     config: {canBePathRouter: true, isPathRouter: true}
 };

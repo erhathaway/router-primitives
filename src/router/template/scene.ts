@@ -53,7 +53,7 @@ const hide: RouterActionFn = (_options, oldLocation, router, _ctx) => {
     return location;
 };
 
-const reducer: RouterReducerFn = (location, router, _ctx) => {
+const reducer: RouterReducerFn<{blueWorld: boolean}> = (location, router, _ctx) => {
     const newState: RouterCurrentState = {};
     if (router.isPathRouter) {
         newState['visible'] = location.pathname[router.pathLocation] === router.routeKey;

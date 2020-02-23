@@ -53,7 +53,7 @@
         "rollup-plugin-typescript2": "^0.21.2",
         "rollup-watch": "^4.3.1",
         "ts-jest": "^23.10.5",
-        "typescript": "^3.6.4"
+        "typescript": "^3.8.2"
     },
     "dependencies": {
         "query-string": "^6.8.3"

@@ -12,7 +12,8 @@ import {objKeys} from './utilities';
 /**
  * The default router state store.
  * This store keeps track of each routers state which is derived from the current location
- * This store can be swaped out in the manager with other stores. For example, a redux store.
+ * This store can be swaped out in the manager with other stores.
+ * For example, a redux store could be used to manage state with redux, or a local storage store could be used to persist state to the client.
  * Stores must implement the methods:
  *   setState
  *   getState
