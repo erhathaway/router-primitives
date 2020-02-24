@@ -7,8 +7,8 @@ import {
     IRouterStateStoreConfig,
     RouterStateStoreStore
 } from './types';
-import { IRouterStateStore } from './types/router_state';
-import { objKeys } from './utilities';
+import {IRouterStateStore} from './types/router_state';
+import {objKeys} from './utilities';
 
 /**
  * The default router state store.
@@ -21,14 +21,15 @@ import { objKeys } from './utilities';
  *   createRouterStateGetter
  *   createRouterStateSubscriber
  */
-export default class DefaultRoutersStateStore<CustomState extends {}> implements IRouterStateStore<CustomState>{
+export default class DefaultRoutersStateStore<CustomState extends {}>
+    implements IRouterStateStore<CustomState> {
     private store: RouterStateStoreStore<CustomState>;
     private config: IRouterStateStoreConfig;
     private observers: RouterStateObservers<CustomState>;
 
     constructor(store?: RouterStateStoreStore<CustomState>, config?: IRouterStateStoreConfig) {
         this.store = store || {};
-        this.config = { historySize: 2, ...config };
+        this.config = {historySize: 2, ...config};
         this.observers = {}; // key is routerName
     }
 
@@ -48,7 +49,7 @@ export default class DefaultRoutersStateStore<CustomState extends {}> implements
         this.store = routerNames.reduce(
             (routerStates, routerName) => {
                 // extract current and historical states
-                const { current: prevCurrent, historical } =
+                const {current: prevCurrent, historical} =
                     routerStates[routerName] ||
                     ({
                         current: {},
@@ -76,14 +77,14 @@ export default class DefaultRoutersStateStore<CustomState extends {}> implements
                     newHistorical = newHistorical.slice(0, this.config.historySize);
                 }
                 // update state to include new router state
-                routerStates[routerName] = { current: newCurrent, historical: newHistorical };
+                routerStates[routerName] = {current: newCurrent, historical: newHistorical};
 
                 // record which routers have had a state change
                 hasUpdatedTracker.push(routerName);
 
                 return routerStates;
             },
-            { ...this.getState() }
+            {...this.getState()}
         );
 
         // call observers of all routers that have had state changes

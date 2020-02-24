@@ -1,6 +1,7 @@
 import deserializer from './deserializer';
 import serializer from './serializer';
 import {IInputLocation, IOutputLocation, StateObserver} from '../types';
+import {ISerializedStateStore} from '../types/serialized_state';
 
 interface INativeStoreConfig {
     serializer: typeof serializer;
@@ -18,7 +19,7 @@ interface ISetStateOptions {
  * For non web, or when manager.config.serializedStateStore === 'native' this store is used
  * The default serialized state is a string for this store
  */
-export default class NativeStore {
+export default class NativeStore implements ISerializedStateStore {
     public history: string[];
     private observers: StateObserver[];
     private config: INativeStoreConfig;

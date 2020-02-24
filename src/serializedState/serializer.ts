@@ -1,9 +1,13 @@
 import * as queryString from 'query-string';
 import {IInputLocation, IOutputLocation} from '../types/index';
+import {SerializedStateSerializer} from '../types/serialized_state';
 
 const DEFAULT_LOCATION: IInputLocation = {pathname: [], search: {}, options: {}};
 
-const serializer = (newLocation: IInputLocation, oldLocation = DEFAULT_LOCATION) => {
+const serializer: SerializedStateSerializer = (
+    newLocation: IInputLocation,
+    oldLocation = DEFAULT_LOCATION
+) => {
     // console.log('$$', newLocation.search)
     const newPathname = newLocation.pathname || [];
     const newSearchObj = newLocation.search || {};

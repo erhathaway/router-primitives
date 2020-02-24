@@ -1,6 +1,7 @@
 import deserializer from './deserializer';
 import serializer from './serializer';
 import {IOutputLocation, IInputLocation, StateObserver} from '../types/index';
+import {ISerializedStateStore} from '../types/serialized_state';
 
 interface IBrowserStoreConfig {
     serializer: typeof serializer;
@@ -12,7 +13,7 @@ interface IBrowserStoreConfig {
  * The serialized state store is what, on the web, holds the URL - aka the serilaized state of the router tree
  * The default serialized state is the URL for this store
  */
-export default class BrowserStore {
+export default class BrowserStore implements ISerializedStateStore {
     private observers: StateObserver[];
     private config: IBrowserStoreConfig;
     private existingLocation: string;

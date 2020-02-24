@@ -1,8 +1,4 @@
-import {
-    RouterCurrentState,
-    RouterStateObserver,
-    RouterStateStoreStore
-} from '../types';
+import {RouterCurrentState, RouterStateObserver, RouterStateStoreStore} from '../types';
 
 /**
  * The default router state store.
@@ -16,7 +12,6 @@ import {
  *   createRouterStateSubscriber
  */
 export interface IRouterStateStore<CustomState extends {}> {
-
     /**
      * Sets the state of the router state store by adding to the history.
      * Adding state will completly overwrite existing state.
@@ -24,29 +19,27 @@ export interface IRouterStateStore<CustomState extends {}> {
      *   the router callbacks wont be called for this router. Otherwise, if the state
      *   has changed in any way, callback will be fired off for the router.
      */
-    setState: (desiredRouterStates: Record<string, RouterCurrentState<CustomState>>) => void
-
-
+    setState: (desiredRouterStates: Record<string, RouterCurrentState<CustomState>>) => void;
 
     /**
      * Returns a function which has a router name in closure scope.
      * The returned function is used for getting the router store state for a specific router.
      */
-    createRouterStateGetter: (routerName: string) => () => RouterStateStoreStore<CustomState>
+    createRouterStateGetter: (routerName: string) => () => RouterStateStoreStore<CustomState>;
 
     /**
      * Returns a function which as the router name in closure scope.
      * The returned function is used subscribe observers to changes in
      *   a single routers state.
      */
-    createRouterStateSubscriber: (routerName: string) => RouterStateObserver<CustomState>
+    createRouterStateSubscriber: (routerName: string) => RouterStateObserver<CustomState>;
 
-    createRouterStateUnsubscriber: (routerName: string) => RouterStateObserver<CustomState>
+    createRouterStateUnsubscriber: (routerName: string) => RouterStateObserver<CustomState>;
 
-    unsubscribeAllObserversForRouter: (routerName: string) => void
+    unsubscribeAllObserversForRouter: (routerName: string) => void;
 
     /**
      * Returns the stores state for all routers
      */
-    getState: RouterStateStoreStore<CustomState>
+    getState: RouterStateStoreStore<CustomState>;
 }

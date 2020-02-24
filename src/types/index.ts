@@ -1,9 +1,10 @@
 import { IRouterBase } from '../types/router_base';
-import Manager from '../manager';
-import { NativeSerializedStore, BrowserSerializedStore } from '../serializedState';
+// import Manager from '../manager';
 import { IRouterStateStore } from '../types/router_state';
 // import defaultTemplates from '../router/template';
 import { IRouterCache } from '../types/router_cache';
+import { ISerializedStateStore } from './serialized_state';
+import { DefaultTemplates } from '../types/router_templates';
 
 export type Constructable<T = {}> = new (...args: any[]) => T; // eslint-disable-line
 
@@ -140,7 +141,7 @@ export type RouterReducerFn<CustomState extends {} = {}> = <
 export type NarrowRouterTypeName<Names extends string | number | symbol> = Names extends string
     ? Names
     : never;
-// type narrowRouterTypeNameTest = NarrowRouterTypeName<keyof IDefaultTemplates>;
+// type narrowRouterTypeNameTest = NarrowRouterTypeName<keyof DefaultTemplates>;
 // type narrowRouterTypeNameTestA = NarrowRouterTypeName<keyof {}>;
 
 /**
@@ -150,8 +151,8 @@ export type NarrowActionNames<
     Actions extends {},
     ActionNames extends string | number | symbol = keyof Actions
     > = ActionNames extends string ? ActionNames : never;
-// type narrowActionNamesTest = NarrowActionNames<IDefaultTemplates['stack']['actions']>;
-// type narrowActionNamesTestA = NarrowActionNames<IDefaultTemplates['scene']['actions']>;
+// type narrowActionNamesTest = NarrowActionNames<DefaultTemplates['stack']['actions']>;
+// type narrowActionNamesTestA = NarrowActionNames<DefaultTemplates['scene']['actions']>;
 
 /**
  * -------------------------------------------------
@@ -166,7 +167,7 @@ export type NarrowActionNames<
 export type Parent<T extends IRouterTemplates> = {
     [RouterType in keyof T]: RouterInstance<T, NarrowRouterTypeName<RouterType>>;
 }[keyof T];
-// type parentTest = Parent<IDefaultTemplates>;
+// type parentTest = Parent<DefaultTemplates>;
 // type parentTestChildren = parentTest['routers'];
 
 /**
@@ -177,7 +178,7 @@ export type Root<
     T extends IRouterTemplates,
     Name extends string = 'root'
     > = Name extends NarrowRouterTypeName<keyof T> ? RouterInstance<T, Name> : never;
-// type rootTest = Root<IDefaultTemplates>;
+// type rootTest = Root<DefaultTemplates>;
 
 /**
  * Child router instances. These are the children of the current router.
@@ -188,7 +189,7 @@ export type Childs<T extends IRouterTemplates> = {
         RouterInstance<T, NarrowRouterTypeName<RouterType>>
     >;
 };
-// type childsTest = Childs<IDefaultTemplates>;
+// type childsTest = Childs<DefaultTemplates>;
 // type childsTestValues = childsTest['scene'];
 
 /**
@@ -203,9 +204,9 @@ export type RefineTypeName<
     > = Name extends NarrowRouterTypeName<keyof Templates>
     ? Name
     : NarrowRouterTypeName<keyof Templates>;
-// type refineTypeNameTest = RefineTypeName<IDefaultTemplates, 'hello'>;
-// type refineTypeNameTestA = RefineTypeName<IDefaultTemplates, 'scene'>;
-// type refineTypeNameTestB = RefineTypeName<IDefaultTemplates, string>;
+// type refineTypeNameTest = RefineTypeName<DefaultTemplates, 'hello'>;
+// type refineTypeNameTestA = RefineTypeName<DefaultTemplates, 'scene'>;
+// type refineTypeNameTestB = RefineTypeName<DefaultTemplates, string>;
 
 /**
  * The instantiated router class.
@@ -233,28 +234,28 @@ export type RouterInstance<
 
 // // custom templates
 // type routerInstanceTestCustom = RouterInstance<
-//     Record<'stack', IDefaultTemplates['stack']>,
+//     Record<'stack', DefaultTemplates['stack']>,
 //     'stack'
 // >;
 // // invalid template
 // // TODO the following test should error out since {test:string} isnt a valid template
 // type routerInstanceTestInvalidTemplate = RouterInstance<
-//     IDefaultTemplates & { test: 'string' },
+//     DefaultTemplates & { test: 'string' },
 //     string
 // >;
 
 // stack
-// type routerInstanceTestStack = RouterInstance<IDefaultTemplates & { test: 'string' }, 'stack'>;
+// type routerInstanceTestStack = RouterInstance<DefaultTemplates & { test: 'string' }, 'stack'>;
 // type routerInstanceTestStackMethod = routerInstanceTestStack['toFront']; // <--- should not error
 
 // // scene
-// type routerInstanceTestScene = RouterInstance<IDefaultTemplates, 'scene'>;
+// type routerInstanceTestScene = RouterInstance<DefaultTemplates, 'scene'>;
 // // type routerInstanceTestAToFront = routerInstanceTestScene['toFront']; // <--- should error
 // type routerInstanceTestShowA = routerInstanceTestScene['show'];
 
 // // A router instance given an open ended type name should be an intersection of all router types
 // type routerInstanceTestUnion = RouterInstance<
-//     { custom: IDefaultTemplates['data'] } & IDefaultTemplates,
+//     { custom: DefaultTemplates['data'] } & DefaultTemplates,
 //     string
 // >;
 // // type routerInstanceTestUnionError = routerInstanceTestUnion['toFront']; // <--- should error
@@ -278,8 +279,8 @@ export type RouterClass<
         >;
     };
 
-// type routerClassTest = InstanceType<RouterClass<IDefaultTemplates, 'feature'>>;
-// type routerClassTestA = InstanceType<RouterClass<IDefaultTemplates, 'stack'>>;
+// type routerClassTest = InstanceType<RouterClass<DefaultTemplates, 'feature'>>;
+// type routerClassTestA = InstanceType<RouterClass<DefaultTemplates, 'stack'>>;
 
 /**
  * -------------------------------------------------
@@ -314,7 +315,7 @@ export interface IRouterTemplate<
  * Default router templates
  */
 
-export type IDefaultTemplates = typeof defaultTemplates;
+// export type DefaultTemplates = typeof defaultTemplates;
 // = {
 //     scene: IRouterTemplate<
 //         {
@@ -353,13 +354,13 @@ export type RouterTemplateUnion<T extends IRouterTemplates> = T[keyof T];
 // > = {
 //     [RouterType in keyof V]: V[RouterType];
 // }[keyof V] ;
-// type routerTemplateUnionTest = RouterTemplateUnion<IDefaultTemplates & IRouterTemplates>;
-// type routerTemplateUnionTest = RouterTemplateUnion<IDefaultTemplates>;
+// type routerTemplateUnionTest = RouterTemplateUnion<DefaultTemplates & IRouterTemplates>;
+// type routerTemplateUnionTest = RouterTemplateUnion<DefaultTemplates>;
 
 // type EventTypeMap<T extends object> = { [K in keyof T]: T[K] };
 
 // type CallbackEventTypes<T extends object> = T; //EventTypeMap<T>[keyof EventTypeMap<T>];
-// type ttt = CallbackEventTypes<IDefaultTemplates>;
+// type ttt = CallbackEventTypes<DefaultTemplates>;
 
 // https://stackoverflow.com/questions/57125961/how-to-extend-a-type-in-a-type-formula-in-typescript
 /**
@@ -379,7 +380,7 @@ export type ExtractCustomStateFromTemplate<T extends IRouterTemplate> = T extend
 
 // type extractCustomStateFromTemplateTest = ExtractCustomStateFromTemplate<iRouterTemplateTest>;
 // type extractCustomStateFromTemplateTestUnions = ExtractCustomStateFromTemplate<
-//     RouterTemplateUnion<IDefaultTemplates>
+//     RouterTemplateUnion<DefaultTemplates>
 // >;
 // type extractCustomStateFromTemplateMap = ExtractCustomStateFromTemplate<RouterTemplateUnion<AllTemplates>>
 
@@ -484,7 +485,7 @@ export interface IRouterInitArgs<
     actions: (keyof Templates[RouterTypeName]['actions'])[]; // the router actions derived from the template. Usually 'show' and 'hide';
     cache: CacheClass<Templates, RouterTypeName, IRouterCache<Templates, RouterTypeName>>;
 }
-// type iRouterInitArgsTest = IRouterInitArgs<IDefaultTemplates, 'scene'>;
+// type iRouterInitArgsTest = IRouterInitArgs<DefaultTemplates, 'scene'>;
 // type iRouterInitArgsTestType = iRouterInitArgsTest['type'];
 // type iRouterInitArgsTestParent = iRouterInitArgsTest['parent'];
 // type iRouterInitArgsTestRouters = iRouterInitArgsTest['routers'];
@@ -497,7 +498,7 @@ export interface IRouterInitArgs<
 //     iRouterInitArgsTestCache['setWasPreviouslyVisibleToFromLocation']
 // >;
 
-// type iRouterInitArgsTestA = IRouterInitArgs<IDefaultTemplates, 'stack'>;
+// type iRouterInitArgsTestA = IRouterInitArgs<DefaultTemplates, 'stack'>;
 // type iRouterInitArgsTestActionsB = iRouterInitArgsTestA['actions'];
 
 /**
@@ -535,11 +536,13 @@ export interface IRouterConfig {
 /**
  * The class type of a cache store instance
  */
-export type CacheClass<
+export interface CacheClass<
     Templates extends IRouterTemplates,
     RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
     RouterCache extends IRouterCache<Templates, RouterTypeName>
-    > = { new(): RouterCache };
+    > {
+    new(): RouterCache;
+}
 
 /**
  * -------------------------------------------------
@@ -559,7 +562,7 @@ export type NeighborsOfType<
             [RouterType in Exclude<keyof T, N>]?: RouterInstance<T, NarrowRouterTypeName<RouterType>>;
         }[Exclude<keyof T, N>]
     >;
-// type neighborsOfTypeTest = NeighborsOfType<IDefaultTemplates, 'scene'>;
+// type neighborsOfTypeTest = NeighborsOfType<DefaultTemplates, 'scene'>;
 
 /**
  * -------------------------------------------------
@@ -576,7 +579,7 @@ export type UnionOfChildren<T extends IRouterTemplates> = {
         RouterInstance<T, NarrowRouterTypeName<RouterType>>
     >;
 }[Exclude<keyof T, 'root'>];
-// type unionOfChildrenTest = UnionOfChildren<IDefaultTemplates>;
+// type unionOfChildrenTest = UnionOfChildren<DefaultTemplates>;
 
 /**
  * Utility to extract the template type of a router instance.
@@ -589,9 +592,9 @@ export type TemplateOfRouter<R> = R extends RouterInstance<
     ? Templates[Name]
     : never;
 
-// type templateOfRouterTestAllRouters = RouterInstance<IDefaultTemplates>;
+// type templateOfRouterTestAllRouters = RouterInstance<DefaultTemplates>;
 // type templateOfRouterTestAllRoutersAllTemplates = TemplateOfRouter<templateOfRouterTestAllRouters>;
-// type templateOfRouterTestStackRouter = RouterInstance<IDefaultTemplates, 'stack'>;
+// type templateOfRouterTestStackRouter = RouterInstance<DefaultTemplates, 'stack'>;
 // type templateOfRouterTestStackRouterTemplate = TemplateOfRouter<templateOfRouterTestStackRouter>;
 
 /**
@@ -607,18 +610,18 @@ export type ActionWraperFnDecorator = <Fn extends any>(fn: Fn) => Fn;
  * Custom templates are spread into the default templates allowing for overrides.
  */
 export type AllTemplates<CustomTemplates extends IRouterTemplates = {}> = Spread<
-    IDefaultTemplates,
+    DefaultTemplates,
     CustomTemplates
 >;
 
 // type allTemplatesTestNoCustom = AllTemplates;
-// type allTemplatesTest = AllTemplates<{ other: IDefaultTemplates['stack'] }>;
+// type allTemplatesTest = AllTemplates<{ other: DefaultTemplates['stack'] }>;
 // type allTemplatesTestSceneShow = allTemplatesTest['scene']['actions']['show'];
 // type allTemplatesTestSceneCustomAction = allTemplatesTest['scene']['actions']['testAction'];
 // type allTemplatesTestOtherShow = allTemplatesTest['other']['actions']['show'];
 // type allTemplatesTestInstance = RouterInstance<allTemplatesTest, 'scene'>['testAction'];
 
-// type allTemplatesTestOverride = AllTemplates<{ scene: IDefaultTemplates['stack'] }>;
+// type allTemplatesTestOverride = AllTemplates<{ scene: DefaultTemplates['stack'] }>;
 // type allTemplatesTestOverrideSceneShow = allTemplatesTestOverride['scene'];
 // type allTemplatesTestOverrideInstanceSpecific = RouterInstance<
 //     allTemplatesTestOverride,
@@ -631,14 +634,14 @@ export type AllTemplates<CustomTemplates extends IRouterTemplates = {}> = Spread
  */
 export interface IManagerInit<CustomTemplates extends IRouterTemplates> {
     routerTree?: IRouterDeclaration<AllTemplates<CustomTemplates>>;
-    serializedStateStore?: NativeSerializedStore | BrowserSerializedStore;
+    serializedStateStore?: ISerializedStateStore;
     routerStateStore?: IRouterStateStore<RouterCurrentStateFromTemplates<CustomTemplates>>;
     router?: RouterClass<
         AllTemplates<CustomTemplates>,
         NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
     >;
     customTemplates?: CustomTemplates;
-    defaultTemplates?: IDefaultTemplates;
+    defaultTemplates?: DefaultTemplates;
 }
 
 /**
@@ -658,7 +661,7 @@ export type ManagerRouters<T extends IRouterTemplates> = RouterInstance<
     NarrowRouterTypeName<keyof T>
 >;
 
-// type managerRoutersTest = ManagerRouters<{ other: IDefaultTemplates['data'] } & IDefaultTemplates>;
+// type managerRoutersTest = ManagerRouters<{ other: DefaultTemplates['data'] } & DefaultTemplates>;
 // type managerRoutersTestAction = managerRoutersTest['setData'];
 // type managerRoutersTestAction = managerRoutersTest['show'];
 
@@ -671,7 +674,7 @@ export type ManagerRouterTypes<T extends IRouterTemplates> = {
     [RouterType in keyof T]: RouterClass<T, NarrowRouterTypeName<RouterType>>;
 };
 // type managerRouterTypesTest = ManagerRouterTypes<
-//     { otherType: IDefaultTemplates['stack'] } & IDefaultTemplates
+//     { otherType: DefaultTemplates['stack'] } & DefaultTemplates
 // >;
 // type managerRouterTypesTestA = managerRouterTypesTest['scene'];
 
@@ -732,7 +735,7 @@ export type RouterStateStoreStore<CustomState extends {}> = Record<
 // type JoinIntersection<T extends {}> = {
 //     [k in keyof T]: T[k];
 // };
-// type joinIntersectionTest = JoinIntersection<{other: IDefaultTemplates['data']} & IDefaultTemplates>;
+// type joinIntersectionTest = JoinIntersection<{other: DefaultTemplates['data']} & DefaultTemplates>;
 
 /**
  * From https://github.com/Microsoft/TypeScript/pull/21316#issuecomment-359574388
