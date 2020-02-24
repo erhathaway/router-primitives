@@ -1,5 +1,5 @@
-import defaultTemplates from '../router/template';
-import {IRouterTemplate} from '../types';
+// import defaultTemplates from '../router/template';
+import { IRouterTemplate } from '../types';
 // export type DefaultTemplates = typeof defaultTemplates;
 
 export interface DefaultTemplates {
