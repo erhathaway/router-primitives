@@ -1,7 +1,7 @@
 import defaultRouterTemplates from './router/template';
 
-import {BrowserSerializedStore, NativeSerializedStore} from './serializedState';
-import {ITracerThing, TracerSession, tracerManager} from './tracer';
+import { BrowserSerializedStore, NativeSerializedStore } from './serializedState';
+import { ITracerThing, TracerSession, tracerManager } from './tracer';
 import {
     RouterActionFn,
     ActionWraperFnDecorator,
@@ -32,7 +32,7 @@ import {
 
 import DefaultRouter from './router/base';
 import DefaultRouterStateStore from './routerState';
-import {objKeys} from './utilities';
+import { objKeys } from './utilities';
 import template from './router/template';
 
 type B = typeof template;
@@ -55,7 +55,7 @@ const createRouterFromTemplate = <
     ) => Fn
 ): RouterClass<Templates, RouterTypeName> => {
     // TODO figure out why actions are 'default router actions' type
-    const {actions, reducer} = template;
+    const { actions, reducer } = template;
 
     const MixedInClass = class extends BaseRouter {
         // change the router name to include the type
@@ -84,14 +84,14 @@ const createRouterFromTemplate = <
 export default class Manager<
     CustomTemplates extends IRouterTemplates //& Partial<typeof template> = Partial<typeof template>
     // DefaultTemplates extends DT = DT
-> {
+    > {
     public actionFnDecorator?: ActionWraperFnDecorator;
     public tracerSession: TracerSession;
     public _routers: ManagerRouters<AllTemplates<CustomTemplates>>;
     public rootRouter: Root<AllTemplates<CustomTemplates>>;
     public serializedStateStore: IManagerInit<
         CustomTemplates
-        // DefaultTemplates
+    // DefaultTemplates
     >['serializedStateStore'];
     public routerStateStore: IManagerInit<CustomTemplates>['routerStateStore'];
     public routerTypes: ManagerRouterTypes<AllTemplates<CustomTemplates>>;
@@ -103,9 +103,9 @@ export default class Manager<
         {
             shouldInitialize,
             actionFnDecorator
-        }: {shouldInitialize: boolean; actionFnDecorator?: ActionWraperFnDecorator} = {
-            shouldInitialize: true
-        }
+        }: { shouldInitialize: boolean; actionFnDecorator?: ActionWraperFnDecorator } = {
+                shouldInitialize: true
+            }
     ) {
         if (actionFnDecorator) {
             this.actionFnDecorator = actionFnDecorator;
@@ -133,11 +133,11 @@ export default class Manager<
         const tracerSession = router.manager.tracerSession;
         const tracer = tracerSession.tracerThing(router.name);
 
-        let newLocation = {...location};
+        let newLocation = { ...location };
         // TODO don't mutate location
         // console.log(
         // tracer.logStep('Found number of children types', objKeys(router.routers).length)
-        objKeys(router.routers).forEach(routerType => {
+        objKeys(router.routers).forEach((routerType: string) => {
             // skip routers that called the parent router
             if (routerType === ctx.activatedByChildType) {
                 tracer.logStep(
@@ -205,7 +205,7 @@ export default class Manager<
                     tracer.logStep(`(Applying default action: ${action} for ${child.name}`);
 
                     newLocation = child[action as keyof DefaultRouterActions](
-                        {...options, data: args[0]}, // TODO pass more than just the first arg
+                        { ...options, data: args[0] }, // TODO pass more than just the first arg
                         newLocation,
                         child,
                         newContext
@@ -253,12 +253,12 @@ export default class Manager<
             disableCaching =
                 ctx.disableCaching || router.lastDefinedParentsDisableChildCacheState || false;
         }
-        tracer.logStep('setting', {disableCaching});
+        tracer.logStep('setting', { disableCaching });
 
         objKeys(router.routers).forEach(routerType => {
             router.routers[routerType].forEach(child => {
                 // Update ctx object's caching setting for this branch of the router tree
-                const newCtx = {...ctx, disableCaching};
+                const newCtx = { ...ctx, disableCaching };
 
                 // Call location 'hide' action if the child is visible
                 const childTracer = tracerSession.tracerThing(child.name);
@@ -281,7 +281,7 @@ export default class Manager<
         // For example, `scene` routers use the `options.disableCaching` to disable sibling caches
         // so they don't get reshown when a parent causes a rehydration
         const shouldCache = !disableCaching && !(options.disableCaching || false);
-        tracer.logStep('setting', {shouldCache});
+        tracer.logStep('setting', { shouldCache });
 
         // console.log(`SHOULD CACHE: ${router.name}`, shouldCache, disableCaching, options.disableCaching)
         if (shouldCache) {
@@ -333,7 +333,7 @@ export default class Manager<
                         // console.log(`(${thingInfo.name}):`);
 
                         // console.log('....', lastStep && lastStep.name);
-                        r.EXPERIMENTAL_setInternalState({...thingInfo});
+                        r.EXPERIMENTAL_setInternalState({ ...thingInfo });
                         // (currentInfo: IInternalState) => ({
                         //     ...currentInfo,
                         //     ...thingInfo
@@ -366,7 +366,7 @@ export default class Manager<
                     );
                 }
 
-                const newLocation = {...existingLocation, ...updatedLocation};
+                const newLocation = { ...existingLocation, ...updatedLocation };
                 // if the parent router isn't visible, but the child is shown, show all parents
                 if (
                     actionName === 'show' &&
@@ -383,9 +383,9 @@ export default class Manager<
                     // data routers dont have a visibility state by default. TODO FIX THIS
                     updatedLocation = routerInstance.parent.show(
                         {},
-                        {...newLocation},
+                        { ...newLocation },
                         routerInstance.parent,
-                        {...ctx, callDirection: 'up', activatedByChildType: routerInstance.type}
+                        { ...ctx, callDirection: 'up', activatedByChildType: routerInstance.type }
                     );
                 }
 
@@ -395,7 +395,7 @@ export default class Manager<
                 // Call the router's action after any actions on the parent have been taken care of
                 updatedLocation = actionFn(
                     options,
-                    {...newLocation, ...updatedLocation},
+                    { ...newLocation, ...updatedLocation },
                     routerInstance,
                     ctx
                 );
@@ -408,14 +408,14 @@ export default class Manager<
                     // add location defaults from children
                     updatedLocation = routerInstance.manager.setChildrenDefaults(
                         options,
-                        {...newLocation, ...updatedLocation},
+                        { ...newLocation, ...updatedLocation },
                         routerInstance,
                         ctx
                     );
                 }
 
                 tracer.endWithMessage(`Returning location`);
-                return {...newLocation, ...updatedLocation};
+                return { ...newLocation, ...updatedLocation };
             }
 
             tracer.logStep('Called from a new location');
@@ -440,9 +440,9 @@ export default class Manager<
                 // data routers dont have a visibility state by default. TODO FIX THIS
                 updatedLocation = routerInstance.parent.show(
                     {},
-                    {...updatedLocation},
+                    { ...updatedLocation },
                     routerInstance.parent,
-                    {...ctx, callDirection: 'up', activatedByChildType: routerInstance.type}
+                    { ...ctx, callDirection: 'up', activatedByChildType: routerInstance.type }
                 );
             }
 
@@ -451,7 +451,7 @@ export default class Manager<
                 tracer.logStep('Hiding');
                 updatedLocation = routerInstance.manager.setCacheAndHide(
                     options,
-                    {...updatedLocation},
+                    { ...updatedLocation },
                     routerInstance,
                     ctx
                 );
@@ -461,7 +461,7 @@ export default class Manager<
             tracer.logStep(`Calling actionFn`);
 
             // Call the router's action after any actions on the parent have been taken care of
-            updatedLocation = actionFn(options, {...updatedLocation}, routerInstance, ctx);
+            updatedLocation = actionFn(options, { ...updatedLocation }, routerInstance, ctx);
 
             // If this action is a direct call from the user, remove all caching
             if (actionName === 'hide' && routerInstance.state.visible === true) {
@@ -475,17 +475,17 @@ export default class Manager<
                 // add location defaults from children
                 updatedLocation = routerInstance.manager.setChildrenDefaults(
                     options,
-                    {...updatedLocation},
+                    { ...updatedLocation },
                     routerInstance,
                     ctx
                 );
             }
 
             // add user options to new location options
-            updatedLocation.options = {...updatedLocation.options, ...options};
+            updatedLocation.options = { ...updatedLocation.options, ...options };
 
             // set serialized state
-            routerInstance.manager.serializedStateStore.setState({...updatedLocation});
+            routerInstance.manager.serializedStateStore.setState({ ...updatedLocation });
             // return location so the function signature of the action is the same
             tracer.endWithMessage(`Returning location`);
             // setTimeout(() => {
@@ -493,12 +493,12 @@ export default class Manager<
             console.log(
                 'TOTAL TIME',
                 routerInstance.manager.tracerSession.endTime -
-                    routerInstance.manager.tracerSession.startTime
+                routerInstance.manager.tracerSession.startTime
             );
             // }, 3000);
             // const things = routerInstance.manager.tracerSession.tracerThings;
             // objKeys(things).forEach(tName => console.log(tName, things[tName].isActive)) // tslint:disable-line
-            return {...updatedLocation};
+            return { ...updatedLocation };
         }
 
         if (this.actionFnDecorator) {
@@ -526,7 +526,7 @@ export default class Manager<
 
         // router types
         const defaults = defaultTemplates || defaultRouterTemplates;
-        this.templates = {...defaults, ...customTemplates} as AllTemplates<
+        this.templates = { ...defaults, ...customTemplates } as AllTemplates<
             CustomTemplates,
             DefaultTemplates
         >;
@@ -601,7 +601,7 @@ export default class Manager<
         // The type is derived by the relationship with the parent.
         //   Or has none, as is the case with the root router in essence
         //   Below, we are deriving the type and calling the add function recursively by type
-        this.addRouter({...router, type, parentName});
+        this.addRouter({ ...router, type, parentName });
         const childRouters = router.routers || {};
         objKeys(childRouters).forEach(childType => {
             childRouters[childType].forEach(child =>
@@ -621,7 +621,7 @@ export default class Manager<
      * its parent and any child routers
      */
     public addRouter(routerDeclaration: IRouterDeclaration<AllTemplates<CustomTemplates>>): void {
-        const {name, parentName, type} = routerDeclaration;
+        const { name, parentName, type } = routerDeclaration;
         const parent = this.routers[parentName];
 
         // Set the root router type if the router has no parent
@@ -635,7 +635,7 @@ export default class Manager<
         ) as IRouterConfig; // TODO figure out why this assertion is necessary
 
         // Create a router
-        const router = this.createRouter({name, config, type: routerType, parentName});
+        const router = this.createRouter({ name, config, type: routerType, parentName });
 
         // Set the created router as the parent router
         // if it has no parent and there is not yet a root
@@ -672,7 +672,7 @@ export default class Manager<
      */
     public removeRouter = (name: string): void => {
         const router = this.routers[name];
-        const {parent, routers, type} = router;
+        const { parent, routers, type } = router;
 
         // Delete ref the parent (if any) stores
         if (parent) {
@@ -726,7 +726,7 @@ export default class Manager<
         }
 
         // Call the routers reducer to calculate its state from the new location
-        const a = router.reducer<{test: boolean}>(location, router, ctx);
+        const a = router.reducer<{ test: boolean }>(location, router, ctx);
         newState[router.name] = a;
 
         // Recursively call all children to add their state to the `newState` object
@@ -827,7 +827,7 @@ export default class Manager<
      */
     protected createNewRouterInitArgs<
         Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
-        // M extends Manager
+    // M extends Manager
     >({
         name,
         config,
@@ -836,14 +836,14 @@ export default class Manager<
     }: IRouterCreationInfo<AllTemplates<CustomTemplates>, Name>): IRouterInitArgs<
         AllTemplates<CustomTemplates>,
         Name
-        // M
+    // M
     > {
         const parent = this.routers[parentName];
         const actions = objKeys(this.templates[type].actions);
 
         return {
             name,
-            config: {...config},
+            config: { ...config },
             type,
             parent,
             routers: {},
@@ -868,7 +868,7 @@ export default class Manager<
     ): RouterInstance<AllTemplates<CustomTemplates>, NarrowRouterTypeName<Name>> {
         const routerClass = this.routerTypes[initalArgs.type];
         // TODO add tests for passing of action names
-        return new routerClass({...initalArgs});
+        return new routerClass({ ...initalArgs });
     }
 
     /**
@@ -909,12 +909,12 @@ export default class Manager<
     > {
         this.validateRouterCreationInfo(name, type, config);
 
-        const initalArgs = this.createNewRouterInitArgs({name, config, type, parentName});
-        return this.createRouterFromInitArgs({...initalArgs});
+        const initalArgs = this.createNewRouterInitArgs({ name, config, type, parentName });
+        return this.createRouterFromInitArgs({ ...initalArgs });
     }
 }
 
-const test = new Manager<{custom: DT['stack']}>({} as any);
+const test = new Manager<{ custom: DT['stack'] }>({} as any);
 test.rootRouter.routers['custom'];
 test.rootRouter;
 test.routers;

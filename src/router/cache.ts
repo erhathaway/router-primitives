@@ -1,4 +1,5 @@
 import {IOutputLocation, IRouterTemplates, RouterInstance, NarrowRouterTypeName} from '../types';
+import {IRouterCache} from '../types/router_cache';
 
 type CacheValue = boolean | undefined;
 
@@ -12,7 +13,7 @@ type CacheValue = boolean | undefined;
 class Cache<
     Templates extends IRouterTemplates,
     RouterTypeName extends NarrowRouterTypeName<keyof Templates>
-> {
+> implements IRouterCache<Templates, RouterTypeName> {
     public _cacheStore?: CacheValue;
 
     constructor() {

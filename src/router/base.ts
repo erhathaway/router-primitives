@@ -11,6 +11,7 @@ import {
     NeighborsOfType,
     NarrowRouterTypeName
 } from '../types';
+import {IRouterBase} from '../types/router_base';
 
 export interface IInternalState {
     isActive?: boolean;
@@ -23,7 +24,7 @@ export default class RouterBase<
         Templates,
         RouterTypeName
     >
-> {
+> implements IRouterBase<Templates, RouterTypeName, InitArgs> {
     public name: InitArgs['name'];
     public type: InitArgs['type'];
     public manager: InitArgs['manager'];
