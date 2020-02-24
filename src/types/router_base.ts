@@ -16,6 +16,7 @@ export interface IRouterBaseInternalState {
     isActive?: boolean;
 }
 
+
 export interface IRouterBase<
     Templates extends IRouterTemplates,
     RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
@@ -23,7 +24,7 @@ export interface IRouterBase<
         Templates,
         RouterTypeName
     >
-> {
+    > {
     name: InitArgs['name'];
     type: InitArgs['type'];
     manager: InitArgs['manager'];
@@ -42,7 +43,6 @@ export interface IRouterBase<
 
     siblings: RouterInstance<Templates, RouterTypeName>[];
 
-    constructor: (init: InitArgs) => void;
     /**
      * Returns all neighbors of a certain router type. This could include the same router type of this router if desired.
      */
@@ -76,7 +76,7 @@ export interface IRouterBase<
     serialize: (
         options: ISerializeOptions
     ) => // eslint-disable-next-line
-    IRouterDeclaration<Templates> & {[key: string]: any};
+        IRouterDeclaration<Templates> & { [key: string]: any };
 
     isPathRouter: boolean;
 

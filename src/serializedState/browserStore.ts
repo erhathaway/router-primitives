@@ -1,7 +1,11 @@
 import deserializer from './deserializer';
 import serializer from './serializer';
-import { IOutputLocation, IInputLocation, StateObserver } from '../types/index';
-import { ISerializedStateStore, SerializedStateSerializer, SerializedStateDeserializer } from '../types/serialized_state';
+import {IOutputLocation, IInputLocation, StateObserver} from '../types/index';
+import {
+    ISerializedStateStore,
+    SerializedStateSerializer,
+    SerializedStateDeserializer
+} from '../types/serialized_state';
 
 interface IBrowserStoreConfig {
     serializer: SerializedStateSerializer;
@@ -21,7 +25,7 @@ export default class BrowserStore implements ISerializedStateStore {
 
     constructor(config?: IBrowserStoreConfig) {
         this.observers = [];
-        this.config = config || { serializer, deserializer };
+        this.config = config || {serializer, deserializer};
 
         // subscribe to location changes
         this.existingLocation = '';
@@ -34,15 +38,15 @@ export default class BrowserStore implements ISerializedStateStore {
     // options = { updateHistory }
     public setState(unserializedLocation: IInputLocation): void {
         const oldUnserializedLocation = this.getState();
-        const { location: newState } = this.config.serializer(
+        const {location: newState} = this.config.serializer(
             unserializedLocation,
             oldUnserializedLocation
         );
 
         if (unserializedLocation.options && unserializedLocation.options.replaceLocation === true) {
-            window.history.replaceState({ url: newState }, '', newState);
+            window.history.replaceState({url: newState}, '', newState);
         } else {
-            window.history.pushState({ url: newState }, '', newState);
+            window.history.pushState({url: newState}, '', newState);
         }
 
         this.notifyObservers();

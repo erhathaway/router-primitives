@@ -26,9 +26,10 @@ import {
     TemplateOfRouter,
     AllTemplates,
     DefaultRouterActions,
-    RouterCurrentStateFromTemplates,
+    RouterCurrentStateFromTemplates
     // IDefaultTemplates as DT
 } from './types';
+import { IRouterBase } from './types/router_base'
 
 import DefaultRouter from './router/base';
 import DefaultRouterStateStore from './routerState';
@@ -80,10 +81,8 @@ const createRouterFromTemplate = <
     return (MixedInClass as unknown) as RouterClass<Templates, RouterTypeName>;
 };
 
-// type Templates = {};
 export default class Manager<
-    CustomTemplates extends IRouterTemplates //& Partial<typeof template> = Partial<typeof template>
-    // DefaultTemplates extends DT = DT
+    CustomTemplates extends IRouterTemplates
     > {
     public actionFnDecorator?: ActionWraperFnDecorator;
     public tracerSession: TracerSession;
@@ -91,7 +90,6 @@ export default class Manager<
     public rootRouter: Root<AllTemplates<CustomTemplates>>;
     public serializedStateStore: IManagerInit<
         CustomTemplates
-    // DefaultTemplates
     >['serializedStateStore'];
     public routerStateStore: IManagerInit<CustomTemplates>['routerStateStore'];
     public routerTypes: ManagerRouterTypes<AllTemplates<CustomTemplates>>;
@@ -115,13 +113,11 @@ export default class Manager<
 
     public setChildrenDefaults = <
         Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>,
-        Router extends RouterInstance<
-            typeof template,
-            // AllTemplates<CustomTemplates>,
+        Router extends IRouterBase<
+            AllTemplates<CustomTemplates>,
             Name
-        > = RouterInstance<
-            typeof template,
-            // AllTemplates<CustomTemplates>
+        > = IRouterBase<
+            AllTemplates<CustomTemplates>,
             Name
         >
     >(
@@ -137,7 +133,7 @@ export default class Manager<
         // TODO don't mutate location
         // console.log(
         // tracer.logStep('Found number of children types', objKeys(router.routers).length)
-        objKeys(router.routers).forEach((routerType: string) => {
+        objKeys(router.routers).forEach((routerType) => {
             // skip routers that called the parent router
             if (routerType === ctx.activatedByChildType) {
                 tracer.logStep(
@@ -148,9 +144,10 @@ export default class Manager<
                 return;
             }
 
-            (router.routers[routerType] as UnionOfChildren<
-                TemplateOfRouter<Router['routers']>
-            >).forEach(child => {
+            // as UnionOfChildren<
+            //     TemplateOfRouter<Router['routers']>
+            // >
+            (router.routers[routerType]).forEach(child => {
                 const childTracer = tracerSession.tracerThing(child.name);
 
                 // prevent inverse activation if it is turned off
@@ -195,7 +192,7 @@ export default class Manager<
                         `Calling show action of child router b/c it has a cached previous visibility: ${child.name}`
                     );
 
-                    newLocation = (child as Router).show(options, newLocation, child, newContext);
+                    newLocation = child.show(options, newLocation, child, newContext);
                 }
 
                 // if the cached visibility state is 'false' don't show on rehydration
@@ -514,7 +511,7 @@ export default class Manager<
         router,
         customTemplates,
         defaultTemplates
-    }: IManagerInit<CustomTemplates, DefaultTemplates>): void {
+    }: IManagerInit<CustomTemplates>): void {
         this.routerStateStore = routerStateStore || new DefaultRouterStateStore();
 
         // check if window
@@ -527,8 +524,7 @@ export default class Manager<
         // router types
         const defaults = defaultTemplates || defaultRouterTemplates;
         this.templates = { ...defaults, ...customTemplates } as AllTemplates<
-            CustomTemplates,
-            DefaultTemplates
+            CustomTemplates
         >;
 
         // TODO implement
@@ -547,15 +543,14 @@ export default class Manager<
                 const RouterFromTemplate = createRouterFromTemplate(
                     templateName as NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>,
                     selectedTemplate as AllTemplates<
-                        CustomTemplates,
-                        DefaultTemplates
+                        CustomTemplates
                     >[NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>],
                     BaseRouter,
                     createActionWrapperFunction as <Fn extends RouterActionFn>(
                         actionFn: Fn,
                         actionName: keyof AllTemplates<
-                            CustomTemplates,
-                            DefaultTemplates
+                            CustomTemplates
+
                         >[NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>]['actions']
                     ) => Fn
                 );
@@ -718,9 +713,9 @@ export default class Manager<
         // TODO fill in current state's custom state generic from the above router
         newState: Record<
             string,
-            RouterCurrentStateFromTemplates<CustomTemplates, DefaultTemplates>
+            RouterCurrentStateFromTemplates<CustomTemplates>
         > = {}
-    ): Record<string, RouterCurrentStateFromTemplates<CustomTemplates, DefaultTemplates>> {
+    ): Record<string, RouterCurrentStateFromTemplates<CustomTemplates>> {
         if (!router) {
             return;
         }
@@ -914,8 +909,8 @@ export default class Manager<
     }
 }
 
-const test = new Manager<{ custom: DT['stack'] }>({} as any);
-test.rootRouter.routers['custom'];
-test.rootRouter;
-test.routers;
-test.routerTypes['custom'];
+// const test = new Manager<{ custom: DT['stack'] }>({} as any);
+// test.rootRouter.routers['custom'];
+// test.rootRouter;
+// test.routers;
+// test.routerTypes['custom'];

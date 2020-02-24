@@ -62,30 +62,31 @@ export type IRouterActionOptions = ILocationOptions;
  * A utility function to intersect unioned actions together
  */
 // eslint-disable-next-line
-export type IntersectUnionedActions<T> = (T extends any ? ((x: T) => 0) : never) extends ((
-    x: infer R
-) => 0)
-    ? R
-    : DefaultRouterActions;
+// export type IntersectUnionedActions<T> = (T extends any ? ((x: T) => 0) : never) extends ((
+//     x: infer R
+// ) => 0)
+//     ? R
+//     : DefaultRouterActions;
 
 /**
  * The default actions all routers should have regardless of what template are based off of
  */
-export type DefaultRouterActions = { show: RouterActionFn; hide: RouterActionFn };
+export interface DefaultRouterActions { show: RouterActionFn; hide: RouterActionFn };
 
 /**
  * A convience object used for defining the shape of a router.
  * This is how action methods are added to the base router class via mixins.
  * For the specific action type see `RouterActionFn`.
  */
-export type Actions<CustomActionNames extends string | null = null> = IntersectUnionedActions<
-    ActionsWithCustomUnioned<CustomActionNames>
->;
-export type ActionsWithCustomUnioned<
-    CustomActionNames extends string | null = null
-    > = CustomActionNames extends null
-    ? DefaultRouterActions
+export type Actions<CustomActionNames extends string | never = never> = CustomActionNames extends string ?
+    DefaultRouterActions
     : { [actionName in CustomActionNames]: RouterActionFn } & DefaultRouterActions;
+
+// export type CustomActions<
+//     CustomActionNames extends string | null = null
+//     > = CustomActionNames extends null
+//     ? DefaultRouterActions
+//     : { [actionName in CustomActionNames]: RouterActionFn } & DefaultRouterActions;
 
 // type actionsTest = Actions<'hello' | 'goodbye'>;
 // type actionsTestA = Actions;
@@ -214,6 +215,8 @@ export type RefineTypeName<
  *
  * If the router type name isn't specified, or is a string, the router instance is a union of all routers
  * that could be constructed from the templates
+ * 
+ * Note: This type significantly slows down tsserver. Disable importing of it in the manager to make intelisense faster
  */
 export type RouterInstance<
     Templates extends IRouterTemplates, // eslint-disable-line
@@ -221,12 +224,12 @@ export type RouterInstance<
         keyof Templates
     >
     > = RouterTypeName extends NarrowRouterTypeName<keyof Templates>
-    ? Actions<ExtractCustomActionsFromTemplate<Templates[RouterTypeName]>> &
+    ? Actions<ExtractCustomActionNamesFromTemplate<Templates[RouterTypeName]>> &
     Reducer<RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>> &
     IRouterBase<Templates, RouterTypeName>
     : {
         [routerName in NarrowRouterTypeName<keyof Templates>]: Actions<
-            ExtractCustomActionsFromTemplate<Templates[routerName]>
+            ExtractCustomActionNamesFromTemplate<Templates[routerName]>
         > &
         Reducer<RouterCurrentState<ExtractCustomStateFromTemplate<Templates[routerName]>>> &
         IRouterBase<Templates, routerName>;
@@ -387,13 +390,13 @@ export type ExtractCustomStateFromTemplate<T extends IRouterTemplate> = T extend
 /**
  * Utility type for extracting custom action names from the actions defined in a template
  */
-export type ExtractCustomActionsFromTemplate<T extends IRouterTemplate> = T extends IRouterTemplate<
+export type ExtractCustomActionNamesFromTemplate<T extends IRouterTemplate> = T extends IRouterTemplate<
     any, // eslint-disable-line
     infer A
 >
     ? A
     : never;
-// type extractCustomActionsFromTemplateTest = ExtractCustomActionsFromTemplate<iRouterTemplateTest>;
+// type extractCustomActionsFromTemplateTest = ExtractCustomActionNamesFromTemplate<iRouterTemplateTest>;
 
 /**
  * -------------------------------------------------

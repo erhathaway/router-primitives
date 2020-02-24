@@ -1,8 +1,8 @@
 import * as queryString from 'query-string';
-import { IInputLocation, IOutputLocation } from '../types/index';
-import { SerializedStateSerializer } from '../types/serialized_state';
+import {IInputLocation, IOutputLocation} from '../types/index';
+import {SerializedStateSerializer} from '../types/serialized_state';
 
-const DEFAULT_LOCATION: IInputLocation = { pathname: [], search: {}, options: {} };
+const DEFAULT_LOCATION: IInputLocation = {pathname: [], search: {}, options: {}};
 
 const serializer: SerializedStateSerializer = (
     newLocation: IInputLocation,
@@ -15,13 +15,13 @@ const serializer: SerializedStateSerializer = (
     const oldSearchObj = oldLocation.search || {};
     // TODO validate if this can be done. We might need to merge the oldSearch in the router that calls an update
     // const combinedSearchObj = { ...oldSearchObj, ...newSearchObj } as { [key: string]: string };
-    const combinedSearchObj = { ...newSearchObj } as { [key: string]: string };
+    const combinedSearchObj = {...newSearchObj} as {[key: string]: string};
 
     Object.keys(combinedSearchObj).forEach(
         key => combinedSearchObj[key] == null && delete combinedSearchObj[key]
     );
 
-    const searchString = queryString.stringify(combinedSearchObj, { arrayFormat: 'bracket' });
+    const searchString = queryString.stringify(combinedSearchObj, {arrayFormat: 'bracket'});
     const pathname = newPathname.join('/');
     // TODO add test to make sure that pathnameString always has a leading /
     const pathnameString = pathname === '' ? '/' : `/${pathname}`;
@@ -32,7 +32,7 @@ const serializer: SerializedStateSerializer = (
     } else {
         location = `${pathnameString}?${searchString}`;
     }
-    return { location, options: newLocation.options };
+    return {location, options: newLocation.options};
 };
 
 export default serializer;
