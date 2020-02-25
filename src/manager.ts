@@ -696,9 +696,14 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
 
         // Delete ref the parent (if any) stores
         if (parent) {
-            const a = parent.routers['scene'];
-            const routersToKeep = parent.routers[type].filter(child => child.name !== name);
-            parent.routers[type as keyof typeof parent.routers] = routersToKeep;
+            const routersToKeep = parent.routers[
+                // remove root b/c it can never exist as a child
+                type as NarrowRouterTypeName<Exclude<keyof AllTemplates<CustomTemplates>, 'root'>>
+            ].filter(child => child.name !== name);
+            parent.routers[
+                // remove root b/c it can never exist as a child
+                type as NarrowRouterTypeName<Exclude<keyof AllTemplates<CustomTemplates>, 'root'>>
+            ] = routersToKeep;
         }
 
         // Recursively call this method for all children
