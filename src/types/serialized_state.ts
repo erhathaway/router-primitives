@@ -20,7 +20,7 @@ interface IBrowserStoreConfig {
  * The default serialized state is the URL for this store
  */
 export interface ISerializedStateStore {
-    constructor: (config?: IBrowserStoreConfig) => ISerializedStateStore;
+    // constructor: (config?: IBrowserStoreConfig) => ISerializedStateStore;
 
     // unserialized state = { pathname: [], search: {}, options: {} }
     // options = { updateHistory }

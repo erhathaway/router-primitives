@@ -7,8 +7,8 @@ import {
     IRouterStateStoreConfig,
     RouterStateStoreStore
 } from './types';
-import { IRouterStateStore } from './types/router_state';
-import { objKeys } from './utilities';
+import {IRouterStateStore} from './types/router_state';
+import {objKeys} from './utilities';
 
 /**
  * The default router state store.
@@ -29,7 +29,7 @@ export default class DefaultRoutersStateStore<CustomState extends {}>
 
     constructor(store?: RouterStateStoreStore<CustomState>, config?: IRouterStateStoreConfig) {
         this.store = store || {};
-        this.config = { historySize: 2, ...config };
+        this.config = {historySize: 2, ...config};
         this.observers = {}; // key is routerName
     }
 
@@ -49,7 +49,7 @@ export default class DefaultRoutersStateStore<CustomState extends {}>
         this.store = routerNames.reduce(
             (routerStates, routerName) => {
                 // extract current and historical states
-                const { current: prevCurrent, historical } =
+                const {current: prevCurrent, historical} =
                     routerStates[routerName] ||
                     ({
                         current: {},
@@ -77,14 +77,14 @@ export default class DefaultRoutersStateStore<CustomState extends {}>
                     newHistorical = newHistorical.slice(0, this.config.historySize);
                 }
                 // update state to include new router state
-                routerStates[routerName] = { current: newCurrent, historical: newHistorical };
+                routerStates[routerName] = {current: newCurrent, historical: newHistorical};
 
                 // record which routers have had a state change
                 hasUpdatedTracker.push(routerName);
 
                 return routerStates;
             },
-            { ...this.getState() }
+            {...this.getState()}
         );
 
         // call observers of all routers that have had state changes
@@ -100,7 +100,9 @@ export default class DefaultRoutersStateStore<CustomState extends {}>
      * Returns a function which has a router name in closure scope.
      * The returned function is used for getting the router store state for a specific router.
      */
-    public createRouterStateGetter(routerName: string): () => IRouterCurrentAndHistoricalState<CustomState> {
+    public createRouterStateGetter(
+        routerName: string
+    ): () => IRouterCurrentAndHistoricalState<CustomState> {
         return () => this.store[routerName];
     }
 

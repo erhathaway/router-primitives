@@ -18,7 +18,7 @@ import {
     RouterCurrentStateFromTemplates
 } from '../types';
 
-export interface IManager<CustomTemplates extends IRouterTemplates> {
+export interface IManager<CustomTemplates extends IRouterTemplates = {}> {
     actionFnDecorator?: ActionWraperFnDecorator;
     tracerSession: TracerSession;
     rootRouter: Root<AllTemplates<CustomTemplates>>;
@@ -27,7 +27,7 @@ export interface IManager<CustomTemplates extends IRouterTemplates> {
     routerTypes: ManagerRouterTypes<AllTemplates<CustomTemplates>>;
     templates: AllTemplates<CustomTemplates>;
     routers: Record<string, ManagerRouters<AllTemplates<CustomTemplates>>>;
-
+    routerCacheClass: IManagerInit<CustomTemplates>['routerCacheClass'];
     /**
      * Adds the initial routers defined during initialization
      */
@@ -105,8 +105,8 @@ export interface IManager<CustomTemplates extends IRouterTemplates> {
         parentName
     }: IRouterCreationInfo<AllTemplates<CustomTemplates>, Name>) => IRouterInitArgs<
         AllTemplates<CustomTemplates>,
-        Name
-        // M
+        Name,
+        IManager<CustomTemplates>
     >;
     /**
      * Create a router instance
@@ -117,7 +117,7 @@ export interface IManager<CustomTemplates extends IRouterTemplates> {
     createRouterFromInitArgs: <
         Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
     >(
-        initalArgs: IRouterInitArgs<AllTemplates<CustomTemplates>, Name>
+        initalArgs: IRouterInitArgs<AllTemplates<CustomTemplates>, Name, IManager<CustomTemplates>>
     ) => RouterInstance<AllTemplates<CustomTemplates>, NarrowRouterTypeName<Name>>;
 
     /**
