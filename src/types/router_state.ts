@@ -1,4 +1,4 @@
-import {RouterCurrentState, RouterStateObserver, RouterStateStoreStore} from '../types';
+import { RouterCurrentState, RouterStateObserver, RouterStateStoreStore, IRouterCurrentAndHistoricalState } from '../types';
 
 /**
  * The default router state store.
@@ -12,6 +12,7 @@ import {RouterCurrentState, RouterStateObserver, RouterStateStoreStore} from '..
  *   createRouterStateSubscriber
  */
 export interface IRouterStateStore<CustomState extends {}> {
+    // store: RouterStateStoreStore<CustomState>
     /**
      * Sets the state of the router state store by adding to the history.
      * Adding state will completly overwrite existing state.
@@ -25,7 +26,7 @@ export interface IRouterStateStore<CustomState extends {}> {
      * Returns a function which has a router name in closure scope.
      * The returned function is used for getting the router store state for a specific router.
      */
-    createRouterStateGetter: (routerName: string) => () => RouterStateStoreStore<CustomState>;
+    createRouterStateGetter: (routerName: string) => () => IRouterCurrentAndHistoricalState<CustomState>;
 
     /**
      * Returns a function which as the router name in closure scope.
@@ -41,5 +42,5 @@ export interface IRouterStateStore<CustomState extends {}> {
     /**
      * Returns the stores state for all routers
      */
-    getState: RouterStateStoreStore<CustomState>;
+    getState: () => RouterStateStoreStore<CustomState>;
 }

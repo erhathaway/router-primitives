@@ -9,13 +9,16 @@ import {
     RouterHistoricalState,
     IRouterTemplates,
     NeighborsOfType,
-    NarrowRouterTypeName
+    NarrowRouterTypeName,
+    Childs,
+    Parent,
+    Root
 } from '../types';
+import {DefaultTemplates} from './router_templates';
 
 export interface IRouterBaseInternalState {
     isActive?: boolean;
 }
-
 
 export interface IRouterBase<
     Templates extends IRouterTemplates,
@@ -24,13 +27,13 @@ export interface IRouterBase<
         Templates,
         RouterTypeName
     >
-    > {
+> {
     name: InitArgs['name'];
     type: InitArgs['type'];
     manager: InitArgs['manager'];
-    parent?: InitArgs['parent'];
-    routers: InitArgs['routers'];
-    root: InitArgs['root'];
+    parent?: Parent<Templates>;
+    routers: Childs<Templates>;
+    root: Root<Templates>;
     getState?: InitArgs['getState'];
     subscribe?: InitArgs['subscribe'];
     config: InitArgs['config'];
@@ -76,7 +79,7 @@ export interface IRouterBase<
     serialize: (
         options: ISerializeOptions
     ) => // eslint-disable-next-line
-        IRouterDeclaration<Templates> & { [key: string]: any };
+    IRouterDeclaration<Templates> & {[key: string]: any};
 
     isPathRouter: boolean;
 

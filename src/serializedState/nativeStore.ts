@@ -1,6 +1,6 @@
 import deserializer from './deserializer';
 import serializer from './serializer';
-import {IInputLocation, IOutputLocation, StateObserver} from '../types';
+import { IInputLocation, IOutputLocation, StateObserver } from '../types';
 import {
     ISerializedStateStore,
     SerializedStateSerializer,
@@ -31,7 +31,7 @@ export default class NativeStore implements ISerializedStateStore {
 
     constructor(config?: INativeStoreConfig) {
         this.observers = [];
-        this.config = config || {serializer, deserializer, historySize: 10};
+        this.config = config || { serializer, deserializer, historySize: 10 };
         this.history = [];
         this.currentLocationInHistory = 0;
     }
@@ -40,7 +40,7 @@ export default class NativeStore implements ISerializedStateStore {
     // options = { updateHistory }
     public setState(unserializedLocation: IInputLocation, options: ISetStateOptions = {}): void {
         const oldUnserializedLocation = this.getState();
-        const {location: newState} = this.config.serializer(
+        const { location: newState } = this.config.serializer(
             unserializedLocation,
             oldUnserializedLocation
         );
@@ -122,7 +122,7 @@ export default class NativeStore implements ISerializedStateStore {
             this.currentLocationInHistory = this.history.length - 1;
         }
 
-        this.setState(this.getState(), {updateHistory: false});
+        this.setState(this.getState(), { updateHistory: false });
     }
 
     private notifyObservers(): void {

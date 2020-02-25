@@ -1,5 +1,6 @@
 import {IOutputLocation, IRouterTemplates, RouterInstance, NarrowRouterTypeName} from '../types';
 import {IRouterCache} from '../types/router_cache';
+import {IRouterBase} from '../types/router_base';
 
 type CacheValue = boolean | undefined;
 
@@ -36,7 +37,7 @@ class Cache<
 
     public setWasPreviouslyVisibleToFromLocation(
         location: IOutputLocation,
-        routerInstance: RouterInstance<Templates, RouterTypeName>
+        routerInstance: IRouterBase<Templates, RouterTypeName>
     ): void {
         // dont set cache if one already exists!
         if (this.wasVisible) {

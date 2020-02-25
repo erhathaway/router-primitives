@@ -9,10 +9,14 @@ import {
     RouterHistoricalState,
     IRouterTemplates,
     NeighborsOfType,
-    NarrowRouterTypeName
+    NarrowRouterTypeName,
+    Childs,
+    Parent,
+    Root
 } from '../types';
 import defaultTemplates from '../router/template';
-import { IRouterBase } from '../types/router_base';
+import {IRouterBase} from '../types/router_base';
+import {DefaultTemplates} from '../types/router_templates';
 
 export interface IInternalState {
     isActive?: boolean;
@@ -25,13 +29,13 @@ export default class RouterBase<
         Templates,
         RouterTypeName
     >
-    > implements IRouterBase<Templates, RouterTypeName, InitArgs> {
+> implements IRouterBase<Templates, RouterTypeName, InitArgs> {
     public name: InitArgs['name'];
     public type: InitArgs['type'];
     public manager: InitArgs['manager'];
-    public parent?: InitArgs['parent'];
-    public routers: InitArgs['routers'];
-    public root: InitArgs['root'];
+    public parent?: Parent<Templates>;
+    public routers: Childs<Templates>;
+    public root: Root<Templates>;
     public getState?: InitArgs['getState'];
     public subscribe?: InitArgs['subscribe'];
     public config: InitArgs['config'];
@@ -167,7 +171,7 @@ export default class RouterBase<
 
     // eslint-disable-next-line
     public EXPERIMENTAL_setInternalState(internalState: IInternalState): void {
-        this._EXPERIMENTAL_internal_state = { ...internalState }; // eslint-disable-line
+        this._EXPERIMENTAL_internal_state = {...internalState}; // eslint-disable-line
     }
 
     // eslint-disable-next-line
@@ -186,17 +190,17 @@ export default class RouterBase<
     public serialize(
         options: ISerializeOptions = {}
         // eslint-disable-next-line
-    ): IRouterDeclaration<Templates> & { [key: string]: any } {
+    ): IRouterDeclaration<Templates> & {[key: string]: any} {
         // create router declaration object
         // TODO clean up this mess
         // eslint-disable-next-line
-        const serialized: IRouterDeclaration<Templates> & { [key: string]: any } = {
+        const serialized: IRouterDeclaration<Templates> & {[key: string]: any} = {
             name: this.name,
             routeKey: options.alwaysShowRouteKey
                 ? this.routeKey
                 : this.routeKey === this.name
-                    ? undefined
-                    : this.routeKey,
+                ? undefined
+                : this.routeKey,
             type: options.showType ? this.type : undefined,
             parentName: options.showParentName && this.parent ? this.parent.name : undefined,
             isPathRouter: this.config.isPathRouter,
@@ -217,7 +221,7 @@ export default class RouterBase<
                 );
                 return acc;
             },
-            {} as { [routerType: string]: IRouterDeclaration<Templates>[] }
+            {} as {[routerType: string]: IRouterDeclaration<Templates>[]}
         );
 
         if (childRouterTypes.length > 0) {
@@ -262,15 +266,15 @@ export default class RouterBase<
 
     protected _state = (): RouterCurrentState<
         ExtractCustomStateFromTemplate<Templates[RouterTypeName]>
-    > & { isActive?: boolean } => {
+    > & {isActive?: boolean} => {
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');
         }
-        const { current } = this.getState();
+        const {current} = this.getState();
         const newState = current || {};
-        return { ...newState, ...this.EXPERIMENTAL_internal_state } as RouterCurrentState<
+        return {...newState, ...this.EXPERIMENTAL_internal_state} as RouterCurrentState<
             ExtractCustomStateFromTemplate<Templates[RouterTypeName]>
-        > & { isActive?: boolean };
+        > & {isActive?: boolean};
     };
 
     public get history(): RouterHistoricalState<
@@ -285,15 +289,17 @@ export default class RouterBase<
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');
         }
-        const { historical } = this.getState();
+        const {historical} = this.getState();
         return historical || [];
     };
 }
 
 // const managerTest = new Manager();
-// const baseTest = new RouterBase<typeof defaultTemplates, 'scene'>({} as any); // eslint-disable-line
+const baseTest = new RouterBase<typeof defaultTemplates, 'scene'>({} as any); // eslint-disable-line
 
-// const s = baseTest.routers['stack'];
+const s = baseTest.routers['stack'];
+s[0].show;
+
 // baseTest.parent.routers['stack'];
 // baseTest.root.routers['stack'];
 // const nbt = baseTest.getNeighborsByType('stack').forEach(r => r);
