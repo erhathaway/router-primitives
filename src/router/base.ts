@@ -15,9 +15,10 @@ import {
     Root
 } from '../types';
 import defaultTemplates from '../router/template';
-import {IRouterBase} from '../types/router_base';
-import {DefaultTemplates} from '../types/router_templates';
-import {IManager} from '../types/manager';
+import { IRouterBase } from '../types/router_base';
+import { DefaultTemplates } from '../types/router_templates';
+import { IManager } from '../types/manager';
+import { objKeys } from '../utilities';
 
 export interface IInternalState {
     isActive?: boolean;
@@ -31,7 +32,7 @@ export default class RouterBase<
         RouterTypeName,
         IManager
     >
-> implements IRouterBase<Templates, RouterTypeName, InitArgs> {
+    > implements IRouterBase<Templates, RouterTypeName, InitArgs> {
     public name: InitArgs['name'];
     public type: InitArgs['type'];
     public manager: InitArgs['manager'];
@@ -90,9 +91,9 @@ export default class RouterBase<
         // to the router instance where they live
         (actions || []).forEach(actionName => {
             // eslint-disable-next-line
-            if ((this as any)[actionName]) {
+            if ((this as RouterInstance<Templates, RouterTypeName>)[actionName]) {
                 // eslint-disable-next-line
-                (this as any)[actionName] = (this as any)[actionName].bind(this);
+                (this as RouterInstance<Templates, RouterTypeName>)[actionName] = (this as any)[actionName].bind(this);
             }
         });
         // this._state = this._state.bind(this);
@@ -117,7 +118,7 @@ export default class RouterBase<
     get siblings(): RouterInstance<Templates, RouterTypeName>[] {
         // TODO fix this any
         // eslint-disable-next-line
-        return (this.parent.routers as Record<string, any[]>)[this.type].filter(
+        return (this.parent.routers)[this.type].filter(
             r => r.name !== this.name
         );
     }
@@ -131,7 +132,7 @@ export default class RouterBase<
         if (this.parent && this.parent.routers) {
             // TODO fix this any
             // eslint-disable-next-line
-            return (this.parent.routers as Record<string, any[]>)[type] || [];
+            return (this.parent.routers)[type] || [];
         }
         return [];
     }
@@ -150,7 +151,7 @@ export default class RouterBase<
         // eslint-disable-next-line
         const flattened = (acc: any[], arr: any[]): any[] => acc.concat(...arr);
 
-        return Object.keys(this.parent.routers)
+        return objKeys(this.parent.routers)
             .filter(t => t !== this.type)
             .map(t => this.parent.routers[t])
             .reduce(flattened, []);
@@ -173,7 +174,7 @@ export default class RouterBase<
 
     // eslint-disable-next-line
     public EXPERIMENTAL_setInternalState(internalState: IInternalState): void {
-        this._EXPERIMENTAL_internal_state = {...internalState}; // eslint-disable-line
+        this._EXPERIMENTAL_internal_state = { ...internalState }; // eslint-disable-line
     }
 
     // eslint-disable-next-line
@@ -192,17 +193,17 @@ export default class RouterBase<
     public serialize(
         options: ISerializeOptions = {}
         // eslint-disable-next-line
-    ): IRouterDeclaration<Templates> & {[key: string]: any} {
+    ): IRouterDeclaration<Templates> & { [key: string]: any } {
         // create router declaration object
         // TODO clean up this mess
         // eslint-disable-next-line
-        const serialized: IRouterDeclaration<Templates> & {[key: string]: any} = {
+        const serialized: IRouterDeclaration<Templates> & { [key: string]: any } = {
             name: this.name,
             routeKey: options.alwaysShowRouteKey
                 ? this.routeKey
                 : this.routeKey === this.name
-                ? undefined
-                : this.routeKey,
+                    ? undefined
+                    : this.routeKey,
             type: options.showType ? this.type : undefined,
             parentName: options.showParentName && this.parent ? this.parent.name : undefined,
             isPathRouter: this.config.isPathRouter,
@@ -223,7 +224,7 @@ export default class RouterBase<
                 );
                 return acc;
             },
-            {} as {[routerType: string]: IRouterDeclaration<Templates>[]}
+            {} as { [routerType: string]: IRouterDeclaration<Templates>[] }
         );
 
         if (childRouterTypes.length > 0) {
@@ -268,15 +269,15 @@ export default class RouterBase<
 
     protected _state = (): RouterCurrentState<
         ExtractCustomStateFromTemplate<Templates[RouterTypeName]>
-    > & {isActive?: boolean} => {
+    > & { isActive?: boolean } => {
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');
         }
-        const {current} = this.getState();
+        const { current } = this.getState();
         const newState = current || {};
-        return {...newState, ...this.EXPERIMENTAL_internal_state} as RouterCurrentState<
+        return { ...newState, ...this.EXPERIMENTAL_internal_state } as RouterCurrentState<
             ExtractCustomStateFromTemplate<Templates[RouterTypeName]>
-        > & {isActive?: boolean};
+        > & { isActive?: boolean };
     };
 
     public get history(): RouterHistoricalState<
@@ -291,7 +292,7 @@ export default class RouterBase<
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');
         }
-        const {historical} = this.getState();
+        const { historical } = this.getState();
         return historical || [];
     };
 }

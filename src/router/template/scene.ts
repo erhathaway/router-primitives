@@ -22,9 +22,9 @@ const show: RouterActionFn = (options, oldLocation, router, ctx) => {
             // It is important to remember that `disableCaching` is passed to options not context
             //   b/c we only want it take affect for the immediate routers we call instead of the
             //   entire update cycle
-            return s.hide({...options, disableCaching: true}, acc, s, ctx);
+            return s.hide({ ...options, disableCaching: true }, acc, s, ctx);
         },
-        {...oldLocation}
+        { ...oldLocation }
     );
 
     if (router.isPathRouter) {
@@ -50,7 +50,7 @@ const show: RouterActionFn = (options, oldLocation, router, ctx) => {
 };
 
 const hide: RouterActionFn = (_options, oldLocation, router, _ctx) => {
-    const location = {...oldLocation};
+    const location = { ...oldLocation };
 
     if (router.isPathRouter) {
         location.pathname = location.pathname.slice(0, router.pathLocation);
@@ -61,7 +61,7 @@ const hide: RouterActionFn = (_options, oldLocation, router, _ctx) => {
     return location;
 };
 
-const reducer: RouterReducerFn<{blueWorld: boolean}> = (location, router, _ctx) => {
+const reducer: RouterReducerFn<{ blueWorld: boolean }> = (location, router, _ctx) => {
     const newState: RouterCurrentState = {};
     if (router.isPathRouter) {
         newState['visible'] = location.pathname[router.pathLocation] === router.routeKey;
@@ -72,9 +72,9 @@ const reducer: RouterReducerFn<{blueWorld: boolean}> = (location, router, _ctx) 
     return newState;
 };
 
-const template: IRouterTemplate<{blueWorld: boolean}, 'testAction'> = {
-    actions: {show, hide, testAction: show},
+const template: IRouterTemplate<{ blueWorld: boolean }, 'testAction'> = {
+    actions: { show, hide, testAction: show },
     reducer,
-    config: {canBePathRouter: true, isPathRouter: true, shouldInverselyActivate: true}
+    config: { canBePathRouter: true, isPathRouter: true, shouldInverselyActivate: true }
 };
 export default template;
