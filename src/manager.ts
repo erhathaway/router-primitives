@@ -587,7 +587,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
 
                 return acc;
             },
-            {} as ManagerRouterTypes<AllTemplates<CustomTemplates>>
+            {} as ManagerRouterTypes<AllTemplates<CustomTemplates>, IManager<CustomTemplates>>
         );
 
         // add initial routers
@@ -840,7 +840,9 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
      * place to redefine the getters and setters `getState` and `subscribe`
      */
     createNewRouterInitArgs<
-        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
+        Name extends NarrowRouterTypeName<
+            NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
+        >
         // M extends Manager
     >({
         name,
@@ -921,10 +923,10 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         config,
         type,
         parentName
-    }: IRouterCreationInfo<AllTemplates<CustomTemplates>, Name>): RouterInstance<
+    }: IRouterCreationInfo<
         AllTemplates<CustomTemplates>,
-        Name
-    > {
+        NarrowRouterTypeName<Name>
+    >): RouterInstance<AllTemplates<CustomTemplates>, Name> {
         this.validateRouterCreationInfo(name, type, config);
 
         const initalArgs = this.createNewRouterInitArgs({name, config, type, parentName});
