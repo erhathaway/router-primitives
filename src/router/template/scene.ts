@@ -3,7 +3,8 @@ import {
     RouterReducerFn,
     RouterCurrentState,
     IRouterTemplate,
-    IInputLocation
+    IInputLocation,
+    RouterInstance
 } from '../../types';
 
 /**
@@ -15,7 +16,7 @@ import {
  */
 const show: RouterActionFn = (options, oldLocation, router, ctx) => {
     // Each sibling router needs to be hidden. The location is modified to reflect hiding all siblings
-    const location: IInputLocation = router.siblings.reduce(
+    const location: IInputLocation = (router.siblings as RouterInstance<any, any>[]).reduce(
         (acc, s) => {
             // We disable caching of siblings b/c we dont want them to be shown if a parent rehydrates
             // This is b/c the scene being shown is now the visible one and should be cached if a parent hides
@@ -61,7 +62,7 @@ const hide: RouterActionFn = (_options, oldLocation, router, _ctx) => {
     return location;
 };
 
-const reducer: RouterReducerFn<{ blueWorld: boolean }> = (location, router, _ctx) => {
+const reducer: RouterReducerFn = (location, router, _ctx) => {
     const newState: RouterCurrentState = {};
     if (router.isPathRouter) {
         newState['visible'] = location.pathname[router.pathLocation] === router.routeKey;
@@ -72,7 +73,7 @@ const reducer: RouterReducerFn<{ blueWorld: boolean }> = (location, router, _ctx
     return newState;
 };
 
-const template: IRouterTemplate<{ blueWorld: boolean }, 'testAction'> = {
+const template: IRouterTemplate<{}, 'testAction'> = {
     actions: { show, hide, testAction: show },
     reducer,
     config: { canBePathRouter: true, isPathRouter: true, shouldInverselyActivate: true }
