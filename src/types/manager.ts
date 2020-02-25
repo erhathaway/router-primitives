@@ -18,13 +18,13 @@ import {
     RouterCurrentStateFromTemplates
 } from '../types';
 
-export interface IManager<CustomTemplates extends IRouterTemplates = {}> {
+export interface IManager<CustomTemplates extends IRouterTemplates = any> {
     actionFnDecorator?: ActionWraperFnDecorator;
     tracerSession: TracerSession;
     rootRouter: Root<AllTemplates<CustomTemplates>>;
     serializedStateStore: IManagerInit<CustomTemplates>['serializedStateStore'];
     routerStateStore: IManagerInit<CustomTemplates>['routerStateStore'];
-    routerTypes: ManagerRouterTypes<AllTemplates<CustomTemplates>>;
+    routerTypes: ManagerRouterTypes<AllTemplates<CustomTemplates>, IManager<CustomTemplates>>;
     templates: AllTemplates<CustomTemplates>;
     routers: Record<string, ManagerRouters<AllTemplates<CustomTemplates>>>;
     routerCacheClass: IManagerInit<CustomTemplates>['routerCacheClass'];

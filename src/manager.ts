@@ -37,20 +37,20 @@ const capitalize = (name = ''): string => name.charAt(0).toUpperCase() + name.sl
 
 // extend router base for specific type
 const createRouterFromTemplate = <
-    Templates extends IRouterTemplates,
-    RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
+    CustomTemplates extends IRouterTemplates,
+    RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>,
     // TODO figure out why RouterClass can't be used here instead.
     // It has a similar but more specific signature.
     RC extends Constructable = Constructable
 >(
     templateName: RouterTypeName,
-    template: Templates[RouterTypeName],
+    template: AllTemplates<CustomTemplates>[RouterTypeName],
     BaseRouter: RC,
     actionWraperFn: <Fn extends RouterActionFn>(
         actionFn: Fn,
-        actionName: keyof Templates[RouterTypeName]['actions']
+        actionName: keyof AllTemplates<CustomTemplates>[RouterTypeName]['actions']
     ) => Fn
-): RouterClass<Templates, RouterTypeName> => {
+): RouterClass<AllTemplates<CustomTemplates>, RouterTypeName, IManager<CustomTemplates>> => {
     // TODO figure out why actions are 'default router actions' type
     const {actions, reducer} = template;
 
@@ -74,7 +74,11 @@ const createRouterFromTemplate = <
             });
         }
     };
-    return (MixedInClass as unknown) as RouterClass<Templates, RouterTypeName>;
+    return (MixedInClass as unknown) as RouterClass<
+        AllTemplates<CustomTemplates>,
+        RouterTypeName,
+        IManager<CustomTemplates>
+    >;
 };
 
 // export type RouterInstance<
@@ -103,7 +107,10 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
     public rootRouter: Root<AllTemplates<CustomTemplates>>;
     public serializedStateStore: IManagerInit<CustomTemplates>['serializedStateStore'];
     public routerStateStore: IManagerInit<CustomTemplates>['routerStateStore'];
-    public routerTypes: ManagerRouterTypes<AllTemplates<CustomTemplates>>;
+    public routerTypes: ManagerRouterTypes<
+        AllTemplates<CustomTemplates>,
+        IManager<CustomTemplates>
+    >;
 
     public templates: AllTemplates<CustomTemplates>;
     public routerCacheClass: IManagerInit<CustomTemplates>['routerCacheClass'];
@@ -872,10 +879,15 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
     createRouterFromInitArgs<
         Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
     >(
-        initalArgs: IRouterInitArgs<AllTemplates<CustomTemplates>, Name, IManager<CustomTemplates>>
+        initalArgs: IRouterInitArgs<
+            AllTemplates<CustomTemplates>,
+            NarrowRouterTypeName<Name>,
+            IManager<CustomTemplates>
+        >
     ): RouterInstance<AllTemplates<CustomTemplates>, NarrowRouterTypeName<Name>> {
         const routerClass = this.routerTypes[initalArgs.type];
         // TODO add tests for passing of action names
+        const s = initalArgs;
         return new routerClass({...initalArgs});
     }
 
@@ -920,8 +932,9 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
     }
 }
 
-// const test = new Manager<{ custom: DT['stack'] }>({} as any);
-// test.rootRouter.routers['custom'];
-// test.rootRouter;
-// test.routers;
-// test.routerTypes['custom'];
+const test = new Manager<{custom: DefaultTemplates['stack']}>({} as any);
+test.rootRouter.routers['custom'];
+test.rootRouter;
+test.routers;
+const b = new test.routerTypes.custom({} as any);
+b.toBack;

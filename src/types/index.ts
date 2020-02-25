@@ -335,9 +335,10 @@ type routerInstanceTestUnionChildren = routerInstanceTestUnion['routers'];
  */
 export type RouterClass<
     Templates extends IRouterTemplates,
-    RouterTypeName extends NarrowRouterTypeName<keyof Templates>
+    RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
+    M extends IManager
 > = {
-    new (args: IRouterBase<Templates, RouterTypeName>['constructor']): RouterInstance<
+    new (args: IRouterInitArgs<Templates, RouterTypeName, M>): RouterInstance<
         Templates,
         RouterTypeName
     >;
@@ -708,7 +709,8 @@ export interface IManagerInit<CustomTemplates extends IRouterTemplates> {
     routerStateStore?: IRouterStateStore<RouterCurrentStateFromTemplates<CustomTemplates>>;
     router?: RouterClass<
         AllTemplates<CustomTemplates>,
-        NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+        NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>,
+        IManager<CustomTemplates>
     >;
     customTemplates?: CustomTemplates;
     // defaultTemplates?: DefaultTemplates;
@@ -754,8 +756,8 @@ type managerRoutersTestActionB = managerRoutersTest['show']; // <----- should no
  * This type is a map of all possible router types found in the templates object. Each value
  * is a class that can be used to instantiate a specific router from a declaration object that a user supplies.
  */
-export type ManagerRouterTypes<T extends IRouterTemplates> = {
-    [RouterType in keyof T]: RouterClass<T, NarrowRouterTypeName<RouterType>>;
+export type ManagerRouterTypes<T extends IRouterTemplates, M extends IManager> = {
+    [RouterType in keyof T]: RouterClass<T, NarrowRouterTypeName<RouterType>, M>;
 };
 // type managerRouterTypesTest = ManagerRouterTypes<
 //     { otherType: DefaultTemplates['stack'] } & DefaultTemplates
