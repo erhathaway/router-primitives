@@ -647,10 +647,14 @@ export type NeighborsOfType<
  * children. For example Object.keys(router.routers)[routerType].map(<THIS TYPE> => ....)
  */
 export type UnionOfChildren<T extends IRouterTemplates> = {
-    [RouterType in Exclude<keyof T, 'root'>]?: Array<
+    // [RouterType in Exclude<keyof T, 'root'>]?: Array<
+    [RouterType in keyof T]?: Array<
+
         RouterInstance<T, NarrowRouterTypeName<RouterType>>
     >;
-}[Exclude<keyof T, 'root'>];
+}[keyof T];
+// }[Exclude<keyof T, 'root'>];
+
 // type unionOfChildrenTest = UnionOfChildren<DefaultTemplates>;
 
 /**

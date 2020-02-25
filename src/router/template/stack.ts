@@ -3,16 +3,20 @@ import {
     RouterReducerFn,
     IRouterTemplate,
     RouterInstance,
-    IInputLocation
+    IInputLocation,
+    ExtractCustomActionNamesFromTemplate,
+    TemplateOfRouter,
+    DefaultRouterActions,
+    IRouterTemplates
 } from '../../types';
 
-import allTemplates from '../template';
+import { DefaultTemplates } from '../../types/router_templates';
 
 // returns the routeKey names of visible routers based on the ordering of their 'order' state
-function getRouteKeyOrderings<Router extends RouterInstance<typeof allTemplates, 'stack'>>(
+const getRouteKeyOrderings = <Router extends RouterInstance<IRouterTemplates, string>>(
     router: Router,
     location: IInputLocation
-): string[] {
+): string[] => {
     // creates an object of { [visible router routeKey]: order }
     const routeKeyOrderObj = router.parent.routers[router.type].reduce(
         (acc, r) => {
@@ -22,10 +26,10 @@ function getRouteKeyOrderings<Router extends RouterInstance<typeof allTemplates,
                 return acc;
             }
             // TODO use generics to handle state type
-            acc[r.routeKey] = (r.state as {order: number}).order;
+            acc[r.routeKey] = (r.state as { order: number }).order;
             return acc;
         },
-        {} as {[key: string]: number}
+        {} as { [key: string]: number }
     );
 
     /**
@@ -43,7 +47,7 @@ function getRouteKeyOrderings<Router extends RouterInstance<typeof allTemplates,
             }
             return acc;
         },
-        {} as {[key: string]: string}
+        {} as { [key: string]: string }
     );
 
     const orders = Object.values(routeKeyOrderObj);
@@ -58,7 +62,7 @@ const show: RouterActionFn = (_options, location, router, _ctx) => {
         return location;
     }
 
-    const sortedKeys = getRouteKeyOrderings(router, location);
+    const sortedKeys = getRouteKeyOrderings(router as RouterInstance<IRouterTemplates>, location);
 
     // find index of this routers routeKey
     const index = sortedKeys.indexOf(router.routeKey);
@@ -75,10 +79,10 @@ const show: RouterActionFn = (_options, location, router, _ctx) => {
             acc[key] = i + 1;
             return acc;
         },
-        {} as {[key: string]: number}
+        {} as { [key: string]: number }
     );
 
-    location.search = {...location.search, ...search};
+    location.search = { ...location.search, ...search };
 
     return location;
 };
@@ -88,7 +92,7 @@ const hide: RouterActionFn = (_options, location, router, _ctx) => {
         return location;
     }
 
-    const sortedKeys = getRouteKeyOrderings(router, location);
+    const sortedKeys = getRouteKeyOrderings(router as RouterInstance<IRouterTemplates>, location);
 
     // find index of this routers routeKey
     const index = sortedKeys.indexOf(router.routeKey);
@@ -103,13 +107,13 @@ const hide: RouterActionFn = (_options, location, router, _ctx) => {
             acc[key] = i + 1;
             return acc;
         },
-        {} as {[key: string]: number}
+        {} as { [key: string]: number }
     );
 
     // remove this routeKey from the router type search
-    const newLocation = {...location};
+    const newLocation = { ...location };
 
-    newLocation.search = {...location.search, ...search};
+    newLocation.search = { ...location.search, ...search };
     newLocation.search[router.routeKey] = undefined;
 
     return newLocation;
@@ -120,7 +124,7 @@ const forward: RouterActionFn = (_options, location, router, _ctx) => {
         return location;
     }
 
-    const sortedKeys = getRouteKeyOrderings(router, location);
+    const sortedKeys = getRouteKeyOrderings(router as RouterInstance<IRouterTemplates>, location);
 
     // find index of this routers routeKey
     const index = sortedKeys.indexOf(router.routeKey);
@@ -139,10 +143,10 @@ const forward: RouterActionFn = (_options, location, router, _ctx) => {
             acc[key] = i + 1;
             return acc;
         },
-        {} as {[key: string]: number}
+        {} as { [key: string]: number }
     );
 
-    location.search = {...location.search, ...search};
+    location.search = { ...location.search, ...search };
 
     return location;
 };
@@ -152,7 +156,7 @@ const backward: RouterActionFn = (_options, location, router, _ctx) => {
         return location;
     }
 
-    const sortedKeys = getRouteKeyOrderings(router, location);
+    const sortedKeys = getRouteKeyOrderings(router as RouterInstance<IRouterTemplates>, location);
 
     // find index of this routers routeKey
     const index = sortedKeys.indexOf(router.routeKey);
@@ -171,10 +175,10 @@ const backward: RouterActionFn = (_options, location, router, _ctx) => {
             acc[key] = i + 1;
             return acc;
         },
-        {} as {[key: string]: number}
+        {} as { [key: string]: number }
     );
 
-    location.search = {...location.search, ...search};
+    location.search = { ...location.search, ...search };
 
     return location;
 };
@@ -188,7 +192,7 @@ const toBack: RouterActionFn = (_options, location, router, _ctx) => {
         return location;
     }
 
-    const sortedKeys = getRouteKeyOrderings(router, location);
+    const sortedKeys = getRouteKeyOrderings(router as RouterInstance<IRouterTemplates>, location);
 
     // find index of this routers routeKey
     const index = sortedKeys.indexOf(router.routeKey);
@@ -206,10 +210,10 @@ const toBack: RouterActionFn = (_options, location, router, _ctx) => {
             acc[key] = i + 1;
             return acc;
         },
-        {} as {[key: string]: number}
+        {} as { [key: string]: number }
     );
 
-    location.search = {...location.search, ...search};
+    location.search = { ...location.search, ...search };
 
     return location;
 };
@@ -240,8 +244,11 @@ const reducer: RouterReducerFn = (location, router, _ctx) => {
 };
 
 const template: IRouterTemplate<{}, 'forward' | 'backward' | 'toFront' | 'toBack'> = {
-    actions: {show, hide, forward, backward, toFront, toBack},
+    actions: { show, hide, forward, backward, toFront, toBack },
     reducer,
-    config: {canBePathRouter: false}
+    config: { canBePathRouter: false }
 };
 export default template;
+
+
+// template.actions.forward(a, b)
