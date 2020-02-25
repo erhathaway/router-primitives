@@ -1,8 +1,8 @@
 import defaultRouterTemplates from './router/template';
 
-import {BrowserSerializedStore, NativeSerializedStore} from './serializedState';
-import {TracerSession} from './tracer';
-import {IManager} from './types/manager';
+import { BrowserSerializedStore, NativeSerializedStore } from './serializedState';
+import { TracerSession } from './tracer';
+import { IManager } from './types/manager';
 import {
     RouterActionFn,
     ActionWraperFnDecorator,
@@ -27,11 +27,11 @@ import {
     ExtractCustomStateFromTemplate,
     RouterReducerFn
 } from './types';
-import {IRouterStateStore} from './types/router_state';
+import { IRouterStateStore } from './types/router_state';
 import DefaultRouter from './router/base';
 import DefaultRouterStateStore from './routerState';
-import {objKeys} from './utilities';
-import {DefaultTemplates} from './types/router_templates';
+import { objKeys } from './utilities';
+import { DefaultTemplates } from './types/router_templates';
 import DefaultRoutersStateStore from './routerState';
 
 const capitalize = (name = ''): string => name.charAt(0).toUpperCase() + name.slice(1);
@@ -53,7 +53,7 @@ const createRouterFromTemplate = <
     ) => Fn
 ): RouterClass<AllTemplates<CustomTemplates>, RouterTypeName, IManager<CustomTemplates>> => {
     // TODO figure out why actions are 'default router actions' type
-    const {actions, reducer} = template;
+    const { actions, reducer } = template;
 
     const MixedInClass = class extends BaseRouter {
         // change the router name to include the type
@@ -121,9 +121,9 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         {
             shouldInitialize,
             actionFnDecorator
-        }: {shouldInitialize: boolean; actionFnDecorator?: ActionWraperFnDecorator} = {
-            shouldInitialize: true
-        }
+        }: { shouldInitialize: boolean; actionFnDecorator?: ActionWraperFnDecorator } = {
+                shouldInitialize: true
+            }
     ) {
         if (actionFnDecorator) {
             this.actionFnDecorator = actionFnDecorator;
@@ -530,7 +530,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         customTemplates,
         routerCacheClass
     }: // defaultTemplates
-    IManagerInit<CustomTemplates>): void {
+        IManagerInit<CustomTemplates>): void {
         this.routerStateStore =
             routerStateStore ||
             new DefaultRouterStateStore<RouterCurrentStateFromTemplates<CustomTemplates>>();
@@ -621,7 +621,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         // The type is derived by the relationship with the parent.
         //   Or has none, as is the case with the root router in essence
         //   Below, we are deriving the type and calling the add function recursively by type
-        this.addRouter({...router, type, parentName});
+        this.addRouter({ ...router, type, parentName });
         const childRouters = router.routers || {};
         objKeys(childRouters).forEach(childType => {
             childRouters[childType].forEach(child =>
@@ -641,7 +641,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
      * its parent and any child routers
      */
     public addRouter(routerDeclaration: IRouterDeclaration<AllTemplates<CustomTemplates>>): void {
-        const {name, parentName, type} = routerDeclaration;
+        const { name, parentName, type } = routerDeclaration;
         const parent = this.routers[parentName];
 
         // Set the root router type if the router has no parent
@@ -655,7 +655,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         ) as IRouterConfig; // TODO figure out why this assertion is necessary
 
         // Create a router
-        const router = this.createRouter({name, config, type: routerType, parentName});
+        const router = this.createRouter({ name, config, type: routerType, parentName });
 
         // Set the created router as the parent router
         // if it has no parent and there is not yet a root
@@ -673,22 +673,9 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
             router.parent = parent;
 
             // Add ref of new router to the parent
-            const siblingTypes =
-                parent.routers[
-                    // remove root b/c it can never exist as a child
-                    type as NarrowRouterTypeName<
-                        Exclude<keyof AllTemplates<CustomTemplates>, 'root'>
-                    >
-                ] || [];
-            siblingTypes.push(router as RouterInstance<
-                AllTemplates<CustomTemplates>,
-                // remove root b/c it can never exist as a child
-                NarrowRouterTypeName<Exclude<keyof AllTemplates<CustomTemplates>, 'root'>>
-            >);
-            parent.routers[
-                // remove root b/c it can never exist as a child
-                type as NarrowRouterTypeName<Exclude<keyof AllTemplates<CustomTemplates>, 'root'>>
-            ] = siblingTypes;
+            const siblingTypes = parent.routers[type] || [];
+            siblingTypes.push(router)
+            parent.routers[type] = siblingTypes;
         }
 
         // Add ref of new router to manager
@@ -705,18 +692,12 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
      */
     public removeRouter = (name: string): void => {
         const router = this.routers[name];
-        const {parent, routers, type} = router;
+        const { parent, routers, type } = router;
 
         // Delete ref the parent (if any) stores
         if (parent) {
-            const routersToKeep = parent.routers[
-                // remove root b/c it can never exist as a child
-                type as NarrowRouterTypeName<Exclude<keyof AllTemplates<CustomTemplates>, 'root'>>
-            ].filter(child => child.name !== name);
-            parent.routers[
-                // remove root b/c it can never exist as a child
-                type as NarrowRouterTypeName<Exclude<keyof AllTemplates<CustomTemplates>, 'root'>>
-            ] = routersToKeep;
+            const routersToKeep = parent.routers[type].filter(child => child.name !== name);
+            parent.routers[type] = routersToKeep;
         }
 
         // Recursively call this method for all children
@@ -775,11 +756,11 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
                         ctx,
                         accc
                     );
-                    return {...acc, ...state};
+                    return { ...acc, ...state };
                 }, acc);
-                return {...acc, ...newStatesForType};
+                return { ...acc, ...newStatesForType };
             },
-            {...newState, [router.name]: currentRouterState} as Record<
+            { ...newState, [router.name]: currentRouterState } as Record<
                 string,
                 RouterCurrentStateFromTemplates<CustomTemplates>
             >
@@ -870,7 +851,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         Name extends NarrowRouterTypeName<
             NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
         >
-        // M extends Manager
+    // M extends Manager
     >({
         name,
         config,
@@ -886,7 +867,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
 
         return {
             name,
-            config: {...config},
+            config: { ...config },
             type,
             parent,
             routers: {},
@@ -917,7 +898,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         const routerClass = this.routerTypes[initalArgs.type];
         // TODO add tests for passing of action names
         const s = initalArgs;
-        return new routerClass({...initalArgs});
+        return new routerClass({ ...initalArgs });
     }
 
     /**
@@ -956,12 +937,12 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
     >): RouterInstance<AllTemplates<CustomTemplates>, Name> {
         this.validateRouterCreationInfo(name, type, config);
 
-        const initalArgs = this.createNewRouterInitArgs({name, config, type, parentName});
-        return this.createRouterFromInitArgs({...initalArgs});
+        const initalArgs = this.createNewRouterInitArgs({ name, config, type, parentName });
+        return this.createRouterFromInitArgs({ ...initalArgs });
     }
 }
 
-const test = new Manager<{custom: DefaultTemplates['stack']}>({} as any);
+const test = new Manager<{ custom: DefaultTemplates['stack'] }>({} as any);
 test.rootRouter.routers['custom'];
 test.rootRouter;
 test.routers;

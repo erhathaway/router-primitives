@@ -1,4 +1,10 @@
-import {RouterActionFn, RouterReducerFn, RouterCurrentState, IRouterTemplate} from '../../types';
+import {
+    RouterActionFn,
+    RouterReducerFn,
+    RouterCurrentState,
+    IRouterTemplate,
+    IInputLocation
+} from '../../types';
 
 /**
  * A scene router will hide all its sibling routers when it is being shown
@@ -8,16 +14,18 @@ import {RouterActionFn, RouterReducerFn, RouterCurrentState, IRouterTemplate} fr
  *    3. Adding the scene router to either the path or query params
  */
 const show: RouterActionFn = (options, oldLocation, router, ctx) => {
-    let location = {...oldLocation};
     // Each sibling router needs to be hidden. The location is modified to reflect hiding all siblings
-    location = router.siblings.reduce((acc, s) => {
-        // We disable caching of siblings b/c we dont want them to be shown if a parent rehydrates
-        // This is b/c the scene being shown is now the visible one and should be cached if a parent hides
-        // It is important to remember that `disableCaching` is passed to options not context
-        //   b/c we only want it take affect for the immediate routers we call instead of the
-        //   entire update cycle
-        return s.hide({...options, disableCaching: true}, acc, s, ctx);
-    }, location);
+    const location: IInputLocation = router.siblings.reduce(
+        (acc, s) => {
+            // We disable caching of siblings b/c we dont want them to be shown if a parent rehydrates
+            // This is b/c the scene being shown is now the visible one and should be cached if a parent hides
+            // It is important to remember that `disableCaching` is passed to options not context
+            //   b/c we only want it take affect for the immediate routers we call instead of the
+            //   entire update cycle
+            return s.hide({...options, disableCaching: true}, acc, s, ctx);
+        },
+        {...oldLocation}
+    );
 
     if (router.isPathRouter) {
         // const {parent} = router;

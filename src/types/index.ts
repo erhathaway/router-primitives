@@ -99,7 +99,8 @@ export type IntersectUnionedActions<T> = (T extends any ? ((x: T) => 0) : never)
 
 export type Actions<CustomActionNames extends string | null = null> = IntersectUnionedActions<
     ActionsWithCustomUnioned<CustomActionNames>
->;
+> &
+    DefaultRouterActions;
 export type ActionsWithCustomUnioned<
     CustomActionNames extends string | null = null
 > = CustomActionNames extends null
@@ -210,7 +211,9 @@ export type Root<
  * Ex: { [routerType]: Array<RouterInstance for type>}.
  */
 export type Childs<T extends IRouterTemplates> = {
-    [RouterType in NarrowRouterTypeName<Exclude<keyof T, 'root'>>]?: Array<
+    [RouterType in NarrowRouterTypeName<keyof T>]?: Array<
+        // [RouterType in NarrowRouterTypeName<Exclude<keyof T, 'root'>>]?: Array<
+
         // [RouterType in NarrowRouterTypeName<keyof T>]?: Array<
 
         RouterInstance<T, NarrowRouterTypeName<RouterType>>
