@@ -24,7 +24,8 @@ import {
     AllTemplates,
     RouterCurrentStateFromTemplates,
     Childs,
-    ExtractCustomStateFromTemplate
+    ExtractCustomStateFromTemplate,
+    RouterReducerFn
 } from './types';
 import {IRouterStateStore} from './types/router_state';
 import DefaultRouter from './router/base';
@@ -734,7 +735,6 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         location: IInputLocation,
         router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
         ctx: ILocationActionContext = {},
-        // TODO fill in current state's custom state generic from the above router
         newState: Record<string, RouterCurrentStateFromTemplates<CustomTemplates>> = {}
     ): Record<string, RouterCurrentStateFromTemplates<CustomTemplates>> {
         if (!router) {
@@ -742,25 +742,32 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         }
 
         // Call the routers reducer to calculate its state from the new location
-        const a = router.reducer(location, router, ctx) as ReturnType<
-            RouterInstance<AllTemplates<CustomTemplates>, Name>['reducer']
-        >;
-        newState[router.name] = a;
+        const currentRouterState = (router.reducer as RouterReducerFn<
+            ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[Name]>
+        >)(location, router, ctx);
 
         // Recursively call all children to add their state to the `newState` object
-        objKeys(router.routers).forEach(type => {
-            router.routers[type].forEach(childRouter =>
-                this.calcNewRouterState(
-                    location,
-                    // cast to be any router instance
-                    childRouter, // as RouterInstance<AllTemplates<CustomTemplates>>,
-                    ctx,
-                    newState
-                )
-            );
-        });
+        return objKeys(router.routers).reduce(
+            (acc, type) => {
+                const newStatesForType = router.routers[type].reduce((accc, childRouter) => {
+                    const state = this.calcNewRouterState(
+                        location,
+                        // cast to be any router instance
+                        childRouter, // as RouterInstance<AllTemplates<CustomTemplates>>,
+                        ctx,
+                        accc
+                    );
+                    return {...acc, ...state};
+                }, acc);
+                return {...acc, ...newStatesForType};
+            },
+            {...newState, [router.name]: currentRouterState} as Record<
+                string,
+                RouterCurrentStateFromTemplates<CustomTemplates>
+            >
+        );
 
-        return newState;
+        // return newState;
     }
 
     createRouterConfigArgs<Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>(

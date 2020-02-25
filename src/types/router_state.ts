@@ -1,4 +1,9 @@
-import { RouterCurrentState, RouterStateObserver, RouterStateStoreStore, IRouterCurrentAndHistoricalState } from '../types';
+import {
+    RouterCurrentState,
+    RouterStateObserver,
+    RouterStateStoreStore,
+    IRouterCurrentAndHistoricalState
+} from '../types';
 
 /**
  * The default router state store.
@@ -26,7 +31,9 @@ export interface IRouterStateStore<CustomState extends {}> {
      * Returns a function which has a router name in closure scope.
      * The returned function is used for getting the router store state for a specific router.
      */
-    createRouterStateGetter: (routerName: string) => () => IRouterCurrentAndHistoricalState<CustomState>;
+    createRouterStateGetter: (
+        routerName: string
+    ) => () => IRouterCurrentAndHistoricalState<CustomState>;
 
     /**
      * Returns a function which as the router name in closure scope.
