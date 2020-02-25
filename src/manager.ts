@@ -673,9 +673,22 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
             router.parent = parent;
 
             // Add ref of new router to the parent
-            const siblingTypes = parent.routers[type] || [];
-            siblingTypes.push(router);
-            parent.routers[type] = siblingTypes;
+            const siblingTypes =
+                parent.routers[
+                    // remove root b/c it can never exist as a child
+                    type as NarrowRouterTypeName<
+                        Exclude<keyof AllTemplates<CustomTemplates>, 'root'>
+                    >
+                ] || [];
+            siblingTypes.push(router as RouterInstance<
+                AllTemplates<CustomTemplates>,
+                // remove root b/c it can never exist as a child
+                NarrowRouterTypeName<Exclude<keyof AllTemplates<CustomTemplates>, 'root'>>
+            >);
+            parent.routers[
+                // remove root b/c it can never exist as a child
+                type as NarrowRouterTypeName<Exclude<keyof AllTemplates<CustomTemplates>, 'root'>>
+            ] = siblingTypes;
         }
 
         // Add ref of new router to manager
