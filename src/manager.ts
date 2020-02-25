@@ -742,7 +742,9 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         }
 
         // Call the routers reducer to calculate its state from the new location
-        const a = router.reducer(location, router, ctx);
+        const a = router.reducer(location, router, ctx) as ReturnType<
+            RouterInstance<AllTemplates<CustomTemplates>, Name>['reducer']
+        >;
         newState[router.name] = a;
 
         // Recursively call all children to add their state to the `newState` object
@@ -939,4 +941,5 @@ test.rootRouter.routers['custom'];
 test.rootRouter;
 test.routers;
 const b = new test.routerTypes.custom({} as any);
+const d = b.reducer('a' as any, 'b' as any, 'c' as any);
 b.toBack;

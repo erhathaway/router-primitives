@@ -121,7 +121,7 @@ type actionsTestB = Actions<null>;
  * This is how the reducer method is added to the base router class via mixins.
  * For the specific router type see `RouterReducerFn`.
  */
-export type Reducer<CustomState> = {
+export type Reducer<CustomState extends {} = {}> = {
     reducer: RouterReducerFn<CustomState>;
 };
 
