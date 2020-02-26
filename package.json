@@ -9,13 +9,17 @@
         "dist"
     ],
     "scripts": {
-        "test": "jest --watch",
-        "lint": "tslint --project ./tsconfig.json",
-        "build": "rm -rf ./dist && rollup -c",
-        "watch": "rollup -cw",
-        "start": "watch",
-        "prettier": "./node_modules/.bin/prettier \"src/**/*\" --write",
-        "type-check": "tsc --noEmit"
+        "clean": "rimraf coverage build tmp",
+        "build": "npm run clean && tsc -p tsconfig.json",
+        "build:watch": "npm run clean && tsc -w -p tsconfig.json",
+        "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+        "prettier:fix": "prettier \"src/**/*\" --write",
+        "prettier:check": "prettier \"src/**/*\" --check",
+        "test": "jest --coverage --passWithNoTests",
+        "test:watch": "jest --watch",
+        "type-check:watch": "npm run type-check -- --watch",
+        "type-check": "tsc --noEmit",
+        "all-ci": "npm run test && npm run lint && npm run prettier:check && npm run type-check && npm run build"
     },
     "repository": {
         "type": "git",

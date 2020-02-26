@@ -10,9 +10,9 @@ import {
     IInputLocation,
     ActionWraperFnDecorator
 } from '../types';
-import { objKeys } from '../utilities';
-import { ITracerThing, TracerSession, tracerManager } from '../tracer';
-import { setChildrenDefaults, setCacheAndHide } from './index';
+import {objKeys} from '../utilities';
+import {ITracerThing, tracerManager} from '../tracer';
+import {setChildrenDefaults, setCacheAndHide} from './index';
 
 /**
  * Decorator around the `action` methods of a router.
@@ -57,7 +57,7 @@ const createActionWrapperFunction = <
                     // console.log(`(${thingInfo.name}):`);
 
                     // console.log('....', lastStep && lastStep.name);
-                    r.EXPERIMENTAL_setInternalState({ ...thingInfo });
+                    r.EXPERIMENTAL_setInternalState({...thingInfo});
                     // (currentInfo: IInternalState) => ({
                     //     ...currentInfo,
                     //     ...thingInfo
@@ -79,15 +79,10 @@ const createActionWrapperFunction = <
             // set cache before location changes b/c cache info is derived from location path
             if (actionName === 'hide') {
                 tracer.logStep('Hiding');
-                updatedLocation = setCacheAndHide(
-                    options,
-                    existingLocation,
-                    routerInstance,
-                    ctx
-                );
+                updatedLocation = setCacheAndHide(options, existingLocation, routerInstance, ctx);
             }
 
-            const newLocation = { ...existingLocation, ...updatedLocation };
+            const newLocation = {...existingLocation, ...updatedLocation};
             // if the parent router isn't visible, but the child is shown, show all parents
             if (
                 actionName === 'show' &&
@@ -104,9 +99,9 @@ const createActionWrapperFunction = <
                 // data routers dont have a visibility state by default. TODO FIX THIS
                 updatedLocation = routerInstance.parent.show(
                     {},
-                    { ...newLocation },
+                    {...newLocation},
                     routerInstance.parent,
-                    { ...ctx, callDirection: 'up', activatedByChildType: routerInstance.type }
+                    {...ctx, callDirection: 'up', activatedByChildType: routerInstance.type}
                 );
             }
 
@@ -116,7 +111,7 @@ const createActionWrapperFunction = <
             // Call the router's action after any actions on the parent have been taken care of
             updatedLocation = actionFn(
                 options,
-                { ...newLocation, ...updatedLocation },
+                {...newLocation, ...updatedLocation},
                 routerInstance,
                 ctx
             );
@@ -129,14 +124,14 @@ const createActionWrapperFunction = <
                 // add location defaults from children
                 updatedLocation = setChildrenDefaults(
                     options,
-                    { ...newLocation, ...updatedLocation },
+                    {...newLocation, ...updatedLocation},
                     routerInstance,
                     ctx
                 );
             }
 
             tracer.endWithMessage(`Returning location`);
-            return { ...newLocation, ...updatedLocation };
+            return {...newLocation, ...updatedLocation};
         }
 
         tracer.logStep('Called from a new location');
@@ -159,28 +154,23 @@ const createActionWrapperFunction = <
             // data routers dont have a visibility state by default. TODO FIX THIS
             updatedLocation = routerInstance.parent.show(
                 {},
-                { ...updatedLocation },
+                {...updatedLocation},
                 routerInstance.parent,
-                { ...ctx, callDirection: 'up', activatedByChildType: routerInstance.type }
+                {...ctx, callDirection: 'up', activatedByChildType: routerInstance.type}
             );
         }
 
         // set cache before location changes b/c cache info is derived from location path
         if (actionName === 'hide') {
             tracer.logStep('Hiding');
-            updatedLocation = setCacheAndHide(
-                options,
-                { ...updatedLocation },
-                routerInstance,
-                ctx
-            );
+            updatedLocation = setCacheAndHide(options, {...updatedLocation}, routerInstance, ctx);
         }
 
         // console.log(`(start) Calling actionFn for ${routerInstance.name}`)
         tracer.logStep(`Calling actionFn`);
 
         // Call the router's action after any actions on the parent have been taken care of
-        updatedLocation = actionFn(options, { ...updatedLocation }, routerInstance, ctx);
+        updatedLocation = actionFn(options, {...updatedLocation}, routerInstance, ctx);
 
         // If this action is a direct call from the user, remove all caching
         if (actionName === 'hide' && routerInstance.state.visible === true) {
@@ -194,17 +184,17 @@ const createActionWrapperFunction = <
             // add location defaults from children
             updatedLocation = setChildrenDefaults(
                 options,
-                { ...updatedLocation },
+                {...updatedLocation},
                 routerInstance,
                 ctx
             );
         }
 
         // add user options to new location options
-        updatedLocation.options = { ...updatedLocation.options, ...options };
+        updatedLocation.options = {...updatedLocation.options, ...options};
 
         // set serialized state
-        routerInstance.manager.serializedStateStore.setState({ ...updatedLocation });
+        routerInstance.manager.serializedStateStore.setState({...updatedLocation});
         // return location so the function signature of the action is the same
         tracer.endWithMessage(`Returning location`);
         // setTimeout(() => {
@@ -212,12 +202,12 @@ const createActionWrapperFunction = <
         console.log(
             'TOTAL TIME',
             routerInstance.manager.tracerSession.endTime -
-            routerInstance.manager.tracerSession.startTime
+                routerInstance.manager.tracerSession.startTime
         );
         // }, 3000);
         // const things = routerInstance.manager.tracerSession.tracerThings;
         // objKeys(things).forEach(tName => console.log(tName, things[tName].isActive)) // tslint:disable-line
-        return { ...updatedLocation };
+        return {...updatedLocation};
     }
 
     if (actionFnDecorator) {
@@ -226,4 +216,4 @@ const createActionWrapperFunction = <
     return actionWrapper as ReturnedFn;
 };
 
-export default createActionWrapperFunction
+export default createActionWrapperFunction;

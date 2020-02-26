@@ -17,8 +17,9 @@ import {
     AllTemplates,
     RouterCurrentStateFromTemplates
 } from '../types';
+import {DefaultTemplates} from './router_templates';
 
-export interface IManager<CustomTemplates extends IRouterTemplates = any> {
+export interface IManager<CustomTemplates extends IRouterTemplates = null> {
     actionFnDecorator?: ActionWraperFnDecorator;
     tracerSession: TracerSession;
     rootRouter: Root<AllTemplates<CustomTemplates>>;
@@ -150,3 +151,9 @@ export interface IManager<CustomTemplates extends IRouterTemplates = any> {
         Name
     >;
 }
+
+type IManagerTestA = IManager<{custom: DefaultTemplates['stack']}>;
+type A = IManagerTestA['routerTypes'];
+
+type IManagerTestB = IManager;
+type B = IManagerTestB['routerTypes'];
