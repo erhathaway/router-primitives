@@ -1,5 +1,5 @@
-import {IOutputLocation, IRouterTemplates, RouterInstance, NarrowRouterTypeName} from '../types';
-import {IRouterBase} from './router_base';
+import { IOutputLocation, IRouterTemplates, NarrowRouterTypeName } from '../types';
+import { IRouterBase } from './router_base';
 
 export type RouterCacheValue = boolean | undefined;
 
@@ -13,7 +13,7 @@ export type RouterCacheValue = boolean | undefined;
 export interface IRouterCache<
     Templates extends IRouterTemplates,
     RouterTypeName extends NarrowRouterTypeName<keyof Templates>
-> {
+    > {
     _cacheStore?: RouterCacheValue;
 
     /**

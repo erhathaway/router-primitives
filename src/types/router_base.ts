@@ -14,8 +14,8 @@ import {
     Parent,
     Root
 } from '../types';
-import {DefaultTemplates} from './router_templates';
-import {IManager} from './manager';
+import { DefaultTemplates } from './router_templates';
+import { IManager } from './manager';
 
 export interface IRouterBaseInternalState {
     isActive?: boolean;
@@ -29,7 +29,7 @@ export interface IRouterBase<
         RouterTypeName,
         IManager
     >
-> {
+    > {
     name: InitArgs['name'];
     type: InitArgs['type'];
     manager: InitArgs['manager'];
@@ -81,7 +81,7 @@ export interface IRouterBase<
     serialize: (
         options: ISerializeOptions
     ) => // eslint-disable-next-line
-    IRouterDeclaration<Templates> & {[key: string]: any};
+        IRouterDeclaration<Templates> & { [key: string]: any };
 
     isPathRouter: boolean;
 
