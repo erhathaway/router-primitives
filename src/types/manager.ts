@@ -12,7 +12,7 @@ import {
     ManagerRouterTypes,
     IManagerInit,
     IRouterTemplates,
-    ManagerRouters,
+    // ManagerRouters,
     RouterInstance,
     AllTemplates,
     RouterCurrentStateFromTemplates
@@ -27,7 +27,7 @@ export interface IManager<CustomTemplates extends IRouterTemplates = null> {
     routerStateStore: IManagerInit<CustomTemplates>['routerStateStore'];
     routerTypes: ManagerRouterTypes<AllTemplates<CustomTemplates>, IManager<CustomTemplates>>;
     templates: AllTemplates<CustomTemplates>;
-    routers: Record<string, ManagerRouters<AllTemplates<CustomTemplates>>>;
+    routers: Record<string, RouterInstance<AllTemplates<CustomTemplates>>>;
     routerCacheClass: IManagerInit<CustomTemplates>['routerCacheClass'];
     /**
      * Adds the initial routers defined during initialization
@@ -52,10 +52,7 @@ export interface IManager<CustomTemplates extends IRouterTemplates = null> {
      */
     removeRouter: (name: string) => void;
 
-    registerRouter: <Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>>(
-        name: string,
-        router: RouterInstance<AllTemplates<CustomTemplates>, Name>
-    ) => void;
+    registerRouter: (name: string, router: RouterInstance<AllTemplates<CustomTemplates>>) => void;
 
     unregisterRouter: (name: string) => void;
 

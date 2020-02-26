@@ -16,6 +16,7 @@ import {
  */
 const show: RouterActionFn = (options, oldLocation, router, ctx) => {
     // Each sibling router needs to be hidden. The location is modified to reflect hiding all siblings
+    // eslint-disable-next-line
     const location: IInputLocation = (router.siblings as RouterInstance<any, any>[]).reduce(
         (acc, s) => {
             // We disable caching of siblings b/c we dont want them to be shown if a parent rehydrates
@@ -23,9 +24,9 @@ const show: RouterActionFn = (options, oldLocation, router, ctx) => {
             // It is important to remember that `disableCaching` is passed to options not context
             //   b/c we only want it take affect for the immediate routers we call instead of the
             //   entire update cycle
-            return s.hide({ ...options, disableCaching: true }, acc, s, ctx);
+            return s.hide({...options, disableCaching: true}, acc, s, ctx);
         },
-        { ...oldLocation }
+        {...oldLocation}
     );
 
     if (router.isPathRouter) {
@@ -51,7 +52,7 @@ const show: RouterActionFn = (options, oldLocation, router, ctx) => {
 };
 
 const hide: RouterActionFn = (_options, oldLocation, router, _ctx) => {
-    const location = { ...oldLocation };
+    const location = {...oldLocation};
 
     if (router.isPathRouter) {
         location.pathname = location.pathname.slice(0, router.pathLocation);
@@ -74,8 +75,8 @@ const reducer: RouterReducerFn = (location, router, _ctx) => {
 };
 
 const template: IRouterTemplate<{}, 'testAction'> = {
-    actions: { show, hide, testAction: show },
+    actions: {show, hide, testAction: show},
     reducer,
-    config: { canBePathRouter: true, isPathRouter: true, shouldInverselyActivate: true }
+    config: {canBePathRouter: true, isPathRouter: true, shouldInverselyActivate: true}
 };
 export default template;

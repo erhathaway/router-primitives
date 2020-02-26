@@ -1,4 +1,4 @@
-import {IOutputLocation, IRouterTemplates, RouterInstance, NarrowRouterTypeName} from '../types';
+import {IOutputLocation, IRouterTemplates, NarrowRouterTypeName} from '../types';
 import {IRouterCache} from '../types/router_cache';
 import {IRouterBase} from '../types/router_base';
 

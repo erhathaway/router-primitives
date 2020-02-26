@@ -26,14 +26,14 @@ import {setChildrenDefaults, setCacheAndHide} from './index';
  *
  */
 const createActionWrapperFunction = <
-    CustomTemplates extends IRouterTemplates,
-    WrappedFn extends RouterActionFn,
-    ReturnedFn extends RouterActionFn
+    CustomTemplates extends IRouterTemplates
+    // WrappedFn extends RouterActionFn,
+    // ReturnedFn extends RouterActionFn
 >(
-    actionFn: WrappedFn,
+    actionFn: RouterActionFn,
     actionName: string,
     actionFnDecorator?: ActionWraperFnDecorator
-): ReturnedFn => {
+): RouterActionFn => {
     function actionWrapper<
         Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
     >(
@@ -211,9 +211,9 @@ const createActionWrapperFunction = <
     }
 
     if (actionFnDecorator) {
-        return actionFnDecorator(actionWrapper) as ReturnedFn;
+        return actionFnDecorator(actionWrapper);
     }
-    return actionWrapper as ReturnedFn;
+    return actionWrapper;
 };
 
 export default createActionWrapperFunction;

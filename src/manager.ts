@@ -17,7 +17,7 @@ import {
     IManagerInit,
     RouterClass,
     IRouterTemplates,
-    ManagerRouters,
+    // ManagerRouters,
     Constructable,
     RouterInstance,
     AllTemplates,
@@ -85,7 +85,7 @@ const createRouterFromTemplate = <
 export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
     public actionFnDecorator?: ActionWraperFnDecorator;
     public tracerSession: TracerSession;
-    public _routers: Record<string, ManagerRouters<AllTemplates<CustomTemplates>>>;
+    public _routers: Record<string, RouterInstance<AllTemplates<CustomTemplates>>>;
     // ManagerRouters<AllTemplates<CustomTemplates>>;
     public rootRouter: Root<AllTemplates<CustomTemplates>>;
     public serializedStateStore: IManagerInit<CustomTemplates>['serializedStateStore'];
@@ -194,7 +194,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         this.rootRouter.show();
     }
 
-    get routers(): Record<string, ManagerRouters<AllTemplates<CustomTemplates>>> {
+    get routers(): Record<string, RouterInstance<AllTemplates<CustomTemplates>>> {
         return this._routers;
     }
 
@@ -306,10 +306,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         this.unregisterRouter(name);
     };
 
-    registerRouter<Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>>(
-        name: string,
-        router: RouterInstance<AllTemplates<CustomTemplates>, Name>
-    ): void {
+    registerRouter(name: string, router: RouterInstance<AllTemplates<CustomTemplates>>): void {
         this._routers[name] = router;
     }
 
@@ -441,9 +438,11 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
      * place to redefine the getters and setters `getState` and `subscribe`
      */
     createNewRouterInitArgs<
-        Name extends NarrowRouterTypeName<
-            NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
-        >
+        // Name extends NarrowRouterTypeName<
+        //     NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
+        // >
+        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
+
         // M extends Manager
     >({
         name,

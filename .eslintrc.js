@@ -31,6 +31,7 @@ module.exports = {
                 allowExpressions: true
             }
         ],
-        '@typescript-eslint/interface-name-prefix': 'off'
+        '@typescript-eslint/interface-name-prefix': 'off',
+        '@typescript-eslint/no-unused-vars': ['error', {argsIgnorePattern: '^_'}]
     }
 };

@@ -22,17 +22,21 @@ export type Constructable<T = {}> = new (...args: any[]) => T; // eslint-disable
  * TODO add support for more than just `string` types
  */
 export interface IInputSearch {
-    [key: string]: string;
+    [key: string]: string | string[] | number | number[] | boolean | undefined;
 }
 
 /**
  * A map of router state (query params) that were unserialized from the serialized state store.
  * In the casae of the BrowserSerializedStateStore, these will be deserialized query params.
  *
+ * Note: the value of the map must is equal or narrower than then the value of the IInputSearch map.
+ * This is becuase the output is used as input in some cases. For example, updating existing state and needing to
+ * spread new state into existing state.
+ *
  * TODO add support for `map` types.
  */
 export interface IOutputSearch {
-    [key: string]: string | string[] | undefined;
+    [key: string]: string | string[] | number | number[] | boolean | undefined;
 }
 
 export interface ILocationOptions {
@@ -154,11 +158,14 @@ export type RouterActionFn = <
     RouterTypeName extends NarrowRouterTypeName<keyof Templates>
 >(
     options?: IRouterActionOptions,
-    location?: IInputLocation,
+    existingLocation?: IOutputLocation,
 
-    router?: RouterInstance<Templates, RouterTypeName>,
+    routerInstance?: RouterInstance<Templates, RouterTypeName>,
     ctx?: ILocationActionContext
 ) => IInputLocation;
+
+// <Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>
+//     (options?: ILocationOptions, existingLocation?: IOutputLocation, routerInstance?: RouterInstance<...>, ctx?: ILocationActionContext) => IInputLocation
 
 /**
  * The function that defines a routers reducer function.
@@ -702,7 +709,7 @@ export type TemplateOfRouter<R> = R extends RouterInstance<
 /**
  * A decorator to apply to action functions when they are mixed into router classes.
  */
-export type ActionWraperFnDecorator = <Fn extends any>(fn: Fn) => Fn;
+export type ActionWraperFnDecorator = <Fn extends RouterActionFn>(fn: Fn) => Fn;
 
 /**
  * A map of all templates.
@@ -766,20 +773,23 @@ export type RouterCurrentStateFromTemplates<
  * This type is a union of all possible router types found in the templates object.
  *
  */
-export type ManagerRouters<T extends IRouterTemplates> = Record<
-    keyof T,
-    {
-        [RouterType in keyof T]: RouterInstance<T, NarrowRouterTypeName<RouterType>>;
-    }[keyof T]
->[keyof T];
+
+// export type ManagerRouters<T extends IRouterTemplates> = Record<
+//     keyof T,
+//     {
+//         [RouterType in keyof T]: RouterInstance<T, NarrowRouterTypeName<RouterType>>;
+//     }[keyof T]
+// >[keyof T];
 // RouterInstance<
 //     T,
 //     NarrowRouterTypeName<keyof T>
 // >;
 
-type managerRoutersTest = ManagerRouters<{other: DefaultTemplates['data']} & DefaultTemplates>;
-// type managerRoutersTestActionA = managerRoutersTest['setData']; // <---- should error
-type managerRoutersTestActionB = managerRoutersTest['show']; // <----- should not err
+// type managerRoutersTestA = ManagerRouters<{other: DefaultTemplates['data']}>;
+// type managerRoutersTestB = ManagerRouters<{other: DefaultTemplates['data']} & DefaultTemplates>;
+
+// // type managerRoutersTestActionA = managerRoutersTestB['setData']; // <---- should error
+// type managerRoutersTestActionB = managerRoutersTestB['show']; // <----- should not err
 
 /**
  * The router types of a manager.
@@ -949,3 +959,5 @@ export type Unpacked<T> = T extends (infer U)[]
 // } extends { [_ in keyof T]: infer U } ? U : never;
 
 // type AA = KnownKeys<'hi' | 'hello' | string>
+
+export type ValueOf<T extends object> = T[keyof T];

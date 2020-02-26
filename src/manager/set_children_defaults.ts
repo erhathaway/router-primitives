@@ -1,20 +1,28 @@
-import { NarrowRouterTypeName, AllTemplates, IRouterTemplates, IRouterActionOptions, IInputLocation, ILocationActionContext, DefaultRouterActions, RouterInstance } from "../types";
-import { IRouterBase } from "../types/router_base";
-import { objKeys } from "../utilities";
+import {
+    NarrowRouterTypeName,
+    AllTemplates,
+    IRouterTemplates,
+    IRouterActionOptions,
+    IInputLocation,
+    ILocationActionContext,
+    DefaultRouterActions,
+    RouterInstance
+} from '../types';
+import {objKeys} from '../utilities';
 
 const setChildrenDefaults = <
     CustomTemplates extends IRouterTemplates,
-    Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>,
-    >(
-        options: IRouterActionOptions,
-        location: IInputLocation,
-        router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
-        ctx: ILocationActionContext
-    ): IInputLocation => {
+    Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
+>(
+    options: IRouterActionOptions,
+    location: IInputLocation,
+    router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
+    ctx: ILocationActionContext
+): IInputLocation => {
     const tracerSession = router.manager.tracerSession;
     const tracer = tracerSession.tracerThing(router.name);
 
-    let newLocation = { ...location };
+    let newLocation = {...location};
     // TODO don't mutate location
     // console.log(
     // tracer.logStep('Found number of children types', objKeys(router.routers).length)
@@ -87,7 +95,7 @@ const setChildrenDefaults = <
                 tracer.logStep(`(Applying default action: ${action} for ${child.name}`);
 
                 newLocation = child[action as keyof DefaultRouterActions](
-                    { ...options, data: args[0] }, // TODO pass more than just the first arg
+                    {...options, data: args[0]}, // TODO pass more than just the first arg
                     newLocation,
                     child,
                     newContext
@@ -99,4 +107,4 @@ const setChildrenDefaults = <
     return newLocation;
 };
 
-export default setChildrenDefaults
+export default setChildrenDefaults;

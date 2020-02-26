@@ -1,4 +1,4 @@
-import { RouterActionFn, RouterReducerFn, RouterCurrentState, IRouterTemplate } from '../../types';
+import {RouterActionFn, RouterReducerFn, RouterCurrentState, IRouterTemplate} from '../../types';
 
 /**
  * A data router will display data as the routeKey in either the pathname or queryparams
@@ -11,7 +11,7 @@ import { RouterActionFn, RouterReducerFn, RouterCurrentState, IRouterTemplate } 
  *    3. Adding the scene router to either the path or query params
  */
 const show: RouterActionFn = (options, oldLocation, router, _ctx) => {
-    const location = { ...oldLocation };
+    const location = {...oldLocation};
 
     const data = options && options.data ? options.data : router.state.data;
     if (!data) {
@@ -29,7 +29,7 @@ const show: RouterActionFn = (options, oldLocation, router, _ctx) => {
 };
 
 const hide: RouterActionFn = (_options, oldLocation, router, _ctx) => {
-    const location = { ...oldLocation };
+    const location = {...oldLocation};
 
     if (router.isPathRouter) {
         location.pathname = location.pathname.slice(0, router.pathLocation);
@@ -44,14 +44,15 @@ const setData: RouterActionFn = (options, location, router, ctx) => {
     return router.show(options, location, router, ctx);
 };
 
-const reducer: RouterReducerFn<{ data?: string }> = (location, router, _ctx) => {
+const reducer: RouterReducerFn<{data?: string}> = (location, router, _ctx) => {
     const newState: RouterCurrentState = {};
 
+    // TODO change this to ValueOf<IInputSearch> when data supports more than just `string` types
     let routerData: string;
     if (router.isPathRouter) {
-        routerData = location.pathname[router.pathLocation];
+        routerData = location.pathname[router.pathLocation] as string;
     } else {
-        routerData = location.search[router.routeKey];
+        routerData = location.search[router.routeKey] as string;
     }
 
     if (routerData) {
@@ -63,9 +64,9 @@ const reducer: RouterReducerFn<{ data?: string }> = (location, router, _ctx) => 
     return newState;
 };
 
-const template: IRouterTemplate<{ data?: string }, 'setData'> = {
-    actions: { show, hide, setData },
+const template: IRouterTemplate<{data?: string}, 'setData'> = {
+    actions: {show, hide, setData},
     reducer,
-    config: { canBePathRouter: true, isPathRouter: false }
+    config: {canBePathRouter: true, isPathRouter: false}
 };
 export default template;
