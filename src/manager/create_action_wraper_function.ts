@@ -43,7 +43,7 @@ const createActionWrapperFunction = <
         ctx: ILocationActionContext = {}
     ): IInputLocation {
         if (!existingLocation) {
-            console.log('LOOKATME', options, existingLocation, routerInstance);
+            console.log('LOOKATME', actionName, options, existingLocation, routerInstance);
             if (routerInstance.manager.tracerSession) {
                 routerInstance.manager.tracerSession.end();
                 routerInstance.manager.tracerSession.removeAllSubscriptions();
@@ -52,6 +52,7 @@ const createActionWrapperFunction = <
             }
             routerInstance.manager.tracerSession = tracerManager.newSession('Action started');
             objKeys(routerInstance.manager.routers).forEach(routerName => {
+                // console.log(routerInstance.name, ' has children: ', routerName);
                 const r = routerInstance.manager.routers[routerName];
                 const tracerUpdateFn = (thingInfo: ITracerThing): void => {
                     // const lastStep = thingInfo.steps[thingInfo.steps.length - 1];
@@ -76,6 +77,8 @@ const createActionWrapperFunction = <
         // if called from another action wrapper
         let updatedLocation: IInputLocation;
         if (existingLocation) {
+            console.log(routerInstance.name, ' called from existing location');
+
             tracer.logStep('Called from an existing location');
             // set cache before location changes b/c cache info is derived from location path
             if (actionName === 'hide') {
@@ -119,6 +122,8 @@ const createActionWrapperFunction = <
 
             // Call actions on the children after this router's action have been taken care of
             if (actionName === 'show') {
+                console.log(routerInstance.name, ' processing show request');
+
                 // console.log(`(pass) Calling child of router: ${ routerInstance.name } `)
                 tracer.logStep(`Calling 'show' action of router's children`);
 
@@ -130,6 +135,11 @@ const createActionWrapperFunction = <
                     ctx
                 );
             }
+
+            console.log(routerInstance.name, ' updating existing location ', {
+                ...newLocation,
+                ...updatedLocation
+            });
 
             tracer.endWithMessage(`Returning location`);
             return {...newLocation, ...updatedLocation};
@@ -148,6 +158,8 @@ const createActionWrapperFunction = <
                 routerInstance.parent.state.visible === undefined) &&
             ctx.callDirection !== 'down'
         ) {
+            console.log(routerInstance.name, ' processing show request with invisible parent');
+
             tracer.logStep(`Calling 'show' action of router parent: ${routerInstance.parent.name}`);
 
             // console.log(`(start) Calling parent of router: ${routerInstance.name} ---- ${routerInstance.parent.name}`)
@@ -179,7 +191,7 @@ const createActionWrapperFunction = <
         }
 
         if (actionName === 'show') {
-            // console.log(`(start) Calling child of router: ${routerInstance.name}`, options, ctx)
+            console.log(`(start) Calling child of router: ${routerInstance.name}`, options, ctx);
             tracer.logStep(`Calling 'show' action of router's children`);
 
             // add location defaults from children
@@ -208,6 +220,7 @@ const createActionWrapperFunction = <
         // }, 3000);
         // const things = routerInstance.manager.tracerSession.tracerThings;
         // objKeys(things).forEach(tName => console.log(tName, things[tName].isActive)) // tslint:disable-line
+        console.log('new updatedLocation', updatedLocation);
         return {...updatedLocation};
     }
 

@@ -32,7 +32,7 @@ import {objKeys} from './utilities';
 // import {DefaultTemplates} from './types/router_templates';
 import createActionWrapperFunction from './manager/create_action_wraper_function';
 
-const capitalize = (name = ''): string => name.charAt(0).toUpperCase() + name.slice(1);
+// const capitalize = (name = ''): string => name.charAt(0).toUpperCase() + name.slice(1);
 
 // extend router base for specific type
 const createRouterFromTemplate = <
@@ -52,7 +52,7 @@ const createRouterFromTemplate = <
 
     const MixedInClass = class extends BaseRouter {
         // change the router name to include the type
-        name = `${capitalize(templateName.toString())}Router`;
+        // constructor.name = `${capitalize(templateName.toString())}Router`;
 
         // eslint-disable-next-line
         constructor(...args: any[]) {
