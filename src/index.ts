@@ -1,14 +1,15 @@
 import Manager from './manager';
 import RouterStore from './routerState';
 import Router, {IInternalState} from './router/base';
-import * as Types from './types';
 import RouterCache from './router/cache';
-import * as ManagerTypes from './types/manager';
-import * as RouterBaseTypes from './types/router_base';
-import * as RouterCacheTypes from './types/manager';
-import * as RouterStateTypes from './types/router_state';
-import * as RouterTemplatesTypes from './types/router_templates';
-import * as SerializedStateTypes from './types/serialized_state';
+
+export * from './types';
+export * from './types/manager';
+export * from './types/router_base';
+export * from './types/manager';
+export * from './types/router_state';
+export * from './types/router_templates';
+export * from './types/serialized_state';
 
 import {
     NativeSerializedStore,
@@ -21,17 +22,10 @@ export {
     RouterCache,
     Manager,
     Router,
-    IInternalState,
     RouterStore,
     NativeSerializedStore,
     BrowserSerializedStore,
     serializer,
     deserializer,
-    Types,
-    ManagerTypes,
-    RouterBaseTypes,
-    RouterCacheTypes,
-    RouterStateTypes,
-    RouterTemplatesTypes,
-    SerializedStateTypes
+    IInternalState
 };

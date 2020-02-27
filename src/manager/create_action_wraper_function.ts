@@ -43,6 +43,7 @@ const createActionWrapperFunction = <
         ctx: ILocationActionContext = {}
     ): IInputLocation {
         if (!existingLocation) {
+            console.log('LOOKATME', options, existingLocation, routerInstance);
             if (routerInstance.manager.tracerSession) {
                 routerInstance.manager.tracerSession.end();
                 routerInstance.manager.tracerSession.removeAllSubscriptions();
