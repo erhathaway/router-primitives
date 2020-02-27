@@ -1,5 +1,13 @@
-import { NarrowRouterTypeName, AllTemplates, IRouterActionOptions, IInputLocation, RouterInstance, ILocationActionContext, IRouterTemplates } from "../types";
-import { objKeys } from "../utilities";
+import {
+    NarrowRouterTypeName,
+    AllTemplates,
+    IRouterActionOptions,
+    IInputLocation,
+    RouterInstance,
+    ILocationActionContext,
+    IRouterTemplates
+} from '../types';
+import {objKeys} from '../utilities';
 
 /**
  * Called when a router's 'hide' action is called directly or the
@@ -38,12 +46,12 @@ const setCacheAndHide = <
         disableCaching =
             ctx.disableCaching || router.lastDefinedParentsDisableChildCacheState || false;
     }
-    tracer.logStep('setting', { disableCaching });
+    tracer.logStep('setting', {disableCaching});
 
     objKeys(router.routers).forEach(routerType => {
         router.routers[routerType].forEach(child => {
             // Update ctx object's caching setting for this branch of the router tree
-            const newCtx = { ...ctx, disableCaching };
+            const newCtx = {...ctx, disableCaching};
 
             // Call location 'hide' action if the child is visible
             const childTracer = tracerSession.tracerThing(child.name);
@@ -66,7 +74,7 @@ const setCacheAndHide = <
     // For example, `scene` routers use the `options.disableCaching` to disable sibling caches
     // so they don't get reshown when a parent causes a rehydration
     const shouldCache = !disableCaching && !(options.disableCaching || false);
-    tracer.logStep('setting', { shouldCache });
+    tracer.logStep('setting', {shouldCache});
 
     // console.log(`SHOULD CACHE: ${router.name}`, shouldCache, disableCaching, options.disableCaching)
     if (shouldCache) {
@@ -78,4 +86,4 @@ const setCacheAndHide = <
     return newLocation;
 };
 
-export default setCacheAndHide
+export default setCacheAndHide;

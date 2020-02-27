@@ -175,9 +175,9 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
 
                 // add new Router type to accumulator
                 acc[
-                    templateName as NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+                    templateName // as NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
                     // eslint-disable-next-line
-                ] = RouterFromTemplate as any; // TODO Fix this any
+                ] = RouterFromTemplate; //as any; // TODO Fix this any
 
                 return acc;
             },
@@ -241,11 +241,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         const routerType = (!parentName && !this.rootRouter
             ? 'root'
             : type) as NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>;
-        const config = this.createRouterConfigArgs(
-            routerDeclaration,
-            routerType,
-            parent
-        ) as IRouterConfig; // TODO figure out why this assertion is necessary
+        const config = this.createRouterConfigArgs(routerDeclaration, routerType, parent); //as IRouterConfig; // TODO figure out why this assertion is necessary
 
         // Create a router
         const router = this.createRouter({name, config, type: routerType, parentName});

@@ -14,7 +14,7 @@ import {
     Parent,
     Root
 } from '../types';
-import defaultTemplates from '../router/template';
+// import defaultTemplates from '../router/template';
 import {IRouterBase} from '../types/router_base';
 import {IManager} from '../types/manager';
 import {objKeys} from '../utilities';
@@ -218,9 +218,7 @@ export default class RouterBase<
         const childRouters = childRouterTypes.reduce(
             (acc, type) => {
                 // eslint-disable-next-line
-                (acc as any)[type] = this.routers[type].map(childRouter =>
-                    childRouter.serialize(options)
-                );
+                acc[type] = this.routers[type].map(childRouter => childRouter.serialize(options));
                 return acc;
             },
             {} as {[routerType: string]: IRouterDeclaration<Templates>[]}
@@ -297,10 +295,10 @@ export default class RouterBase<
 }
 
 // const managerTest = new Manager();
-const baseTest = new RouterBase<typeof defaultTemplates, 'scene'>({} as any); // eslint-disable-line
+// const baseTest = new RouterBase<typeof defaultTemplates, 'scene'>({} as any); // eslint-disable-line
 
-const s = baseTest.routers['stack'];
-s[0].show;
+// const s = baseTest.routers['stack'];
+// s[0].show;
 
 // baseTest.parent.routers['stack'];
 // baseTest.root.routers['stack'];

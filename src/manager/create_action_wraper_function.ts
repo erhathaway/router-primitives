@@ -211,9 +211,9 @@ const createActionWrapperFunction = <
     }
 
     if (actionFnDecorator) {
-        return actionFnDecorator(actionWrapper);
+        return actionFnDecorator(actionWrapper as RouterActionFn);
     }
-    return actionWrapper;
+    return actionWrapper as RouterActionFn;
 };
 
 export default createActionWrapperFunction;
