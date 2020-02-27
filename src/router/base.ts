@@ -119,7 +119,7 @@ export default class RouterBase<
     get siblings(): RouterInstance<Templates, RouterTypeName>[] {
         // TODO fix this any
         // eslint-disable-next-line
-        return this.parent.routers[this.type].filter(r => r.name !== this.name);
+        return this.parent.routers[this.type].filter(r => r.name !== this.name) as any;
     }
 
     /**
@@ -131,7 +131,7 @@ export default class RouterBase<
         if (this.parent && this.parent.routers) {
             // TODO fix this any
             // eslint-disable-next-line
-            return this.parent.routers[type] || [];
+            return this.parent.routers[type] || ([] as any);
         }
         return [];
     }

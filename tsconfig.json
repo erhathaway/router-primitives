@@ -1,29 +1,18 @@
 {
-  "compilerOptions": {
-    "declaration": true,
-    "declarationDir": "./dist",
-    "outDir": "./dist",
-    "noImplicitAny": true,
-    "esModuleInterop": true,
-    "moduleResolution": "node",
-    "target": "es5",
-    "module": "es2015",
-    "typeRoots": [
-      "./types",
-      "./node_modules/@types"
-    ],
-    "removeComments": true,
-    "sourceMap": true,
-    "lib": [
-      "es2015",
-      "es2017",
-      "dom"
-    ],
-  },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-  ]
+    "compilerOptions": {
+        "declaration": true,
+        "declarationDir": "./dist",
+        "outDir": "./dist",
+        "noImplicitAny": true,
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "target": "es5",
+        "module": "es2015",
+        "typeRoots": ["./types", "./node_modules/@types"],
+        "removeComments": true,
+        "sourceMap": true,
+        "lib": ["es2015", "es2017", "dom"]
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules"]
 }

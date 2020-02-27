@@ -459,12 +459,12 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
             type,
             parent,
             routers: {},
-            manager: this,
+            manager: this as IManager<CustomTemplates>,
             root: this.rootRouter,
             getState: this.routerStateStore.createRouterStateGetter(name),
             subscribe: this.routerStateStore.createRouterStateSubscriber(name),
             actions,
-            cache: this.routerCacheClass
+            cache: this.routerCacheClass as any // eslint-disable-line
         };
     }
 
@@ -526,7 +526,11 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         this.validateRouterCreationInfo(name, type, config);
 
         const initalArgs = this.createNewRouterInitArgs({name, config, type, parentName});
-        return this.createRouterFromInitArgs({...initalArgs});
+        return this.createRouterFromInitArgs({...initalArgs}) as RouterInstance<
+            AllTemplates<CustomTemplates>,
+            // TODO fix me
+            any // eslint-disable-line
+        >;
     }
 }
 
