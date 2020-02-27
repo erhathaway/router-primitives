@@ -37,23 +37,23 @@ describe('Integration', () => {
         const eventsRouter = manager.routers['events'];
 
         userRouter.show();
-        expect(manager.serializedStateStore.history.length).toBe(1);
+        expect(manager.serializedStateStore.history).toHaveLength(1);
 
         eventsRouter.show({ replaceLocation: true })
 
-        expect(manager.serializedStateStore.history.length).toBe(1);
+        expect(manager.serializedStateStore.history).toHaveLength(1);
 
         eventsRouter.hide({ replaceLocation: true })
 
-        expect(manager.serializedStateStore.history.length).toBe(1);
+        expect(manager.serializedStateStore.history).toHaveLength(1);
 
         eventsRouter.show();
 
-        expect(manager.serializedStateStore.history.length).toBe(2);
+        expect(manager.serializedStateStore.history).toHaveLength(2);
 
         eventsRouter.hide({ replaceLocation: false })
 
-        expect(manager.serializedStateStore.history.length).toBe(3);
+        expect(manager.serializedStateStore.history).toHaveLength(3);
       });
       describe('Show', () => {
         const manager = new Manager({ routerTree: routerTreeForDefaultShowTest });
@@ -91,7 +91,7 @@ describe('Integration', () => {
           // should have a history of 1 b/c the userRouter.show() caused the router tree to reduce state when toolbar wasn't visible
           expect(mainToolsObserver.mock.calls[1][0]).toEqual({ current: { visible: true }, historical: [{ visible: false }] });
           // only two state update should have been made for this router
-          expect(mainToolsObserver.mock.calls.length).toBe(2);
+          expect(mainToolsObserver.mock.calls).toHaveLength(2);
         });
       });
 

@@ -63,11 +63,11 @@ describe('Browser Serialized State', () => {
       window.location.pathname = 'newStateOther';
       store.setState(stateTwo);
 
-      expect(subscriptionOne.mock.calls.length).toBe(2);
+      expect(subscriptionOne.mock.calls).toHaveLength(2);
       expect(subscriptionOne.mock.calls[0][0]).toEqual(stateOne);
       expect(subscriptionOne.mock.calls[1][0]).toEqual(stateTwo);
 
-      expect(subscriptionTwo.mock.calls.length).toBe(1);
+      expect(subscriptionTwo.mock.calls).toHaveLength(1);
       expect(subscriptionTwo.mock.calls[0][0]).toEqual(stateTwo);
     });
 
@@ -88,18 +88,18 @@ describe('Browser Serialized State', () => {
       const state = { pathname: ['newState'], search: {}, options: {}}
       store.setState(state);
 
-      expect(testFnA.mock.calls.length).toBe(1);
-      expect(testFnB.mock.calls.length).toBe(1);
-      expect(testFnC.mock.calls.length).toBe(1);
+      expect(testFnA.mock.calls).toHaveLength(1);
+      expect(testFnB.mock.calls).toHaveLength(1);
+      expect(testFnC.mock.calls).toHaveLength(1);
 
       store.unsubscribeFromStateChanges(testFnA);
 
       const nextState = { pathname: ['newState'], search: { update: 'yest' }, options: {}}
       store.setState(nextState);
 
-      expect(testFnA.mock.calls.length).toBe(1);
-      expect(testFnB.mock.calls.length).toBe(2);
-      expect(testFnC.mock.calls.length).toBe(2);
+      expect(testFnA.mock.calls).toHaveLength(1);
+      expect(testFnB.mock.calls).toHaveLength(2);
+      expect(testFnC.mock.calls).toHaveLength(2);
     });
 
     // test('Observers are notified if the URL is updated outside the router', () => {

@@ -34,7 +34,7 @@ describe('Integration', () => {
       const { routers } = manager;
   
       // existence check
-      expect(Object.keys(routers).length).toBe(9);
+      expect(Object.keys(routers)).toHaveLength(9);
       expect(routers['root'].name).toBe('root');
       expect(routers['events'].name).toBe('events');
   

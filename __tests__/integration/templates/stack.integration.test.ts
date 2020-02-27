@@ -35,23 +35,23 @@ describe('Integration', () => {
         const cookiesModalRouter = manager.routers['cookies-modal'];
 
         welcomeModalRouter.show();
-        expect(manager.serializedStateStore.history.length).toBe(1);
+        expect(manager.serializedStateStore.history).toHaveLength(1);
 
         cookiesModalRouter.show({ replaceLocation: true })
 
-        expect(manager.serializedStateStore.history.length).toBe(1);
+        expect(manager.serializedStateStore.history).toHaveLength(1);
 
         cookiesModalRouter.hide({ replaceLocation: true })
 
-        expect(manager.serializedStateStore.history.length).toBe(1);
+        expect(manager.serializedStateStore.history).toHaveLength(1);
 
         cookiesModalRouter.show();
 
-        expect(manager.serializedStateStore.history.length).toBe(2);
+        expect(manager.serializedStateStore.history).toHaveLength(2);
 
         cookiesModalRouter.hide({ replaceLocation: false })
 
-        expect(manager.serializedStateStore.history.length).toBe(3);
+        expect(manager.serializedStateStore.history).toHaveLength(3);
       });
 
       it('Show sets order to 1 if the only stack router', () => {

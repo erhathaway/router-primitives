@@ -60,11 +60,11 @@ describe('Router Manager', () => {
     test('Can add a router tree', () => {
       const manager = new Manager({ routerTree });
 
-      expect(Object.keys(manager.routers).length).toBe(7);
+      expect(Object.keys(manager.routers)).toHaveLength(7);
       expect(manager.rootRouter.name).toBe('root');
       expect(manager.routers['info'].name).toBe('info');
       expect(manager.routers['events'].parent.name).toBe('user');
-      expect(manager.routers['root'].routers['scene'].length).toBe(2);
+      expect(manager.routers['root'].routers['scene']).toHaveLength(2);
     });
 
     describe('Serialized Store defaults', () => {
@@ -102,8 +102,8 @@ describe('Router Manager', () => {
     
         manager.addRouter(newRouter);
 
-        expect(Object.keys(manager.routers).length).toBe(8);
-        expect(manager.routers['user'].routers.scene.length).toBe(3);
+        expect(Object.keys(manager.routers)).toHaveLength(8);
+        expect(manager.routers['user'].routers.scene).toHaveLength(3);
         expect(manager.routers['admin'].name).toBe('admin');
         expect(manager.routers['admin'].parent).toBe(manager.routers['user']);
       });
@@ -111,8 +111,8 @@ describe('Router Manager', () => {
       it('then had a router removed', () => {
         manager.removeRouter('admin');
     
-        expect(Object.keys(manager.routers).length).toBe(7);
-        expect(manager.routers['user'].routers.scene.length).toBe(2);
+        expect(Object.keys(manager.routers)).toHaveLength(7);
+        expect(manager.routers['user'].routers.scene).toHaveLength(2);
         expect(manager.routers['admin']).toBe(undefined);
       });
 
@@ -122,7 +122,7 @@ describe('Router Manager', () => {
 
         manager.removeRouter('user');
 
-        expect(Object.keys(manager.routers).length).toBe(4);
+        expect(Object.keys(manager.routers)).toHaveLength(4);
         expect(manager.routers['user']).toBe(undefined);
         expect(manager.routers['events']).toBe(undefined);
         expect(manager.routers['details']).toBe(undefined);
@@ -155,9 +155,9 @@ describe('Router Manager', () => {
 
         manager.routerStateStore.setState(initialRoutersState);
 
-        expect(testFnA.mock.calls.length).toBe(1);
-        expect(testFnB.mock.calls.length).toBe(1);
-        expect(testFnC.mock.calls.length).toBe(1);
+        expect(testFnA.mock.calls).toHaveLength(1);
+        expect(testFnB.mock.calls).toHaveLength(1);
+        expect(testFnC.mock.calls).toHaveLength(1);
 
         manager.removeRouter('admin');
 
@@ -168,9 +168,9 @@ describe('Router Manager', () => {
 
         manager.routerStateStore.setState(nextRoutersState);
 
-        expect(testFnA.mock.calls.length).toBe(1);
-        expect(testFnB.mock.calls.length).toBe(1);
-        expect(testFnC.mock.calls.length).toBe(2);
+        expect(testFnA.mock.calls).toHaveLength(1);
+        expect(testFnB.mock.calls).toHaveLength(1);
+        expect(testFnC.mock.calls).toHaveLength(2);
       });
     });
 
@@ -178,7 +178,7 @@ describe('Router Manager', () => {
       const manager = new Manager();
 
       it('had one router added', () => {
-        expect(Object.keys(manager.routers).length).toBe(0);
+        expect(Object.keys(manager.routers)).toHaveLength(0);
 
         const newRouter = {
           name: 'admin',
@@ -186,7 +186,7 @@ describe('Router Manager', () => {
     
         manager.addRouter(newRouter);
 
-        expect(Object.keys(manager.routers).length).toBe(1);
+        expect(Object.keys(manager.routers)).toHaveLength(1);
         expect(manager.rootRouter.name).toBe('admin');
       });
 
@@ -199,8 +199,8 @@ describe('Router Manager', () => {
 
         manager.addRouter(newRouter);
 
-        expect(Object.keys(manager.routers).length).toBe(2);
-        expect(manager.routers['admin'].routers.feature.length).toBe(1);
+        expect(Object.keys(manager.routers)).toHaveLength(2);
+        expect(manager.routers['admin'].routers.feature).toHaveLength(1);
         expect(manager.routers['admin-tools'].name).toBe('admin-tools');
         expect(manager.routers['admin-tools'].parent).toBe(manager.routers['admin']);
       });
@@ -225,13 +225,13 @@ describe('Router Manager', () => {
         manager.serializedStateStore.setState(nextLocation);
 
         expect(userObserverFn.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{ visible: true }] });
-        expect(userObserverFn.mock.calls.length).toEqual(1);
+        expect(userObserverFn.mock.calls).toHaveLength(1);
 
         expect(secondUserObserverFn.mock.calls[0][0]).toEqual({ current: { visible: false }, historical: [{ visible: true }] });
-        expect(secondUserObserverFn.mock.calls.length).toEqual(1);
+        expect(secondUserObserverFn.mock.calls).toHaveLength(1);
 
         // root router shouldn't be called
-        expect(rootObserverFn.mock.calls.length).toEqual(0);
+        expect(rootObserverFn.mock.calls).toHaveLength(0);
       });
     });
 

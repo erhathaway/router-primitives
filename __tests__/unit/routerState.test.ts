@@ -72,10 +72,10 @@ describe('Router State', () => {
 
       store.setState(newState);
 
-      expect(testFnA.mock.calls.length).toBe(1);
-      expect(testFnB.mock.calls.length).toBe(1);
-      expect(testFnC.mock.calls.length).toBe(1);
-      expect(testFnD.mock.calls.length).toBe(1);
+      expect(testFnA.mock.calls).toHaveLength(1);
+      expect(testFnB.mock.calls).toHaveLength(1);
+      expect(testFnC.mock.calls).toHaveLength(1);
+      expect(testFnD.mock.calls).toHaveLength(1);
 
       store.unsubscribeAllObserversForRouter(TEST_ROUTER_A);
 
@@ -86,10 +86,10 @@ describe('Router State', () => {
 
       store.setState(anotherNewState);
 
-      expect(testFnA.mock.calls.length).toBe(1);
-      expect(testFnB.mock.calls.length).toBe(1);
-      expect(testFnC.mock.calls.length).toBe(2);
-      expect(testFnD.mock.calls.length).toBe(2);
+      expect(testFnA.mock.calls).toHaveLength(1);
+      expect(testFnB.mock.calls).toHaveLength(1);
+      expect(testFnC.mock.calls).toHaveLength(2);
+      expect(testFnD.mock.calls).toHaveLength(2);
     });
 
     test('Can unsubscribe single observers from store for a given router', () => {
@@ -112,8 +112,8 @@ describe('Router State', () => {
 
       store.setState(newState);
 
-      expect(testFnA.mock.calls.length).toBe(1);
-      expect(testFnB.mock.calls.length).toBe(1);
+      expect(testFnA.mock.calls).toHaveLength(1);
+      expect(testFnB.mock.calls).toHaveLength(1);
 
       unsubscriber(testFnA);
 
@@ -123,8 +123,8 @@ describe('Router State', () => {
 
       store.setState(anotherNewState);
 
-      expect(testFnA.mock.calls.length).toBe(1);
-      expect(testFnB.mock.calls.length).toBe(2);
+      expect(testFnA.mock.calls).toHaveLength(1);
+      expect(testFnB.mock.calls).toHaveLength(2);
     });
     
 
@@ -200,10 +200,10 @@ describe('Router State', () => {
       });
 
       expect(ownerObserver.mock.calls[0][0]).toEqual({ current: { visible: true }, historical: [] });
-      expect(ownerObserver.mock.calls.length).toEqual(1);
+      expect(ownerObserver.mock.calls).toHaveLength(1);
 
       expect(infoObserver.mock.calls[1][0]).toEqual({ current: { visible: true }, historical: [{ visible: false }] });
-      expect(infoObserver.mock.calls.length).toEqual(2);
+      expect(infoObserver.mock.calls).toHaveLength(2);
 
       // set the other router state
       store.setState({
@@ -211,10 +211,10 @@ describe('Router State', () => {
       });
 
       expect(ownerObserver.mock.calls[1][0]).toEqual({ current: { visible: false }, historical: [{ visible: true }] });
-      expect(ownerObserver.mock.calls.length).toEqual(2);
+      expect(ownerObserver.mock.calls).toHaveLength(2);
 
       expect(infoObserver.mock.calls[1][0]).toEqual({ current: { visible: true }, historical: [{ visible: false }] });
-      expect(infoObserver.mock.calls.length).toEqual(2);
+      expect(infoObserver.mock.calls).toHaveLength(2);
     });
 
     test('Can create individual router state getters', () => {

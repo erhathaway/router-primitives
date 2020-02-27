@@ -142,9 +142,9 @@ describe('Router', () => {
       parentRouter._addChildRouter(dataRouterTwo);
       parentRouter._addChildRouter(sceneRouter);
 
-      expect(sceneRouter.siblings.length).toBe(0);
-      expect(dataRouterOne.siblings.length).toBe(1);
-      expect(dataRouterTwo.siblings.length).toBe(1);
+      expect(sceneRouter.siblings).toHaveLength(0);
+      expect(dataRouterOne.siblings).toHaveLength(1);
+      expect(dataRouterTwo.siblings).toHaveLength(1);
     });
   });
 
@@ -159,9 +159,9 @@ describe('Router', () => {
       parentRouter._addChildRouter(dataRouterTwo);
       parentRouter._addChildRouter(sceneRouter);
 
-      expect(sceneRouter.getNeighborsByType('data').length).toBe(2);
-      expect(dataRouterOne.getNeighborsByType('scene').length).toBe(1);
-      expect(dataRouterTwo.getNeighborsByType('feature').length).toBe(0);
+      expect(sceneRouter.getNeighborsByType('data')).toHaveLength(2);
+      expect(dataRouterOne.getNeighborsByType('scene')).toHaveLength(1);
+      expect(dataRouterTwo.getNeighborsByType('feature')).toHaveLength(0);
     });
   });
 
