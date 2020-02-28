@@ -15,35 +15,30 @@ const setChildrenDefaults = <
     Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
 >(
     options: IRouterActionOptions,
-    location: IInputLocation,
+    existingLocation: IInputLocation,
     router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
     ctx: ILocationActionContext
 ): IInputLocation => {
-    const tracerSession = router.manager.tracerSession;
-    const tracer = tracerSession.tracerThing(router.name);
-
-    let newLocation = {...location};
-    // TODO don't mutate location
-    objKeys(router.routers).forEach(routerType => {
+    return objKeys(router.routers).reduce((newLocationFromAllRouters, routerType) => {
         // skip routers that called the parent router
         if (routerType === ctx.activatedByChildType) {
-            tracer.logStep(
-                `Not calling child router type: ${routerType} b/c it is the same type of activation origin`
-            );
+            ctx.tracer &&
+                ctx.tracer.logStep(
+                    `Not calling child router type: ${routerType} b/c it is the same type of activation origin`
+                );
 
-            return;
+            return newLocationFromAllRouters;
         }
 
-        router.routers[routerType].forEach(child => {
-            const childTracer = tracerSession.tracerThing(child.name);
+        return router.routers[routerType].reduce((newLocationForSpecificChild, child) => {
+            const childTracer = router.manager.tracerSession.tracerThing(child.name);
 
             // prevent inverse activation if it is turned off
             if (ctx.callDirection === 'up' && child.config.shouldInverselyActivate === false) {
-                // console.log(`Not calling router b/c not inversely active: ${child.name}`)
                 childTracer.logStep(
                     `Not calling child router b/c it is not inversely active: ${child.name}`
                 );
-                return;
+                return newLocationForSpecificChild;
             }
 
             const newContext: ILocationActionContext = {
@@ -75,30 +70,33 @@ const setChildrenDefaults = <
             if (child.cache.wasVisible === true) {
                 // the cache has been 'used' so remove it
                 child.cache.removeCache();
-                tracer.logStep(
-                    `Calling show action of child router b/c it has a cached previous visibility: ${child.name}`
-                );
+                ctx.tracer &&
+                    ctx.tracer.logStep(
+                        `Calling show action of child router b/c it has a cached previous visibility: ${child.name}`
+                    );
 
-                newLocation = child.show(options, newLocation, child, newContext);
+                return child.show(options, newLocationForSpecificChild, child, newContext);
             }
 
             // if the cached visibility state is 'false' don't show on rehydration
             // or if there is no cache state and there is a default action, apply the action
             else if (child.config.defaultAction && child.config.defaultAction.length > 0) {
                 const [action, ...args] = child.config.defaultAction;
-                tracer.logStep(`(Applying default action: ${action} for ${child.name}`);
+                ctx.tracer &&
+                    ctx.tracer.logStep(
+                        `No cached state found, but default action found. Applying default action: ${action} for ${child.name}`
+                    );
 
-                newLocation = child[action as keyof DefaultRouterActions](
+                return child[action as keyof DefaultRouterActions](
                     {...options, data: args[0]}, // TODO pass more than just the first arg
-                    newLocation,
+                    newLocationForSpecificChild,
                     child,
                     newContext
                 );
             }
-        });
-    });
-
-    return newLocation;
+            return newLocationFromAllRouters;
+        }, newLocationFromAllRouters);
+    }, existingLocation);
 };
 
 export default setChildrenDefaults;

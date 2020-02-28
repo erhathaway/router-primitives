@@ -2,7 +2,7 @@ import {IRouterBase} from '../types/router_base';
 import {IManager} from '../types/manager';
 import {IRouterStateStore} from '../types/router_state';
 import {IRouterCache} from '../types/router_cache';
-import {ISerializedStateStore} from './serialized_state';
+import {ISerializedStateStore} from '../types/serialized_state';
 import {DefaultTemplates} from '../types/router_templates';
 import {ITracerThing} from '../tracer';
 

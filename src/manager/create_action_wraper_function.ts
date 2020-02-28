@@ -24,7 +24,6 @@ const setCacheAndHideChildRouters = <
     ctx: ILocationActionContext
 ): IInputLocation => {
     if (ctx.actionName === 'hide') {
-        // tracer.logStep('Hiding');
         ctx.tracer && ctx.tracer.logStep(`Calling 'setCacheAndHide'`);
 
         return setCacheAndHide(options, existingLocation, routerInstance, ctx);
@@ -81,7 +80,6 @@ const checkIfShouldShowChildRouters = <
             false
         );
     if (ctx.actionName === 'show' && hasChildren) {
-        // tracer.logStep(`Calling 'show' action of router's children`);
         ctx.tracer && ctx.tracer.logStep(`Calling 'setChildrenDefaults'`);
 
         // add location defaults from children
@@ -176,7 +174,6 @@ const createActionWrapperFunction = <CustomTemplates extends IRouterTemplates>(
             const locationFromAction = actionFn(
                 options,
                 {...locationFromTryingToShowParent},
-                // {...newLocation, ...updatedLocation},
                 routerInstance,
                 {...ctx, callDirection: 'lateral'}
             );
@@ -190,7 +187,6 @@ const createActionWrapperFunction = <CustomTemplates extends IRouterTemplates>(
             );
 
             ctx.tracer.endWithMessage(`Returning location`);
-            // return {...newLocation, ...locationFromTryingToShowChildren};
             return {...locationFromTryingToShowChildren};
         }
 

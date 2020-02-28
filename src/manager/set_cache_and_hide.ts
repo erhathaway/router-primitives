@@ -9,6 +9,38 @@ import {
 } from '../types';
 import {objKeys} from '../utilities';
 
+const calculateIfVisibleStateShouldBeCached = <
+    CustomTemplates extends IRouterTemplates,
+    Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
+>(
+    router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
+    ctx: ILocationActionContext
+): ILocationActionContext => {
+    // Figure out if caching should occur:
+    // If the user hasn't set anything, we should fall back to the
+    // context object and inherit the setting from the parent.
+    // If the parent hasn't set a setting we are probably at root of the action call
+    // and should fall back to using the template.
+    const disableCaching =
+        router.config.disableCaching !== undefined
+            ? router.config.disableCaching
+            : ctx.disableCaching || router.lastDefinedParentsDisableChildCacheState || false;
+
+    const hasChildren =
+        router.routers &&
+        Object.values(router.routers).reduce(
+            (childrenExist, children) => (children.length && children.length > 0) || childrenExist,
+            false
+        );
+    if (hasChildren) {
+        ctx.tracer &&
+            ctx.tracer.logStep(
+                `Passing to children the ctx state: 'disableCaching' = ${disableCaching}`,
+                {disableCaching}
+            );
+    }
+    return {...ctx, disableCaching};
+};
 /**
  * Called when a router's 'hide' action is called directly or the
  * parent's 'hide' action is called.
@@ -25,56 +57,32 @@ const setCacheAndHide = <
     Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
 >(
     options: IRouterActionOptions,
-    location: IInputLocation,
+    existingLocation: IInputLocation,
     router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
     ctx: ILocationActionContext
 ): IInputLocation => {
-    // const tracerSession = router.manager.tracerSession;
-    // const tracer = tracerSession.tracerThing(router.name);
+    // Update ctx object's caching setting for this branch of the router tree
+    const newCtx = calculateIfVisibleStateShouldBeCached(router, ctx);
 
-    let newLocation = location;
-    let disableCaching: boolean | undefined;
+    // Iterate over children, hiding visible children and caching the fact that they were previously visible.
+    const locationFromChildren = objKeys(router.routers).reduce(
+        (locationFromChildrenAcc, routerType) => {
+            return router.routers[routerType].reduce((locationFromSpecificChildAcc, child) => {
+                // Call location 'hide' action if the child is visible
+                const childTracer = router.manager.tracerSession.tracerThing(child.name);
+                ctx.tracer.logStep(`Looking at child: ${child.name}`);
 
-    // Figure out if caching should occur:
-    // If the user hasn't set anything, we should fall back to the
-    // context object and inherit the setting from the parent.
-    // If the parent hasn't set a setting we are probably at root of the action call
-    // and should fall back to using the template.
-    if (router.config.disableCaching !== undefined) {
-        disableCaching = router.config.disableCaching;
-    } else {
-        disableCaching =
-            ctx.disableCaching || router.lastDefinedParentsDisableChildCacheState || false;
-    }
-    const hasChildren =
-        router.routers &&
-        Object.values(router.routers).reduce(
-            (childrenExist, children) => (children.length && children.length > 0) || childrenExist,
-            false
-        );
-    if (hasChildren) {
-        ctx.tracer.logStep(
-            `Passing to children the ctx state: 'disableCaching' = ${disableCaching}`,
-            {disableCaching}
-        );
-    }
-    objKeys(router.routers).forEach(routerType => {
-        router.routers[routerType].forEach(child => {
-            // Update ctx object's caching setting for this branch of the router tree
-            const newCtx = {...ctx, disableCaching};
-
-            // Call location 'hide' action if the child is visible
-            const childTracer = router.manager.tracerSession.tracerThing(child.name);
-            ctx.tracer.logStep(`Looking at child: ${child.name}`);
-
-            if (child.state.visible) {
-                childTracer.logStep(`Calling actionFn: 'hide'`);
-                newLocation = child.hide({}, newLocation, child, newCtx);
-            } else {
-                childTracer.logStep(`Not calling 'hide' b/c its hidden already`);
-            }
-        });
-    });
+                if (child.state.visible) {
+                    childTracer.logStep(`Calling actionFn: 'hide'`);
+                    return child.hide({}, locationFromSpecificChildAcc, child, newCtx);
+                } else {
+                    childTracer.logStep(`Not calling 'hide' b/c its hidden already`);
+                    return locationFromSpecificChildAcc;
+                }
+            }, locationFromChildrenAcc);
+        },
+        existingLocation
+    );
 
     // The `options.disableCaching` gives the caller of the direct action
     // the ability to disable caching on a case by case basis will interacting
@@ -82,21 +90,17 @@ const setCacheAndHide = <
     // router. If we want to disable caching for all routers use the ctx object
     // For example, `scene` routers use the `options.disableCaching` to disable sibling caches
     // so they don't get reshown when a parent causes a rehydration
-    const shouldCache = !disableCaching && !(options.disableCaching || false);
+    const shouldCache = !ctx.disableCaching && !(options.disableCaching || false);
+
     if (shouldCache) {
         ctx.tracer.logStep(`Caching state`, {shouldCache});
+
+        router.cache.setWasPreviouslyVisibleToFromLocation(locationFromChildren, router);
     } else {
         ctx.tracer.logStep(`Not Caching state`, {shouldCache});
     }
 
-    // console.log(`SHOULD CACHE: ${router.name}`, shouldCache, disableCaching, options.disableCaching)
-    if (shouldCache) {
-        // console.log(`Cache: storing was previously visible for router: ${router.name}`)
-        // router.cache.setWasPreviouslyVisibleToFromLocation(newLocation as any, router as any)
-        router.cache.setWasPreviouslyVisibleToFromLocation(newLocation, router);
-    }
-
-    return newLocation;
+    return {...locationFromChildren};
 };
 
 export default setCacheAndHide;
