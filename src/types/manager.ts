@@ -59,7 +59,7 @@ export interface IManager<CustomTemplates extends IRouterTemplates = null> {
     calcNewRouterState: <Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>>(
         location: IInputLocation,
         router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
-        ctx: ILocationActionContext,
+        ctx: Omit<ILocationActionContext, 'actionName'>,
         // TODO fill in current state's custom state generic from the above router
         newState: Record<string, RouterCurrentStateFromTemplates<CustomTemplates>>
     ) => Record<string, RouterCurrentStateFromTemplates<CustomTemplates>>;

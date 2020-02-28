@@ -319,7 +319,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
     >(
         location: IInputLocation,
         router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
-        ctx: ILocationActionContext = {},
+        ctx: Omit<ILocationActionContext, 'actionName'> = {},
         newState: Record<string, RouterCurrentStateFromTemplates<CustomTemplates>> = {}
     ): Record<string, RouterCurrentStateFromTemplates<CustomTemplates>> {
         if (!router) {

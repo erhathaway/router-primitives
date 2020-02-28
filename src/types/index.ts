@@ -4,6 +4,7 @@ import {IRouterStateStore} from '../types/router_state';
 import {IRouterCache} from '../types/router_cache';
 import {ISerializedStateStore} from './serialized_state';
 import {DefaultTemplates} from '../types/router_templates';
+import {ITracerThing} from '../tracer';
 
 export type Constructable<T = {}> = new (...args: any[]) => T; // eslint-disable-line
 
@@ -69,6 +70,8 @@ export interface ILocationActionContext {
     // inverseActivation?: boolean;
     callDirection?: 'up' | 'down' | undefined;
     activatedByChildType?: string;
+    tracer?: ITracerThing;
+    actionName: string;
 }
 
 // at the moment these should be the same
