@@ -24,22 +24,16 @@ const setChildrenDefaults = <
 
     let newLocation = {...location};
     // TODO don't mutate location
-    // console.log(
-    // tracer.logStep('Found number of children types', objKeys(router.routers).length)
     objKeys(router.routers).forEach(routerType => {
         // skip routers that called the parent router
         if (routerType === ctx.activatedByChildType) {
             tracer.logStep(
                 `Not calling child router type: ${routerType} b/c it is the same type of activation origin`
             );
-            // console.log(`Not calling router b/c same type of active child`)
 
             return;
         }
 
-        // as UnionOfChildren<
-        //     TemplateOfRouter<Router['routers']>
-        // >
         router.routers[routerType].forEach(child => {
             const childTracer = tracerSession.tracerThing(child.name);
 

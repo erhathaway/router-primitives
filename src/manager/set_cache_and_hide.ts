@@ -27,10 +27,10 @@ const setCacheAndHide = <
     options: IRouterActionOptions,
     location: IInputLocation,
     router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
-    ctx: ILocationActionContext = {}
+    ctx: ILocationActionContext
 ): IInputLocation => {
-    const tracerSession = router.manager.tracerSession;
-    const tracer = tracerSession.tracerThing(router.name);
+    // const tracerSession = router.manager.tracerSession;
+    // const tracer = tracerSession.tracerThing(router.name);
 
     let newLocation = location;
     let disableCaching: boolean | undefined;
@@ -46,7 +46,7 @@ const setCacheAndHide = <
         disableCaching =
             ctx.disableCaching || router.lastDefinedParentsDisableChildCacheState || false;
     }
-    tracer.logStep('setting', {disableCaching});
+    ctx.tracer.logStep(`Setting 'disableCaching' to: ${disableCaching}`, {disableCaching});
 
     objKeys(router.routers).forEach(routerType => {
         router.routers[routerType].forEach(child => {
@@ -54,12 +54,11 @@ const setCacheAndHide = <
             const newCtx = {...ctx, disableCaching};
 
             // Call location 'hide' action if the child is visible
-            const childTracer = tracerSession.tracerThing(child.name);
-            childTracer.logStep('Looking at child');
+            const childTracer = router.manager.tracerSession.tracerThing(child.name);
+            ctx.tracer.logStep(`Looking at child: ${child.name}`);
 
             if (child.state.visible) {
-                childTracer.logStep('Calling `hide` action');
-                // console.log(`Hiding router: ${child.name}`)
+                childTracer.logStep(`Calling actionFn: 'hide'`);
                 newLocation = child.hide({}, newLocation, child, newCtx);
             } else {
                 childTracer.logStep('Not calling child b/c its hidden already');
@@ -74,7 +73,7 @@ const setCacheAndHide = <
     // For example, `scene` routers use the `options.disableCaching` to disable sibling caches
     // so they don't get reshown when a parent causes a rehydration
     const shouldCache = !disableCaching && !(options.disableCaching || false);
-    tracer.logStep('setting', {shouldCache});
+    ctx.tracer.logStep(`Setting 'shouldCache' to: ${shouldCache}`, {shouldCache});
 
     // console.log(`SHOULD CACHE: ${router.name}`, shouldCache, disableCaching, options.disableCaching)
     if (shouldCache) {

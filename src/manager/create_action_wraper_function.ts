@@ -29,6 +29,7 @@ const setCacheAndHideChildRouters = <
 
         return setCacheAndHide(options, existingLocation, routerInstance, ctx);
     }
+
     return {...existingLocation};
 };
 
@@ -72,7 +73,13 @@ const checkIfShouldShowChildRouters = <
     routerInstance: RouterInstance<AllTemplates<CustomTemplates>, Name>,
     ctx: ILocationActionContext
 ): IInputLocation => {
-    if (ctx.actionName === 'show') {
+    const hasChildren =
+        routerInstance.routers &&
+        Object.values(routerInstance.routers).reduce(
+            (childrenExist, children) => (children.length && children.length > 0) || childrenExist,
+            false
+        );
+    if (ctx.actionName === 'show' && hasChildren) {
         // tracer.logStep(`Calling 'show' action of router's children`);
         ctx.tracer && ctx.tracer.logStep(`Calling 'setChildrenDefaults'`);
 
@@ -99,18 +106,9 @@ const createTracerForRouterInstance = <
         objKeys(routerInstance.manager.routers).forEach(routerName => {
             const r = routerInstance.manager.routers[routerName];
             const tracerUpdateFn = (thingInfo: ITracerThing): void => {
-                // const lastStep = thingInfo.steps[thingInfo.steps.length - 1];
-                // console.log(`(${thingInfo.name}):`);
-
-                // console.log('....', lastStep && lastStep.name);
                 r.EXPERIMENTAL_setInternalState({...thingInfo});
-                // (currentInfo: IInternalState) => ({
-                //     ...currentInfo,
-                //     ...thingInfo
-                // });
-                // console.log('.... active:', (r.state as any).isActive); // tslint:disable-line
 
-                console.log(`(${r.name}) active:`, r.state.isActive); // tslint:disable-line
+                // console.log(`(${r.name}) active:`, r.state.isActive); // tslint:disable-line
             };
             routerInstance.manager.tracerSession.subscribeToThing(routerName, tracerUpdateFn);
         });
@@ -129,11 +127,7 @@ const createTracerForRouterInstance = <
  * @param actionName name of the action. Usually `show` or `hide` but can be any custom action defined in a template
  *
  */
-const createActionWrapperFunction = <
-    CustomTemplates extends IRouterTemplates
-    // WrappedFn extends RouterActionFn,
-    // ReturnedFn extends RouterActionFn
->(
+const createActionWrapperFunction = <CustomTemplates extends IRouterTemplates>(
     actionFn: RouterActionFn,
     actionName: string,
     actionFnDecorator?: ActionWraperFnDecorator
@@ -150,7 +144,6 @@ const createActionWrapperFunction = <
         ctx.tracer = createTracerForRouterInstance(routerInstance, existingLocation);
 
         // If called from by another router's action
-        let updatedLocation: IInputLocation;
         if (existingLocation) {
             ctx.tracer.logStep('Called indirectly (from neighboring router)');
 
@@ -202,70 +195,59 @@ const createActionWrapperFunction = <
 
         ctx.tracer.logStep('Called directly');
 
-        // if called directly, fetch location
-        updatedLocation = routerInstance.manager.serializedStateStore.getState();
+        // If called directly, fetch existing location
+        existingLocation = routerInstance.manager.serializedStateStore.getState();
 
-        // if the parent router isn't visible, but the child is shown, show all parents
-        if (
-            actionName === 'show' &&
-            routerInstance.parent &&
-            (routerInstance.parent.state.visible === false ||
-                routerInstance.parent.state.visible === undefined) &&
-            ctx.callDirection !== 'down'
-        ) {
-            ctx.tracer.logStep(
-                `Calling 'show' action of router parent: ${routerInstance.parent.name}`
-            );
-
-            // data routers dont have a visibility state by default. TODO FIX THIS
-            updatedLocation = routerInstance.parent.show(
-                {},
-                {...updatedLocation},
-                routerInstance.parent,
-                {...ctx, callDirection: 'up', activatedByChildType: routerInstance.type}
-            );
-        }
+        // If the parent router isn't visible, but the child is shown, show all parents
+        const locationFromTryingToShowParent = checkIfShouldShowParentRouter(
+            options,
+            existingLocation,
+            routerInstance,
+            ctx
+        );
 
         // set cache before location changes b/c cache info is derived from location path
-        if (actionName === 'hide') {
-            // ctx.tracer.logStep('Hiding');
-            ctx.tracer.logStep(`Calling 'setCacheAndHide'`);
-
-            updatedLocation = setCacheAndHide(options, {...updatedLocation}, routerInstance, ctx);
-        }
-
-        ctx.tracer.logStep(`Calling actionFn: ${actionName}`);
+        const locationFromSettingCacheAndHidingChildRouters = setCacheAndHideChildRouters(
+            options,
+            locationFromTryingToShowParent,
+            routerInstance,
+            ctx
+        );
 
         // Call the router's action after any actions on the parent have been taken care of
-        updatedLocation = actionFn(options, {...updatedLocation}, routerInstance, ctx);
+        ctx.tracer.logStep(`Calling actionFn: ${actionName}`);
+        const locationFromAction = actionFn(
+            options,
+            {...locationFromSettingCacheAndHidingChildRouters},
+            routerInstance,
+            ctx
+        );
 
         // If this action is a direct call from the user, remove all caching
         if (actionName === 'hide' && routerInstance.state.visible === true) {
             routerInstance.cache.setWasPreviouslyVisibleTo(false);
         }
 
-        if (actionName === 'show') {
-            // tracer.logStep(`Calling 'show' action of router's children`);
-            ctx.tracer.logStep(`Calling 'setChildrenDefaults'`);
+        // Call actions on the children after this router's action have been taken care of
+        const locationFromTryingToShowChildren = checkIfShouldShowChildRouters(
+            options,
+            locationFromAction,
+            routerInstance,
+            ctx
+        );
 
-            // add location defaults from children
-            updatedLocation = setChildrenDefaults(
-                options,
-                {...updatedLocation},
-                routerInstance,
-                ctx
-            );
-        }
+        // Add user options to new location options
+        locationFromTryingToShowChildren.options = {
+            ...locationFromTryingToShowChildren.options,
+            ...options
+        };
 
-        // add user options to new location options
-        updatedLocation.options = {...updatedLocation.options, ...options};
+        // Set serialized state
+        routerInstance.manager.serializedStateStore.setState({...locationFromTryingToShowChildren});
 
-        // set serialized state
-        routerInstance.manager.serializedStateStore.setState({...updatedLocation});
-        // return location so the function signature of the action is the same
         ctx.tracer.endWithMessage(`Returning location`);
-        // setTimeout(() => {
         routerInstance.manager.tracerSession.endWithMessage('Action complete');
+
         console.log(
             'TOTAL TIME',
             routerInstance.manager.tracerSession.endTime -
@@ -281,11 +263,9 @@ const createActionWrapperFunction = <
             .map(s => `${s.routerName}: ${s.name}`);
         console.log('steps: ', sortedCombinedSteps);
         console.log(routerInstance.manager.tracerSession);
-        // }, 3000);
-        // const things = routerInstance.manager.tracerSession.tracerThings;
-        // objKeys(things).forEach(tName => console.log(tName, things[tName].isActive)) // tslint:disable-line
-        // console.log('new updatedLocation', updatedLocation);
-        return {...updatedLocation};
+
+        // Return location so the function signature of the action is the same
+        return {...locationFromTryingToShowChildren};
     }
 
     if (actionFnDecorator) {
