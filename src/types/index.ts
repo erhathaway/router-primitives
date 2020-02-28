@@ -68,7 +68,7 @@ export interface ILocationActionContext {
     disableCaching?: boolean; // the setting will persist for all routers in the update cycle
     addingDefaults?: boolean;
     // inverseActivation?: boolean;
-    callDirection?: 'up' | 'down' | undefined;
+    callDirection?: 'up' | 'down' | 'lateral' | undefined;
     activatedByChildType?: string;
     tracer?: ITracerThing;
     actionName: string;

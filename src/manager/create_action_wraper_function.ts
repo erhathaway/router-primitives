@@ -47,7 +47,8 @@ const checkIfShouldShowParentRouter = <
         routerInstance.parent &&
         (routerInstance.parent.state.visible === false ||
             routerInstance.parent.state.visible === undefined) &&
-        ctx.callDirection !== 'down'
+        ctx.callDirection !== 'down' &&
+        ctx.callDirection !== 'lateral'
     ) {
         ctx.tracer &&
             ctx.tracer.logStep(
@@ -177,7 +178,7 @@ const createActionWrapperFunction = <CustomTemplates extends IRouterTemplates>(
                 {...locationFromTryingToShowParent},
                 // {...newLocation, ...updatedLocation},
                 routerInstance,
-                ctx
+                {...ctx, callDirection: 'lateral'}
             );
 
             // Call actions on the children after this router's action have been taken care of
@@ -220,7 +221,7 @@ const createActionWrapperFunction = <CustomTemplates extends IRouterTemplates>(
             options,
             {...locationFromSettingCacheAndHidingChildRouters},
             routerInstance,
-            ctx
+            {...ctx, callDirection: 'lateral'}
         );
 
         // If this action is a direct call from the user, remove all caching

@@ -46,8 +46,18 @@ const setCacheAndHide = <
         disableCaching =
             ctx.disableCaching || router.lastDefinedParentsDisableChildCacheState || false;
     }
-    ctx.tracer.logStep(`Setting 'disableCaching' to: ${disableCaching}`, {disableCaching});
-
+    const hasChildren =
+        router.routers &&
+        Object.values(router.routers).reduce(
+            (childrenExist, children) => (children.length && children.length > 0) || childrenExist,
+            false
+        );
+    if (hasChildren) {
+        ctx.tracer.logStep(
+            `Passing to children the ctx state: 'disableCaching' = ${disableCaching}`,
+            {disableCaching}
+        );
+    }
     objKeys(router.routers).forEach(routerType => {
         router.routers[routerType].forEach(child => {
             // Update ctx object's caching setting for this branch of the router tree
@@ -61,7 +71,7 @@ const setCacheAndHide = <
                 childTracer.logStep(`Calling actionFn: 'hide'`);
                 newLocation = child.hide({}, newLocation, child, newCtx);
             } else {
-                childTracer.logStep('Not calling child b/c its hidden already');
+                childTracer.logStep(`Not calling 'hide' b/c its hidden already`);
             }
         });
     });
@@ -73,7 +83,11 @@ const setCacheAndHide = <
     // For example, `scene` routers use the `options.disableCaching` to disable sibling caches
     // so they don't get reshown when a parent causes a rehydration
     const shouldCache = !disableCaching && !(options.disableCaching || false);
-    ctx.tracer.logStep(`Setting 'shouldCache' to: ${shouldCache}`, {shouldCache});
+    if (shouldCache) {
+        ctx.tracer.logStep(`Caching state`, {shouldCache});
+    } else {
+        ctx.tracer.logStep(`Not Caching state`, {shouldCache});
+    }
 
     // console.log(`SHOULD CACHE: ${router.name}`, shouldCache, disableCaching, options.disableCaching)
     if (shouldCache) {
