@@ -151,7 +151,7 @@ const createActionWrapperFunction = <CustomTemplates extends IRouterTemplates>(
                 options,
                 existingLocation,
                 routerInstance,
-                ctx
+                {...ctx, actionName}
             );
 
             // TODO WHY IS THIS NECESSARY??
@@ -165,7 +165,7 @@ const createActionWrapperFunction = <CustomTemplates extends IRouterTemplates>(
                 options,
                 locationFromSettingCacheAndHidingChildRouters,
                 routerInstance,
-                ctx
+                {...ctx, actionName}
             );
 
             ctx.tracer.logStep(`Calling actionFn: ${actionName}`);
@@ -183,7 +183,7 @@ const createActionWrapperFunction = <CustomTemplates extends IRouterTemplates>(
                 options,
                 locationFromAction,
                 routerInstance,
-                ctx
+                {...ctx, actionName}
             );
 
             ctx.tracer.endWithMessage(`Returning location`);
@@ -200,7 +200,7 @@ const createActionWrapperFunction = <CustomTemplates extends IRouterTemplates>(
             options,
             existingLocation,
             routerInstance,
-            ctx
+            {...ctx, actionName}
         );
 
         // set cache before location changes b/c cache info is derived from location path
@@ -208,7 +208,7 @@ const createActionWrapperFunction = <CustomTemplates extends IRouterTemplates>(
             options,
             locationFromTryingToShowParent,
             routerInstance,
-            ctx
+            {...ctx, actionName}
         );
 
         // Call the router's action after any actions on the parent have been taken care of
@@ -231,7 +231,7 @@ const createActionWrapperFunction = <CustomTemplates extends IRouterTemplates>(
             options,
             locationFromAction,
             routerInstance,
-            ctx
+            {...ctx, actionName}
         );
 
         // Add user options to new location options

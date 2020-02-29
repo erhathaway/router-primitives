@@ -19,7 +19,7 @@ module.exports = {
         'plugin:@typescript-eslint/recommended',
         'prettier/@typescript-eslint'
     ],
-    ignorePatterns: ['/node_modules/', '/coverage/'],
+    ignorePatterns: ['/node_modules/', '/coverage/', '/dist/'],
     rules: {
         'jest/no-disabled-tests': 'warn',
         'jest/no-focused-tests': 'error',
