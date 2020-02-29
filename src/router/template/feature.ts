@@ -28,6 +28,6 @@ const reducer: RouterReducerFn = (location, router, _ctx) => {
 const template: IRouterTemplate = {
     actions: {show, hide},
     reducer,
-    config: {canBePathRouter: false, shouldInverselyActivate: false}
+    config: {canBePathRouter: false, shouldInverselyActivate: true}
 };
 export default template;

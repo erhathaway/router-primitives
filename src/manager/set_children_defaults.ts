@@ -24,20 +24,20 @@ const setChildrenDefaults = <
         if (routerType === ctx.activatedByChildType) {
             ctx.tracer &&
                 ctx.tracer.logStep(
-                    `Not calling child router type: ${routerType} b/c it is the same type of activation origin`
+                    `Not calling children of type ${routerType} b/c they are the same type as activation origin`
                 );
 
             return newLocationFromAllRouters;
         }
 
         return router.routers[routerType].reduce((newLocationForSpecificChild, child) => {
-            const childTracer = router.manager.tracerSession.tracerThing(child.name);
-
             // prevent inverse activation if it is turned off
             if (ctx.callDirection === 'up' && child.config.shouldInverselyActivate === false) {
-                childTracer.logStep(
-                    `Not calling child router b/c it is not inversely active: ${child.name}`
-                );
+                console.log('child', child.name, child.config);
+                ctx &&
+                    ctx.tracer.logStep(
+                        `Not calling child (${child.name}) b/c it is not inversely active`
+                    );
                 return newLocationForSpecificChild;
             }
 
@@ -72,7 +72,7 @@ const setChildrenDefaults = <
                 child.cache.removeCache();
                 ctx.tracer &&
                     ctx.tracer.logStep(
-                        `Calling show action of child router (${child.name}) b/c it has a cached previous visibility`
+                        `Calling show action of child (${child.name}) b/c it has a cached previous visibility`
                     );
 
                 return child.show(
@@ -87,7 +87,7 @@ const setChildrenDefaults = <
             else if (child.cache.wasVisible === false) {
                 ctx.tracer &&
                     ctx.tracer.logStep(
-                        `Skipping show action of child router (${child.name}) b/c it wasn't previously visible`
+                        `Skipping show action of child (${child.name}) b/c it wasn't previously visible`
                     );
                 return newLocationForSpecificChild;
             }

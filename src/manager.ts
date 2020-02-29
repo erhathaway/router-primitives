@@ -367,7 +367,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         const isSetToInverselyActivate =
             routerDeclaration.shouldInverselyActivate !== undefined
                 ? routerDeclaration.shouldInverselyActivate
-                : templateConfig.shouldInverselyActivate || false;
+                : templateConfig.shouldInverselyActivate || true;
         const isSetToDisableCaching =
             routerDeclaration.disableCaching !== undefined
                 ? routerDeclaration.disableCaching
