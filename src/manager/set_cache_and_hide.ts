@@ -50,7 +50,6 @@ const calculateIfVisibleStateShouldBeCached = <
  * 2. Hide child routers that are visible and pass along the current `disableCaching` status
  * 3. If caching is enabled, store a record that the router was previously visible
  *
- * TODO: dont mutate location state
  */
 const setCacheAndHide = <
     CustomTemplates extends IRouterTemplates,
@@ -92,10 +91,17 @@ const setCacheAndHide = <
     // so they don't get reshown when a parent causes a rehydration
     const shouldCache = !ctx.disableCaching && !(options.disableCaching || false);
 
-    if (shouldCache) {
+    if (shouldCache && !router.cache.wasVisible) {
         ctx.tracer.logStep(`Caching state`, {shouldCache});
+        // if (this.wasVisible) {
+        //     return;
+        // }
 
-        router.cache.setWasPreviouslyVisibleToFromLocation(locationFromChildren, router);
+        // If the router exists in the current location, its visible
+        const visible = !!router.getLocationDataFromLocationObject({...locationFromChildren});
+
+        router.cache.setCache({visible, data: options.data});
+        // router.cache.setWasPreviouslyVisibleToFromLocation(locationFromChildren, router);
     } else {
         ctx.tracer.logStep(`Not Caching state`, {shouldCache});
     }

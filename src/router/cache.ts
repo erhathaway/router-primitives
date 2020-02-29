@@ -1,8 +1,5 @@
-import {IOutputLocation, IRouterTemplates, NarrowRouterTypeName} from '../types';
-import {IRouterCache} from '../types/router_cache';
-import {IRouterBase} from '../types/router_base';
-
-type CacheValue = boolean | undefined;
+import {IRouterTemplates, NarrowRouterTypeName} from '../types';
+import {IRouterCache, CacheState} from '../types/router_cache';
 
 /**
  * A store for a routers previous visibliity state.
@@ -15,7 +12,7 @@ class Cache<
     Templates extends IRouterTemplates,
     RouterTypeName extends NarrowRouterTypeName<keyof Templates>
 > implements IRouterCache<Templates, RouterTypeName> {
-    public _cacheStore?: CacheValue;
+    public _cacheStore?: CacheState;
 
     constructor() {
         this._cacheStore = undefined;
@@ -25,7 +22,11 @@ class Cache<
      * The last time a parent was visible, was this router also visible?
      */
     get wasVisible(): boolean {
-        return this._cacheStore;
+        return this._cacheStore && this._cacheStore.visible;
+    }
+
+    get previousData(): string | undefined {
+        return this._cacheStore && this._cacheStore.data ? this._cacheStore.data : undefined;
     }
 
     /**
@@ -35,30 +36,8 @@ class Cache<
         this._cacheStore = undefined;
     }
 
-    public setWasPreviouslyVisibleToFromLocation(
-        location: IOutputLocation,
-        routerInstance: IRouterBase<Templates, RouterTypeName>
-    ): void {
-        // dont set cache if one already exists!
-        if (this.wasVisible) {
-            return;
-        }
-
-        let cache: CacheValue;
-        if (routerInstance.isPathRouter) {
-            cache = !!location.pathname[routerInstance.pathLocation];
-        } else {
-            cache = !!location.search[routerInstance.routeKey];
-        }
-
-        this.setWasPreviouslyVisibleTo(cache);
-    }
-
-    /**
-     * Cached visiblity state setter.
-     */
-    public setWasPreviouslyVisibleTo(value: CacheValue): void {
-        this._cacheStore = value;
+    public setCache(cache: CacheState): void {
+        this._cacheStore = {...this._cacheStore, ...cache};
     }
 }
 

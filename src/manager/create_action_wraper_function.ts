@@ -222,7 +222,7 @@ const createActionWrapperFunction = <CustomTemplates extends IRouterTemplates>(
 
         // If this action is a direct call from the user, remove all caching
         if (actionName === 'hide' && routerInstance.state.visible === true) {
-            routerInstance.cache.setWasPreviouslyVisibleTo(false);
+            routerInstance.cache.setCache({visible: false, data: options.data});
         }
 
         // Call actions on the children after this router's action have been taken care of

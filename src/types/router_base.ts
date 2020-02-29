@@ -12,7 +12,10 @@ import {
     NarrowRouterTypeName,
     Childs,
     Parent,
-    Root
+    Root,
+    IInputLocation,
+    ValueOf,
+    IInputSearch
 } from '../types';
 import {IManager} from './manager';
 
@@ -61,6 +64,11 @@ export interface IRouterBase<
         Templates,
         NarrowRouterTypeName<Exclude<keyof Templates, RouterTypeName>>
     >;
+
+    /**
+     * Given a location object, returns location data for the router or undefined if none is found
+     */
+    getLocationDataFromLocationObject: (location: IInputLocation) => ValueOf<IInputSearch>;
 
     pathLocation: number;
 

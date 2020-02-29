@@ -12,7 +12,10 @@ import {
     NarrowRouterTypeName,
     Childs,
     Parent,
-    Root
+    Root,
+    IInputSearch,
+    IInputLocation,
+    ValueOf
 } from '../types';
 // import defaultTemplates from '../router/template';
 import {IRouterBase} from '../types/router_base';
@@ -135,6 +138,17 @@ export default class RouterBase<
         }
         return [];
     }
+
+    /**
+     * Given a location object, returns location data for the router or undefined if none is found
+     */
+    public getLocationDataFromLocationObject = (
+        location: IInputLocation
+    ): ValueOf<IInputSearch> => {
+        return this.isPathRouter
+            ? location.pathname[this.pathLocation]
+            : location.search[this.routeKey];
+    };
 
     /**
      * Returns all neighboring routers. That is, all routers that have the same parent but are not of this router type.

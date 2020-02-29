@@ -1,7 +1,9 @@
-import { IOutputLocation, IRouterTemplates, NarrowRouterTypeName } from '../types';
-import { IRouterBase } from './router_base';
+import {IRouterTemplates, NarrowRouterTypeName} from '../types';
 
-export type RouterCacheValue = boolean | undefined;
+export type CacheState = {
+    visible: boolean;
+    data?: string;
+};
 
 /**
  * A store for a routers previous visibliity state.
@@ -13,26 +15,20 @@ export type RouterCacheValue = boolean | undefined;
 export interface IRouterCache<
     Templates extends IRouterTemplates,
     RouterTypeName extends NarrowRouterTypeName<keyof Templates>
-    > {
-    _cacheStore?: RouterCacheValue;
+> {
+    _cacheStore?: CacheState;
 
     /**
      * The last time a parent was visible, was this router also visible?
      */
     wasVisible: boolean;
 
+    previousData: string | undefined;
+
     /**
      * Remove the cached visiblity state.
      */
     removeCache: () => void;
 
-    setWasPreviouslyVisibleToFromLocation: (
-        location: IOutputLocation,
-        routerInstance: IRouterBase<Templates, RouterTypeName>
-    ) => void;
-
-    /**
-     * Cached visiblity state setter.
-     */
-    setWasPreviouslyVisibleTo: (value: RouterCacheValue) => void;
+    setCache: (cache: CacheState) => void;
 }

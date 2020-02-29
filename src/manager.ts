@@ -312,7 +312,6 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
 
     /**
      * Called on every location change
-     * TODO make this method not mutate `newState`
      */
     public calcNewRouterState<
         Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
@@ -338,7 +337,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
                     const state = this.calcNewRouterState(
                         location,
                         // cast to be any router instance
-                        childRouter, // as RouterInstance<AllTemplates<CustomTemplates>>,
+                        childRouter,
                         ctx,
                         accc
                     );
@@ -351,8 +350,6 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
                 RouterCurrentStateFromTemplates<CustomTemplates>
             >
         );
-
-        // return newState;
     }
 
     createRouterConfigArgs<Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>(

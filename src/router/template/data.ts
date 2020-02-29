@@ -1,4 +1,4 @@
-import {RouterActionFn, RouterReducerFn, RouterCurrentState, IRouterTemplate} from '../../types';
+import {RouterActionFn, RouterReducerFn, IRouterTemplate} from '../../types';
 
 /**
  * A data router will display data as the routeKey in either the pathname or queryparams
@@ -45,7 +45,7 @@ const setData: RouterActionFn = (options, location, router, ctx) => {
 };
 
 const reducer: RouterReducerFn<{data?: string}> = (location, router, _ctx) => {
-    const newState: RouterCurrentState = {};
+    // const newState: RouterCurrentState = {};
 
     // TODO change this to ValueOf<IInputSearch> when data supports more than just `string` types
     let routerData: string;
@@ -55,13 +55,16 @@ const reducer: RouterReducerFn<{data?: string}> = (location, router, _ctx) => {
         routerData = location.search[router.routeKey] as string;
     }
 
-    if (routerData) {
-        newState['visible'] = true;
-    }
+    // if (routerData) {
+    //     newState['visible'] = true;
+    // }
 
-    newState['data'] = routerData || router.state.data;
+    // newState['data'] = routerData || router.state.data;
 
-    return newState;
+    return {
+        visible: !!routerData,
+        data: routerData || router.state.data
+    };
 };
 
 const template: IRouterTemplate<{data?: string}, 'setData'> = {
@@ -70,3 +73,8 @@ const template: IRouterTemplate<{data?: string}, 'setData'> = {
     config: {canBePathRouter: true, isPathRouter: false}
 };
 export default template;
+
+/**
+ * Define data type in template
+ * Use generic to define type
+ */

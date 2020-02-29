@@ -75,7 +75,12 @@ const setChildrenDefaults = <
                         `Calling show action of child router b/c it has a cached previous visibility: ${child.name}`
                     );
 
-                return child.show(options, newLocationForSpecificChild, child, newContext);
+                return child.show(
+                    {...options, data: child.cache.previousData},
+                    newLocationForSpecificChild,
+                    child,
+                    newContext
+                );
             }
 
             // if the cached visibility state is 'false' don't show on rehydration
