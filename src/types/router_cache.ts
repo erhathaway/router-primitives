@@ -21,7 +21,7 @@ export interface IRouterCache<
     /**
      * The last time a parent was visible, was this router also visible?
      */
-    wasVisible: boolean;
+    wasVisible: boolean | undefined;
 
     previousData: string | undefined;
 

@@ -222,6 +222,7 @@ const createActionWrapperFunction = <CustomTemplates extends IRouterTemplates>(
 
         // If this action is a direct call from the user, remove all caching
         if (actionName === 'hide' && routerInstance.state.visible === true) {
+            console.log('Setting visible to false: ', routerInstance.name);
             routerInstance.cache.setCache({visible: false, data: options.data});
         }
 

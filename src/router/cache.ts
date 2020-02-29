@@ -21,8 +21,8 @@ class Cache<
     /**
      * The last time a parent was visible, was this router also visible?
      */
-    get wasVisible(): boolean {
-        return this._cacheStore && this._cacheStore.visible;
+    get wasVisible(): boolean | undefined {
+        return this._cacheStore ? this._cacheStore.visible === true : undefined;
     }
 
     get previousData(): string | undefined {

@@ -72,7 +72,7 @@ const setChildrenDefaults = <
                 child.cache.removeCache();
                 ctx.tracer &&
                     ctx.tracer.logStep(
-                        `Calling show action of child router b/c it has a cached previous visibility: ${child.name}`
+                        `Calling show action of child router (${child.name}) b/c it has a cached previous visibility`
                     );
 
                 return child.show(
@@ -84,7 +84,15 @@ const setChildrenDefaults = <
             }
 
             // if the cached visibility state is 'false' don't show on rehydration
-            // or if there is no cache state and there is a default action, apply the action
+            else if (child.cache.wasVisible === false) {
+                ctx.tracer &&
+                    ctx.tracer.logStep(
+                        `Skipping show action of child router (${child.name}) b/c it wasn't previously visible`
+                    );
+                return newLocationForSpecificChild;
+            }
+
+            //  if there is no cache state and there is a default action, apply the action
             else if (child.config.defaultAction && child.config.defaultAction.length > 0) {
                 const [action, ...args] = child.config.defaultAction;
                 ctx.tracer &&
