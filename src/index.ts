@@ -1,7 +1,7 @@
 import Manager from './manager';
-import RouterStore from './routerState';
-import Router, {IInternalState} from './router/base';
-import RouterCache from './router/cache';
+import RouterStore from './all_router_state';
+import Router, {IInternalState} from './router_base';
+import RouterCache from './router_cache';
 
 export * from './types';
 export * from './types/manager';
@@ -16,7 +16,7 @@ import {
     BrowserSerializedStore,
     serializer,
     deserializer
-} from './serializedState';
+} from './serialized_state';
 
 export {
     RouterCache,

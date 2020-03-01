@@ -1,6 +1,6 @@
-import defaultRouterTemplates from './router/template';
+import defaultRouterTemplates from './router_templates';
 
-import {BrowserSerializedStore, NativeSerializedStore} from './serializedState';
+import {BrowserSerializedStore, NativeSerializedStore} from './serialized_state';
 import {TracerSession} from './tracer';
 import {IManager} from './types/manager';
 import {
@@ -26,11 +26,11 @@ import {
     RouterReducerFn
 } from './types';
 
-import DefaultRouter from './router/base';
-import DefaultRouterStateStore from './routerState';
+import DefaultRouter from './router_base';
+import DefaultRouterStateStore from './all_router_state';
 import {objKeys} from './utilities';
 // import {DefaultTemplates} from './types/router_templates';
-import createActionWrapperFunction from './manager/create_action_wraper_function';
+import createActionExecutor from './action_executor';
 
 // const capitalize = (name = ''): string => name.charAt(0).toUpperCase() + name.slice(1);
 
@@ -60,9 +60,9 @@ const createRouterFromTemplate = <
             // add actions to RouterType
             objKeys(actions).forEach(actionName => {
                 Object.assign(this, {
-                    [actionName]: createActionWrapperFunction(
+                    [actionName]: createActionExecutor(
                         actions[actionName],
-                        actionName,
+                        actionName as string,
                         actionFnDecorator
                     )
                 });
@@ -155,7 +155,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
                 // fetch template
                 const selectedTemplate = this.templates[templateName];
                 // get function used to wrape actions
-                // const createActionWrapperFunction = this.createActionWrapperFunction;
+                // const createActionExecutor = this.createActionExecutor;
                 // create router class from the template
                 const RouterFromTemplate = createRouterFromTemplate(
                     templateName as NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>,
@@ -164,7 +164,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
                     >],
                     BaseRouter,
                     this.actionFnDecorator
-                    // createActionWrapperFunction
+                    // createActionExecutor
                     // as <Fn extends RouterActionFn>(
                     //     actionFn: Fn,
                     //     actionName: keyof AllTemplates<CustomTemplates>[NarrowRouterTypeName<

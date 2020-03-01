@@ -72,6 +72,7 @@ export interface ILocationActionContext {
     activatedByChildType?: string;
     tracer?: ITracerThing;
     actionName: string;
+    actionFn?: RouterActionFn;
 }
 
 // at the moment these should be the same
@@ -82,6 +83,16 @@ export type IRouterActionOptions = ILocationOptions;
  * Router actions and reducer
  * -------------------------------------------------
  */
+
+export type ActionStep = <
+    CustomTemplates extends IRouterTemplates,
+    Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
+>(
+    _options: IRouterActionOptions,
+    existingLocation: IInputLocation,
+    routerInstance: RouterInstance<AllTemplates<CustomTemplates>, Name>,
+    ctx: ILocationActionContext
+) => {location: IInputLocation; ctx: ILocationActionContext};
 
 /**
  * A utility function to intersect unioned actions together

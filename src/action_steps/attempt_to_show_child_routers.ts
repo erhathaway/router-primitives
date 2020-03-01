@@ -1,25 +1,8 @@
-import {
-    NarrowRouterTypeName,
-    AllTemplates,
-    IRouterTemplates,
-    IRouterActionOptions,
-    IInputLocation,
-    ILocationActionContext,
-    DefaultRouterActions,
-    RouterInstance
-} from '../types';
+import {ILocationActionContext, DefaultRouterActions, ActionStep} from '../types';
 import {objKeys} from '../utilities';
 
-const setChildrenDefaults = <
-    CustomTemplates extends IRouterTemplates,
-    Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
->(
-    options: IRouterActionOptions,
-    existingLocation: IInputLocation,
-    router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
-    ctx: ILocationActionContext
-): IInputLocation => {
-    return objKeys(router.routers).reduce((newLocationFromAllRouters, routerType) => {
+const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) => {
+    const newLocation = objKeys(router.routers).reduce((newLocationFromAllRouters, routerType) => {
         // skip routers that called the parent router
         if (routerType === ctx.activatedByChildType) {
             ctx.tracer &&
@@ -33,7 +16,6 @@ const setChildrenDefaults = <
         return router.routers[routerType].reduce((newLocationForSpecificChild, child) => {
             // prevent inverse activation if it is turned off
             if (ctx.callDirection === 'up' && child.config.shouldInverselyActivate === false) {
-                console.log('child', child.name, child.config);
                 ctx &&
                     ctx.tracer.logStep(
                         `Not calling child (${child.name}) b/c it is not inversely active`
@@ -109,7 +91,25 @@ const setChildrenDefaults = <
             }
             return newLocationFromAllRouters;
         }, newLocationFromAllRouters);
-    }, existingLocation);
+    }, location);
+
+    return {location: newLocation, ctx};
 };
 
-export default setChildrenDefaults;
+const attemptToShowChildRoutersMain: ActionStep = (options, location, routerInstance, ctx) => {
+    const hasChildren =
+        routerInstance.routers &&
+        Object.values(routerInstance.routers).reduce(
+            (childrenExist, children) => (children.length && children.length > 0) || childrenExist,
+            false
+        );
+    if (ctx.actionName === 'show' && hasChildren) {
+        ctx.tracer && ctx.tracer.logStep(`Calling 'attemptToShowChildRouters'`);
+
+        // add location defaults from children
+        return attemptToShowChildRouters(options, {...location}, routerInstance, ctx);
+    }
+    return {location, ctx};
+};
+
+export default attemptToShowChildRoutersMain;

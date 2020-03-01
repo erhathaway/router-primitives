@@ -1,4 +1,4 @@
-import {RouterActionFn, RouterReducerFn, IRouterTemplate} from '../../types';
+import {RouterActionFn, RouterReducerFn, IRouterTemplate} from '../types';
 
 /**
  * A data router will display data as the routeKey in either the pathname or queryparams

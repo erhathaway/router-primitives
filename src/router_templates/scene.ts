@@ -5,7 +5,7 @@ import {
     IRouterTemplate,
     IInputLocation,
     RouterInstance
-} from '../../types';
+} from '../types';
 
 /**
  * A scene router will hide all its sibling routers when it is being shown

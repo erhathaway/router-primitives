@@ -1,5 +1,5 @@
-import {IRouterTemplates, NarrowRouterTypeName} from '../types';
-import {IRouterCache, CacheState} from '../types/router_cache';
+import {IRouterTemplates, NarrowRouterTypeName} from './types';
+import {IRouterCache, CacheState} from './types/router_cache';
 
 /**
  * A store for a routers previous visibliity state.

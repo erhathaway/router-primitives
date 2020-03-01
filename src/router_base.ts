@@ -1,4 +1,4 @@
-import Cache from './cache';
+import Cache from './router_cache';
 import {
     IRouterDeclaration,
     ISerializeOptions,
@@ -16,11 +16,10 @@ import {
     IInputSearch,
     IInputLocation,
     ValueOf
-} from '../types';
-// import defaultTemplates from '../router/template';
-import {IRouterBase} from '../types/router_base';
-import {IManager} from '../types/manager';
-import {objKeys} from '../utilities';
+} from './types';
+import {IRouterBase} from './types/router_base';
+import {IManager} from './types/manager';
+import {objKeys} from './utilities';
 
 export interface IInternalState {
     isActive?: boolean;

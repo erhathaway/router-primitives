@@ -1,4 +1,4 @@
-import {RouterActionFn, RouterReducerFn, RouterCurrentState, IRouterTemplate} from '../../types';
+import {RouterActionFn, RouterReducerFn, RouterCurrentState, IRouterTemplate} from '../types';
 
 /**
  * A feature router does not interact with its sibling routers. It lives harmony with them

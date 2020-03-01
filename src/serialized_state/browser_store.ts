@@ -1,6 +1,6 @@
 import deserializer from './deserializer';
 import serializer from './serializer';
-import {IOutputLocation, IInputLocation, StateObserver} from '../types/index';
+import {IOutputLocation, IInputLocation, StateObserver} from '../types';
 import {
     ISerializedStateStore,
     SerializedStateSerializer,

@@ -5,7 +5,7 @@ import {
     RouterInstance,
     IInputLocation,
     IRouterTemplates
-} from '../../types';
+} from '../types';
 
 // returns the routeKey names of visible routers based on the ordering of their 'order' state
 const getRouteKeyOrderings = <Router extends RouterInstance<IRouterTemplates, string>>(

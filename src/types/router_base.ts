@@ -1,4 +1,4 @@
-import Cache from '../router/cache';
+import Cache from '../router_cache';
 import {
     IRouterDeclaration,
     ISerializeOptions,

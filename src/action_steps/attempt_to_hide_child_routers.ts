@@ -1,11 +1,10 @@
 import {
     NarrowRouterTypeName,
     AllTemplates,
-    IRouterActionOptions,
-    IInputLocation,
     RouterInstance,
     ILocationActionContext,
-    IRouterTemplates
+    IRouterTemplates,
+    ActionStep
 } from '../types';
 import {objKeys} from '../utilities';
 
@@ -51,15 +50,13 @@ const calculateIfVisibleStateShouldBeCached = <
  * 3. If caching is enabled, store a record that the router was previously visible
  *
  */
-const setCacheAndHide = <
-    CustomTemplates extends IRouterTemplates,
-    Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
->(
-    options: IRouterActionOptions,
-    existingLocation: IInputLocation,
-    router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
-    ctx: ILocationActionContext
-): IInputLocation => {
+const attemptToHideChildRouters: ActionStep = (options, existingLocation, router, ctx) => {
+    if (ctx.actionName !== 'hide') {
+        return {location: existingLocation, ctx};
+    }
+
+    ctx.tracer && ctx.tracer.logStep(`Calling 'attemptToHideChildRouters'`);
+
     // Update ctx object's caching setting for this branch of the router tree
     const newCtx = calculateIfVisibleStateShouldBeCached(router, ctx);
 
@@ -106,7 +103,7 @@ const setCacheAndHide = <
         ctx.tracer.logStep(`Not Caching state`, {shouldCache});
     }
 
-    return {...locationFromChildren};
+    return {location: locationFromChildren, ctx};
 };
 
-export default setCacheAndHide;
+export default attemptToHideChildRouters;

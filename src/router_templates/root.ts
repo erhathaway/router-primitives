@@ -2,7 +2,7 @@
  * The root router has no state and by default is always visible
  *
  */
-import {RouterActionFn, RouterReducerFn, IRouterTemplate} from '../../types';
+import {RouterActionFn, RouterReducerFn, IRouterTemplate} from '../types';
 
 const show: RouterActionFn = (_options, location, _router, _ctx) => {
     return location;
