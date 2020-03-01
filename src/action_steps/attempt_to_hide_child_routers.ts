@@ -97,8 +97,11 @@ const attemptToHideChildRouters: ActionStep = (options, existingLocation, router
         // If the router exists in the current location, its visible
         const visible = !!router.getLocationDataFromLocationObject({...locationFromChildren});
 
-        router.cache.setCache({visible, data: options.data});
-        // router.cache.setWasPreviouslyVisibleToFromLocation(locationFromChildren, router);
+        if (options.dryRun) {
+            ctx.tracer.logStep(`Not setting data in cache because 'dryRun' is enabled`);
+        } else {
+            router.cache.setCache({visible, data: options.data});
+        }
     } else {
         ctx.tracer.logStep(`Not Caching state`, {shouldCache});
     }

@@ -43,6 +43,7 @@ export interface ILocationOptions {
     data?: string;
     disableCaching?: boolean; // the setting will only persist for the router
     replaceLocation?: boolean; // used to replace history location in URL
+    dryRun?: boolean; // will prevent cache from being updated or the new location state from being stored
 }
 
 export type Pathname = string[];

@@ -54,7 +54,12 @@ const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) =
             // if there is a cache state, show the router
             if (child.cache.wasVisible === true) {
                 // the cache has been 'used' so remove it
-                child.cache.removeCache();
+                if (options.dryRun) {
+                    ctx.tracer.logStep(`Not removing cache because 'dryRun' is enabled`);
+                } else {
+                    ctx.tracer.logStep(`Removing cache`);
+                    child.cache.removeCache();
+                }
                 ctx.tracer &&
                     ctx.tracer.logStep(
                         `Calling show action of child (${child.name}) b/c it has a cached previous visibility`
