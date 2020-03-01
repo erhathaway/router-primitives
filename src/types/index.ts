@@ -455,6 +455,7 @@ export interface IRouterTemplateConfig {
     isPathRouter?: boolean;
     shouldInverselyActivate?: boolean;
     disableCaching?: boolean;
+    shouldParentTryToActivateSiblings?: boolean;
 }
 
 // type B<V> = V extends {[infer T]: any} ? T : undefined;
@@ -640,6 +641,7 @@ export interface IRouterConfig {
     shouldInverselyActivate: boolean;
     disableCaching?: boolean; // optional b/c the default is to use the parents
     defaultAction?: string[];
+    shouldParentTryToActivateSiblings?: boolean;
 }
 
 /**

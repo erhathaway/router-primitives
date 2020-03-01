@@ -372,6 +372,8 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
             routerDeclaration.disableCaching !== undefined
                 ? routerDeclaration.disableCaching
                 : templateConfig.disableCaching;
+        const shouldParentTryToActivateSiblings =
+            templateConfig.shouldParentTryToActivateSiblings || true;
 
         return {
             routeKey: routerDeclaration.routeKey || routerDeclaration.name,
@@ -379,7 +381,8 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
                 templateConfig.canBePathRouter && hasParentOrIsRoot && isSetToBePathRouter,
             shouldInverselyActivate: isSetToInverselyActivate,
             disableCaching: isSetToDisableCaching,
-            defaultAction: routerDeclaration.defaultAction || []
+            defaultAction: routerDeclaration.defaultAction || [],
+            shouldParentTryToActivateSiblings
         };
     }
 

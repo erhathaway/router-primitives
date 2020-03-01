@@ -95,10 +95,10 @@ const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
             attemptToRemoveRouterCache,
             attemptToShowChildRouters,
             bindUserOptionsToLocationOptions,
-            saveNewLocation,
             endTracerThing,
             endTracerSession,
-            printTracerSessionResults
+            printTracerSessionResults,
+            saveNewLocation
         ].reduce(actionStepReducer, initialSetup);
 
         // Return location so the function signature of the action is the same

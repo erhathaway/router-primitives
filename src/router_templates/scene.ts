@@ -77,6 +77,11 @@ const reducer: RouterReducerFn = (location, router, _ctx) => {
 const template: IRouterTemplate<{}, 'testAction'> = {
     actions: {show, hide, testAction: show},
     reducer,
-    config: {canBePathRouter: true, isPathRouter: true, shouldInverselyActivate: true}
+    config: {
+        canBePathRouter: true,
+        isPathRouter: true,
+        shouldInverselyActivate: true,
+        shouldParentTryToActivateSiblings: false
+    }
 };
 export default template;

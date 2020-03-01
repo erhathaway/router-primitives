@@ -4,7 +4,10 @@ import {objKeys} from '../utilities';
 const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) => {
     const newLocation = objKeys(router.routers).reduce((newLocationFromAllRouters, routerType) => {
         // skip routers that called the parent router
-        if (routerType === ctx.activatedByChildType) {
+        if (
+            routerType === ctx.activatedByChildType &&
+            !router.config.shouldParentTryToActivateSiblings
+        ) {
             ctx.tracer &&
                 ctx.tracer.logStep(
                     `Not calling children of type ${routerType} b/c they are the same type as activation origin`
