@@ -52,13 +52,13 @@ const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) =
             // }
 
             // if there is a cache state, show the router
-            if (child.cache.wasVisible === true) {
+            if (child.manager.routerCache.wasVisible(child.name) === true) {
                 // the cache has been 'used' so remove it
                 if (options.dryRun) {
                     ctx.tracer.logStep(`Not removing cache because 'dryRun' is enabled`);
                 } else {
                     ctx.tracer.logStep(`Removing cache`);
-                    child.cache.removeCache();
+                    child.manager.routerCache.removeCache(child.name);
                 }
                 ctx.tracer &&
                     ctx.tracer.logStep(
@@ -66,7 +66,7 @@ const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) =
                     );
 
                 return child.show(
-                    {...options, data: child.cache.previousData},
+                    {...options, data: child.manager.routerCache.previousData(child.name)},
                     newLocationForSpecificChild,
                     child,
                     newContext
@@ -74,7 +74,7 @@ const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) =
             }
 
             // if the cached visibility state is 'false' don't show on rehydration
-            else if (child.cache.wasVisible === false) {
+            else if (child.manager.routerCache.wasVisible(child.name) === false) {
                 ctx.tracer &&
                     ctx.tracer.logStep(
                         `Skipping show action of child (${child.name}) b/c it wasn't previously visible`

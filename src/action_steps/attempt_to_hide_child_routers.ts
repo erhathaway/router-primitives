@@ -88,7 +88,7 @@ const attemptToHideChildRouters: ActionStep = (options, existingLocation, router
     // so they don't get reshown when a parent causes a rehydration
     const shouldCache = !ctx.disableCaching && !(options.disableCaching || false);
 
-    if (shouldCache && !router.cache.wasVisible) {
+    if (shouldCache && !router.manager.routerCache.wasVisible(router.name)) {
         ctx.tracer.logStep(`Caching state`, {shouldCache});
         // if (this.wasVisible) {
         //     return;
@@ -100,7 +100,7 @@ const attemptToHideChildRouters: ActionStep = (options, existingLocation, router
         if (options.dryRun) {
             ctx.tracer.logStep(`Not setting data in cache because 'dryRun' is enabled`);
         } else {
-            router.cache.setCache({visible, data: options.data});
+            router.manager.routerCache.setCache(router.name, {visible, data: options.data});
         }
     } else {
         ctx.tracer.logStep(`Not Caching state`, {shouldCache});

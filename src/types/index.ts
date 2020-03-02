@@ -44,6 +44,7 @@ export interface ILocationOptions {
     disableCaching?: boolean; // the setting will only persist for the router
     replaceLocation?: boolean; // used to replace history location in URL
     dryRun?: boolean; // will prevent cache from being updated or the new location state from being stored
+    addCacheToLocation?: boolean; // serializes the current router cache into the location. Useful for rehydrating exact router state.
 }
 
 export type Pathname = string[];
@@ -600,7 +601,7 @@ export interface IRouterInitArgs<
         observer: Observer<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>
     ) => void;
     actions: (keyof Templates[RouterTypeName]['actions'])[]; // the router actions derived from the template. Usually 'show' and 'hide';
-    cache?: CacheClass<Templates, RouterTypeName, IRouterCache<Templates, RouterTypeName>>;
+    // cache?: CacheClass<IRouterCache>;
 }
 // type iRouterInitArgsTest = IRouterInitArgs<DefaultTemplates, 'scene'>;
 // type iRouterInitArgsTestType = iRouterInitArgsTest['type'];
@@ -654,11 +655,7 @@ export interface IRouterConfig {
 /**
  * The class type of a cache store instance
  */
-export interface CacheClass<
-    Templates extends IRouterTemplates,
-    RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
-    RouterCache extends IRouterCache<Templates, RouterTypeName>
-> {
+export interface CacheClass<RouterCache extends IRouterCache> {
     new (): RouterCache;
 }
 
@@ -767,14 +764,7 @@ export interface IManagerInit<CustomTemplates extends IRouterTemplates> {
     >;
     customTemplates?: CustomTemplates;
     // defaultTemplates?: DefaultTemplates;
-    routerCacheClass?: CacheClass<
-        AllTemplates<CustomTemplates>,
-        NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>,
-        IRouterCache<
-            AllTemplates<CustomTemplates>,
-            NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
-        >
-    >;
+    routerCacheClass?: CacheClass<IRouterCache>;
 }
 
 /**

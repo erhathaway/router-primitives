@@ -1,7 +1,7 @@
 import Manager from './manager';
 import RouterStore from './all_router_state';
 import Router, {IInternalState} from './router_base';
-import RouterCache from './router_cache';
+import RouterCache from './all_router_cache';
 
 export * from './types';
 export * from './types/manager';

@@ -1,4 +1,3 @@
-import Cache from '../router_cache';
 import {
     IRouterDeclaration,
     ISerializeOptions,
@@ -41,7 +40,6 @@ export interface IRouterBase<
     getState?: InitArgs['getState'];
     subscribe?: InitArgs['subscribe'];
     config: InitArgs['config'];
-    cache: Cache<Templates, RouterTypeName>;
     _EXPERIMENTAL_internal_state: IRouterBaseInternalState; // eslint-disable-line
 
     lastDefinedParentsDisableChildCacheState: boolean;

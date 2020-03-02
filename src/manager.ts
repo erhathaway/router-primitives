@@ -31,6 +31,8 @@ import DefaultRouterStateStore from './all_router_state';
 import {objKeys} from './utilities';
 // import {DefaultTemplates} from './types/router_templates';
 import createActionExecutor from './action_executor';
+import {IRouterCache} from './types/router_cache';
+import DefaultRouterCache from './all_router_cache';
 
 // const capitalize = (name = ''): string => name.charAt(0).toUpperCase() + name.slice(1);
 
@@ -96,7 +98,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
     >;
 
     public templates: AllTemplates<CustomTemplates>;
-    public routerCacheClass: IManagerInit<CustomTemplates>['routerCacheClass'];
+    public routerCache: IRouterCache;
 
     constructor(
         initArgs: IManagerInit<CustomTemplates> = {},
@@ -134,7 +136,9 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         }
 
         if (routerCacheClass) {
-            this.routerCacheClass = routerCacheClass;
+            this.routerCache = new routerCacheClass();
+        } else {
+            this.routerCache = new DefaultRouterCache();
         }
 
         // router types
@@ -463,8 +467,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
             root: this.rootRouter,
             getState: this.routerStateStore.createRouterStateGetter(name),
             subscribe: this.routerStateStore.createRouterStateSubscriber(name),
-            actions,
-            cache: this.routerCacheClass as any // eslint-disable-line
+            actions
         };
     }
 

@@ -14,3 +14,6 @@ export {default as fetchExistingLocation} from './fetch_existing_location';
 export {default as logTracerStep} from './log_tracer_step';
 export {default as callActionFn} from './call_action_fn';
 export {default as bindUserOptionsToLocationOptions} from './bind_user_options_to_location_options';
+export {default as addRouterCacheToLocation} from './add_router_cache_to_location';
+export {default as startRouterCacheTransaction} from './start_router_cache_transaction';
+export {default as stopRouterCacheTransaction} from './stop_router_cache_transaction';

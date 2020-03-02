@@ -1,5 +1,3 @@
-import {IRouterTemplates, NarrowRouterTypeName} from '../types';
-
 export type CacheState = {
     visible: boolean;
     data?: string;
@@ -12,23 +10,31 @@ export type CacheState = {
  * cache when setting new state instead of a default value.
  * This is how things like rehydration of a routers state when a parent becomes visible occurs.
  */
-export interface IRouterCache<
-    Templates extends IRouterTemplates,
-    RouterTypeName extends NarrowRouterTypeName<keyof Templates>
-> {
-    _cacheStore?: CacheState;
+export interface IRouterCache {
+    cache: Record<string, CacheState>;
+    transactionCache: Record<string, CacheState>;
+    isTransactionRunning: boolean;
 
+    startTransaction: () => void;
+
+    saveTransaction: () => void;
+
+    discardTransaction: () => void;
     /**
      * The last time a parent was visible, was this router also visible?
      */
-    wasVisible: boolean | undefined;
+    wasVisible: (routerName: string) => boolean | undefined;
 
-    previousData: string | undefined;
+    previousData: (routerName: string) => string | undefined;
 
     /**
      * Remove the cached visiblity state.
      */
-    removeCache: () => void;
+    removeCache: (routerName: string) => void;
 
-    setCache: (cache: CacheState) => void;
+    setCache: (routerName: string, cache: CacheState) => void;
+
+    serializedCache: string;
+
+    setCacheFromSerialized: (serializedCache: string) => void;
 }

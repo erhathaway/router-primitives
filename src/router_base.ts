@@ -1,4 +1,3 @@
-import Cache from './router_cache';
 import {
     IRouterDeclaration,
     ISerializeOptions,
@@ -43,7 +42,6 @@ export default class RouterBase<
     public getState?: InitArgs['getState'];
     public subscribe?: InitArgs['subscribe'];
     public config: InitArgs['config'];
-    public cache: Cache<Templates, RouterTypeName>;
     public _EXPERIMENTAL_internal_state: IInternalState; // eslint-disable-line
 
     constructor(init: InitArgs) {
@@ -57,8 +55,7 @@ export default class RouterBase<
             root,
             getState,
             subscribe,
-            actions,
-            cache: CustomCacheClass
+            actions
         } = init;
 
         // required
@@ -79,10 +76,6 @@ export default class RouterBase<
         // methods customized for instance from manager
         this.getState = getState;
         this.subscribe = subscribe;
-
-        // store the routers location data for rehydration
-        const CacheClass = CustomCacheClass || Cache;
-        this.cache = new CacheClass();
 
         this._EXPERIMENTAL_internal_state = {}; // eslint-disable-line
 

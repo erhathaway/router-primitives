@@ -25,7 +25,10 @@ import {
     logTracerStep,
     callActionFn,
     bindActionNameAndActionFnToActionContext,
-    bindUserOptionsToLocationOptions
+    bindUserOptionsToLocationOptions,
+    startRouterCacheTransaction,
+    stopRouterCacheTransaction,
+    addRouterCacheToLocation
 } from './action_steps';
 
 const createActionStepReducer = <
@@ -88,6 +91,7 @@ const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
         // If called direclty by a user
         const {location: finalLocation} = [
             logTracerStep('Called directly'),
+            startRouterCacheTransaction,
             fetchExistingLocation,
             attemptToShowParentRouter,
             attemptToHideChildRouters,
@@ -95,6 +99,8 @@ const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
             attemptToRemoveRouterCache,
             attemptToShowChildRouters,
             bindUserOptionsToLocationOptions,
+            addRouterCacheToLocation,
+            stopRouterCacheTransaction,
             endTracerThing,
             endTracerSession,
             printTracerSessionResults,

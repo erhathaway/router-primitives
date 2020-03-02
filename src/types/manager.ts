@@ -18,6 +18,7 @@ import {
     RouterCurrentStateFromTemplates
 } from '../types';
 import {DefaultTemplates} from './router_templates';
+import {IRouterCache} from './router_cache';
 
 export interface IManager<CustomTemplates extends IRouterTemplates = null> {
     actionFnDecorator?: ActionWraperFnDecorator;
@@ -28,7 +29,7 @@ export interface IManager<CustomTemplates extends IRouterTemplates = null> {
     routerTypes: ManagerRouterTypes<AllTemplates<CustomTemplates>, IManager<CustomTemplates>>;
     templates: AllTemplates<CustomTemplates>;
     routers: Record<string, RouterInstance<AllTemplates<CustomTemplates>>>;
-    routerCacheClass: IManagerInit<CustomTemplates>['routerCacheClass'];
+    routerCache: IRouterCache;
     /**
      * Adds the initial routers defined during initialization
      */
