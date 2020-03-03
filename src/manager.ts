@@ -115,7 +115,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         shouldInitialize && this.initializeManager(initArgs);
     }
 
-    initializeManager({
+    public initializeManager({
         routerTree,
         serializedStateStore,
         routerStateStore,
@@ -306,11 +306,14 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         this.unregisterRouter(name);
     };
 
-    registerRouter(name: string, router: RouterInstance<AllTemplates<CustomTemplates>>): void {
+    public registerRouter(
+        name: string,
+        router: RouterInstance<AllTemplates<CustomTemplates>>
+    ): void {
         this._routers[name] = router;
     }
 
-    unregisterRouter(name: string): void {
+    public unregisterRouter(name: string): void {
         delete this._routers[name];
     }
 
@@ -356,7 +359,9 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         );
     }
 
-    createRouterConfigArgs<Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>(
+    public createRouterConfigArgs<
+        Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+    >(
         routerDeclaration: IRouterDeclaration<AllTemplates<CustomTemplates>>,
         routerType: Name,
         parent: RouterInstance<AllTemplates<CustomTemplates>, Name>
@@ -390,7 +395,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         };
     }
 
-    validateNeighborsOfOtherTypesArentPathRouters<
+    public validateNeighborsOfOtherTypesArentPathRouters<
         Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
     >(router: RouterInstance<AllTemplates<CustomTemplates>, Name>): void {
         const nameOfNeighboorRouterThatIsPathRouter = router
@@ -406,7 +411,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         }
     }
 
-    validateRouterCreationInfo<
+    public validateRouterCreationInfo<
         Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
     >(name: string, type: Name, config: IRouterConfig): void {
         // Check if the router type exists
@@ -437,7 +442,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
      * This method is overridden by libraries like `router-primitives-mobx` as it is a convenient
      * place to redefine the getters and setters `getState` and `subscribe`
      */
-    createNewRouterInitArgs<
+    public createNewRouterInitArgs<
         // Name extends NarrowRouterTypeName<
         //     NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
         // >
@@ -477,7 +482,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
      * Redefined by libraries like `router-primitives-mobx`.
      * Good place to change the base router prototype or decorate methods
      */
-    createRouterFromInitArgs<
+    public createRouterFromInitArgs<
         Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
     >(
         initalArgs: IRouterInitArgs<
@@ -492,6 +497,12 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         return new routerClass({...initalArgs});
     }
 
+    public setCacheFromLocation = (location: IInputLocation): void => {
+        if (location.search['__cache']) {
+            this.routerCache.setCacheFromSerialized(location.search['__cache'] as string);
+        }
+    };
+
     /**
      * Given a location change, set the new router state tree state
      * AKA:new location -> new state
@@ -502,10 +513,13 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
      * Once the state of the entire tree is calculate, it is stored in a central store,
      * the `routerStateStore`
      */
-    setNewRouterState(location: IInputLocation): void {
+    public setNewRouterState(location: IInputLocation): void {
         // TODO fix this any assertion
         // eslint-disable-next-line
-        const newState = this.calcNewRouterState(location, this.rootRouter as any);
+        this.setCacheFromLocation(location);
+        const newState = this.calcNewRouterState(location, this.rootRouter as RouterInstance<
+            AllTemplates<CustomTemplates>
+        >);
         this.routerStateStore.setState(newState);
     }
 
@@ -517,7 +531,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
      * parent and child router connections, use one of the `add` methods on the manager.
      * Those methods use this `createRouter` method in turn.
      */
-    createRouter<Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>>({
+    public createRouter<Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>>({
         name,
         config,
         type,
