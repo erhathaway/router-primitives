@@ -23,7 +23,13 @@ import {
     AllTemplates,
     RouterCurrentStateFromTemplates,
     ExtractCustomStateFromTemplate,
-    RouterReducerFn
+    RouterReducerFn,
+    IRouterActionOptions,
+    Actions,
+    ValueOf,
+    RouterActionFn,
+    DefaultRouterActions,
+    ExtractCustomActionNamesFromTemplate
 } from './types';
 
 import DefaultRouter from './router_base';
@@ -201,6 +207,27 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
     get routers(): Record<string, RouterInstance<AllTemplates<CustomTemplates>>> {
         return this._routers;
     }
+
+    public linkTo = (
+        routerName: string,
+        actionName: string,
+        actionArgs: Omit<IRouterActionOptions, 'dryRun'>
+    ): IInputLocation => {
+        const router = this.routers[routerName];
+        if (!router) {
+            throw new Error(`${routerName} router not found. Could not generate link`);
+        }
+        const locationObj = router[
+            actionName as keyof Actions<
+                ExtractCustomActionNamesFromTemplate<AllTemplates<CustomTemplates>>
+            >
+        ]({
+            ...actionArgs,
+            dryRun: true
+        });
+
+        return locationObj;
+    };
 
     /**
      * Adds the initial routers defined during initialization
