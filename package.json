@@ -15,7 +15,7 @@
         "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
         "prettier:fix": "prettier \"src/**/*\" --write",
         "prettier:check": "prettier \"src/**/*\" --check",
-        "test": "jest --coverage --passWithNoTests",
+        "test": "jest",
         "test:watch": "jest --watch",
         "type-check:watch": "npm run type-check -- --watch",
         "type-check": "tsc --noEmit",

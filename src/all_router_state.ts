@@ -13,7 +13,7 @@ import {objKeys} from './utilities';
 /**
  * The default router state store.
  * This store keeps track of each routers state which is derived from the current location
- * This store can be swaped out in the manager with other stores.
+ * This store can be swapped out in the manager with other stores.
  * For example, a redux store could be used to manage state with redux, or a local storage store could be used to persist state to the client.
  * Stores must implement the methods:
  *   setState
@@ -33,13 +33,6 @@ export default class DefaultRoutersStateStore<CustomState extends {}>
         this.observers = {}; // key is routerName
     }
 
-    /**
-     * Sets the state of the router state store by adding to the history.
-     * Adding state will completly overwrite existing state.
-     * If the new contains routers whose state is identical to old state
-     *   the router callbacks wont be called for this router. Otherwise, if the state
-     *   has changed in any way, callback will be fired off for the router.
-     */
     public setState(desiredRouterStates: Record<string, RouterCurrentState<CustomState>>): void {
         const routerNames = objKeys(desiredRouterStates);
         // Keeps track of which routers have new state.
@@ -96,21 +89,12 @@ export default class DefaultRoutersStateStore<CustomState extends {}>
         });
     }
 
-    /**
-     * Returns a function which has a router name in closure scope.
-     * The returned function is used for getting the router store state for a specific router.
-     */
     public createRouterStateGetter(
         routerName: string
     ): () => IRouterCurrentAndHistoricalState<CustomState> {
         return () => this.store[routerName];
     }
 
-    /**
-     * Returns a function which as the router name in closure scope.
-     * The returned function is used subscribe observers to changes in
-     *   a single routers state.
-     */
     public createRouterStateSubscriber(routerName: string): RouterStateObserver<CustomState> {
         if (!this.observers[routerName]) {
             this.observers[routerName] = [];
@@ -128,12 +112,11 @@ export default class DefaultRoutersStateStore<CustomState extends {}>
         return (fn: Observer<CustomState>) => {
             if (!this.observers[routerName]) {
                 // TODO add to logger
-                // console.warn('No subscribers present to unscribe from store');
+                // console.warn('No subscribers present to unsubscribe from store');
                 return;
             }
             const observers = this.observers[routerName];
             this.observers[routerName] = observers.filter(
-                // TODO validate that this works
                 presentObservers => presentObservers !== fn
             );
         };
@@ -142,15 +125,12 @@ export default class DefaultRoutersStateStore<CustomState extends {}>
     public unsubscribeAllObserversForRouter(routerName: string): void {
         if (!this.observers[routerName]) {
             // TODO add to logger
-            // console.warn('No subscribers present to unscribe from store');
+            // console.warn('No subscribers present to unsubscribe from store');
             return;
         }
         delete this.observers[routerName];
     }
 
-    /**
-     * Returns the stores state for all routers
-     */
     public getState(): RouterStateStoreStore<CustomState> {
         return this.store;
     }

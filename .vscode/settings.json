@@ -9,5 +9,11 @@
     "eslint.trace.server": "messages",
     "eslint.alwaysShowStatus": true,
     "eslint.enable": true,
-    "eslint.validate": ["javascript", "typescript"]
+    "eslint.validate": [
+        "javascript",
+        "typescript"
+    ],
+    "cSpell.words": [
+        "unsubscriber"
+    ]
 }

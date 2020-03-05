@@ -1,4 +1,4 @@
-import RouterStateStore from '../../src/routerState';
+import RouterStateStore from '../../src/all_router_state';
 import {RouterCurrentState} from '../../src/types';
 
 describe('Router State', () => {
@@ -26,7 +26,7 @@ describe('Router State', () => {
             });
         });
 
-        test('Can unsubscribe a single router that doesnt exist without causing an error', () => {
+        test('Can unsubscribe a router that doesnt exist without causing an error', () => {
             const defaultState = {};
             const TEST_ROUTER_A = 'TEST_ROUTER_A';
             const store = new RouterStateStore(defaultState);
@@ -37,11 +37,11 @@ describe('Router State', () => {
             const defaultState = {};
             const TEST_ROUTER_A = 'TEST_ROUTER_A';
             const store = new RouterStateStore(defaultState);
-            const unsubscribeer = store.createRouterStateUnsubscriber(TEST_ROUTER_A);
+            const unsubscriber = store.createRouterStateUnsubscriber(TEST_ROUTER_A);
 
             const testFnA = jest.fn();
 
-            unsubscribeer(testFnA);
+            unsubscriber(testFnA);
         });
 
         test('Can unsubscribe all observers from store for a given router', () => {
@@ -175,7 +175,7 @@ describe('Router State', () => {
             });
         });
 
-        test('Can can create individaul router state subscribers', () => {
+        test('Can can create individual router state subscribers', () => {
             const defaultState = {};
             const store = new RouterStateStore(defaultState);
             const ownerObserver = jest.fn();

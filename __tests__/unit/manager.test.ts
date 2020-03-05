@@ -1,6 +1,6 @@
 import Manager from '../../src/manager';
-import {NativeSerializedStore, BrowserSerializedStore} from '../../src/serializedState';
-import RouterStore from '../../src/routerState';
+import {NativeSerializedStore, BrowserSerializedStore} from '../../src/serialized_state';
+import RouterStore from '../../src/all_router_state';
 import {IRouterDeclaration} from '../../src/types';
 import {DefaultTemplates} from '../../src/types/router_templates';
 
@@ -76,7 +76,7 @@ describe('Router Manager', () => {
         });
 
         describe('Serialized Store defaults', () => {
-            describe('No window object (Non broser env)', () => {
+            describe('No window object (Non browser env)', () => {
                 it('uses nativeStore', () => {
                     const manager = new Manager({routerTree});
 
