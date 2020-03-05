@@ -4,10 +4,11 @@ import {IInputLocation, IOutputLocation, StateObserver} from '../types';
 import {
     ISerializedStateStore,
     SerializedStateSerializer,
-    SerializedStateDeserializer
+    SerializedStateDeserializer,
+    ISerializedStateStoreConfig
 } from '../types/serialized_state';
 
-interface INativeStoreConfig {
+interface INativeStoreConfig extends ISerializedStateStoreConfig {
     serializer: SerializedStateSerializer;
     deserializer: SerializedStateDeserializer;
     historySize: number;
@@ -24,14 +25,18 @@ interface ISetStateOptions {
  * The default serialized state is a string for this store
  */
 export default class NativeStore implements ISerializedStateStore {
+    public serializer: SerializedStateSerializer;
+    public deserializer: SerializedStateDeserializer;
+    public historySize: number;
     public history: string[];
     private observers: StateObserver[];
-    private config: INativeStoreConfig;
     private currentLocationInHistory: number;
 
     constructor(config?: INativeStoreConfig) {
         this.observers = [];
-        this.config = config || {serializer, deserializer, historySize: 10};
+        this.serializer = (config && config.serializer) || serializer;
+        this.deserializer = (config && config.deserializer) || deserializer;
+        this.historySize = (config && config.historySize) || 10;
         this.history = [];
         this.currentLocationInHistory = 0;
     }
@@ -40,10 +45,7 @@ export default class NativeStore implements ISerializedStateStore {
     // options = { updateHistory }
     public setState(unserializedLocation: IInputLocation, options: ISetStateOptions = {}): void {
         const oldUnserializedLocation = this.getState();
-        const {location: newState} = this.config.serializer(
-            unserializedLocation,
-            oldUnserializedLocation
-        );
+        const {location: newState} = this.serializer(unserializedLocation, oldUnserializedLocation);
 
         // console.log('*****', unserializedLocation, newState)
         if (options.updateHistory !== false) {
@@ -65,8 +67,8 @@ export default class NativeStore implements ISerializedStateStore {
             // add current to history
             newHistory.unshift(newState.slice());
             // enforce history size
-            if (newHistory.length > this.config.historySize) {
-                newHistory = newHistory.slice(0, this.config.historySize);
+            if (newHistory.length > this.historySize) {
+                newHistory = newHistory.slice(0, this.historySize);
             }
             // set history
             this.history = newHistory;
@@ -76,7 +78,7 @@ export default class NativeStore implements ISerializedStateStore {
     }
 
     public getState(): IOutputLocation {
-        return this.config.deserializer(this.history[this.currentLocationInHistory]);
+        return this.deserializer(this.history[this.currentLocationInHistory]);
     }
 
     // is a BehaviorSubject

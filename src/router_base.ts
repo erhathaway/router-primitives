@@ -84,7 +84,6 @@ export default class RouterBase<
         // Since actions come from the template and are decorated by the manager, we need to bind them
         // to the router instance where they live
         (actions || []).forEach(actionName => {
-            // eslint-disable-next-line
             if ((this as RouterInstance<Templates, RouterTypeName>)[actionName]) {
                 // eslint-disable-next-line
                 (this as RouterInstance<Templates, RouterTypeName>)[actionName] = (this as any)[
@@ -124,9 +123,7 @@ export default class RouterBase<
         type: DesiredType
     ): Array<RouterInstance<Templates, DesiredType>> {
         if (this.parent && this.parent.routers) {
-            // TODO fix this any
-            // eslint-disable-next-line
-            return this.parent.routers[type] || ([] as any);
+            return this.parent.routers[type] || [];
         }
         return [];
     }

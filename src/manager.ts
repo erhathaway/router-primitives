@@ -17,7 +17,6 @@ import {
     IManagerInit,
     RouterClass,
     IRouterTemplates,
-    // ManagerRouters,
     Constructable,
     RouterInstance,
     AllTemplates,
@@ -25,17 +24,12 @@ import {
     ExtractCustomStateFromTemplate,
     RouterReducerFn,
     IRouterActionOptions,
-    Actions,
-    ValueOf,
-    RouterActionFn,
-    DefaultRouterActions,
-    ExtractCustomActionNamesFromTemplate
+    DefaultRouterActions
 } from './types';
 
 import DefaultRouter from './router_base';
 import DefaultRouterStateStore from './all_router_state';
 import {objKeys} from './utilities';
-// import {DefaultTemplates} from './types/router_templates';
 import createActionExecutor from './action_executor';
 import {IRouterCache} from './types/router_cache';
 import DefaultRouterCache from './all_router_cache';
@@ -94,7 +88,6 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
     public actionFnDecorator?: ActionWraperFnDecorator;
     public tracerSession: TracerSession;
     public _routers: Record<string, RouterInstance<AllTemplates<CustomTemplates>>>;
-    // ManagerRouters<AllTemplates<CustomTemplates>>;
     public rootRouter: Root<AllTemplates<CustomTemplates>>;
     public serializedStateStore: IManagerInit<CustomTemplates>['serializedStateStore'];
     public routerStateStore: IManagerInit<CustomTemplates>['routerStateStore'];
@@ -148,7 +141,6 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         }
 
         // router types
-        // const defaults = defaultTemplates || defaultRouterTemplates;
         this.templates = ({
             ...defaultRouterTemplates,
             ...customTemplates
@@ -174,20 +166,10 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
                     >],
                     BaseRouter,
                     this.actionFnDecorator
-                    // createActionExecutor
-                    // as <Fn extends RouterActionFn>(
-                    //     actionFn: Fn,
-                    //     actionName: keyof AllTemplates<CustomTemplates>[NarrowRouterTypeName<
-                    //         keyof AllTemplates<CustomTemplates>
-                    //     >]['actions']
-                    // ) => Fn
                 );
 
                 // add new Router type to accumulator
-                acc[
-                    templateName // as NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
-                    // eslint-disable-next-line
-                ] = RouterFromTemplate; //as any; // TODO Fix this any
+                acc[templateName] = RouterFromTemplate;
 
                 return acc;
             },
@@ -198,7 +180,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         this.addRouters(routerTree);
 
         // subscribe to URL changes and update the router state when this happens
-        // the subject (BehaviorSubject) will notify the observer of its existing state
+        // the subject will notify the observer of its existing state
         this.serializedStateStore.subscribeToStateChanges(this.setNewRouterState.bind(this));
 
         this.rootRouter.show();
@@ -212,21 +194,23 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         routerName: string,
         actionName: string,
         actionArgs: Omit<IRouterActionOptions, 'dryRun'>
-    ): IInputLocation => {
+    ): string => {
         const router = this.routers[routerName];
         if (!router) {
             throw new Error(`${routerName} router not found. Could not generate link`);
         }
-        const locationObj = router[
-            actionName as keyof Actions<
-                ExtractCustomActionNamesFromTemplate<AllTemplates<CustomTemplates>>
-            >
-        ]({
+        if (!actionName) {
+            throw new Error(
+                `actionName must be supplied. Use either 'show', 'hide' or a name custom to the router`
+            );
+        }
+        // TODO change from default router actions to union of actual actions
+        const locationObj = router[actionName as keyof DefaultRouterActions]({
             ...actionArgs,
             dryRun: true
         });
 
-        return locationObj;
+        return this.serializedStateStore.serializer(locationObj).location;
     };
 
     /**
@@ -470,12 +454,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
      * place to redefine the getters and setters `getState` and `subscribe`
      */
     public createNewRouterInitArgs<
-        // Name extends NarrowRouterTypeName<
-        //     NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
-        // >
         Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
-
-        // M extends Manager
     >({
         name,
         config,
@@ -520,7 +499,6 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
     ): RouterInstance<AllTemplates<CustomTemplates>, NarrowRouterTypeName<Name>> {
         const routerClass = this.routerTypes[initalArgs.type];
         // TODO add tests for passing of action names
-        // const s = initalArgs;
         return new routerClass({...initalArgs});
     }
 
@@ -541,8 +519,6 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
      * the `routerStateStore`
      */
     public setNewRouterState(location: IInputLocation): void {
-        // TODO fix this any assertion
-        // eslint-disable-next-line
         this.setCacheFromLocation(location);
         const newState = this.calcNewRouterState(location, this.rootRouter as RouterInstance<
             AllTemplates<CustomTemplates>

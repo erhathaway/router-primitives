@@ -9,7 +9,7 @@ export type SerializedStateSerializer = (
     options: ILocationOptions;
 };
 
-interface IBrowserStoreConfig {
+export interface ISerializedStateStoreConfig {
     serializer: SerializedStateSerializer;
     deserializer: SerializedStateDeserializer;
 }
@@ -20,7 +20,9 @@ interface IBrowserStoreConfig {
  * The default serialized state is the URL for this store
  */
 export interface ISerializedStateStore {
-    // constructor: (config?: IBrowserStoreConfig) => ISerializedStateStore;
+    serializer: SerializedStateSerializer;
+    deserializer: SerializedStateDeserializer;
+    // constructor: (config?: ISerializedStateStoreConfig) => ISerializedStateStore;
 
     // unserialized state = { pathname: [], search: {}, options: {} }
     // options = { updateHistory }

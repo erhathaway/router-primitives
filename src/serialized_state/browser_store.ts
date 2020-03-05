@@ -4,13 +4,9 @@ import {IOutputLocation, IInputLocation, StateObserver} from '../types';
 import {
     ISerializedStateStore,
     SerializedStateSerializer,
-    SerializedStateDeserializer
+    SerializedStateDeserializer,
+    ISerializedStateStoreConfig
 } from '../types/serialized_state';
-
-interface IBrowserStoreConfig {
-    serializer: SerializedStateSerializer;
-    deserializer: SerializedStateDeserializer;
-}
 
 /**
  * The store that the router manager uses to write and read from the serialized state
@@ -18,14 +14,16 @@ interface IBrowserStoreConfig {
  * The default serialized state is the URL for this store
  */
 export default class BrowserStore implements ISerializedStateStore {
+    public serializer: SerializedStateSerializer;
+    public deserializer: SerializedStateDeserializer;
     private observers: StateObserver[];
-    private config: IBrowserStoreConfig;
     private existingLocation: string;
     private stateWatcher: ReturnType<typeof window.setInterval>;
 
-    constructor(config?: IBrowserStoreConfig) {
+    constructor(config?: ISerializedStateStoreConfig) {
         this.observers = [];
-        this.config = config || {serializer, deserializer};
+        this.serializer = (config && config.serializer) || serializer;
+        this.deserializer = (config && config.deserializer) || deserializer;
 
         // subscribe to location changes
         this.existingLocation = '';
@@ -38,10 +36,7 @@ export default class BrowserStore implements ISerializedStateStore {
     // options = { updateHistory }
     public setState(unserializedLocation: IInputLocation): void {
         const oldUnserializedLocation = this.getState();
-        const {location: newState} = this.config.serializer(
-            unserializedLocation,
-            oldUnserializedLocation
-        );
+        const {location: newState} = this.serializer(unserializedLocation, oldUnserializedLocation);
 
         if (unserializedLocation.options && unserializedLocation.options.replaceLocation === true) {
             window.history.replaceState({url: newState}, '', newState);
@@ -55,7 +50,7 @@ export default class BrowserStore implements ISerializedStateStore {
     public getState(): IOutputLocation {
         const searchString = window.location.search || '';
         const pathnameString = window.location.pathname || '';
-        return this.config.deserializer(pathnameString + searchString);
+        return this.deserializer(pathnameString + searchString);
     }
 
     // is a BehaviorSubject
