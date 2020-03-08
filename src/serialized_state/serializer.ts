@@ -2,19 +2,19 @@ import * as queryString from 'query-string';
 import {IInputLocation} from '../types/index';
 import {SerializedStateSerializer} from '../types/serialized_state';
 
-// const DEFAULT_LOCATION: IInputLocation = {pathname: [], search: {}, options: {}};
+const DEFAULT_LOCATION: IInputLocation = {pathname: [], search: {}, options: {}};
 
 const serializer: SerializedStateSerializer = (
-    newLocation: IInputLocation
-    // oldLocation = DEFAULT_LOCATION
+    newLocation: IInputLocation,
+    oldLocation = DEFAULT_LOCATION
 ) => {
     const newPathname = newLocation.pathname || [];
     const newSearchObj = newLocation.search || {};
 
-    // const oldSearchObj = oldLocation.search || {};
+    const oldSearchObj = oldLocation.search || {};
     // TODO validate if this can be done. We might need to merge the oldSearch in the router that calls an update
-    // const combinedSearchObj = { ...oldSearchObj, ...newSearchObj } as { [key: string]: string };
-    const combinedSearchObj = {...newSearchObj};
+    const combinedSearchObj = {...oldSearchObj, ...newSearchObj} as {[key: string]: string};
+    // const combinedSearchObj = {...newSearchObj};
 
     Object.keys(combinedSearchObj).forEach(
         key => combinedSearchObj[key] == null && delete combinedSearchObj[key]

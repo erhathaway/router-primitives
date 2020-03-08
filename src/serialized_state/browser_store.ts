@@ -32,9 +32,25 @@ export default class BrowserStore implements ISerializedStateStore {
         }, 100);
     }
 
+    public cleanUp = (): void => {
+        global.clearInterval(this.stateWatcher);
+        this.stateWatcher = undefined;
+    };
+
     // unserialized state = { pathname: [], search: {}, options: {} }
     // options = { updateHistory }
     public setState(unserializedLocation: IInputLocation): void {
+        if (
+            !window ||
+            !window.history ||
+            !window.history.replaceState ||
+            !window.history.pushState
+        ) {
+            throw new Error(
+                'Could not find window.history.replaceState or window.history.pushState. Consider using the memory store instead of the browser store.'
+            );
+        }
+
         const oldUnserializedLocation = this.getState();
         const {location: newState} = this.serializer(unserializedLocation, oldUnserializedLocation);
 
@@ -67,14 +83,30 @@ export default class BrowserStore implements ISerializedStateStore {
     }
 
     public back(): void {
+        if (!window || !window.history || !window.history.back) {
+            throw new Error(
+                'Could not find window.history.back. Consider using the memory store instead of the browser store.'
+            );
+        }
         window.history.back();
     }
 
     public forward(): void {
+        if (!window || !window.history || !window.history.forward) {
+            throw new Error(
+                'Could not find window.history.forward. Consider using the memory store instead of the browser store.'
+            );
+        }
         window.history.forward();
     }
 
     public go(historyChange: number): void {
+        if (!window || !window.history || !window.history.go) {
+            throw new Error(
+                'Could not find window.history.go. Consider using the memory store instead of the browser store.'
+            );
+        }
+
         window.history.go(historyChange);
     }
 

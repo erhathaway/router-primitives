@@ -30,6 +30,9 @@ export interface IManager<CustomTemplates extends IRouterTemplates = null> {
     templates: AllTemplates<CustomTemplates>;
     routers: Record<string, RouterInstance<AllTemplates<CustomTemplates>>>;
     routerCache: IRouterCache;
+    actionCount: number;
+
+    incrementActionCount: () => void;
     /**
      * Adds the initial routers defined during initialization
      */

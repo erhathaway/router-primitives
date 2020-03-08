@@ -103,9 +103,11 @@ const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
             stopRouterCacheTransaction,
             endTracerThing,
             endTracerSession,
-            printTracerSessionResults,
+            // printTracerSessionResults,
             saveNewLocation
         ].reduce(actionStepReducer, initialSetup);
+
+        routerInstance.manager.incrementActionCount();
 
         // Return location so the function signature of the action is the same
         return {...finalLocation};

@@ -87,7 +87,9 @@ export default class NativeStore implements ISerializedStateStore {
 
         // send existing state to observer
         const deserializedState = this.getState();
-        fn(deserializedState);
+        if (deserializedState) {
+            fn(deserializedState);
+        }
     }
 
     public unsubscribeFromStateChanges(fn: StateObserver): void {

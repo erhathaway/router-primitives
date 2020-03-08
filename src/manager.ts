@@ -99,6 +99,8 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
     public templates: AllTemplates<CustomTemplates>;
     public routerCache: IRouterCache;
 
+    public actionCount: number;
+
     constructor(
         initArgs: IManagerInit<CustomTemplates> = {},
         {
@@ -112,6 +114,10 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
             this.actionFnDecorator = actionFnDecorator;
         }
         shouldInitialize && this.initializeManager(initArgs);
+    }
+
+    public incrementActionCount(): void {
+        this.actionCount = this.actionCount + 1;
     }
 
     public initializeManager({
@@ -177,17 +183,23 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         );
 
         // add initial routers
+        this._routers = {};
         this.addRouters(routerTree);
 
         // subscribe to URL changes and update the router state when this happens
         // the subject will notify the observer of its existing state
         this.serializedStateStore.subscribeToStateChanges(this.setNewRouterState.bind(this));
 
-        this.rootRouter.show();
+        // if there is a root router show it
+        if (this.rootRouter) {
+            // replace location so the location at startup is a merge of the
+            // existing location and default router actions
+            this.rootRouter.show({replaceLocation: true});
+        }
     }
 
     get routers(): Record<string, RouterInstance<AllTemplates<CustomTemplates>>> {
-        return this._routers;
+        return this._routers || {};
     }
 
     public linkTo = (
@@ -520,9 +532,15 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
      */
     public setNewRouterState(location: IInputLocation): void {
         this.setCacheFromLocation(location);
+
+        // if no routers have been added yet
+        if (!this.rootRouter) {
+            return;
+        }
         const newState = this.calcNewRouterState(location, this.rootRouter as RouterInstance<
             AllTemplates<CustomTemplates>
         >);
+
         this.routerStateStore.setState(newState);
     }
 

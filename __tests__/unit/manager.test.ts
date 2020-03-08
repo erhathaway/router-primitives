@@ -4,6 +4,21 @@ import RouterStore from '../../src/all_router_state';
 import {IRouterDeclaration} from '../../src/types';
 import {DefaultTemplates} from '../../src/types/router_templates';
 
+declare global {
+    // eslint-disable-next-line
+    namespace NodeJS {
+        interface Global {
+            document: Document;
+            window: {
+                setInterval: jest.Mock;
+                history: {pushState: jest.Mock; replaceState: jest.Mock};
+                location: object;
+            };
+            navigator: Navigator;
+        }
+    }
+}
+
 describe('Router Manager', () => {
     test('Requires all router names to be unique', () => {
         const tree = {
@@ -87,10 +102,23 @@ describe('Router Manager', () => {
             describe('With window object (Browser env)', () => {
                 it('uses browserStore', () => {
                     // eslint-disable-next-line
-                    (global as any).window = {setInterval: jest.fn(), history: {}, location: {}};
+                    const setIntervalFn = jest.fn();
+                    global.window = {
+                        setInterval: setIntervalFn,
+                        history: {pushState: jest.fn(), replaceState: jest.fn()},
+                        location: {}
+                    };
                     const manager = new Manager({routerTree});
-
+                    setIntervalFn();
                     expect(manager.serializedStateStore).toBeInstanceOf(BrowserSerializedStore);
+
+                    // console.log(setIntervalFn);
+                    expect(setIntervalFn).toBeCalled();
+
+                    // (
+                    //     manager.serializedStateStore as BrowserSerializedStore
+                    // );
+                    // .cleanUp();
 
                     delete (global as any).window; // eslint-disable-line
                 });
@@ -223,12 +251,18 @@ describe('Router Manager', () => {
                 const secondUserObserverFn = jest.fn();
                 const rootObserverFn = jest.fn();
 
+                manager.routers['user'].subscribe(userObserverFn);
                 const initLocation = {pathname: ['user'], search: {}, options: {}};
                 manager.serializedStateStore.setState(initLocation);
 
-                manager.routers['user'].subscribe(userObserverFn);
                 manager.routers['user'].subscribe(secondUserObserverFn);
                 manager.routers['root'].subscribe(rootObserverFn);
+
+                // expect to have a historical state from not being visible on startup
+                expect(userObserverFn.mock.calls[0][0]).toEqual({
+                    current: {visible: true},
+                    historical: [{visible: false}]
+                });
 
                 const nextLocation = {
                     pathname: ['test'],
@@ -237,15 +271,15 @@ describe('Router Manager', () => {
                 };
                 manager.serializedStateStore.setState(nextLocation);
 
-                expect(userObserverFn.mock.calls[0][0]).toEqual({
+                expect(userObserverFn.mock.calls[1][0]).toEqual({
                     current: {visible: false},
-                    historical: [{visible: true}]
+                    historical: [{visible: true}, {visible: false}]
                 });
-                expect(userObserverFn.mock.calls).toHaveLength(1);
+                expect(userObserverFn.mock.calls).toHaveLength(2);
 
                 expect(secondUserObserverFn.mock.calls[0][0]).toEqual({
                     current: {visible: false},
-                    historical: [{visible: true}]
+                    historical: [{visible: true}, {visible: false}]
                 });
                 expect(secondUserObserverFn.mock.calls).toHaveLength(1);
 
@@ -259,15 +293,24 @@ describe('Router Manager', () => {
 
             it('returns the state for only the router', () => {
                 const initialRoutersState = {
-                    user: {visible: false, order: 1},
-                    root: {visible: true, order: 22}
+                    user: {visible: false},
+                    root: {visible: true, order: 22},
+                    'notification-modal': {visible: false, order: 1}
                 };
 
                 manager.routerStateStore.setState(initialRoutersState);
 
                 expect(manager.routers['user'].getState()).toEqual({
-                    current: {visible: false, order: 1},
+                    current: {visible: false},
                     historical: []
+                });
+
+                // notification modal has a history b/c the new set state has an order
+                // whereas on startup, the order was implicitly undefined b/c no defaultAction
+                // gave it an order
+                expect(manager.routers['notification-modal'].getState()).toEqual({
+                    current: {visible: false, order: 1},
+                    historical: [{visible: false, order: undefined}]
                 });
             });
         });

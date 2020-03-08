@@ -1,4 +1,4 @@
-import {BrowserSerializedStore} from '../../../src/serializedState';
+import {BrowserSerializedStore} from '../../../src/serialized_state';
 
 beforeAll(() => {
     // eslint-disable-next-line
