@@ -1,13 +1,31 @@
 import {BrowserSerializedStore} from '../../../src/serialized_state';
 
-beforeAll(() => {
+declare global {
     // eslint-disable-next-line
-    (global as any).window = {history: {}, location: {}, setInterval: jest.fn()};
+    namespace NodeJS {
+        interface Global {
+            document: Document;
+            window: {
+                setInterval: jest.Mock;
+                history: {pushState: jest.Mock; replaceState: jest.Mock};
+                location: object;
+            };
+            navigator: Navigator;
+        }
+    }
+}
+
+// jest.mock('global', () => ({}));
+beforeAll(() => {
+    global.window = {
+        history: {pushState: jest.fn(), replaceState: jest.fn()},
+        location: {},
+        setInterval: jest.fn()
+    };
 });
 
 afterAll(() => {
-    // eslint-disable-next-line
-    delete (global as any).window;
+    delete global.window;
 });
 
 describe('Browser Serialized State', () => {
@@ -80,12 +98,13 @@ describe('Browser Serialized State', () => {
             window.location.pathname = 'newStateOther';
             store.setState(stateTwo);
 
-            expect(subscriptionOne.mock.calls).toHaveLength(2);
-            expect(subscriptionOne.mock.calls[0][0]).toEqual(stateOne);
-            expect(subscriptionOne.mock.calls[1][0]).toEqual(stateTwo);
+            // called three times: on subscribe, setState 1, setState 2
+            expect(subscriptionOne.mock.calls).toHaveLength(3);
+            expect(subscriptionOne.mock.calls[1][0]).toEqual(stateOne);
+            expect(subscriptionOne.mock.calls[2][0]).toEqual(stateTwo);
 
-            expect(subscriptionTwo.mock.calls).toHaveLength(1);
-            expect(subscriptionTwo.mock.calls[0][0]).toEqual(stateTwo);
+            expect(subscriptionTwo.mock.calls).toHaveLength(2);
+            expect(subscriptionTwo.mock.calls[1][0]).toEqual(stateTwo);
         });
 
         test('Can unsubscribe from store state changes', () => {
@@ -105,18 +124,18 @@ describe('Browser Serialized State', () => {
             const state = {pathname: ['newState'], search: {}, options: {}};
             store.setState(state);
 
-            expect(testFnA.mock.calls).toHaveLength(1);
-            expect(testFnB.mock.calls).toHaveLength(1);
-            expect(testFnC.mock.calls).toHaveLength(1);
+            expect(testFnA.mock.calls).toHaveLength(2);
+            expect(testFnB.mock.calls).toHaveLength(2);
+            expect(testFnC.mock.calls).toHaveLength(2);
 
             store.unsubscribeFromStateChanges(testFnA);
 
             const nextState = {pathname: ['newState'], search: {update: 'yest'}, options: {}};
             store.setState(nextState);
 
-            expect(testFnA.mock.calls).toHaveLength(1);
-            expect(testFnB.mock.calls).toHaveLength(2);
-            expect(testFnC.mock.calls).toHaveLength(2);
+            expect(testFnA.mock.calls).toHaveLength(2);
+            expect(testFnB.mock.calls).toHaveLength(3);
+            expect(testFnC.mock.calls).toHaveLength(3);
         });
 
         // test('Observers are notified if the URL is updated outside the router', () => {

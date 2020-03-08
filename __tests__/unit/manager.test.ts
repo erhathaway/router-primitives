@@ -112,13 +112,10 @@ describe('Router Manager', () => {
                     setIntervalFn();
                     expect(manager.serializedStateStore).toBeInstanceOf(BrowserSerializedStore);
 
-                    // console.log(setIntervalFn);
                     expect(setIntervalFn).toBeCalled();
 
-                    // (
-                    //     manager.serializedStateStore as BrowserSerializedStore
-                    // );
-                    // .cleanUp();
+                    // cleanup setIntervalFn
+                    (manager.serializedStateStore as BrowserSerializedStore).cleanUp();
 
                     delete (global as any).window; // eslint-disable-line
                 });
