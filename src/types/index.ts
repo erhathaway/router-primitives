@@ -592,7 +592,7 @@ export interface IRouterInitArgs<
     manager: M;
     config: IRouterConfig;
     parent?: Parent<Templates>;
-    routers: Childs<Templates>;
+    routers?: Childs<Templates>;
     root: Root<Templates>;
     getState?: () => IRouterCurrentAndHistoricalState<
         ExtractCustomStateFromTemplate<Templates[RouterTypeName]>
@@ -641,9 +641,9 @@ export interface IRouterConfig {
     routeKey: string;
     isPathRouter: boolean;
     shouldInverselyActivate: boolean;
-    disableCaching?: boolean; // optional b/c the default is to use the parents
-    defaultAction?: string[];
-    shouldParentTryToActivateSiblings?: boolean;
+    disableCaching: boolean; // optional b/c the default is to use the parents
+    defaultAction: string[];
+    shouldParentTryToActivateSiblings: boolean;
 }
 
 /**

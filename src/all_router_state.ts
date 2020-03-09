@@ -92,7 +92,7 @@ export default class DefaultRoutersStateStore<CustomState extends {}>
     public createRouterStateGetter(
         routerName: string
     ): () => IRouterCurrentAndHistoricalState<CustomState> {
-        return () => this.store[routerName];
+        return () => this.store[routerName] || {current: undefined, historical: []};
     }
 
     public createRouterStateSubscriber(routerName: string): RouterStateObserver<CustomState> {

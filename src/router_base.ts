@@ -107,7 +107,7 @@ export default class RouterBase<
     }
 
     get routeKey(): string {
-        return this.config.routeKey;
+        return this.config.routeKey || this.name;
     }
 
     get siblings(): RouterInstance<Templates, RouterTypeName>[] {
