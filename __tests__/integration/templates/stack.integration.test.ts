@@ -52,23 +52,23 @@ describe('Integration', () => {
                     );
                 }
                 welcomeModalRouter.show();
-                expect(serializedStateStore.history).toHaveLength(1);
+                expect(serializedStateStore.history).toHaveLength(2);
 
                 cookiesModalRouter.show({replaceLocation: true});
 
-                expect(serializedStateStore.history).toHaveLength(1);
+                expect(serializedStateStore.history).toHaveLength(2);
 
                 cookiesModalRouter.hide({replaceLocation: true});
 
-                expect(serializedStateStore.history).toHaveLength(1);
+                expect(serializedStateStore.history).toHaveLength(2);
 
                 cookiesModalRouter.show();
 
-                expect(serializedStateStore.history).toHaveLength(2);
+                expect(serializedStateStore.history).toHaveLength(3);
 
                 cookiesModalRouter.hide({replaceLocation: false});
 
-                expect(serializedStateStore.history).toHaveLength(3);
+                expect(serializedStateStore.history).toHaveLength(4);
             });
 
             it('Show sets order to 1 if the only stack router', () => {
@@ -80,15 +80,15 @@ describe('Integration', () => {
                 welcomeRouter.show();
 
                 expect(welcomeRouter.isPathRouter).toBe(false);
-                expect(welcomeObserver.mock.calls[0][0]).toEqual({
+                expect(welcomeObserver.mock.calls[1][0]).toEqual({
                     current: {order: '1', visible: true},
-                    historical: []
+                    historical: [{order: undefined, visible: false}]
                 });
 
                 welcomeRouter.show();
 
                 // second action call should do nothing since its identical to the first
-                expect(welcomeObserver.mock.calls[1]).toBe(undefined);
+                expect(welcomeObserver.mock.calls[2]).toBe(undefined);
             });
 
             it('Hide sets order to undefined if the only stack router', () => {
@@ -101,15 +101,15 @@ describe('Integration', () => {
                 welcomeRouter.hide();
 
                 expect(welcomeRouter.isPathRouter).toBe(false);
-                expect(welcomeObserver.mock.calls[1][0]).toEqual({
+                expect(welcomeObserver.mock.calls[2][0]).toEqual({
                     current: {order: undefined, visible: false},
-                    historical: [{order: '1', visible: true}]
+                    historical: [{order: '1', visible: true}, {order: undefined, visible: false}]
                 });
 
                 welcomeRouter.hide();
 
                 // second action call should do nothing since its identical to the first
-                expect(welcomeObserver.mock.calls[2]).toBe(undefined);
+                expect(welcomeObserver.mock.calls[3]).toBe(undefined);
             });
 
             it('"Show" and "Hide" with existing stacks change ordering', () => {
@@ -130,9 +130,9 @@ describe('Integration', () => {
                 welcomeRouter.show();
                 cookiesRouter.show();
 
-                expect(dataObserver.mock.calls[0][0].current).toEqual({order: '1', visible: true});
-                expect(dataObserver.mock.calls[1][0].current).toEqual({order: '2', visible: true});
-                expect(dataObserver.mock.calls[2][0].current).toEqual({order: '3', visible: true});
+                expect(dataObserver.mock.calls[1][0].current).toEqual({order: '1', visible: true});
+                expect(dataObserver.mock.calls[2][0].current).toEqual({order: '2', visible: true});
+                expect(dataObserver.mock.calls[3][0].current).toEqual({order: '3', visible: true});
 
                 expect(welcomeObserver.mock.calls[2][0].current).toEqual({
                     order: '2',
@@ -160,8 +160,8 @@ describe('Integration', () => {
                 });
 
                 // hasn't changed state even though the ordering of the other two routers have
-                expect(dataObserver.mock.calls[3]).toBe(undefined);
-                expect(dataObserver.mock.calls[2][0].current).toEqual({order: '3', visible: true});
+                expect(dataObserver.mock.calls[4]).toBe(undefined);
+                expect(dataObserver.mock.calls[3][0].current).toEqual({order: '3', visible: true});
 
                 welcomeRouter.hide();
 
@@ -173,7 +173,7 @@ describe('Integration', () => {
                     order: '1',
                     visible: true
                 });
-                expect(dataObserver.mock.calls[3][0].current).toEqual({order: '2', visible: true});
+                expect(dataObserver.mock.calls[4][0].current).toEqual({order: '2', visible: true});
             });
 
             it('Movement actions work - forward, backwards, toFront, toBack', () => {
@@ -202,9 +202,9 @@ describe('Integration', () => {
                 welcomeRouter.toFront();
                 cookiesRouter.toFront();
 
-                expect(dataObserver.mock.calls[0][0].current).toEqual({order: '1', visible: true});
-                expect(dataObserver.mock.calls[1][0].current).toEqual({order: '2', visible: true});
-                expect(dataObserver.mock.calls[2][0].current).toEqual({order: '3', visible: true});
+                expect(dataObserver.mock.calls[1][0].current).toEqual({order: '1', visible: true});
+                expect(dataObserver.mock.calls[2][0].current).toEqual({order: '2', visible: true});
+                expect(dataObserver.mock.calls[3][0].current).toEqual({order: '3', visible: true});
 
                 expect(welcomeObserver.mock.calls[2][0].current).toEqual({
                     order: '2',
@@ -217,7 +217,7 @@ describe('Integration', () => {
 
                 dataRouter.toFront();
 
-                expect(dataObserver.mock.calls[3][0].current).toEqual({order: '1', visible: true});
+                expect(dataObserver.mock.calls[4][0].current).toEqual({order: '1', visible: true});
                 expect(welcomeObserver.mock.calls[3][0].current).toEqual({
                     order: '3',
                     visible: true
@@ -229,7 +229,7 @@ describe('Integration', () => {
 
                 dataRouter.toBack();
 
-                expect(dataObserver.mock.calls[4][0].current).toEqual({order: '3', visible: true});
+                expect(dataObserver.mock.calls[5][0].current).toEqual({order: '3', visible: true});
                 expect(welcomeObserver.mock.calls[4][0].current).toEqual({
                     order: '2',
                     visible: true
@@ -241,7 +241,7 @@ describe('Integration', () => {
 
                 welcomeRouter.toBack();
 
-                expect(dataObserver.mock.calls[5][0].current).toEqual({order: '2', visible: true});
+                expect(dataObserver.mock.calls[6][0].current).toEqual({order: '2', visible: true});
                 expect(welcomeObserver.mock.calls[5][0].current).toEqual({
                     order: '3',
                     visible: true
@@ -250,7 +250,7 @@ describe('Integration', () => {
 
                 welcomeRouter.forward();
 
-                expect(dataObserver.mock.calls[6][0].current).toEqual({order: '3', visible: true});
+                expect(dataObserver.mock.calls[7][0].current).toEqual({order: '3', visible: true});
                 expect(welcomeObserver.mock.calls[6][0].current).toEqual({
                     order: '2',
                     visible: true
@@ -259,7 +259,7 @@ describe('Integration', () => {
 
                 welcomeRouter.backward();
 
-                expect(dataObserver.mock.calls[7][0].current).toEqual({order: '2', visible: true});
+                expect(dataObserver.mock.calls[8][0].current).toEqual({order: '2', visible: true});
                 expect(welcomeObserver.mock.calls[7][0].current).toEqual({
                     order: '3',
                     visible: true
@@ -268,7 +268,7 @@ describe('Integration', () => {
 
                 cookiesRouter.backward();
 
-                expect(dataObserver.mock.calls[8][0].current).toEqual({order: '1', visible: true});
+                expect(dataObserver.mock.calls[9][0].current).toEqual({order: '1', visible: true});
                 expect(welcomeObserver.mock.calls[8]).toBe(undefined);
                 expect(cookiesObserver.mock.calls[4][0].current).toEqual({
                     order: '2',

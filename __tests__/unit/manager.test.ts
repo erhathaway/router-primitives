@@ -256,7 +256,7 @@ describe('Router Manager', () => {
                 manager.routers['root'].subscribe(rootObserverFn);
 
                 // expect to have a historical state from not being visible on startup
-                expect(userObserverFn.mock.calls[0][0]).toEqual({
+                expect(userObserverFn.mock.calls[1][0]).toEqual({
                     current: {visible: true},
                     historical: [{visible: false}]
                 });
@@ -268,20 +268,20 @@ describe('Router Manager', () => {
                 };
                 manager.serializedStateStore.setState(nextLocation);
 
-                expect(userObserverFn.mock.calls[1][0]).toEqual({
+                expect(userObserverFn.mock.calls[2][0]).toEqual({
                     current: {visible: false},
                     historical: [{visible: true}, {visible: false}]
                 });
-                expect(userObserverFn.mock.calls).toHaveLength(2);
+                expect(userObserverFn.mock.calls).toHaveLength(3);
 
-                expect(secondUserObserverFn.mock.calls[0][0]).toEqual({
+                expect(secondUserObserverFn.mock.calls[1][0]).toEqual({
                     current: {visible: false},
                     historical: [{visible: true}, {visible: false}]
                 });
-                expect(secondUserObserverFn.mock.calls).toHaveLength(1);
+                expect(secondUserObserverFn.mock.calls).toHaveLength(2);
 
                 // root router shouldn't be called
-                expect(rootObserverFn.mock.calls).toHaveLength(0);
+                expect(rootObserverFn.mock.calls).toHaveLength(1);
             });
         });
 
