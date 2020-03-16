@@ -14,6 +14,7 @@ import {
  * The default serialized state is the URL for this store
  */
 export default class BrowserStore implements ISerializedStateStore {
+    public kind: 'browser' = 'browser';
     public serializer: SerializedStateSerializer;
     public deserializer: SerializedStateDeserializer;
     private observers: StateObserver[];

@@ -17,8 +17,8 @@ const logTracerSteps: ActionStep = (_options, location, routerInstance, ctx) => 
         .sort((a, b) => a.time - b.time)
         .map(s => `${s.routerName}: ${s.name}`);
     console.log('steps: ', sortedCombinedSteps);
-    console.log(routerInstance.manager.tracerSession);
-    console.log('NEW LOCATION', serializer(location));
+    // console.log(routerInstance.manager.tracerSession);
+    // console.log('NEW LOCATION', serializer(location));
     return {location, ctx};
 };
 

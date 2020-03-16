@@ -25,6 +25,7 @@ interface ISetStateOptions {
  * The default serialized state is a string for this store
  */
 export default class NativeStore implements ISerializedStateStore {
+    public kind: 'memory' = 'memory';
     public serializer: SerializedStateSerializer;
     public deserializer: SerializedStateDeserializer;
     public historySize: number;

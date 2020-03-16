@@ -105,6 +105,10 @@ export default class DefaultRoutersStateStore<CustomState extends {}>
             } else {
                 this.observers[routerName] = [fn];
             }
+            const currentState = this.store[routerName];
+            if (currentState) {
+                fn(currentState);
+            }
         };
     }
 

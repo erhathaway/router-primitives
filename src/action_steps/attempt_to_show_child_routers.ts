@@ -97,7 +97,7 @@ const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) =
                     newContext
                 );
             }
-            return newLocationFromAllRouters;
+            return newLocationForSpecificChild;
         }, newLocationFromAllRouters);
     }, location);
 

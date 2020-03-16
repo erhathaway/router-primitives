@@ -15,7 +15,9 @@ import {
     NativeSerializedStore,
     BrowserSerializedStore,
     serializer,
-    deserializer
+    deserializer,
+    isMemorySerializedStateStore,
+    isBrowserSerializedStateStore
 } from './serialized_state';
 
 export {
@@ -27,5 +29,7 @@ export {
     BrowserSerializedStore,
     serializer,
     deserializer,
-    IInternalState
+    IInternalState,
+    isMemorySerializedStateStore,
+    isBrowserSerializedStateStore
 };

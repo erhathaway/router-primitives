@@ -20,6 +20,7 @@ export interface ISerializedStateStoreConfig {
  * The default serialized state is the URL for this store
  */
 export interface ISerializedStateStore {
+    kind: string; // the pkg ships with 'browser' and 'memory' stores
     serializer: SerializedStateSerializer;
     deserializer: SerializedStateDeserializer;
     // constructor: (config?: ISerializedStateStoreConfig) => ISerializedStateStore;
