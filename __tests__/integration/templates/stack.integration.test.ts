@@ -1,4 +1,10 @@
-import Manager from '../../../src/manager';
+import {
+    Manager,
+    isMemorySerializedStateStore,
+    NativeSerializedStore,
+    ISerializedStateStore,
+    isStackRouter
+} from '../../../src';
 
 describe('Integration', () => {
     const routerTree = {
@@ -37,24 +43,32 @@ describe('Integration', () => {
                 const welcomeModalRouter = manager.routers['welcome-modal'];
                 const cookiesModalRouter = manager.routers['cookies-modal'];
 
+                const serializedStateStore = manager.serializedStateStore as NativeSerializedStore;
+
+                if (!isMemorySerializedStateStore(serializedStateStore)) {
+                    console.log('serialized state store', serializedStateStore);
+                    throw Error(
+                        `Wrong store type: ${(serializedStateStore as ISerializedStateStore).kind}`
+                    );
+                }
                 welcomeModalRouter.show();
-                expect(manager.serializedStateStore.history).toHaveLength(1);
+                expect(serializedStateStore.history).toHaveLength(1);
 
                 cookiesModalRouter.show({replaceLocation: true});
 
-                expect(manager.serializedStateStore.history).toHaveLength(1);
+                expect(serializedStateStore.history).toHaveLength(1);
 
                 cookiesModalRouter.hide({replaceLocation: true});
 
-                expect(manager.serializedStateStore.history).toHaveLength(1);
+                expect(serializedStateStore.history).toHaveLength(1);
 
                 cookiesModalRouter.show();
 
-                expect(manager.serializedStateStore.history).toHaveLength(2);
+                expect(serializedStateStore.history).toHaveLength(2);
 
                 cookiesModalRouter.hide({replaceLocation: false});
 
-                expect(manager.serializedStateStore.history).toHaveLength(3);
+                expect(serializedStateStore.history).toHaveLength(3);
             });
 
             it('Show sets order to 1 if the only stack router', () => {
@@ -73,7 +87,7 @@ describe('Integration', () => {
 
                 welcomeRouter.show();
 
-                // second action call should do nothing since its idential to the first
+                // second action call should do nothing since its identical to the first
                 expect(welcomeObserver.mock.calls[1]).toBe(undefined);
             });
 
@@ -94,7 +108,7 @@ describe('Integration', () => {
 
                 welcomeRouter.hide();
 
-                // second action call should do nothing since its idential to the first
+                // second action call should do nothing since its identical to the first
                 expect(welcomeObserver.mock.calls[2]).toBe(undefined);
             });
 
@@ -131,7 +145,7 @@ describe('Integration', () => {
 
                 cookiesRouter.show();
 
-                // second action call should do nothing since its idential to the first
+                // second action call should do nothing since its identical to the first
                 expect(cookiesObserver.mock.calls[2]).toBe(undefined);
 
                 welcomeRouter.show();
@@ -176,9 +190,17 @@ describe('Integration', () => {
                 cookiesRouter.subscribe(cookiesObserver);
                 dataRouter.subscribe(dataObserver);
 
+                if (
+                    !isStackRouter(welcomeRouter) ||
+                    !isStackRouter(cookiesRouter) ||
+                    !isStackRouter(dataRouter)
+                ) {
+                    throw new Error('router is not stack router');
+                }
+
                 dataRouter.show();
-                (welcomeRouter as any).toFront();
-                (cookiesRouter as any).toFront();
+                welcomeRouter.toFront();
+                cookiesRouter.toFront();
 
                 expect(dataObserver.mock.calls[0][0].current).toEqual({order: '1', visible: true});
                 expect(dataObserver.mock.calls[1][0].current).toEqual({order: '2', visible: true});
@@ -193,7 +215,7 @@ describe('Integration', () => {
                     visible: true
                 });
 
-                (dataRouter as any).toFront();
+                dataRouter.toFront();
 
                 expect(dataObserver.mock.calls[3][0].current).toEqual({order: '1', visible: true});
                 expect(welcomeObserver.mock.calls[3][0].current).toEqual({
@@ -205,7 +227,7 @@ describe('Integration', () => {
                     visible: true
                 });
 
-                (dataRouter as any).toBack();
+                dataRouter.toBack();
 
                 expect(dataObserver.mock.calls[4][0].current).toEqual({order: '3', visible: true});
                 expect(welcomeObserver.mock.calls[4][0].current).toEqual({
@@ -217,7 +239,7 @@ describe('Integration', () => {
                     visible: true
                 });
 
-                (welcomeRouter as any).toBack();
+                welcomeRouter.toBack();
 
                 expect(dataObserver.mock.calls[5][0].current).toEqual({order: '2', visible: true});
                 expect(welcomeObserver.mock.calls[5][0].current).toEqual({
@@ -226,7 +248,7 @@ describe('Integration', () => {
                 });
                 expect(cookiesObserver.mock.calls[4]).toBe(undefined);
 
-                (welcomeRouter as any).forward();
+                welcomeRouter.forward();
 
                 expect(dataObserver.mock.calls[6][0].current).toEqual({order: '3', visible: true});
                 expect(welcomeObserver.mock.calls[6][0].current).toEqual({
@@ -235,7 +257,7 @@ describe('Integration', () => {
                 });
                 expect(cookiesObserver.mock.calls[4]).toBe(undefined);
 
-                (welcomeRouter as any).backward();
+                welcomeRouter.backward();
 
                 expect(dataObserver.mock.calls[7][0].current).toEqual({order: '2', visible: true});
                 expect(welcomeObserver.mock.calls[7][0].current).toEqual({
@@ -244,7 +266,7 @@ describe('Integration', () => {
                 });
                 expect(cookiesObserver.mock.calls[4]).toBe(undefined);
 
-                (cookiesRouter as any).backward();
+                cookiesRouter.backward();
 
                 expect(dataObserver.mock.calls[8][0].current).toEqual({order: '1', visible: true});
                 expect(welcomeObserver.mock.calls[8]).toBe(undefined);

@@ -11,6 +11,8 @@ export * from './types/router_state';
 export * from './types/router_templates';
 export * from './types/serialized_state';
 
+export * from './router_type_guards';
+
 import {
     NativeSerializedStore,
     BrowserSerializedStore,
