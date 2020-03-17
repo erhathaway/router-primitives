@@ -47,7 +47,8 @@ const createRouterFromTemplate = <
     templateName: RouterTypeName,
     template: AllTemplates<CustomTemplates>[RouterTypeName],
     BaseRouter: RC,
-    actionFnDecorator?: ActionWraperFnDecorator
+    actionFnDecorator?: ActionWraperFnDecorator,
+    actionExecutorOptions?: {printerTracerResults?: boolean}
 ): RouterClass<AllTemplates<CustomTemplates>, RouterTypeName, IManager<CustomTemplates>> => {
     // TODO figure out why actions are 'default router actions' type
     const {actions, reducer} = template;
@@ -65,7 +66,8 @@ const createRouterFromTemplate = <
                     [actionName]: createActionExecutor(
                         actions[actionName],
                         actionName as string,
-                        actionFnDecorator
+                        actionFnDecorator,
+                        actionExecutorOptions
                     )
                 });
             });
@@ -85,6 +87,7 @@ const createRouterFromTemplate = <
 
 // implements IManager<CustomTemplates>
 export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
+    public printTracerResults: boolean;
     public actionFnDecorator?: ActionWraperFnDecorator;
     public tracerSession: TracerSession;
     public _routers: Record<string, RouterInstance<AllTemplates<CustomTemplates>>>;
@@ -113,6 +116,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         if (actionFnDecorator) {
             this.actionFnDecorator = actionFnDecorator;
         }
+        this.printTracerResults = (initArgs && initArgs.printTraceResults) || false;
         shouldInitialize && this.initializeManager(initArgs);
     }
 
@@ -171,7 +175,8 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
                         keyof AllTemplates<CustomTemplates>
                     >],
                     BaseRouter,
-                    this.actionFnDecorator
+                    this.actionFnDecorator,
+                    {printerTracerResults: this.printTracerResults}
                 );
 
                 // add new Router type to accumulator

@@ -54,7 +54,8 @@ const createActionStepReducer = <
 const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
     actionFn: RouterActionFn,
     actionName: string,
-    actionFnDecorator?: ActionWraperFnDecorator
+    actionFnDecorator?: ActionWraperFnDecorator,
+    actionExecutorOptions?: {printerTracerResults?: boolean}
 ): RouterActionFn => {
     function actionWrapper<
         Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
@@ -88,6 +89,10 @@ const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
             return {...updatedLocation};
         }
 
+        const printerTracerResults =
+            actionExecutorOptions && actionExecutorOptions.printerTracerResults === true
+                ? [printTracerSessionResults]
+                : [];
         // If called direclty by a user
         const {location: finalLocation} = [
             logTracerStep('Called directly'),
@@ -103,7 +108,7 @@ const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
             stopRouterCacheTransaction,
             endTracerThing,
             endTracerSession,
-            // printTracerSessionResults,
+            ...printerTracerResults,
             saveNewLocation
         ].reduce(actionStepReducer, initialSetup);
 
