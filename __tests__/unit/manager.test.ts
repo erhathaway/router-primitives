@@ -191,7 +191,9 @@ describe('Router Manager', () => {
 
                 expect(testFnA.mock.calls).toHaveLength(1);
                 expect(testFnB.mock.calls).toHaveLength(1);
-                expect(testFnC.mock.calls).toHaveLength(1);
+                // has length of 2 b/c it was around during router tree init
+                // so it has a starting state
+                expect(testFnC.mock.calls).toHaveLength(2);
 
                 manager.removeRouter('admin');
 
@@ -204,7 +206,7 @@ describe('Router Manager', () => {
 
                 expect(testFnA.mock.calls).toHaveLength(1);
                 expect(testFnB.mock.calls).toHaveLength(1);
-                expect(testFnC.mock.calls).toHaveLength(2);
+                expect(testFnC.mock.calls).toHaveLength(3);
             });
         });
 
