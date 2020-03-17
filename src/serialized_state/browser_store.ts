@@ -112,6 +112,9 @@ export default class BrowserStore implements ISerializedStateStore {
     }
 
     private _monitorLocation(): void {
+        if (!window) {
+            throw new Error('window object not found. Wrong environment');
+        }
         const newLocation = window.location.href;
         if (this.existingLocation !== newLocation) {
             this.existingLocation = newLocation;

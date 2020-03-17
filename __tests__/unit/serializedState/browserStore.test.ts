@@ -46,6 +46,7 @@ describe('Browser Serialized State', () => {
             expect(window.history.pushState).not.toBeCalled();
             store.setState(location);
             expect(window.history.pushState).toBeCalled();
+            store.cleanUp();
         });
 
         test('Setting state can preserve history by replacing current state', () => {
@@ -64,6 +65,7 @@ describe('Browser Serialized State', () => {
             expect(window.history.replaceState).not.toBeCalled();
             store.setState(location);
             expect(window.history.replaceState).toBeCalled();
+            store.cleanUp();
         });
 
         test('Can observe store state changes', () => {
@@ -105,6 +107,7 @@ describe('Browser Serialized State', () => {
 
             expect(subscriptionTwo.mock.calls).toHaveLength(2);
             expect(subscriptionTwo.mock.calls[1][0]).toEqual(stateTwo);
+            store.cleanUp();
         });
 
         test('Can unsubscribe from store state changes', () => {
@@ -136,6 +139,7 @@ describe('Browser Serialized State', () => {
             expect(testFnA.mock.calls).toHaveLength(2);
             expect(testFnB.mock.calls).toHaveLength(3);
             expect(testFnC.mock.calls).toHaveLength(3);
+            store.cleanUp();
         });
 
         // test('Observers are notified if the URL is updated outside the router', () => {
@@ -178,6 +182,9 @@ describe('Browser Serialized State', () => {
         // window.history.pushState = jest.fn();
         // window.history.replaceState = jest.fn();
         const store = new BrowserSerializedStore();
+        afterAll(() => {
+            store.cleanUp();
+        });
 
         it('Can move forward', () => {
             window.history.forward = jest.fn();
