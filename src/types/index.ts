@@ -88,7 +88,7 @@ export type IRouterActionOptions = ILocationOptions;
 
 export type ActionStep = <
     CustomTemplates extends IRouterTemplates,
-    Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
+    Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
 >(
     _options: IRouterActionOptions,
     existingLocation: IInputLocation,
@@ -118,9 +118,9 @@ export interface DefaultRouterActions {
  * A utility function to intersect unioned actions together
  */
 // eslint-disable-next-line
-export type IntersectUnionedActions<T> = (T extends any ? ((x: T) => 0) : never) extends ((
-    x: infer R
-) => 0)
+export type IntersectUnionedActions<T> = (T extends any
+  ? (x: T) => 0
+  : never) extends (x: infer R) => 0
     ? R
     : DefaultRouterActions;
 

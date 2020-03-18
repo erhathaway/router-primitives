@@ -5,9 +5,7 @@ export {default as endTracerSession} from './end_tracer_session';
 export {default as printTracerSessionResults} from './print_tracer_session_results';
 export {default as bindTracerSessionToActionContext} from './bind_tracer_session_to_action_context';
 export {default as attemptToRemoveRouterCache} from './attempt_to_remove_router_cache';
-export {
-    default as bindActionNameAndActionFnToActionContext
-} from './bind_action_name_and_action_fn_to_action_context';
+export {default as bindActionNameAndActionFnToActionContext} from './bind_action_name_and_action_fn_to_action_context';
 export {default as endTracerThing} from './end_tracer_thing';
 export {default as saveNewLocation} from './save_new_location';
 export {default as fetchExistingLocation} from './fetch_existing_location';

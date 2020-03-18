@@ -218,14 +218,11 @@ export default class RouterBase<
 
         // recursively serialize child routers
         const childRouterTypes = Object.keys(this.routers);
-        const childRouters = childRouterTypes.reduce(
-            (acc, type) => {
-                // eslint-disable-next-line
-                acc[type] = this.routers[type].map(childRouter => childRouter.serialize(options));
-                return acc;
-            },
-            {} as {[routerType: string]: IRouterDeclaration<Templates>[]}
-        );
+        const childRouters = childRouterTypes.reduce((acc, type) => {
+            // eslint-disable-next-line
+            acc[type] = this.routers[type].map(childRouter => childRouter.serialize(options));
+            return acc;
+        }, {} as {[routerType: string]: IRouterDeclaration<Templates>[]});
 
         if (childRouterTypes.length > 0) {
             serialized.routers = childRouters;

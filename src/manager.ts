@@ -162,30 +162,27 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         // validation should make sure action names dont collide with any Router method names
 
         const BaseRouter = router || DefaultRouter;
-        this.routerTypes = objKeys(this.templates).reduce(
-            (acc, templateName) => {
-                // fetch template
-                const selectedTemplate = this.templates[templateName];
-                // get function used to wrape actions
-                // const createActionExecutor = this.createActionExecutor;
-                // create router class from the template
-                const RouterFromTemplate = createRouterFromTemplate(
-                    templateName as NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>,
-                    selectedTemplate as AllTemplates<CustomTemplates>[NarrowRouterTypeName<
-                        keyof AllTemplates<CustomTemplates>
-                    >],
-                    BaseRouter,
-                    this.actionFnDecorator,
-                    {printerTracerResults: this.printTracerResults}
-                );
+        this.routerTypes = objKeys(this.templates).reduce((acc, templateName) => {
+            // fetch template
+            const selectedTemplate = this.templates[templateName];
+            // get function used to wrape actions
+            // const createActionExecutor = this.createActionExecutor;
+            // create router class from the template
+            const RouterFromTemplate = createRouterFromTemplate(
+                templateName as NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>,
+                selectedTemplate as AllTemplates<CustomTemplates>[NarrowRouterTypeName<
+                    keyof AllTemplates<CustomTemplates>
+                >],
+                BaseRouter,
+                this.actionFnDecorator,
+                {printerTracerResults: this.printTracerResults}
+            );
 
-                // add new Router type to accumulator
-                acc[templateName] = RouterFromTemplate;
+            // add new Router type to accumulator
+            acc[templateName] = RouterFromTemplate;
 
-                return acc;
-            },
-            {} as ManagerRouterTypes<AllTemplates<CustomTemplates>, IManager<CustomTemplates>>
-        );
+            return acc;
+        }, {} as ManagerRouterTypes<AllTemplates<CustomTemplates>, IManager<CustomTemplates>>);
 
         // add initial routers
         this._routers = {};
@@ -235,7 +232,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
      */
     public addRouters = (
         router: IRouterDeclaration<AllTemplates<CustomTemplates>> = null,
-        type: NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)> = null,
+        type: NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>> = null,
         parentName: string = null
     ): void => {
         // If no router specified, there are no routers to add
@@ -349,7 +346,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
      * Called on every location change
      */
     public calcNewRouterState<
-        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
+        Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
     >(
         location: IInputLocation,
         router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
@@ -440,7 +437,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
     }
 
     public validateRouterCreationInfo<
-        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
+        Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
     >(name: string, type: Name, config: IRouterConfig): void {
         // Check if the router type exists
         if (!this.routerTypes[type] && type !== 'root') {
@@ -471,7 +468,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
      * place to redefine the getters and setters `getState` and `subscribe`
      */
     public createNewRouterInitArgs<
-        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
+        Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
     >({
         name,
         config,
@@ -506,7 +503,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
      * Good place to change the base router prototype or decorate methods
      */
     public createRouterFromInitArgs<
-        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
+        Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
     >(
         initalArgs: IRouterInitArgs<
             AllTemplates<CustomTemplates>,
@@ -542,9 +539,10 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         if (!this.rootRouter) {
             return;
         }
-        const newState = this.calcNewRouterState(location, this.rootRouter as RouterInstance<
-            AllTemplates<CustomTemplates>
-        >);
+        const newState = this.calcNewRouterState(
+            location,
+            this.rootRouter as RouterInstance<AllTemplates<CustomTemplates>>
+        );
 
         this.routerStateStore.setState(newState);
     }
@@ -557,7 +555,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
      * parent and child router connections, use one of the `add` methods on the manager.
      * Those methods use this `createRouter` method in turn.
      */
-    public createRouter<Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>>({
+    public createRouter<Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>({
         name,
         config,
         type,

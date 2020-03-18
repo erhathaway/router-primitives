@@ -38,7 +38,7 @@ export interface IManager<CustomTemplates extends IRouterTemplates = null> {
      */
     addRouters: (
         router: IRouterDeclaration<AllTemplates<CustomTemplates>>,
-        type: NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>,
+        type: NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>,
         parentName: string
     ) => void;
 
@@ -60,7 +60,7 @@ export interface IManager<CustomTemplates extends IRouterTemplates = null> {
 
     unregisterRouter: (name: string) => void;
 
-    calcNewRouterState: <Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>>(
+    calcNewRouterState: <Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>(
         location: IInputLocation,
         router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
         ctx: Omit<ILocationActionContext, 'actionName'>,
@@ -83,7 +83,7 @@ export interface IManager<CustomTemplates extends IRouterTemplates = null> {
     ) => void;
 
     validateRouterCreationInfo: <
-        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
+        Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
     >(
         name: string,
         type: Name,
@@ -98,7 +98,7 @@ export interface IManager<CustomTemplates extends IRouterTemplates = null> {
      * place to redefine the getters and setters `getState` and `subscribe`
      */
     createNewRouterInitArgs: <
-        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
+        Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
         // M extends Manager
     >({
         name,
@@ -117,7 +117,7 @@ export interface IManager<CustomTemplates extends IRouterTemplates = null> {
      * Good place to change the base router prototype or decorate methods
      */
     createRouterFromInitArgs: <
-        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
+        Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
     >(
         initalArgs: IRouterInitArgs<AllTemplates<CustomTemplates>, Name, IManager<CustomTemplates>>
     ) => RouterInstance<AllTemplates<CustomTemplates>, NarrowRouterTypeName<Name>>;
@@ -142,7 +142,7 @@ export interface IManager<CustomTemplates extends IRouterTemplates = null> {
      * parent and child router connections, use one of the `add` methods on the manager.
      * Those methods use this `createRouter` method in turn.
      */
-    createRouter: <Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>>({
+    createRouter: <Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>({
         name,
         config,
         type,

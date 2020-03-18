@@ -10,7 +10,7 @@ import {objKeys} from '../utilities';
 
 const calculateIfVisibleStateShouldBeCached = <
     CustomTemplates extends IRouterTemplates,
-    Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
+    Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
 >(
     router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
     ctx: ILocationActionContext

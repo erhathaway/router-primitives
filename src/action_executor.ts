@@ -33,7 +33,7 @@ import {
 
 const createActionStepReducer = <
     CustomTemplates extends IRouterTemplates,
-    Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
+    Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
 >(
     options: IRouterActionOptions,
     routerInstance: RouterInstance<AllTemplates<CustomTemplates>, Name>
@@ -57,9 +57,7 @@ const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
     actionFnDecorator?: ActionWraperFnDecorator,
     actionExecutorOptions?: {printerTracerResults?: boolean}
 ): RouterActionFn => {
-    function actionWrapper<
-        Name extends NarrowRouterTypeName<keyof (AllTemplates<CustomTemplates>)>
-    >(
+    function actionWrapper<Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>(
         options: IRouterActionOptions = {},
         existingLocation?: IOutputLocation,
         routerInstance: RouterInstance<AllTemplates<CustomTemplates>, Name> = this,

@@ -13,19 +13,16 @@ const getRouteKeyOrderings = <Router extends RouterInstance<IRouterTemplates, st
     location: IInputLocation
 ): string[] => {
     // creates an object of { [visible router routeKey]: order }
-    const routeKeyOrderObj = router.parent.routers[router.type].reduce(
-        (acc, r) => {
-            // check to make sure the stack is in the location and a bulk action affecting multiple siblings
-            // hasn't already removed it
-            if (r.state.visible === false || location.search[r.routeKey] === undefined) {
-                return acc;
-            }
-            // TODO use generics to handle state type
-            acc[r.routeKey] = (r.state as {order: number}).order;
+    const routeKeyOrderObj = router.parent.routers[router.type].reduce((acc, r) => {
+        // check to make sure the stack is in the location and a bulk action affecting multiple siblings
+        // hasn't already removed it
+        if (r.state.visible === false || location.search[r.routeKey] === undefined) {
             return acc;
-        },
-        {} as {[key: string]: number}
-    );
+        }
+        // TODO use generics to handle state type
+        acc[r.routeKey] = (r.state as {order: number}).order;
+        return acc;
+    }, {} as {[key: string]: number});
 
     /**
      * { <routeKeyName>: <order> }
@@ -34,16 +31,13 @@ const getRouteKeyOrderings = <Router extends RouterInstance<IRouterTemplates, st
     // reduce the order object to the array of sorted keys
     const routerRouteKeys = Object.keys(routeKeyOrderObj);
 
-    const orderAsKey = routerRouteKeys.reduce(
-        (acc, key) => {
-            const value = routeKeyOrderObj[key];
-            if (value != null && !Number.isNaN(value)) {
-                acc[routeKeyOrderObj[key]] = key;
-            }
-            return acc;
-        },
-        {} as {[key: string]: string}
-    );
+    const orderAsKey = routerRouteKeys.reduce((acc, key) => {
+        const value = routeKeyOrderObj[key];
+        if (value != null && !Number.isNaN(value)) {
+            acc[routeKeyOrderObj[key]] = key;
+        }
+        return acc;
+    }, {} as {[key: string]: string});
 
     const orders = Object.values(routeKeyOrderObj);
     const filteredOrders = orders.filter(n => n != null && !Number.isNaN(n));
@@ -69,13 +63,10 @@ const show: RouterActionFn = (_options, location, router, _ctx) => {
     sortedKeys.unshift(router.routeKey);
 
     // create search object
-    const search = sortedKeys.reduce(
-        (acc, key, i) => {
-            acc[key] = i + 1;
-            return acc;
-        },
-        {} as {[key: string]: number}
-    );
+    const search = sortedKeys.reduce((acc, key, i) => {
+        acc[key] = i + 1;
+        return acc;
+    }, {} as {[key: string]: number});
 
     location.search = {...location.search, ...search};
 
@@ -97,13 +88,10 @@ const hide: RouterActionFn = (_options, location, router, _ctx) => {
     }
 
     // create router type data obj
-    const search = sortedKeys.reduce(
-        (acc, key, i) => {
-            acc[key] = i + 1;
-            return acc;
-        },
-        {} as {[key: string]: number}
-    );
+    const search = sortedKeys.reduce((acc, key, i) => {
+        acc[key] = i + 1;
+        return acc;
+    }, {} as {[key: string]: number});
 
     // remove this routeKey from the router type search
     const newLocation = {...location};
@@ -133,13 +121,10 @@ const forward: RouterActionFn = (_options, location, router, _ctx) => {
     sortedKeys.splice(newIndex, 0, router.routeKey);
 
     // create router type data obj
-    const search = sortedKeys.reduce(
-        (acc, key, i) => {
-            acc[key] = i + 1;
-            return acc;
-        },
-        {} as {[key: string]: number}
-    );
+    const search = sortedKeys.reduce((acc, key, i) => {
+        acc[key] = i + 1;
+        return acc;
+    }, {} as {[key: string]: number});
 
     location.search = {...location.search, ...search};
 
@@ -165,13 +150,10 @@ const backward: RouterActionFn = (_options, location, router, _ctx) => {
     sortedKeys.splice(newIndex, 0, router.routeKey);
 
     // create router type data obj
-    const search = sortedKeys.reduce(
-        (acc, key, i) => {
-            acc[key] = i + 1;
-            return acc;
-        },
-        {} as {[key: string]: number}
-    );
+    const search = sortedKeys.reduce((acc, key, i) => {
+        acc[key] = i + 1;
+        return acc;
+    }, {} as {[key: string]: number});
 
     location.search = {...location.search, ...search};
 
@@ -200,13 +182,10 @@ const toBack: RouterActionFn = (_options, location, router, _ctx) => {
     sortedKeys.push(router.routeKey);
 
     // create router type data obj
-    const search = sortedKeys.reduce(
-        (acc, key, i) => {
-            acc[key] = i + 1;
-            return acc;
-        },
-        {} as {[key: string]: number}
-    );
+    const search = sortedKeys.reduce((acc, key, i) => {
+        acc[key] = i + 1;
+        return acc;
+    }, {} as {[key: string]: number});
 
     location.search = {...location.search, ...search};
 
