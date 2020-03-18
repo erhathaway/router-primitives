@@ -9,8 +9,6 @@
  *
  */
 
-import {performance} from 'perf_hooks';
-
 export interface IStep {
     time: number;
     name: string;
