@@ -27,14 +27,11 @@
     },
     "keywords": [
         "router",
-        "router-state",
-        "router-management",
-        "react",
-        "react-state",
-        "mobx",
-        "redux",
+        "router state",
+        "router management",
+        "application routing",
         "primitives",
-        "declarative-routing"
+        "declarative routing"
     ],
     "author": "Ethan Hathaway",
     "license": "MIT",
@@ -56,7 +53,7 @@
         "rollup-plugin-commonjs": "^9.1.5",
         "rollup-plugin-eslint": "^7.0.0",
         "rollup-plugin-node-resolve": "^3.3.0",
-        "rollup-plugin-typescript2": "^0.21.2",
+        "rollup-plugin-typescript2": "^0.26.0",
         "rollup-watch": "^4.3.1",
         "ts-jest": "^23.10.5",
         "typescript": "^3.8.2"
