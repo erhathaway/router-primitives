@@ -1,3 +1,4 @@
+import {performance} from 'perf_hooks';
 /**
  * Tracking one or more TracerSessions.
  *

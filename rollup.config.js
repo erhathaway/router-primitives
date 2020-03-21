@@ -3,6 +3,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import typescript from 'rollup-plugin-typescript2';
 import pkg from './package.json';
 import {eslint} from 'rollup-plugin-eslint';
+import externalGlobals from 'rollup-plugin-external-globals';
 
 const dependencies = Object.keys({
     ...pkg.dependencies,
@@ -33,6 +34,9 @@ export default {
         }),
         commonjs({
             include: 'node_modules/**'
+        }),
+        externalGlobals({
+            perf_hooks: 'window' // eslint-disable-line
         })
     ],
     external: dependencies.filter(d => d !== 'query-string')
