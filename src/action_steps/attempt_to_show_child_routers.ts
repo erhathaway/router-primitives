@@ -50,9 +50,6 @@ const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) =
             //         );
             //     }
             // }
-            // if (child.name === 'data3') {
-            //     console.log('data3 cache', child.manager.routerCache.cache['data3']);
-            // }
 
             // if there is a cache state, show the router
             if (child.manager.routerCache.wasVisible(child.name) === true) {

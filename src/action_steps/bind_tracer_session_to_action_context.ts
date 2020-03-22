@@ -18,8 +18,6 @@ const bindTracerSessionToActionContext: ActionStep = (
             const r = routerInstance.manager.routers[routerName];
             const tracerUpdateFn = (thingInfo: ITracerThing): void => {
                 r.EXPERIMENTAL_setInternalState({...thingInfo});
-
-                // console.log(`(${r.name}) active:`, r.state.isActive); // tslint:disable-line
             };
             routerInstance.manager.tracerSession.subscribeToThing(routerName, tracerUpdateFn);
         });

@@ -46,7 +46,6 @@ describe('Integration', () => {
                 const serializedStateStore = manager.serializedStateStore as NativeSerializedStore;
 
                 if (!isMemorySerializedStateStore(serializedStateStore)) {
-                    console.log('serialized state store', serializedStateStore);
                     throw Error(
                         `Wrong store type: ${(serializedStateStore as ISerializedStateStore).kind}`
                     );
@@ -103,7 +102,10 @@ describe('Integration', () => {
                 expect(welcomeRouter.isPathRouter).toBe(false);
                 expect(welcomeObserver.mock.calls[2][0]).toEqual({
                     current: {order: undefined, visible: false},
-                    historical: [{order: '1', visible: true}, {order: undefined, visible: false}]
+                    historical: [
+                        {order: '1', visible: true},
+                        {order: undefined, visible: false}
+                    ]
                 });
 
                 welcomeRouter.hide();

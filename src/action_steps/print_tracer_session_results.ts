@@ -2,7 +2,10 @@ import {ActionStep} from '../types';
 import {objKeys} from '../utilities';
 import {serializer} from '../serialized_state';
 
-const logTracerSteps: ActionStep = (_options, location, routerInstance, ctx) => {
+const logTracerSteps: ActionStep = (options, location, routerInstance, ctx) => {
+    if (options.dryRun) {
+        return {location, ctx};
+    }
     console.log(
         'TOTAL TIME',
         routerInstance.manager.tracerSession.endTime -

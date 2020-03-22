@@ -9,7 +9,7 @@ const show: RouterActionFn = (_options, location, _router, _ctx) => {
 };
 
 const hide: RouterActionFn = (_options, location, _router, _ctx) => {
-    return {search: {}, pathname: [], options: location.options};
+    return location;
 };
 
 const reducer: RouterReducerFn = (location, _router, _ctx) => {

@@ -47,7 +47,6 @@ describe('Integration', () => {
                 const manager = new Manager({routerTree: routerTreeForDefaultShowTest});
                 const serializedStateStore = manager.serializedStateStore as NativeSerializedStore;
                 if (!isMemorySerializedStateStore(serializedStateStore)) {
-                    console.log('serialized state store', serializedStateStore);
                     throw Error(
                         `Wrong store type: ${(serializedStateStore as ISerializedStateStore).kind}`
                     );

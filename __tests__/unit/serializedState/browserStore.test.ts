@@ -159,7 +159,6 @@ describe('Browser Serialized State', () => {
         //   window.location.pathname = 'newState/';
         //   window.location.href = 'newState?param1=2&param2=testparam';
 
-        //   console.log(store.stateWatcher)
         //   store.subscribeToStateChanges(subscriptionTwo);
         //   const stateTwo = { pathname: ['newStateOther'], search: { param1: '3', param2: undefined }, options: {}}
         //   window.location.search  = '?param1=3';

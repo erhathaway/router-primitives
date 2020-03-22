@@ -12,9 +12,6 @@ const attemptToRemoveRouterCache: ActionStep = (options, existingLocation, route
                 visible: false,
                 data: options.data
             });
-            if (routerInstance.name === 'data3') {
-                console.log('data3 --cache', routerInstance.manager.routerCache.cache['data3']);
-            }
         }
     }
 
