@@ -50,6 +50,9 @@ const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) =
             //         );
             //     }
             // }
+            // if (child.name === 'data3') {
+            //     console.log('data3 cache', child.manager.routerCache.cache['data3']);
+            // }
 
             // if there is a cache state, show the router
             if (child.manager.routerCache.wasVisible(child.name) === true) {
@@ -87,7 +90,7 @@ const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) =
                 const [action, ...args] = child.config.defaultAction;
                 ctx.tracer &&
                     ctx.tracer.logStep(
-                        `No cached state found, but default action found. Applying default action: ${action} for ${child.name}`
+                        `No cached state found for ${child.name}, but default action found. Applying default action: ${action} for ${child.name}`
                     );
 
                 return child[action as keyof DefaultRouterActions](

@@ -4,6 +4,10 @@
 
 Router Primitives is a different take on application routing.
 
+Location:
+
+to remove a query param from the location, set it to `undefined`. The serialized state store merges previous locations with the current one. Undefined values are used to make sure the previous version doesn't show up. These values are then filtered out before the merged state is set.
+
 Settings:
 
 #### isPathRouter

@@ -766,6 +766,8 @@ export interface IManagerInit<CustomTemplates extends IRouterTemplates> {
     customTemplates?: CustomTemplates;
     // defaultTemplates?: DefaultTemplates;
     routerCacheClass?: CacheClass<IRouterCache>;
+    cacheKey?: string;
+    removeCacheAfterRehydration?: boolean;
 }
 
 /**

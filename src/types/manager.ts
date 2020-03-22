@@ -31,6 +31,8 @@ export interface IManager<CustomTemplates extends IRouterTemplates = null> {
     routers: Record<string, RouterInstance<AllTemplates<CustomTemplates>>>;
     routerCache: IRouterCache;
     actionCount: number;
+    cacheKey: string;
+    removeCacheAfterRehydration: boolean;
 
     incrementActionCount: () => void;
     /**

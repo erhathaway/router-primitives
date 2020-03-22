@@ -104,6 +104,9 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
 
     public actionCount: number;
 
+    public cacheKey: string;
+    public removeCacheAfterRehydration: boolean;
+
     constructor(
         initArgs: IManagerInit<CustomTemplates> = {},
         {
@@ -113,13 +116,21 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
             shouldInitialize: true
         }
     ) {
+        // used by mobx to decorate action fn
         if (actionFnDecorator) {
             this.actionFnDecorator = actionFnDecorator;
         }
-        this.printTracerResults = (initArgs && initArgs.printTraceResults) || false;
+        // pass all initArgs to this method so mobx decoration can work
         shouldInitialize && this.initializeManager(initArgs);
     }
 
+    /**
+     * Method to increment number of router actions that have ocurred over
+     * the course of the manager session.
+     *
+     * Router history is scoped to an action count number. This provides an easy way for
+     * an individual router to know how its history relates to its siblings.
+     */
     public incrementActionCount(): void {
         this.actionCount = this.actionCount + 1;
     }
@@ -130,9 +141,15 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         routerStateStore,
         router,
         customTemplates,
-        routerCacheClass
+        routerCacheClass,
+        printTraceResults,
+        cacheKey,
+        removeCacheAfterRehydration
     }: // defaultTemplates
     IManagerInit<CustomTemplates>): void {
+        this.printTracerResults = printTraceResults || false;
+        this.cacheKey = cacheKey || '__cache';
+        this.removeCacheAfterRehydration = removeCacheAfterRehydration || true;
         this.routerStateStore =
             routerStateStore ||
             new DefaultRouterStateStore<RouterCurrentStateFromTemplates<CustomTemplates>>();
@@ -278,8 +295,8 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         // Set the created router as the parent router
         // if it has no parent and there is not yet a root
         if (!parentName && !this.rootRouter) {
-            // TODO figure out why this assertion doesnt sufficently overlap with the `router` type above
-            this.rootRouter = (router as unknown) as Root<AllTemplates<CustomTemplates>>;
+            // Narrow router type to the root router type
+            this.rootRouter = router as Root<AllTemplates<CustomTemplates>>;
         } else if (!parentName && this.rootRouter) {
             throw new Error(
                 'Root router already exists. You likely forgot to specify a parentName'
@@ -398,7 +415,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
             routerDeclaration.isPathRouter !== undefined
                 ? routerDeclaration.isPathRouter
                 : templateConfig.isPathRouter || false;
-        const isSetToInverselyActivate =
+        const shouldParentTryToActivateNeighbors =
             routerDeclaration.shouldInverselyActivate !== undefined
                 ? routerDeclaration.shouldInverselyActivate
                 : templateConfig.shouldInverselyActivate || true;
@@ -413,7 +430,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
             routeKey: routerDeclaration.routeKey || routerDeclaration.name,
             isPathRouter:
                 templateConfig.canBePathRouter && hasParentOrIsRoot && isSetToBePathRouter,
-            shouldInverselyActivate: isSetToInverselyActivate,
+            shouldInverselyActivate: shouldParentTryToActivateNeighbors,
             disableCaching: isSetToDisableCaching,
             defaultAction: routerDeclaration.defaultAction || [],
             shouldParentTryToActivateSiblings
@@ -517,9 +534,19 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
     }
 
     public setCacheFromLocation = (location: IInputLocation): void => {
-        if (location.search['__cache']) {
-            this.routerCache.setCacheFromSerialized(location.search['__cache'] as string);
+        if (location.search[this.cacheKey]) {
+            this.routerCache.setCacheFromSerialized(location.search[this.cacheKey] as string);
         }
+    };
+
+    public removeCacheFromLocation = (existingLocation: IInputLocation): void => {
+        const newLocation = JSON.parse(JSON.stringify({...existingLocation}));
+        newLocation.search[this.cacheKey] = undefined;
+
+        this.serializedStateStore.setState({
+            ...newLocation,
+            options: {...newLocation.options, replaceLocation: true}
+        });
     };
 
     /**
@@ -534,6 +561,14 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
      */
     public setNewRouterState(location: IInputLocation): void {
         this.setCacheFromLocation(location);
+
+        // Replaces current location in searialized state store which will
+        // trigger a new state change cascade and retrigger this method without
+        // cache in the location
+        this.setCacheFromLocation(location);
+        if (this.removeCacheAfterRehydration && location.search[this.cacheKey] !== undefined) {
+            return this.removeCacheFromLocation(location);
+        }
 
         // if no routers have been added yet
         if (!this.rootRouter) {

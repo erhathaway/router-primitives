@@ -102,6 +102,8 @@ const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
             attemptToRemoveRouterCache,
             attemptToShowChildRouters,
             bindUserOptionsToLocationOptions,
+            // do before ending cache transaction b/c for dry runs,
+            // the cache will be discarded
             addRouterCacheToLocation,
             stopRouterCacheTransaction,
             endTracerThing,
