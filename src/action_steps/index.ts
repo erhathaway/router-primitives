@@ -15,3 +15,4 @@ export {default as bindUserOptionsToLocationOptions} from './bind_user_options_t
 export {default as addRouterCacheToLocation} from './add_router_cache_to_location';
 export {default as startRouterCacheTransaction} from './start_router_cache_transaction';
 export {default as stopRouterCacheTransaction} from './stop_router_cache_transaction';
+export {default as bindDryRunToActionContext} from './bind_dry_run_to_action_context';

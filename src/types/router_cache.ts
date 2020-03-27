@@ -1,7 +1,14 @@
-export type CacheState = {
-    visible: boolean;
-    data?: string;
-};
+// export type CacheState = {
+//     visible: boolean;
+//     data?: string;
+// };
+
+import {
+    RouterCurrentState,
+    ExtractCustomStateFromTemplate,
+    RouterTemplateUnion,
+    AllTemplates
+} from './index';
 
 /**
  * A store for a routers previous visibliity state.
@@ -10,9 +17,9 @@ export type CacheState = {
  * cache when setting new state instead of a default value.
  * This is how things like rehydration of a routers state when a parent becomes visible occurs.
  */
-export interface IRouterCache {
-    cache: Record<string, CacheState>;
-    transactionCache: Record<string, CacheState>;
+export interface IRouterCache<CustomState> {
+    cache: Record<string, RouterCurrentState<CustomState>>;
+    transactionCache: Record<string, RouterCurrentState<CustomState>>;
     isTransactionRunning: boolean;
 
     startTransaction: () => void;
@@ -25,16 +32,20 @@ export interface IRouterCache {
      */
     wasVisible: (routerName: string) => boolean | undefined;
 
-    previousData: (routerName: string) => string | undefined;
+    previousData: (routerName: string) => CustomState | undefined;
 
     /**
      * Remove the cached visiblity state.
      */
     removeCache: (routerName: string) => void;
 
-    setCache: (routerName: string, cache: CacheState) => void;
+    setCache: (routerName: string, cache: RouterCurrentState<CustomState>) => void;
 
     serializedCache: string;
 
     setCacheFromSerialized: (serializedCache: string) => void;
 }
+
+type RouterCacheTestAllTemplates = IRouterCache<
+    ExtractCustomStateFromTemplate<RouterTemplateUnion<AllTemplates<{}>>>
+>;

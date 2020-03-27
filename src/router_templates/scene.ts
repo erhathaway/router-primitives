@@ -64,17 +64,17 @@ const hide: RouterActionFn = (_options, oldLocation, router, _ctx) => {
 };
 
 const reducer: RouterReducerFn = (location, router, _ctx) => {
-    const newState: RouterCurrentState = {};
+    const newState: Partial<RouterCurrentState> = {};
     if (router.isPathRouter) {
         newState['visible'] = location.pathname[router.pathLocation] === router.routeKey;
     } else {
         newState['visible'] = location.search[router.routeKey] === 'true';
     }
 
-    return newState;
+    return newState as RouterCurrentState;
 };
 
-const template: IRouterTemplate<{}, 'testAction'> = {
+const template: IRouterTemplate<undefined, 'testAction'> = {
     actions: {show, hide, testAction: show},
     reducer,
     config: {

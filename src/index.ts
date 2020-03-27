@@ -2,6 +2,7 @@ import Manager from './manager';
 import RouterStore from './all_router_state';
 import Router, {IInternalState} from './router_base';
 import RouterCache from './all_router_cache';
+import defaultTemplates from './router_templates';
 
 export * from './types';
 export * from './types/manager';
@@ -23,6 +24,7 @@ import {
 } from './serialized_state';
 
 export {
+    defaultTemplates,
     RouterCache,
     Manager,
     Router,

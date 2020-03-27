@@ -19,7 +19,7 @@ const reducer: RouterReducerFn = (location, _router, _ctx) => {
     return {visible: hasSearchRouters || hasPathRouters};
 };
 
-const template: IRouterTemplate<{}, 'rootAction'> = {
+const template: IRouterTemplate<undefined, 'rootAction'> = {
     actions: {show, hide, rootAction: hide},
     reducer,
     config: {canBePathRouter: true, isPathRouter: true}

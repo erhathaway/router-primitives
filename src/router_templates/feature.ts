@@ -19,10 +19,10 @@ const hide: RouterActionFn = (_options, oldLocation, router, _ctx) => {
 };
 
 const reducer: RouterReducerFn = (location, router, _ctx) => {
-    const newState: RouterCurrentState = {};
+    const newState: Partial<RouterCurrentState> = {};
     newState['visible'] = location.search[router.routeKey] === 'true';
 
-    return newState;
+    return newState as RouterCurrentState;
 };
 
 const template: IRouterTemplate = {

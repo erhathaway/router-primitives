@@ -23,13 +23,14 @@ export interface IRouterBaseInternalState {
 }
 
 export interface IRouterBase<
-    Templates extends IRouterTemplates,
+    Templates extends IRouterTemplates<unknown>,
     RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
-    InitArgs extends IRouterInitArgs<Templates, RouterTypeName, IManager> = IRouterInitArgs<
+    // TODO change Templates to CustomTemplates and pass to IManager
+    InitArgs extends IRouterInitArgs<
         Templates,
         RouterTypeName,
-        IManager
-    >
+        IManager<Templates>
+    > = IRouterInitArgs<Templates, RouterTypeName, IManager<Templates>>
 > {
     name: InitArgs['name'];
     type: InitArgs['type'];

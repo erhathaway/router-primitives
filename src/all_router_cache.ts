@@ -1,11 +1,12 @@
-import {CacheState, IRouterCache} from './types/router_cache';
+import {IRouterCache} from './types/router_cache';
+import {RouterCurrentState} from './types';
 
 /**
  * The default router cache store.
  */
-export default class DefaultRouterCacheStore implements IRouterCache {
-    public cache: Record<string, CacheState>;
-    public transactionCache: Record<string, CacheState>;
+export default class DefaultRouterCacheStore<CustomState> implements IRouterCache<unknown> {
+    public cache: Record<string, RouterCurrentState<CustomState>>;
+    public transactionCache: Record<string, RouterCurrentState<CustomState>>;
     public isTransactionRunning: boolean;
 
     constructor() {
@@ -37,7 +38,7 @@ export default class DefaultRouterCacheStore implements IRouterCache {
         return this.cache[routerName] ? this.cache[routerName].visible === true : undefined;
     }
 
-    previousData(routerName: string): string | undefined {
+    previousData(routerName: string): CustomState | undefined {
         return this.cache[routerName] && this.cache[routerName].data
             ? this.cache[routerName].data
             : undefined;
@@ -54,7 +55,7 @@ export default class DefaultRouterCacheStore implements IRouterCache {
         }
     }
 
-    public setCache(routerName: string, cache: CacheState): void {
+    public setCache(routerName: string, cache: RouterCurrentState<CustomState>): void {
         if (this.isTransactionRunning) {
             this.transactionCache[routerName] = {...this.transactionCache[routerName], ...cache};
         } else {

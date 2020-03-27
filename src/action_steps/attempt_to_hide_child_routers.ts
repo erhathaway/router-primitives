@@ -1,45 +1,7 @@
-import {
-    NarrowRouterTypeName,
-    AllTemplates,
-    RouterInstance,
-    ILocationActionContext,
-    IRouterTemplates,
-    ActionStep
-} from '../types';
+import {ActionStep} from '../types';
 import {objKeys} from '../utilities';
+import {addRealDisableCacheFlagToContext, calculateIfShouldUseCache} from './utils';
 
-const calculateIfVisibleStateShouldBeCached = <
-    CustomTemplates extends IRouterTemplates,
-    Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
->(
-    router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
-    ctx: ILocationActionContext
-): ILocationActionContext => {
-    // Figure out if caching should occur:
-    // If the user hasn't set anything, we should fall back to the
-    // context object and inherit the setting from the parent.
-    // If the parent hasn't set a setting we are probably at root of the action call
-    // and should fall back to using the template.
-    const disableCaching =
-        router.config.disableCaching !== undefined
-            ? router.config.disableCaching
-            : ctx.disableCaching || router.lastDefinedParentsDisableChildCacheState || false;
-
-    const hasChildren =
-        router.routers &&
-        Object.values(router.routers).reduce(
-            (childrenExist, children) => (children.length && children.length > 0) || childrenExist,
-            false
-        );
-    if (hasChildren) {
-        ctx.tracer &&
-            ctx.tracer.logStep(
-                `Passing to children the ctx state: 'disableCaching' = ${disableCaching}`,
-                {disableCaching}
-            );
-    }
-    return {...ctx, disableCaching};
-};
 /**
  * Called when a router's 'hide' action is called directly or the
  * parent's 'hide' action is called.
@@ -58,7 +20,7 @@ const attemptToHideChildRouters: ActionStep = (options, existingLocation, router
     ctx.tracer && ctx.tracer.logStep(`Calling 'attemptToHideChildRouters'`);
 
     // Update ctx object's caching setting for this branch of the router tree
-    const newCtx = calculateIfVisibleStateShouldBeCached(router, ctx);
+    const newCtx = addRealDisableCacheFlagToContext(router, ctx);
 
     // Iterate over children, hiding visible children and caching the fact that they were previously visible.
     const locationFromChildren = objKeys(router.routers).reduce(
@@ -81,25 +43,23 @@ const attemptToHideChildRouters: ActionStep = (options, existingLocation, router
     );
 
     // The `options.disableCaching` gives the caller of the direct action
-    // the ability to disable caching on a case by case basis will interacting
-    // with the router tree. We only want `options.disableCaching` to affect the immediate
+    // the ability to disable caching on a case by case basis.
+    // We only want `options.disableCaching` to affect the immediate
     // router. If we want to disable caching for all routers use the ctx object
     // For example, `scene` routers use the `options.disableCaching` to disable sibling caches
-    // so they don't get reshown when a parent causes a rehydration
-    const shouldCache = !ctx.disableCaching && !(options.disableCaching || false);
+    // so they don't get re-shown when a parent causes a rehydration
+
+    const shouldCache = calculateIfShouldUseCache(newCtx, options);
 
     if (shouldCache && !router.manager.routerCache.wasVisible(router.name)) {
-        ctx.tracer.logStep(`Caching state`, {shouldCache});
-        // if (this.wasVisible) {
-        //     return;
-        // }
-
         // If the router exists in the current location, its visible
         const visible = !!router.getLocationDataFromLocationObject({...locationFromChildren});
 
         if (options.dryRun) {
-            ctx.tracer.logStep(`Not setting data in cache because 'dryRun' is enabled`);
+            ctx.tracer.logStep(`Not caching state because 'dryRun' is enabled`);
         } else {
+            ctx.tracer.logStep(`Caching state`, {shouldCache});
+
             router.manager.routerCache.setCache(router.name, {visible, data: options.data});
         }
     } else {

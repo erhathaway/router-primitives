@@ -24,7 +24,8 @@ import {
     ExtractCustomStateFromTemplate,
     RouterReducerFn,
     IRouterActionOptions,
-    DefaultRouterActions
+    DefaultRouterActions,
+    RouterTemplateUnion
 } from './types';
 
 import DefaultRouter from './router_base';
@@ -34,11 +35,9 @@ import createActionExecutor from './action_executor';
 import {IRouterCache} from './types/router_cache';
 import DefaultRouterCache from './all_router_cache';
 
-// const capitalize = (name = ''): string => name.charAt(0).toUpperCase() + name.slice(1);
-
 // extend router base for specific type
 const createRouterFromTemplate = <
-    CustomTemplates extends IRouterTemplates,
+    CustomTemplates extends IRouterTemplates<unknown>,
     RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>,
     // TODO figure out why RouterClass can't be used here instead.
     // It has a similar but more specific signature.
@@ -86,7 +85,7 @@ const createRouterFromTemplate = <
 };
 
 // implements IManager<CustomTemplates>
-export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
+export default class Manager<CustomTemplates extends IRouterTemplates<unknown> = {}> {
     public printTracerResults: boolean;
     public actionFnDecorator?: ActionWraperFnDecorator;
     public tracerSession: TracerSession;
@@ -100,7 +99,9 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
     >;
 
     public templates: AllTemplates<CustomTemplates>;
-    public routerCache: IRouterCache;
+    public routerCache: IRouterCache<
+        ExtractCustomStateFromTemplate<RouterTemplateUnion<AllTemplates<CustomTemplates>>>
+    >;
 
     public actionCount: number;
 
@@ -491,7 +492,8 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
         config,
         type,
         parentName
-    }: IRouterCreationInfo<AllTemplates<CustomTemplates>, Name>): IRouterInitArgs<
+    }: // TODO change Templates to CustomTemplates so generics flow into children on tree
+    IRouterCreationInfo<AllTemplates<CustomTemplates>, Name>): IRouterInitArgs<
         AllTemplates<CustomTemplates>,
         Name,
         IManager<CustomTemplates>
@@ -610,9 +612,10 @@ export default class Manager<CustomTemplates extends IRouterTemplates = {}> {
     }
 }
 
-// const test = new Manager<{ custom: DefaultTemplates['stack'] }>({} as any);
-// test.rootRouter.routers['custom'];
-// test.rootRouter;
+// const test = new Manager<{custom: DefaultTemplates['stack']}>({} as any);
+// const custom = test.rootRouter.routers['custom'];
+// const customState = custom[0].state;
+// const customRootState = test.rootRouter.state;
 // test.routers;
 // const b = new test.routerTypes.custom({} as any);
 // const d = b.reducer('a' as any, 'b' as any, 'c' as any);

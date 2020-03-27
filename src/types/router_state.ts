@@ -11,7 +11,7 @@ import {
  * The store can be swapped out in the manager with other stores.
  * For example, a redux store could be used to manage state with redux, or a local storage store could be used to persist state to the client.
  */
-export interface IRouterStateStore<CustomState extends {}> {
+export interface IRouterStateStore<CustomState> {
     /**
      * Sets the state of the router state store by adding to the history.
      * Adding state will completely overwrite existing state.

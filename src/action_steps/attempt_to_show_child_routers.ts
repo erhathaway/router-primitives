@@ -31,25 +31,7 @@ const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) =
                 addingDefaults: true,
                 activatedByChildType: undefined,
                 callDirection: 'down'
-            }; // TODO check if it makes sense to move addingDefaults to options
-
-            // if the cached visibility state is 'false' don't show on rehydration
-            // if (child.cache.wasVisible === false) {
-            //     console.log(`Not calling router b/c has no cache indicating previous visibility: ${child.name}`)
-
-            //     // return;
-            //     if (child.config.defaultAction && child.config.defaultAction.length > 0) {
-            //         const [action, ...args] = child.config.defaultAction;
-            //         console.log(`Applying default action: ${action} for ${child.name}`)
-
-            //         newLocation = (child as any)[action](
-            //             { ...options, data: args[0] }, // TODO pass more than just the first arg
-            //             newLocation,
-            //             child,
-            //             newContext
-            //         );
-            //     }
-            // }
+            };
 
             // if there is a cache state, show the router
             if (child.manager.routerCache.wasVisible(child.name) === true) {

@@ -16,6 +16,7 @@ import {
     attemptToHideChildRouters,
     attemptToShowParentRouter,
     bindTracerSessionToActionContext,
+    bindDryRunToActionContext,
     attemptToRemoveRouterCache,
     endTracerThing,
     endTracerSession,
@@ -67,7 +68,8 @@ const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
 
         const initialSetup = [
             bindTracerSessionToActionContext, // Bind tracer for this router to the action call context
-            bindActionNameAndActionFnToActionContext({actionName, actionFn})
+            bindActionNameAndActionFnToActionContext({actionName, actionFn}),
+            bindDryRunToActionContext
         ].reduce(actionStepReducer, {
             location: existingLocation,
             ctx: inputCtx
@@ -99,6 +101,13 @@ const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
             attemptToShowParentRouter,
             attemptToHideChildRouters,
             callActionFn,
+            /**
+             * If can have a catch state, record that this
+             * router was directly hidden. We want a cache state of 'wasVisble = false'
+             * b/c if we just removed the cache, any 'show' actions could trigger 'defaultAction's
+             * and we only want a defaultAction to run when the router hasnt been touched yet or
+             * if it has no cache
+             */
             attemptToRemoveRouterCache,
             attemptToShowChildRouters,
             bindUserOptionsToLocationOptions,

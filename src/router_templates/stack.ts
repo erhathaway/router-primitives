@@ -4,7 +4,8 @@ import {
     IRouterTemplate,
     RouterInstance,
     IInputLocation,
-    IRouterTemplates
+    IRouterTemplates,
+    RouterCurrentState
 } from '../types';
 
 // returns the routeKey names of visible routers based on the ordering of their 'order' state
@@ -20,7 +21,7 @@ const getRouteKeyOrderings = <Router extends RouterInstance<IRouterTemplates, st
             return acc;
         }
         // TODO use generics to handle state type
-        acc[r.routeKey] = (r.state as {order: number}).order;
+        acc[r.routeKey] = (r.state as RouterCurrentState<number>).data;
         return acc;
     }, {} as {[key: string]: number});
 
@@ -192,32 +193,23 @@ const toBack: RouterActionFn = (_options, location, router, _ctx) => {
     return location;
 };
 
-const reducer: RouterReducerFn = (location, router, _ctx) => {
-    // const newState = {};
-
-    const value = location.search[router.routeKey];
+const reducer: RouterReducerFn<number> = (location, router, _ctx) => {
+    const value = location.search[router.routeKey] as number;
 
     if (value) {
         return {
-            order: value,
-            visible: true
+            visible: true,
+            data: value
         };
     }
 
     return {
-        order: undefined,
-        visible: false
+        visible: false,
+        data: undefined
     };
-    // if (router.isPathRouter) {
-    //   newState['visible'] = location.pathname[router.pathLocation] === router.routeKey;
-    // } else {
-    //   newState['visible'] = location.search[router.routeKey] === 'true';
-    // }
-
-    // return newState;
 };
 
-const template: IRouterTemplate<{}, 'forward' | 'backward' | 'toFront' | 'toBack'> = {
+const template: IRouterTemplate<number, 'forward' | 'backward' | 'toFront' | 'toBack'> = {
     actions: {show, hide, forward, backward, toFront, toBack},
     reducer,
     config: {canBePathRouter: false}

@@ -1,7 +1,7 @@
 import {RouterActionFn, RouterReducerFn, IRouterTemplate} from '../types';
 
 /**
- * A data router will display data as the routeKey in either the pathname or queryparams
+ * A data router will display data as the routeKey in either the pathname or query params
  *   depending on if the router is a `pathRouter` or not.
  * Furthermore, a data router will only be shown if data exits.
  * This process involves:
@@ -10,13 +10,18 @@ import {RouterActionFn, RouterReducerFn, IRouterTemplate} from '../types';
  *    2. Checking if the router is a path router or not
  *    3. Adding the scene router to either the path or query params
  */
-const show: RouterActionFn = (options, oldLocation, router, _ctx) => {
+const show: RouterActionFn = (options, oldLocation, router, ctx) => {
     const location = {...oldLocation};
 
     const data = options && options.data ? options.data : router.state.data;
-    if (!data) {
+    if (!data && !ctx.dryRun) {
+        throw new Error(`Can't show data router ${router.name} b/c the data field is not set`);
+        // return location;
+    }
+    if (!data && ctx.dryRun) {
         return location;
     }
+
     if (router.isPathRouter) {
         // const {parent} = router;
         location.pathname[router.pathLocation] = data;
@@ -44,7 +49,7 @@ const setData: RouterActionFn = (options, location, router, ctx) => {
     return router.show(options, location, router, ctx);
 };
 
-const reducer: RouterReducerFn<{data?: string}> = (location, router, _ctx) => {
+const reducer: RouterReducerFn<string> = (location, router, _ctx) => {
     // const newState: RouterCurrentState = {};
 
     // TODO change this to ValueOf<IInputSearch> when data supports more than just `string` types
@@ -67,7 +72,7 @@ const reducer: RouterReducerFn<{data?: string}> = (location, router, _ctx) => {
     };
 };
 
-const template: IRouterTemplate<{data?: string}, 'setData'> = {
+const template: IRouterTemplate<string, 'setData'> = {
     actions: {show, hide, setData},
     reducer,
     config: {canBePathRouter: true, isPathRouter: false}
