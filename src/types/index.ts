@@ -318,13 +318,13 @@ export type RouterInstance<
     >
 > = RouterTypeName extends NarrowRouterTypeName<keyof Templates>
     ? Actions<ExtractCustomActionNamesFromTemplate<Templates[RouterTypeName]>> &
-          Reducer<RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>> &
+          Reducer<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>> &
           IRouterBase<Templates, RouterTypeName>
     : {
           [rType in NarrowRouterTypeName<keyof Templates>]: Actions<
               ExtractCustomActionNamesFromTemplate<Templates[rType]>
           > &
-              Reducer<RouterCurrentState<ExtractCustomStateFromTemplate<Templates[rType]>>> &
+              Reducer<ExtractCustomStateFromTemplate<Templates[rType]>> &
               IRouterBase<Templates, rType>;
       }[NarrowRouterTypeName<keyof Templates>];
 
@@ -387,19 +387,23 @@ type routerInstanceTestUnionChildren = routerInstanceTestUnion['routers'];
  */
 export type RouterClass<
     Templates extends IRouterTemplates<unknown>,
-    RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
-    M extends IManager<any> // eslint-disable-line
+    RouterTypeName extends NarrowRouterTypeName<keyof Templates>
+    // M extends IManager<CustomTemplatesFromAllTemplates<Templates, AllTemplates>> // eslint-disable-line
 > = {
-    new (args: IRouterInitArgs<Templates, RouterTypeName, M>): RouterInstance<
+    new (args: IRouterInitArgs<Templates, NarrowRouterTypeName<RouterTypeName>>): RouterInstance<
         Templates,
         RouterTypeName
     >;
 };
 
-type routerClassTestA = InstanceType<RouterClass<DefaultTemplates, 'feature', IManager<null>>>;
-type routerClassTestB = InstanceType<
-    RouterClass<DefaultTemplates, 'feature', IManager<IRouterTemplates>>
->;
+// type routerClassTestA = InstanceType<RouterClass<DefaultTemplates, 'feature', IManager<null>>>;
+// type routerClassTestB = InstanceType<
+//     RouterClass<DefaultTemplates, 'feature', IManager<IRouterTemplates>>
+// >;
+type routerClassTestA = InstanceType<RouterClass<DefaultTemplates, 'feature'>>;
+type routerClassTestB = InstanceType<RouterClass<DefaultTemplates, 'feature'>>;
+
+type routerClassTestC = routerClassTestA['root'];
 
 // type routerClassTestA = InstanceType<RouterClass<DefaultTemplates, 'stack'>>;
 
@@ -590,12 +594,13 @@ export interface IRouterDeclaration<Templates extends IRouterTemplates<unknown>>
  */
 export interface IRouterInitArgs<
     Templates extends IRouterTemplates<unknown>,
-    RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
-    M extends IManager<Templates> // eslint-disable-line
+    RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<Templates>>
+    // M extends IManager<CustomTemplatesFromAllTemplates<Templates, AllTemplates>> // eslint-disable-line
 > {
     name: string;
     type: RouterTypeName;
-    manager: M;
+    // manager: M;
+    manager: IManager<CustomTemplatesFromAllTemplates<Templates, AllTemplates>>;
     config: IRouterConfig;
     parent?: Parent<Templates>;
     routers?: Childs<Templates>;
@@ -631,8 +636,8 @@ export interface IRouterInitArgs<
  * to create the router init args and initialize a new router.
  */
 export interface IRouterCreationInfo<
-    Templates extends IRouterTemplates<unknown>,
-    RouterTypeName extends NarrowRouterTypeName<keyof Templates>
+    CustomTemplates extends IRouterTemplates<unknown>,
+    RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
 > {
     name: string;
     config: IRouterConfig;
@@ -661,7 +666,7 @@ export interface IRouterConfig {
 /**
  * The class type of a cache store instance
  */
-export interface CacheClass<RouterCache extends IRouterCache> {
+export interface CacheClass<RouterCache extends IRouterCache<unknown>> {
     new (): RouterCache;
 }
 
@@ -770,24 +775,37 @@ export interface IManagerInit<CustomTemplates extends IRouterTemplates<unknown>>
     printTraceResults?: boolean;
     routerTree?: IRouterDeclaration<AllTemplates<CustomTemplates>>;
     serializedStateStore?: ISerializedStateStore;
-    routerStateStore?: IRouterStateStore<RouterCurrentStateFromTemplates<CustomTemplates>>;
+    routerStateStore?: IRouterStateStore<
+        RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>
+    >;
     router?: RouterClass<
         AllTemplates<CustomTemplates>,
-        NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>,
-        IManager<CustomTemplates>
+        NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+        // IManager<CustomTemplates>
     >;
     customTemplates?: CustomTemplates;
-    routerCacheClass?: CacheClass<IRouterCache>;
+    routerCacheClass?: CacheClass<
+        IRouterCache<
+            ExtractCustomStateFromTemplate<RouterTemplateUnion<AllTemplates<CustomTemplates>>>
+        >
+    >;
     cacheKey?: string;
     removeCacheAfterRehydration?: boolean;
 }
 
 /**
+ * Returns a union of all custom state defined in the map of default and custom templates
+ */
+export type RouterCustomStateFromTemplates<
+    Templates extends IRouterTemplates<unknown>
+> = ExtractCustomStateFromTemplate<RouterTemplateUnion<Templates>>;
+
+/**
  * Returns a union of all state defined in the map of default and custom templates
  */
 export type RouterCurrentStateFromTemplates<
-    CustomTemplates extends IRouterTemplates<unknown>
-> = ExtractCustomStateFromTemplate<RouterTemplateUnion<AllTemplates<CustomTemplates>>>;
+    Templates extends IRouterTemplates<unknown>
+> = RouterCurrentState<ExtractCustomStateFromTemplate<RouterTemplateUnion<Templates>>>;
 
 /**
  * The routers of a manager.
@@ -818,18 +836,32 @@ export type RouterCurrentStateFromTemplates<
  * is a class that can be used to instantiate a specific router from a declaration object that a user supplies.
  */
 // eslint-disable-next-line
-export type ManagerRouterTypes<T extends IRouterTemplates<unknown>, M extends IManager<any>> = {
-    [RouterType in keyof T]: RouterClass<T, NarrowRouterTypeName<RouterType>, M>;
+export type ManagerRouterTypes<
+    T extends IRouterTemplates<unknown>
+    // M extends IManager<CustomTemplatesFromAllTemplates<T, AllTemplates>>
+> = {
+    [RouterType in keyof T]: RouterClass<T, NarrowRouterTypeName<RouterType>>;
 };
+// type managerRouterTypesTest<A extends IRouterTemplates<unknown>> = ManagerRouterTypes<
+//     DefaultTemplates,
+//     IManager<DefaultTemplates>
+// >;
+
+// type managerRouterTypesTestB<A extends IRouterTemplates<unknown>> = ManagerRouterTypes<
+//     DefaultTemplates,
+//     IManager<null>
+// >;
 type managerRouterTypesTest<A extends IRouterTemplates<unknown>> = ManagerRouterTypes<
-    DefaultTemplates,
-    IManager<A>
+    DefaultTemplates
+    // IManager<DefaultTemplates>
 >;
 
 type managerRouterTypesTestB<A extends IRouterTemplates<unknown>> = ManagerRouterTypes<
-    DefaultTemplates,
-    IManager<null>
+    DefaultTemplates
+    // IManager<null>
 >;
+// TODO FIX
+type managerRouterTypesTestManager = managerRouterTypesTest<AllTemplates>['scene'];
 // type managerRouterTypesTest = ManagerRouterTypes<
 //     { otherType: DefaultTemplates['stack'] } & DefaultTemplates
 // >;
@@ -932,6 +964,12 @@ export type Unpacked<T> = T extends (infer U)[]
 /**
  * TESTTT
  */
+
+export type CustomTemplatesFromAllTemplates<Cust, All> = Pick<Cust, Diff<keyof Cust, keyof All>>;
+type SpreadDiffTest = CustomTemplatesFromAllTemplates<
+    AllTemplates<{test: AllTemplates['data']}>,
+    AllTemplates
+>;
 
 // type KnownKeys<T> = {
 //     [K in keyof T]: string extends K ? never : number extends K ? never : K

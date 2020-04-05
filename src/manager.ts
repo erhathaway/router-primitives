@@ -20,6 +20,7 @@ import {
     Constructable,
     RouterInstance,
     AllTemplates,
+    RouterCustomStateFromTemplates,
     RouterCurrentStateFromTemplates,
     ExtractCustomStateFromTemplate,
     RouterReducerFn,
@@ -34,6 +35,7 @@ import {objKeys} from './utilities';
 import createActionExecutor from './action_executor';
 import {IRouterCache} from './types/router_cache';
 import DefaultRouterCache from './all_router_cache';
+// import {DefaultTemplates} from './types/router_templates';
 
 // extend router base for specific type
 const createRouterFromTemplate = <
@@ -48,7 +50,8 @@ const createRouterFromTemplate = <
     BaseRouter: RC,
     actionFnDecorator?: ActionWraperFnDecorator,
     actionExecutorOptions?: {printerTracerResults?: boolean}
-): RouterClass<AllTemplates<CustomTemplates>, RouterTypeName, IManager<CustomTemplates>> => {
+    // ): RouterClass<AllTemplates<CustomTemplates>, RouterTypeName, IManager<CustomTemplates>> => {
+): RouterClass<AllTemplates<CustomTemplates>, RouterTypeName> => {
     // TODO figure out why actions are 'default router actions' type
     const {actions, reducer} = template;
 
@@ -79,8 +82,8 @@ const createRouterFromTemplate = <
     };
     return (MixedInClass as unknown) as RouterClass<
         AllTemplates<CustomTemplates>,
-        RouterTypeName,
-        IManager<CustomTemplates>
+        RouterTypeName
+        // IManager<CustomTemplates>
     >;
 };
 
@@ -94,8 +97,8 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
     public serializedStateStore: IManagerInit<CustomTemplates>['serializedStateStore'];
     public routerStateStore: IManagerInit<CustomTemplates>['routerStateStore'];
     public routerTypes: ManagerRouterTypes<
-        AllTemplates<CustomTemplates>,
-        IManager<CustomTemplates>
+        AllTemplates<CustomTemplates>
+        // IManager<CustomTemplates>
     >;
 
     public templates: AllTemplates<CustomTemplates>;
@@ -153,7 +156,9 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         this.removeCacheAfterRehydration = removeCacheAfterRehydration || true;
         this.routerStateStore =
             routerStateStore ||
-            new DefaultRouterStateStore<RouterCurrentStateFromTemplates<CustomTemplates>>();
+            new DefaultRouterStateStore<
+                RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>
+            >();
 
         // check if window
         if (typeof window === 'undefined') {
@@ -200,7 +205,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
             acc[templateName] = RouterFromTemplate;
 
             return acc;
-        }, {} as ManagerRouterTypes<AllTemplates<CustomTemplates>, IManager<CustomTemplates>>);
+        }, {} as ManagerRouterTypes<AllTemplates<CustomTemplates>>);
 
         // add initial routers
         this._routers = {};
@@ -367,17 +372,20 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
     >(
         location: IInputLocation,
-        router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
+        router: RouterInstance<AllTemplates<CustomTemplates>, NarrowRouterTypeName<Name>>,
         ctx: Omit<ILocationActionContext, 'actionName'> = {},
-        newState: Record<string, RouterCurrentStateFromTemplates<CustomTemplates>> = {}
-    ): Record<string, RouterCurrentStateFromTemplates<CustomTemplates>> {
+        newState: Record<
+            string,
+            RouterCurrentStateFromTemplates<AllTemplates<CustomTemplates>>
+        > = {}
+    ): Record<string, RouterCurrentStateFromTemplates<AllTemplates<CustomTemplates>>> {
         if (!router) {
             return;
         }
 
         // Call the routers reducer to calculate its state from the new location
         const currentRouterState = (router.reducer as RouterReducerFn<
-            ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[Name]>
+            RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>
         >)(location, router, ctx);
 
         // Recursively call all children to add their state to the `newState` object
@@ -397,7 +405,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
             },
             {...newState, [router.name]: currentRouterState} as Record<
                 string,
-                RouterCurrentStateFromTemplates<CustomTemplates>
+                RouterCurrentStateFromTemplates<AllTemplates<CustomTemplates>>
             >
         );
     }
@@ -493,10 +501,13 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         type,
         parentName
     }: // TODO change Templates to CustomTemplates so generics flow into children on tree
-    IRouterCreationInfo<AllTemplates<CustomTemplates>, Name>): IRouterInitArgs<
+    IRouterCreationInfo<
         AllTemplates<CustomTemplates>,
-        Name,
-        IManager<CustomTemplates>
+        NarrowRouterTypeName<Name>
+    >): IRouterInitArgs<
+        AllTemplates<CustomTemplates>,
+        NarrowRouterTypeName<Name>
+        // IManager<CustomTemplates>
     > {
         const parent = this.routers[parentName];
         const actions = objKeys(this.templates[type].actions);
@@ -526,8 +537,8 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
     >(
         initalArgs: IRouterInitArgs<
             AllTemplates<CustomTemplates>,
-            NarrowRouterTypeName<Name>,
-            IManager<CustomTemplates>
+            NarrowRouterTypeName<Name>
+            // IManager<CustomTemplates>
         >
     ): RouterInstance<AllTemplates<CustomTemplates>, NarrowRouterTypeName<Name>> {
         const routerClass = this.routerTypes[initalArgs.type];
@@ -616,6 +627,9 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
 // const custom = test.rootRouter.routers['custom'];
 // const customState = custom[0].state;
 // const customRootState = test.rootRouter.state;
+// const manager = test.rootRouter.manager.routers['custom'];
+// const children = test.rootRouter.routers['data'][0].state;
+// const customAction = test.rootRouter.routers['custom'][0].reducer;
 // test.routers;
 // const b = new test.routerTypes.custom({} as any);
 // const d = b.reducer('a' as any, 'b' as any, 'c' as any);

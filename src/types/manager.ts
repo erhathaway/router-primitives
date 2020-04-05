@@ -15,7 +15,8 @@ import {
     // ManagerRouters,
     RouterInstance,
     AllTemplates,
-    RouterCurrentStateFromTemplates
+    RouterCurrentStateFromTemplates,
+    RouterCustomStateFromTemplates
 } from '../types';
 import {DefaultTemplates} from './router_templates';
 import {IRouterCache} from './router_cache';
@@ -26,10 +27,10 @@ export interface IManager<CustomTemplates extends IRouterTemplates<unknown> = nu
     rootRouter: Root<AllTemplates<CustomTemplates>>;
     serializedStateStore: IManagerInit<CustomTemplates>['serializedStateStore'];
     routerStateStore: IManagerInit<CustomTemplates>['routerStateStore'];
-    routerTypes: ManagerRouterTypes<AllTemplates<CustomTemplates>, IManager<CustomTemplates>>;
+    routerTypes: ManagerRouterTypes<AllTemplates<CustomTemplates>>;
     templates: AllTemplates<CustomTemplates>;
     routers: Record<string, RouterInstance<AllTemplates<CustomTemplates>>>;
-    routerCache: IRouterCache;
+    routerCache: IRouterCache<RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>>;
     actionCount: number;
     cacheKey: string;
     removeCacheAfterRehydration: boolean;
@@ -67,8 +68,8 @@ export interface IManager<CustomTemplates extends IRouterTemplates<unknown> = nu
         router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
         ctx: Omit<ILocationActionContext, 'actionName'>,
         // TODO fill in current state's custom state generic from the above router
-        newState: Record<string, RouterCurrentStateFromTemplates<CustomTemplates>>
-    ) => Record<string, RouterCurrentStateFromTemplates<CustomTemplates>>;
+        newState: Record<string, RouterCurrentStateFromTemplates<AllTemplates<CustomTemplates>>>
+    ) => Record<string, RouterCurrentStateFromTemplates<AllTemplates<CustomTemplates>>>;
 
     createRouterConfigArgs: <
         Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
@@ -107,10 +108,13 @@ export interface IManager<CustomTemplates extends IRouterTemplates<unknown> = nu
         config,
         type,
         parentName
-    }: IRouterCreationInfo<AllTemplates<CustomTemplates>, Name>) => IRouterInitArgs<
+    }: IRouterCreationInfo<
         AllTemplates<CustomTemplates>,
-        Name,
-        IManager<CustomTemplates>
+        NarrowRouterTypeName<Name>
+    >) => IRouterInitArgs<
+        AllTemplates<CustomTemplates>,
+        NarrowRouterTypeName<Name>
+        // IManager<CustomTemplates>
     >;
     /**
      * Create a router instance
@@ -121,7 +125,7 @@ export interface IManager<CustomTemplates extends IRouterTemplates<unknown> = nu
     createRouterFromInitArgs: <
         Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
     >(
-        initalArgs: IRouterInitArgs<AllTemplates<CustomTemplates>, Name, IManager<CustomTemplates>>
+        initalArgs: IRouterInitArgs<AllTemplates<CustomTemplates>, NarrowRouterTypeName<Name>>
     ) => RouterInstance<AllTemplates<CustomTemplates>, NarrowRouterTypeName<Name>>;
 
     /**
@@ -149,10 +153,10 @@ export interface IManager<CustomTemplates extends IRouterTemplates<unknown> = nu
         config,
         type,
         parentName
-    }: IRouterCreationInfo<AllTemplates<CustomTemplates>, Name>) => RouterInstance<
+    }: IRouterCreationInfo<
         AllTemplates<CustomTemplates>,
-        Name
-    >;
+        NarrowRouterTypeName<Name>
+    >) => RouterInstance<AllTemplates<CustomTemplates>, Name>;
 }
 
 type IManagerTestA = IManager<{custom: DefaultTemplates['stack']}>;

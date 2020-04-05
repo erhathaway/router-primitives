@@ -19,6 +19,7 @@ export interface IRouterStateStore<CustomState> {
      *   the router callbacks won't be called for this router. Otherwise, if the state
      *   has changed, in any way, a callback will be fired off for the router(s) whose state has changed.
      */
+
     setState: (desiredRouterStates: Record<string, RouterCurrentState<CustomState>>) => void;
 
     /**

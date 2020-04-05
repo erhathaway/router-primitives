@@ -15,8 +15,9 @@ import {
     IInputLocation,
     ValueOf,
     IInputSearch
+    // CustomTemplatesFromAllTemplates
 } from '../types';
-import {IManager} from './manager';
+// import {IManager} from './manager';
 
 export interface IRouterBaseInternalState {
     isActive?: boolean;
@@ -28,9 +29,13 @@ export interface IRouterBase<
     // TODO change Templates to CustomTemplates and pass to IManager
     InitArgs extends IRouterInitArgs<
         Templates,
-        RouterTypeName,
-        IManager<Templates>
-    > = IRouterInitArgs<Templates, RouterTypeName, IManager<Templates>>
+        NarrowRouterTypeName<RouterTypeName>
+        // IManager<CustomTemplatesFromAllTemplates<Templates>>
+    > = IRouterInitArgs<
+        Templates,
+        NarrowRouterTypeName<RouterTypeName>
+        // IManager<CustomTemplatesFromAllTemplates<Templates>>
+    >
 > {
     name: InitArgs['name'];
     type: InitArgs['type'];
