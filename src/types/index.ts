@@ -188,13 +188,13 @@ export type RouterActionFn = <
  * The reducer is responsible for taking a new location and defining what the state of the router is from that location.
  */
 export type RouterReducerFn<CustomState = undefined> = <
-    Templates extends IRouterTemplates<CustomState>,
+    Templates extends IRouterTemplates<undefined>,
     RouterTypeName extends NarrowRouterTypeName<keyof Templates>
 >(
     location: IInputLocation,
     router: RouterInstance<Templates, RouterTypeName>,
     ctx: {[key: string]: any} // eslint-disable-line
-) => RouterCurrentState<CustomState>;
+) => RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>;
 
 type RouterReducerFnTest = RouterReducerFn;
 type RouterReducerFnTestString = RouterReducerFn<string>;
@@ -969,6 +969,26 @@ export type CustomTemplatesFromAllTemplates<Cust, All> = Pick<Cust, Diff<keyof C
 type SpreadDiffTest = CustomTemplatesFromAllTemplates<
     AllTemplates<{test: AllTemplates['data']}>,
     AllTemplates
+>;
+
+type RootAA = Root<AllTemplates<{test: AllTemplates['data']}>, 'root'>;
+type RootBB = Root<
+    AllTemplates<
+        CustomTemplatesFromAllTemplates<
+            {test: AllTemplates['data']},
+            AllTemplates<{test: AllTemplates['data']}>
+        >
+    >,
+    // AllTemplates<
+    //     Pick<
+    //         AllTemplates<CustomTemplates>,
+    //         Diff<
+    //             keyof AllTemplates<CustomTemplates>,
+    //             'scene' | 'stack' | 'data' | 'feature' | 'root'
+    //         >
+    //     >
+    // >,
+    'root'
 >;
 
 // type KnownKeys<T> = {

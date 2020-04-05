@@ -17,7 +17,7 @@ import {
     ValueOf
 } from './types';
 import {IRouterBase} from './types/router_base';
-import {IManager} from './types/manager';
+// import {IManager} from './types/manager';
 import {objKeys} from './utilities';
 
 export interface IInternalState {
@@ -27,10 +27,13 @@ export interface IInternalState {
 export default class RouterBase<
     Templates extends IRouterTemplates,
     RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
-    InitArgs extends IRouterInitArgs<Templates, RouterTypeName, IManager> = IRouterInitArgs<
+    InitArgs extends IRouterInitArgs<
         Templates,
-        RouterTypeName,
-        IManager
+        NarrowRouterTypeName<RouterTypeName>
+    > = IRouterInitArgs<
+        Templates,
+        NarrowRouterTypeName<RouterTypeName>
+        // IManager
     >
 > implements IRouterBase<Templates, RouterTypeName, InitArgs> {
     public name: InitArgs['name'];

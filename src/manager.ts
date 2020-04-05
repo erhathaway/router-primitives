@@ -26,7 +26,8 @@ import {
     RouterReducerFn,
     IRouterActionOptions,
     DefaultRouterActions,
-    RouterTemplateUnion
+    RouterTemplateUnion,
+    CustomTemplatesFromAllTemplates
 } from './types';
 
 import DefaultRouter from './router_base';
@@ -88,7 +89,8 @@ const createRouterFromTemplate = <
 };
 
 // implements IManager<CustomTemplates>
-export default class Manager<CustomTemplates extends IRouterTemplates<unknown> = {}> {
+export default class Manager<CustomTemplates extends IRouterTemplates<unknown> = {}>
+    implements IManager<CustomTemplates> {
     public printTracerResults: boolean;
     public actionFnDecorator?: ActionWraperFnDecorator;
     public tracerSession: TracerSession;
@@ -518,7 +520,12 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
             type,
             parent,
             routers: {},
-            manager: this as IManager<CustomTemplates>,
+            // TODO fix this type
+            // CustomTemplatesFromAllTemplates should overlap with CustomTemplates
+            // IManager<CustomTemplates> should work and not need a casting to `unknown`
+            manager: (this as unknown) as IManager<
+                CustomTemplatesFromAllTemplates<AllTemplates<CustomTemplates>, AllTemplates>
+            >,
             root: this.rootRouter,
             getState: this.routerStateStore.createRouterStateGetter(name),
             subscribe: this.routerStateStore.createRouterStateSubscriber(name),
@@ -615,11 +622,12 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         this.validateRouterCreationInfo(name, type, config);
 
         const initalArgs = this.createNewRouterInitArgs({name, config, type, parentName});
-        return this.createRouterFromInitArgs({...initalArgs}) as RouterInstance<
-            AllTemplates<CustomTemplates>,
-            // TODO fix me
-            any // eslint-disable-line
-        >;
+        return this.createRouterFromInitArgs({...initalArgs});
+        //  as RouterInstance<
+        //     AllTemplates<CustomTemplates>,
+        //     // TODO fix me
+        //     any // eslint-disable-line
+        // >;
     }
 }
 
