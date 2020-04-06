@@ -1,4 +1,4 @@
-import {RouterActionFn, RouterReducerFn, IRouterTemplate} from '../types';
+import {RouterActionFn, IRouterTemplate, TemplateReducer} from '../types';
 
 /**
  * A data router will display data as the routeKey in either the pathname or query params
@@ -49,7 +49,7 @@ const setData: RouterActionFn = (options, location, router, ctx) => {
     return router.show(options, location, router, ctx);
 };
 
-const reducer: RouterReducerFn = (location, router, _ctx) => {
+const reducer: TemplateReducer<string, 'setData'> = (location, router, _ctx) => {
     // const newState: RouterCurrentState = {};
 
     // TODO change this to ValueOf<IInputSearch> when data supports more than just `string` types
@@ -72,6 +72,7 @@ const reducer: RouterReducerFn = (location, router, _ctx) => {
     };
 };
 
+// type Template = ;
 const template: IRouterTemplate<string, 'setData'> = {
     actions: {show, hide, setData},
     reducer,

@@ -1,4 +1,4 @@
-import {RouterActionFn, RouterReducerFn, RouterCurrentState, IRouterTemplate} from '../types';
+import {RouterActionFn, RouterCurrentState, IRouterTemplate, TemplateReducer} from '../types';
 
 /**
  * A feature router does not interact with its sibling routers. It lives harmony with them
@@ -18,7 +18,7 @@ const hide: RouterActionFn = (_options, oldLocation, router, _ctx) => {
     return location;
 };
 
-const reducer: RouterReducerFn = (location, router, _ctx) => {
+const reducer: TemplateReducer = (location, router, _ctx) => {
     const newState: Partial<RouterCurrentState> = {};
     newState['visible'] = location.search[router.routeKey] === 'true';
 

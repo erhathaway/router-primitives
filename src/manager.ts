@@ -6,7 +6,7 @@ import {IManager} from './types/manager';
 import {
     ActionWraperFnDecorator,
     IInputLocation,
-    ILocationActionContext,
+    // ILocationActionContext,
     IRouterCreationInfo,
     IRouterConfig,
     IRouterDeclaration,
@@ -26,7 +26,8 @@ import {
     // RouterReducerFn,
     IRouterActionOptions,
     DefaultRouterActions,
-    RouterTemplateUnion
+    RouterTemplateUnion,
+    ReducerContext
     // CustomTemplatesFromAllTemplates
 } from './types';
 
@@ -36,7 +37,8 @@ import {objKeys} from './utilities';
 import createActionExecutor from './action_executor';
 import {IRouterCache} from './types/router_cache';
 import DefaultRouterCache from './all_router_cache';
-import {DefaultTemplates} from './types/router_templates';
+// import {DefaultTemplates} from './types/router_templates';
+// import {DefaultTemplates} from './types/router_templates';
 // import {DefaultTemplates} from './types/router_templates';
 
 // extend router base for specific type
@@ -376,7 +378,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
     >(
         location: IInputLocation,
         router: RouterInstance<CustomTemplates, NarrowRouterTypeName<Name>>,
-        ctx: Omit<ILocationActionContext, 'actionName'> = {},
+        ctx: ReducerContext = {},
         newState: Record<
             string,
             RouterCurrentStateFromTemplates<AllTemplates<CustomTemplates>>
@@ -641,14 +643,15 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
     }
 }
 
-const test = new Manager<{custom: DefaultTemplates['data']}>({} as any);
-const custom = test.rootRouter.routers['custom'];
-const customState = custom[0].state;
-const customRootState = test.rootRouter.state;
-const manager = test.rootRouter.manager.routers['custom'];
-const children = test.rootRouter.routers['data'][0].state;
-const customAction = test.rootRouter.routers['custom'][0].reducer;
-test.routers;
-const b = new test.routerTypes.custom({} as any);
-const d = b.reducer('a' as any, 'b' as any, 'c' as any);
-b.setData;
+// const test = new Manager<{custom: DefaultTemplates['data']}>({} as any);
+// const custom = test.rootRouter.routers['custom'];
+// const customState = custom[0].state;
+// const customRootState = test.rootRouter.state;
+// const manager = test.rootRouter.manager.routers['custom'];
+// const children = test.rootRouter.routers['data'][0].state;
+// const customAction = test.rootRouter.routers['custom'][0].reducer;
+// const customActionData = test.rootRouter.routers['data'][0].reducer;
+// test.routers;
+// const b = new test.routerTypes.custom({} as any);
+// const d = b.reducer('a' as any, 'b' as any, 'c' as any);
+// b.setData;

@@ -1,10 +1,10 @@
 import {
     RouterActionFn,
-    RouterReducerFn,
+    // RouterReducerFn,
     RouterCurrentState,
     IRouterTemplate,
     IInputLocation,
-    RouterInstance
+    TemplateReducer
 } from '../types';
 
 /**
@@ -16,18 +16,19 @@ import {
  */
 const show: RouterActionFn = (options, oldLocation, router, ctx) => {
     // Each sibling router needs to be hidden. The location is modified to reflect hiding all siblings
-    // eslint-disable-next-line
-    const location: IInputLocation = (router.siblings as RouterInstance<any, any>[]).reduce(
+    const location: IInputLocation = router.siblings.reduce(
         (acc, s) => {
             // We disable caching of siblings b/c we dont want them to be shown if a parent rehydrates
             // This is b/c the scene being shown is now the visible one and should be cached if a parent hides
             // It is important to remember that `disableCaching` is passed to options not context
             //   b/c we only want it take affect for the immediate routers we call instead of the
             //   entire update cycle
-            return s.hide({...options, disableCaching: true}, acc, s, ctx);
+            // eslint-disable-next-line
+            return s.hide({...options, disableCaching: true}, acc as any, s, ctx) as any;
         },
-        {...oldLocation}
-    );
+        // eslint-disable-next-line
+        {...oldLocation} as any
+    ) as IInputLocation;
 
     if (router.isPathRouter) {
         // const {parent} = router;
@@ -63,7 +64,7 @@ const hide: RouterActionFn = (_options, oldLocation, router, _ctx) => {
     return location;
 };
 
-const reducer: RouterReducerFn = (location, router, _ctx) => {
+const reducer: TemplateReducer = (location, router, _ctx) => {
     const newState: Partial<RouterCurrentState> = {};
     if (router.isPathRouter) {
         newState['visible'] = location.pathname[router.pathLocation] === router.routeKey;
@@ -74,8 +75,8 @@ const reducer: RouterReducerFn = (location, router, _ctx) => {
     return newState as RouterCurrentState;
 };
 
-const template: IRouterTemplate<undefined, 'testAction'> = {
-    actions: {show, hide, testAction: show},
+const template: IRouterTemplate = {
+    actions: {show, hide},
     reducer,
     config: {
         canBePathRouter: true,

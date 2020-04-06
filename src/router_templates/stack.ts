@@ -1,11 +1,11 @@
 import {
     RouterActionFn,
-    RouterReducerFn,
     IRouterTemplate,
     RouterInstance,
     IInputLocation,
     IRouterTemplates,
-    RouterCurrentState
+    RouterCurrentState,
+    TemplateReducer
 } from '../types';
 
 // returns the routeKey names of visible routers based on the ordering of their 'order' state
@@ -193,9 +193,13 @@ const toBack: RouterActionFn = (_options, location, router, _ctx) => {
     return location;
 };
 
-const reducer: RouterReducerFn<number> = (location, router, _ctx) => {
+const reducer: TemplateReducer<number, 'forward' | 'backward' | 'toFront' | 'toBack'> = (
+    location,
+    router,
+    _ctx
+) => {
     const value = location.search[router.routeKey] as number;
-
+    // router.toFront({data: 0}); // test remove me
     if (value) {
         return {
             visible: true,

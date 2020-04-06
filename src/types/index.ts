@@ -83,6 +83,8 @@ export interface ILocationActionContext {
     dryRun?: boolean;
 }
 
+export type ReducerContext = Omit<ILocationActionContext, 'actionName' | 'actionFn'>;
+
 /**
  * -------------------------------------------------
  * Router actions and reducer
@@ -142,6 +144,7 @@ export type Actions<CustomActionNames extends string | null = null> = IntersectU
     ActionsWithCustomUnioned<CustomActionNames>
 > &
     DefaultRouterActions;
+
 export type ActionsWithCustomUnioned<
     CustomActionNames extends string | null = null
 > = CustomActionNames extends null
@@ -163,8 +166,11 @@ type actionsTestB = Actions<null>;
  * This is how the reducer method is added to the base router class via mixins.
  * For the specific router type see `RouterReducerFn`.
  */
-export type Reducer<CustomState = undefined> = {
-    reducer: RouterReducerFn<CustomState>;
+export type Reducer<
+    CustomTemplates extends IRouterTemplates<unknown>,
+    RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+> = {
+    reducer: RouterReducerFn<CustomTemplates, RouterTypeName>;
 };
 
 /**
@@ -189,21 +195,34 @@ export type RouterActionFn = <
  * The function that defines a routers reducer function.
  * The reducer is responsible for taking a new location and defining what the state of the router is from that location.
  */
-export type RouterReducerFn<CustomState = undefined> = <
-    CustomTemplates extends IRouterTemplates<undefined>,
+export type RouterReducerFn<
+    CustomTemplates extends IRouterTemplates<unknown>,
     RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
->(
+> = (
     location: IInputLocation,
     router: RouterInstance<CustomTemplates, RouterTypeName>,
-    ctx: {[key: string]: any} // eslint-disable-line
+    ctx: ReducerContext
 ) => RouterCurrentState<
     ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>
 >;
 
-type RouterReducerFnTest = RouterReducerFn;
-type RouterReducerFnTestString = RouterReducerFn<string>;
-type RouterReducerFnTestStringReturn = ReturnType<RouterReducerFn<string>>;
-type RouterReducerFnTestReturn = ReturnType<RouterReducerFn>;
+type RouterReducerFnTest = RouterReducerFn<{}, 'data'>;
+type RouterReducerFnTestReturn = ReturnType<RouterReducerFnTest>;
+
+export type TemplateReducer<
+    CustomState = undefined,
+    CustomActionNames extends string = undefined
+> = (
+    location: IInputLocation,
+    router: RouterInstance<{template: IRouterTemplate<CustomState, CustomActionNames>}, 'template'>,
+    ctx: ReducerContext // eslint-disable-line
+) => RouterCurrentState<CustomState>;
+
+type RItesttt = RI<{template: IRouterTemplate<string, 'hello' | 'world'>}, 'template'>;
+
+type RouterReducerFnTestString = TemplateReducer<string>;
+type RouterReducerFnTestStringActions = TemplateReducer<string, 'what' | 'how'>;
+type RouterReducerFnTestStringReturn = ReturnType<TemplateReducer<string>>;
 
 /**
  * -------------------------------------------------
@@ -327,16 +346,24 @@ export type RouterInstance<
         | string = NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
 > = RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
     ? Actions<ExtractCustomActionNamesFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>> &
-          Reducer<ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>> &
+          Reducer<CustomTemplates, RouterTypeName> &
           IRouterBase<CustomTemplates, RouterTypeName>
     : {
           [rType in NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>]: Actions<
               ExtractCustomActionNamesFromTemplate<AllTemplates<CustomTemplates>[rType]>
           > &
-              Reducer<ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[rType]>> &
+              Reducer<CustomTemplates, rType> &
               IRouterBase<CustomTemplates, rType>;
       }[NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>];
 
+export type RI<
+    CustomTemplates extends IRouterTemplates<unknown>, // eslint-disable-line
+    RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+> = Actions<ExtractCustomActionNamesFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>> &
+    Reducer<CustomTemplates, RouterTypeName> &
+    IRouterBase<CustomTemplates, RouterTypeName>;
+
+type RItest = RI<{template: IRouterTemplate<string, 'hello' | 'world'>}, 'template'>;
 // export type RouterInstance<
 //     Templates extends IRouterTemplates, // eslint-disable-line
 //     RouterTypeName extends NarrowRouterTypeName<keyof Templates> | string = NarrowRouterTypeName<
@@ -433,7 +460,10 @@ type iRouterTemplatesNoGenerics = IRouterTemplates;
  */
 export interface IRouterTemplate<CustomState = undefined, CustomActionNames extends string = null> {
     actions: Actions<CustomActionNames>;
-    reducer: RouterReducerFn<CustomState>;
+    reducer: RouterReducerFn<
+        {template: IRouterTemplate<CustomState, CustomActionNames>},
+        'template'
+    >;
     config: IRouterTemplateConfig;
 }
 type iRouterTemplateTest = IRouterTemplate<{hello: true}, 'big' | 'blue'>;
@@ -760,13 +790,13 @@ type allTemplatesTestNoCustom = AllTemplates;
 type allTemplatesTestNoCustomNull = AllTemplates<unknown>;
 type allTemplatesTest = AllTemplates<{other: DefaultTemplates['stack']}>;
 type allTemplatesTestSceneShow = allTemplatesTest['scene']['actions']['show'];
-type allTemplatesTestSceneCustomAction = allTemplatesTest['scene']['actions']['testAction'];
+// type allTemplatesTestSceneCustomAction = allTemplatesTest['scene']['actions']['testAction'];
 type allTemplatesTestOtherShow = allTemplatesTest['stack']['actions']['show'];
 type allTemplatesTestStackToFront = allTemplatesTest['stack']['actions']['toFront'];
 type allTemplatesTestStackReducer = allTemplatesTest['stack']['reducer'];
 
 // type allTemplatesTestOtherShowError = allTemplatesTest['other']; // should error
-type allTemplatesTestInstance = RouterInstance<allTemplatesTest, 'scene'>['testAction'];
+// type allTemplatesTestInstance = RouterInstance<allTemplatesTest, 'scene'>['testAction'];
 
 type allTemplatesTestOverride = AllTemplates<{scene: DefaultTemplates['stack']}>;
 type allTemplatesTestOverrideSceneShow = allTemplatesTestOverride['scene'];
