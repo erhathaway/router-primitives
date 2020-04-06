@@ -11,7 +11,7 @@ const deserializer: SerializedStateDeserializer = (serializedLocation = ''): IOu
     });
     const pathname = locationStringParts[0].split('/').filter(s => s !== '');
 
-    return {search, pathname, options: {}};
+    return {search, pathname};
 };
 
 export default deserializer;

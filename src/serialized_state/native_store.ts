@@ -126,7 +126,8 @@ export default class NativeStore implements ISerializedStateStore {
             this.currentLocationInHistory = this.history.length - 1;
         }
 
-        this.setState(this.getState(), {updateHistory: false});
+        const existingLocation = this.getState() as IInputLocation;
+        this.setState({...existingLocation}, {updateHistory: false});
     }
 
     private notifyObservers(): void {

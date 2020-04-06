@@ -14,7 +14,8 @@ import {
     Root,
     IInputSearch,
     IInputLocation,
-    ValueOf
+    ValueOf,
+    AllTemplates
 } from './types';
 import {IRouterBase} from './types/router_base';
 // import {IManager} from './types/manager';
@@ -25,23 +26,23 @@ export interface IInternalState {
 }
 
 export default class RouterBase<
-    Templates extends IRouterTemplates,
-    RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
+    CustomTemplates extends IRouterTemplates,
+    RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>,
     InitArgs extends IRouterInitArgs<
-        Templates,
+        CustomTemplates,
         NarrowRouterTypeName<RouterTypeName>
     > = IRouterInitArgs<
-        Templates,
+        CustomTemplates,
         NarrowRouterTypeName<RouterTypeName>
         // IManager
     >
-> implements IRouterBase<Templates, RouterTypeName, InitArgs> {
+> implements IRouterBase<CustomTemplates, RouterTypeName, InitArgs> {
     public name: InitArgs['name'];
     public type: InitArgs['type'];
     public manager: InitArgs['manager'];
-    public parent?: Parent<Templates>;
-    public routers: Childs<Templates>;
-    public root: Root<Templates>;
+    public parent?: Parent<CustomTemplates>;
+    public routers: Childs<CustomTemplates>;
+    public root: Root<CustomTemplates>;
     public getState?: InitArgs['getState'];
     public subscribe?: InitArgs['subscribe'];
     public config: InitArgs['config'];
@@ -87,11 +88,11 @@ export default class RouterBase<
         // Since actions come from the template and are decorated by the manager, we need to bind them
         // to the router instance where they live
         (actions || []).forEach(actionName => {
-            if ((this as RouterInstance<Templates, RouterTypeName>)[actionName]) {
+            if ((this as RouterInstance<CustomTemplates, RouterTypeName>)[actionName]) {
                 // eslint-disable-next-line
-                (this as RouterInstance<Templates, RouterTypeName>)[actionName] = (this as any)[
+                (this as RouterInstance<CustomTemplates, RouterTypeName>)[
                     actionName
-                ].bind(this);
+                ] = (this as any)[actionName].bind(this);
             }
         });
         // this._state = this._state.bind(this);
@@ -113,7 +114,7 @@ export default class RouterBase<
         return this.config.routeKey || this.name;
     }
 
-    get siblings(): RouterInstance<Templates, RouterTypeName>[] {
+    get siblings(): RouterInstance<CustomTemplates, RouterTypeName>[] {
         // TODO fix this any
         // eslint-disable-next-line
         return this.parent.routers[this.type].filter(r => r.name !== this.name) as any;
@@ -122,9 +123,9 @@ export default class RouterBase<
     /**
      * Returns all neighbors of a certain router type. This could include the same router type of this router if desired.
      */
-    public getNeighborsByType<DesiredType extends NarrowRouterTypeName<keyof Templates>>(
-        type: DesiredType
-    ): Array<RouterInstance<Templates, DesiredType>> {
+    public getNeighborsByType<
+        DesiredType extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+    >(type: DesiredType): Array<RouterInstance<CustomTemplates, DesiredType>> {
         if (this.parent && this.parent.routers) {
             return this.parent.routers[type] || [];
         }
@@ -146,8 +147,8 @@ export default class RouterBase<
      * Returns all neighboring routers. That is, all routers that have the same parent but are not of this router type.
      */
     public getNeighbors(): NeighborsOfType<
-        Templates,
-        NarrowRouterTypeName<Exclude<keyof Templates, RouterTypeName>>
+        CustomTemplates,
+        NarrowRouterTypeName<Exclude<keyof AllTemplates<CustomTemplates>, RouterTypeName>>
     > {
         if (!this.parent) {
             return [];
@@ -198,11 +199,13 @@ export default class RouterBase<
     public serialize(
         options: ISerializeOptions = {}
         // eslint-disable-next-line
-    ): IRouterDeclaration<Templates> & {[key: string]: any} {
+    ): IRouterDeclaration<AllTemplates<CustomTemplates>> & {[key: string]: any} {
         // create router declaration object
         // TODO clean up this mess
-        // eslint-disable-next-line
-        const serialized: IRouterDeclaration<Templates> & {[key: string]: any} = {
+        const serialized: IRouterDeclaration<AllTemplates<CustomTemplates>> & {
+            // eslint-disable-next-line
+            [key: string]: any;
+        } = {
             name: this.name,
             routeKey: options.alwaysShowRouteKey
                 ? this.routeKey
@@ -225,7 +228,7 @@ export default class RouterBase<
             // eslint-disable-next-line
             acc[type] = this.routers[type].map(childRouter => childRouter.serialize(options));
             return acc;
-        }, {} as {[routerType: string]: IRouterDeclaration<Templates>[]});
+        }, {} as {[routerType: string]: IRouterDeclaration<AllTemplates<CustomTemplates>>[]});
 
         if (childRouterTypes.length > 0) {
             serialized.routers = childRouters;
@@ -263,12 +266,14 @@ export default class RouterBase<
         return false;
     }
 
-    get state(): RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>> {
+    get state(): RouterCurrentState<
+        ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>
+    > {
         return this._state();
     }
 
     protected _state = (): RouterCurrentState<
-        ExtractCustomStateFromTemplate<Templates[RouterTypeName]>
+        ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>
     > & {isActive?: boolean} => {
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');
@@ -276,18 +281,18 @@ export default class RouterBase<
         const {current} = this.getState();
         const newState = current || {};
         return {...newState, ...this.EXPERIMENTAL_internal_state} as RouterCurrentState<
-            ExtractCustomStateFromTemplate<Templates[RouterTypeName]>
+            ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>
         > & {isActive?: boolean};
     };
 
     public get history(): RouterHistoricalState<
-        ExtractCustomStateFromTemplate<Templates[RouterTypeName]>
+        ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>
     > {
         return this._history();
     }
 
     protected _history = (): RouterHistoricalState<
-        ExtractCustomStateFromTemplate<Templates[RouterTypeName]>
+        ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>
     > => {
         if (!this.getState) {
             throw new Error('no getState function specified by the manager');

@@ -17,7 +17,7 @@ export const addRealDisableCacheFlagToContext = <
     CustomTemplates extends IRouterTemplates,
     Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
 >(
-    router: RouterInstance<AllTemplates<CustomTemplates>, Name>,
+    router: RouterInstance<CustomTemplates, Name>,
     ctx: ILocationActionContext
 ): ILocationActionContext => {
     // Figure out if caching should occur:
@@ -48,7 +48,10 @@ export const addRealDisableCacheFlagToContext = <
 
 export const calculateIfShouldUseCache = (
     ctx: ILocationActionContext,
-    options: ILocationOptions
+    _options: ILocationOptions
 ): boolean => {
-    return !ctx.disableCaching && !(options.disableCaching || false);
+    // TODO why was this needed previously?
+    // return !ctx.disableCaching && !(options.disableCaching || false);
+
+    return !ctx.disableCaching;
 };

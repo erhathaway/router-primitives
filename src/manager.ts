@@ -26,8 +26,8 @@ import {
     RouterReducerFn,
     IRouterActionOptions,
     DefaultRouterActions,
-    RouterTemplateUnion,
-    CustomTemplatesFromAllTemplates
+    RouterTemplateUnion
+    // CustomTemplatesFromAllTemplates
 } from './types';
 
 import DefaultRouter from './router_base';
@@ -52,7 +52,7 @@ const createRouterFromTemplate = <
     actionFnDecorator?: ActionWraperFnDecorator,
     actionExecutorOptions?: {printerTracerResults?: boolean}
     // ): RouterClass<AllTemplates<CustomTemplates>, RouterTypeName, IManager<CustomTemplates>> => {
-): RouterClass<AllTemplates<CustomTemplates>, RouterTypeName> => {
+): RouterClass<CustomTemplates, RouterTypeName> => {
     // TODO figure out why actions are 'default router actions' type
     const {actions, reducer} = template;
 
@@ -68,7 +68,7 @@ const createRouterFromTemplate = <
                 Object.assign(this, {
                     [actionName]: createActionExecutor(
                         actions[actionName],
-                        actionName as string,
+                        actionName,
                         actionFnDecorator,
                         actionExecutorOptions
                     )
@@ -82,7 +82,7 @@ const createRouterFromTemplate = <
         }
     };
     return (MixedInClass as unknown) as RouterClass<
-        AllTemplates<CustomTemplates>,
+        CustomTemplates,
         RouterTypeName
         // IManager<CustomTemplates>
     >;
@@ -94,12 +94,12 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
     public printTracerResults: boolean;
     public actionFnDecorator?: ActionWraperFnDecorator;
     public tracerSession: TracerSession;
-    public _routers: Record<string, RouterInstance<AllTemplates<CustomTemplates>>>;
-    public rootRouter: Root<AllTemplates<CustomTemplates>>;
+    public _routers: Record<string, RouterInstance<CustomTemplates>>;
+    public rootRouter: Root<CustomTemplates>;
     public serializedStateStore: IManagerInit<CustomTemplates>['serializedStateStore'];
     public routerStateStore: IManagerInit<CustomTemplates>['routerStateStore'];
     public routerTypes: ManagerRouterTypes<
-        AllTemplates<CustomTemplates>
+        CustomTemplates
         // IManager<CustomTemplates>
     >;
 
@@ -207,7 +207,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
             acc[templateName] = RouterFromTemplate;
 
             return acc;
-        }, {} as ManagerRouterTypes<AllTemplates<CustomTemplates>>);
+        }, {} as ManagerRouterTypes<CustomTemplates>);
 
         // add initial routers
         this._routers = {};
@@ -225,14 +225,17 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         }
     }
 
-    get routers(): Record<string, RouterInstance<AllTemplates<CustomTemplates>>> {
+    get routers(): Record<string, RouterInstance<CustomTemplates>> {
         return this._routers || {};
     }
 
     public linkTo = (
         routerName: string,
         actionName: string,
-        actionArgs: Omit<IRouterActionOptions, 'dryRun'>
+        actionArgs: Omit<
+            IRouterActionOptions<RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>>,
+            'dryRun'
+        >
     ): string => {
         const router = this.routers[routerName];
         if (!router) {
@@ -304,7 +307,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         // if it has no parent and there is not yet a root
         if (!parentName && !this.rootRouter) {
             // Narrow router type to the root router type
-            this.rootRouter = router as Root<AllTemplates<CustomTemplates>>;
+            this.rootRouter = router as Root<CustomTemplates>;
         } else if (!parentName && this.rootRouter) {
             throw new Error(
                 'Root router already exists. You likely forgot to specify a parentName'
@@ -356,10 +359,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         this.unregisterRouter(name);
     };
 
-    public registerRouter(
-        name: string,
-        router: RouterInstance<AllTemplates<CustomTemplates>>
-    ): void {
+    public registerRouter(name: string, router: RouterInstance<CustomTemplates>): void {
         this._routers[name] = router;
     }
 
@@ -374,7 +374,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
     >(
         location: IInputLocation,
-        router: RouterInstance<AllTemplates<CustomTemplates>, NarrowRouterTypeName<Name>>,
+        router: RouterInstance<CustomTemplates, NarrowRouterTypeName<Name>>,
         ctx: Omit<ILocationActionContext, 'actionName'> = {},
         newState: Record<
             string,
@@ -417,8 +417,8 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
     >(
         routerDeclaration: IRouterDeclaration<AllTemplates<CustomTemplates>>,
         routerType: Name,
-        parent: RouterInstance<AllTemplates<CustomTemplates>, Name>
-    ): IRouterConfig {
+        parent: RouterInstance<CustomTemplates, Name>
+    ): IRouterConfig<RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>> {
         const templateConfig = this.templates[routerType].config;
         const hasParentOrIsRoot =
             parent && parent.isPathRouter !== undefined ? parent.isPathRouter : true;
@@ -450,7 +450,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
 
     public validateNeighborsOfOtherTypesArentPathRouters<
         Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
-    >(router: RouterInstance<AllTemplates<CustomTemplates>, Name>): void {
+    >(router: RouterInstance<CustomTemplates, Name>): void {
         const nameOfNeighboorRouterThatIsPathRouter = router
             .getNeighbors()
             .reduce((acc, r) => (r.isPathRouter ? r.name : acc), undefined);
@@ -466,7 +466,11 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
 
     public validateRouterCreationInfo<
         Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
-    >(name: string, type: Name, config: IRouterConfig): void {
+    >(
+        name: string,
+        type: Name,
+        config: IRouterConfig<RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>>
+    ): void {
         // Check if the router type exists
         if (!this.routerTypes[type] && type !== 'root') {
             throw new Error(
@@ -503,11 +507,9 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         type,
         parentName
     }: // TODO change Templates to CustomTemplates so generics flow into children on tree
-    IRouterCreationInfo<
-        AllTemplates<CustomTemplates>,
-        NarrowRouterTypeName<Name>
-    >): IRouterInitArgs<
-        AllTemplates<CustomTemplates>,
+    IRouterCreationInfo<CustomTemplates, NarrowRouterTypeName<Name>>): IRouterInitArgs<
+        CustomTemplates,
+        // AllTemplates<CustomTemplates>,
         NarrowRouterTypeName<Name>
         // IManager<CustomTemplates>
     > {
@@ -523,9 +525,10 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
             // TODO fix this type
             // CustomTemplatesFromAllTemplates should overlap with CustomTemplates
             // IManager<CustomTemplates> should work and not need a casting to `unknown`
-            manager: (this as unknown) as IManager<
-                CustomTemplatesFromAllTemplates<AllTemplates<CustomTemplates>, AllTemplates>
-            >,
+            manager: (this as unknown) as IManager<CustomTemplates>,
+            // IManager<
+            //     CustomTemplatesFromAllTemplates<AllTemplates<CustomTemplates>, AllTemplates>
+            // >,
             root: this.rootRouter,
             getState: this.routerStateStore.createRouterStateGetter(name),
             subscribe: this.routerStateStore.createRouterStateSubscriber(name),
@@ -543,11 +546,11 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
     >(
         initalArgs: IRouterInitArgs<
-            AllTemplates<CustomTemplates>,
+            CustomTemplates,
             NarrowRouterTypeName<Name>
             // IManager<CustomTemplates>
         >
-    ): RouterInstance<AllTemplates<CustomTemplates>, NarrowRouterTypeName<Name>> {
+    ): RouterInstance<CustomTemplates, NarrowRouterTypeName<Name>> {
         const routerClass = this.routerTypes[initalArgs.type];
         // TODO add tests for passing of action names
         return new routerClass({...initalArgs});
@@ -596,7 +599,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         }
         const newState = this.calcNewRouterState(
             location,
-            this.rootRouter as RouterInstance<AllTemplates<CustomTemplates>>
+            this.rootRouter as RouterInstance<CustomTemplates>
         );
 
         this.routerStateStore.setState(newState);
@@ -615,10 +618,10 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         config,
         type,
         parentName
-    }: IRouterCreationInfo<
-        AllTemplates<CustomTemplates>,
-        NarrowRouterTypeName<Name>
-    >): RouterInstance<AllTemplates<CustomTemplates>, Name> {
+    }: IRouterCreationInfo<CustomTemplates, NarrowRouterTypeName<Name>>): RouterInstance<
+        CustomTemplates,
+        Name
+    > {
         this.validateRouterCreationInfo(name, type, config);
 
         const initalArgs = this.createNewRouterInitArgs({name, config, type, parentName});

@@ -49,7 +49,7 @@ const setData: RouterActionFn = (options, location, router, ctx) => {
     return router.show(options, location, router, ctx);
 };
 
-const reducer: RouterReducerFn<string> = (location, router, _ctx) => {
+const reducer: RouterReducerFn = (location, router, _ctx) => {
     // const newState: RouterCurrentState = {};
 
     // TODO change this to ValueOf<IInputSearch> when data supports more than just `string` types

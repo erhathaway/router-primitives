@@ -14,7 +14,8 @@ import {
     Root,
     IInputLocation,
     ValueOf,
-    IInputSearch
+    IInputSearch,
+    AllTemplates
     // CustomTemplatesFromAllTemplates
 } from '../types';
 // import {IManager} from './manager';
@@ -24,15 +25,15 @@ export interface IRouterBaseInternalState {
 }
 
 export interface IRouterBase<
-    Templates extends IRouterTemplates<unknown>,
-    RouterTypeName extends NarrowRouterTypeName<keyof Templates>,
+    CustomTemplates extends IRouterTemplates<unknown>,
+    RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>,
     // TODO change Templates to CustomTemplates and pass to IManager
     InitArgs extends IRouterInitArgs<
-        Templates,
+        CustomTemplates,
         NarrowRouterTypeName<RouterTypeName>
         // IManager<CustomTemplatesFromAllTemplates<Templates>>
     > = IRouterInitArgs<
-        Templates,
+        CustomTemplates,
         NarrowRouterTypeName<RouterTypeName>
         // IManager<CustomTemplatesFromAllTemplates<Templates>>
     >
@@ -40,9 +41,9 @@ export interface IRouterBase<
     name: InitArgs['name'];
     type: InitArgs['type'];
     manager: InitArgs['manager'];
-    parent?: Parent<Templates>;
-    routers: Childs<Templates>;
-    root: Root<Templates>;
+    parent?: Parent<CustomTemplates>;
+    routers: Childs<CustomTemplates>;
+    root: Root<CustomTemplates>;
     getState?: InitArgs['getState'];
     subscribe?: InitArgs['subscribe'];
     config: InitArgs['config'];
@@ -52,21 +53,23 @@ export interface IRouterBase<
 
     routeKey: string;
 
-    siblings: RouterInstance<Templates, RouterTypeName>[];
+    siblings: RouterInstance<CustomTemplates, RouterTypeName>[];
 
     /**
      * Returns all neighbors of a certain router type. This could include the same router type of this router if desired.
      */
-    getNeighborsByType: <DesiredType extends NarrowRouterTypeName<keyof Templates>>(
+    getNeighborsByType: <
+        DesiredType extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+    >(
         type: DesiredType
-    ) => Array<RouterInstance<Templates, DesiredType>>;
+    ) => Array<RouterInstance<CustomTemplates, DesiredType>>;
 
     /**
      * Returns all neighboring routers. That is, all routers that have the same parent but are not of this router type.
      */
     getNeighbors: () => NeighborsOfType<
-        Templates,
-        NarrowRouterTypeName<Exclude<keyof Templates, RouterTypeName>>
+        CustomTemplates,
+        NarrowRouterTypeName<Exclude<keyof AllTemplates<CustomTemplates>, RouterTypeName>>
     >;
 
     /**
@@ -92,11 +95,15 @@ export interface IRouterBase<
     serialize: (
         options: ISerializeOptions
     ) => // eslint-disable-next-line
-    IRouterDeclaration<Templates> & {[key: string]: any};
+    IRouterDeclaration<AllTemplates<CustomTemplates>> & {[key: string]: any};
 
     isPathRouter: boolean;
 
-    state: RouterCurrentState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>;
+    state: RouterCurrentState<
+        ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>
+    >;
 
-    history: RouterHistoricalState<ExtractCustomStateFromTemplate<Templates[RouterTypeName]>>;
+    history: RouterHistoricalState<
+        ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>
+    >;
 }

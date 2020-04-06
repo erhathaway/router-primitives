@@ -3,7 +3,7 @@ import {IOutputLocation, IInputLocation, StateObserver, ILocationOptions} from '
 export type SerializedStateDeserializer = (serializedLocation: string) => IOutputLocation;
 export type SerializedStateSerializer = (
     newLocation: IInputLocation,
-    oldLocation?: IInputLocation
+    oldLocation?: IOutputLocation
 ) => {
     location: string;
     options: ILocationOptions;

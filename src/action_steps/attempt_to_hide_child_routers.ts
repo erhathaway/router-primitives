@@ -60,7 +60,7 @@ const attemptToHideChildRouters: ActionStep = (options, existingLocation, router
         } else {
             ctx.tracer.logStep(`Caching state`, {shouldCache});
 
-            router.manager.routerCache.setCache(router.name, {visible, data: options.data});
+            router.manager.routerCache.setCache(router.name, {visible, data: options.data as any});
         }
     } else {
         ctx.tracer.logStep(`Not Caching state`, {shouldCache});

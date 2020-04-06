@@ -9,7 +9,8 @@ import {
     ILocationActionContext,
     IInputLocation,
     ActionWraperFnDecorator,
-    ActionStep
+    ActionStep,
+    RouterCustomStateFromTemplates
 } from './types';
 import {
     attemptToShowChildRouters,
@@ -36,8 +37,8 @@ const createActionStepReducer = <
     CustomTemplates extends IRouterTemplates,
     Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
 >(
-    options: IRouterActionOptions,
-    routerInstance: RouterInstance<AllTemplates<CustomTemplates>, Name>
+    options: IRouterActionOptions<RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>>,
+    routerInstance: RouterInstance<CustomTemplates, Name>
 ) => ({location, ctx}: ReturnType<ActionStep>, fn: ActionStep) => {
     return fn(options, location, routerInstance, ctx);
 };
@@ -59,9 +60,11 @@ const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
     actionExecutorOptions?: {printerTracerResults?: boolean}
 ): RouterActionFn => {
     function actionWrapper<Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>(
-        options: IRouterActionOptions = {},
+        options: IRouterActionOptions<
+            RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>
+        > = {},
         existingLocation?: IOutputLocation,
-        routerInstance: RouterInstance<AllTemplates<CustomTemplates>, Name> = this,
+        routerInstance: RouterInstance<CustomTemplates, Name> = this,
         inputCtx: ILocationActionContext = {actionName}
     ): IInputLocation {
         const actionStepReducer = createActionStepReducer(options, routerInstance);
