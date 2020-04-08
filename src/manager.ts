@@ -40,6 +40,8 @@ import DefaultRouterCache from './all_router_cache';
 // import {DefaultTemplates} from './types/router_templates';
 // import {DefaultTemplates} from './types/router_templates';
 // import {DefaultTemplates} from './types/router_templates';
+// import {DefaultTemplates} from './types/router_templates';
+// import {DefaultTemplates} from './types/router_templates';
 
 // extend router base for specific type
 const createRouterFromTemplate = <
@@ -52,7 +54,7 @@ const createRouterFromTemplate = <
     templateName: RouterTypeName,
     template: AllTemplates<CustomTemplates>[RouterTypeName],
     BaseRouter: RC,
-    actionFnDecorator?: ActionWraperFnDecorator,
+    actionFnDecorator?: ActionWraperFnDecorator<CustomTemplates, RouterTypeName>,
     actionExecutorOptions?: {printerTracerResults?: boolean}
     // ): RouterClass<AllTemplates<CustomTemplates>, RouterTypeName, IManager<CustomTemplates>> => {
 ): RouterClass<CustomTemplates, RouterTypeName> => {
@@ -72,7 +74,7 @@ const createRouterFromTemplate = <
                     [actionName]: createActionExecutor(
                         actions[actionName],
                         actionName,
-                        actionFnDecorator,
+                        actionFnDecorator as any,
                         actionExecutorOptions
                     )
                 });
@@ -95,7 +97,7 @@ const createRouterFromTemplate = <
 export default class Manager<CustomTemplates extends IRouterTemplates<unknown> = {}>
     implements IManager<CustomTemplates> {
     public printTracerResults: boolean;
-    public actionFnDecorator?: ActionWraperFnDecorator;
+    public actionFnDecorator?: ActionWraperFnDecorator<CustomTemplates, any>;
     public tracerSession: TracerSession;
     public _routers: Record<string, RouterInstance<CustomTemplates>>;
     public rootRouter: Root<CustomTemplates>;
@@ -121,7 +123,10 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         {
             shouldInitialize,
             actionFnDecorator
-        }: {shouldInitialize: boolean; actionFnDecorator?: ActionWraperFnDecorator} = {
+        }: {
+            shouldInitialize: boolean;
+            actionFnDecorator?: ActionWraperFnDecorator<CustomTemplates, any>;
+        } = {
             shouldInitialize: true
         }
     ) {
@@ -232,8 +237,8 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         return this._routers || {};
     }
 
-    public linkTo = (
-        routerName: string,
+    public linkTo = <Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>(
+        routerName: Name,
         actionName: string,
         actionArgs: Omit<
             IRouterActionOptions<RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>>,
@@ -250,10 +255,12 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
             );
         }
         // TODO change from default router actions to union of actual actions
-        const locationObj = router[actionName as keyof DefaultRouterActions]({
-            ...actionArgs,
-            dryRun: true
-        });
+        const locationObj = router[actionName as keyof DefaultRouterActions<CustomTemplates, Name>](
+            {
+                ...actionArgs,
+                dryRun: true
+            }
+        );
 
         return this.serializedStateStore.serializer(locationObj).location;
     };
@@ -378,7 +385,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
     >(
         location: IInputLocation,
         router: RouterInstance<CustomTemplates, NarrowRouterTypeName<Name>>,
-        ctx: ReducerContext = {},
+        ctx: ReducerContext<CustomTemplates, Name> = {},
         newState: Record<
             string,
             RouterCurrentStateFromTemplates<AllTemplates<CustomTemplates>>
@@ -643,15 +650,42 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
     }
 }
 
-// const test = new Manager<{custom: DefaultTemplates['data']}>({} as any);
-// const custom = test.rootRouter.routers['custom'];
-// const customState = custom[0].state;
-// const customRootState = test.rootRouter.state;
-// const manager = test.rootRouter.manager.routers['custom'];
-// const children = test.rootRouter.routers['data'][0].state;
-// const customAction = test.rootRouter.routers['custom'][0].reducer;
-// const customActionData = test.rootRouter.routers['data'][0].reducer;
-// test.routers;
-// const b = new test.routerTypes.custom({} as any);
-// const d = b.reducer('a' as any, 'b' as any, 'c' as any);
-// b.setData;
+// const manager = new Manager<{jsonRouter: DefaultTemplates['data']}>({} as any);
+// const myRouter = manager.routers['my_router']; // a union of all routers
+// const myRouterState = myRouter.state; // a union of all states
+// const myRouterReducer = myRouter.reducer;
+// const myRouterActions = myRouter.show;
+
+// const myRouterChildrenStack = myRouter.routers.stack[0];
+// const myRouterChildrenStackAction = myRouterChildrenStack.toFront;
+// const myRouterChildrenStackReducer = myRouterChildrenStack.reducer;
+// const myRouterChildrenStackState = myRouterChildrenStack.state;
+// const myRouterChildrenStackManager = myRouterChildrenStack.manager;
+
+// const myRouterChildrenJsonRouter = myRouter.routers.jsonRouter[0];
+// const myRouterChildrenJsonRouterAction = myRouterChildrenJsonRouter.setData;
+// const myRouterChildrenJsonRouterReducer = myRouterChildrenJsonRouter.reducer;
+// const myRouterChildrenJsonRouterState = myRouterChildrenJsonRouter.state;
+// const myRouterChildrenJsonRouterManager = myRouterChildrenJsonRouter.manager;
+
+// const root = manager.rootRouter;
+// const rootAction = root.show;
+// const rootReducer = root.reducer;
+// const rootState = root.state;
+
+// const jsonRouterClass = manager.routerTypes.jsonRouter;
+// const jsonRouterInstance = new jsonRouterClass({} as any);
+// const jsonRouterInstanceAction = jsonRouterInstance.setData;
+// const jsonRouterInstanceReducer = jsonRouterInstance.reducer;
+// const jsonRouterInstanceState = jsonRouterInstance.state;
+
+// const stackRouterClass = manager.routerTypes.stack;
+// const stackRouterInstance = new stackRouterClass({} as any);
+// const stackRouterInstanceAction = stackRouterInstance.toBack;
+// const stackRouterInstanceReducer = stackRouterInstance.reducer;
+// const stackRouterInstanceState = stackRouterInstance.state;
+// const stackRouterInstanceReducedState = stackRouterInstance.reducer(
+//     'a' as any,
+//     'b' as any,
+//     'c' as any
+// );

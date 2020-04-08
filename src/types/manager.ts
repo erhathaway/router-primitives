@@ -22,7 +22,7 @@ import {DefaultTemplates} from './router_templates';
 import {IRouterCache} from './router_cache';
 
 export interface IManager<CustomTemplates extends IRouterTemplates<unknown> = null> {
-    actionFnDecorator?: ActionWraperFnDecorator;
+    actionFnDecorator?: ActionWraperFnDecorator<CustomTemplates, any>;
     tracerSession: TracerSession;
     rootRouter: Root<CustomTemplates>;
     serializedStateStore: IManagerInit<CustomTemplates>['serializedStateStore'];
@@ -66,7 +66,7 @@ export interface IManager<CustomTemplates extends IRouterTemplates<unknown> = nu
     calcNewRouterState: <Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>(
         location: IInputLocation,
         router: RouterInstance<CustomTemplates, Name>,
-        ctx: Omit<ILocationActionContext, 'actionName'>,
+        ctx: Omit<ILocationActionContext<CustomTemplates, Name>, 'actionName'>,
         // TODO fill in current state's custom state generic from the above router
         newState: Record<string, RouterCurrentStateFromTemplates<AllTemplates<CustomTemplates>>>
     ) => Record<string, RouterCurrentStateFromTemplates<AllTemplates<CustomTemplates>>>;

@@ -1,6 +1,21 @@
-import {ILocationActionContext, DefaultRouterActions, ActionStep} from '../types';
+import {
+    ILocationActionContext,
+    DefaultRouterActions,
+    ActionStep,
+    RouterInstance
+    // NarrowRouterTypeName
+} from '../types';
 import {objKeys} from '../utilities';
 
+type InferCustomTemplatesFromRouter<T extends RouterInstance<any>> = T extends RouterInstance<
+    infer S
+>
+    ? S
+    : never;
+
+type InferNameFromRouter<T extends RouterInstance<any>> = T extends RouterInstance<any, infer S>
+    ? S
+    : never;
 const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) => {
     const newLocation = objKeys(router.routers).reduce((newLocationFromAllRouters, routerType) => {
         // skip routers that called the parent router
@@ -26,7 +41,11 @@ const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) =
                 return newLocationForSpecificChild;
             }
 
-            const newContext: ILocationActionContext = {
+            const newContext: ILocationActionContext<
+                any,
+                any // InferCustomTemplatesFromRouter<typeof router>,
+                // NarrowRouterTypeName<InferNameFromRouter<typeof router>>
+            > = {
                 ...ctx,
                 addingDefaults: true,
                 activatedByChildType: undefined,
@@ -72,7 +91,7 @@ const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) =
                         `No cached state found for ${child.name}, but default action found. Applying default action: ${action} for ${child.name}`
                     );
 
-                return child[action as keyof DefaultRouterActions](
+                return child[action as keyof DefaultRouterActions<any, any>](
                     {...options, data: args[0]}, // TODO pass more than just the first arg
                     newLocationForSpecificChild,
                     child,

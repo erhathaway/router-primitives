@@ -53,19 +53,23 @@ const createActionStepReducer = <
  * @param actionName name of the action. Usually `show` or `hide` but can be any custom action defined in a template
  *
  */
-const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
-    actionFn: RouterActionFn,
+const createActionExecutor = <
+    CustomTemplates extends IRouterTemplates,
+    Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+>(
+    actionFn: RouterActionFn<CustomTemplates, Name>,
     actionName: string,
-    actionFnDecorator?: ActionWraperFnDecorator,
+    actionFnDecorator?: ActionWraperFnDecorator<CustomTemplates, Name>,
     actionExecutorOptions?: {printerTracerResults?: boolean}
-): RouterActionFn => {
-    function actionWrapper<Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>(
+): RouterActionFn<CustomTemplates, Name> => {
+    // <Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>
+    function actionWrapper(
         options: IRouterActionOptions<
             RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>
         > = {},
         existingLocation?: IOutputLocation,
         routerInstance: RouterInstance<CustomTemplates, Name> = this,
-        inputCtx: ILocationActionContext = {actionName}
+        inputCtx: ILocationActionContext<CustomTemplates, Name> = {actionName}
     ): IInputLocation {
         const actionStepReducer = createActionStepReducer(options, routerInstance);
 
@@ -131,9 +135,9 @@ const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
     }
 
     if (actionFnDecorator) {
-        return actionFnDecorator(actionWrapper as RouterActionFn);
+        return actionFnDecorator(actionWrapper);
     }
-    return actionWrapper as RouterActionFn;
+    return actionWrapper;
 };
 
 export default createActionExecutor;

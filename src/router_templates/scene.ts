@@ -1,5 +1,5 @@
 import {
-    RouterActionFn,
+    TemplateAction,
     // RouterReducerFn,
     RouterCurrentState,
     IRouterTemplate,
@@ -14,7 +14,7 @@ import {
  *    2. Checking whether the scene router is a pathRouter or not
  *    3. Adding the scene router to either the path or query params
  */
-const show: RouterActionFn = (options, oldLocation, router, ctx) => {
+const show: TemplateAction = (options, oldLocation, router, ctx) => {
     // Each sibling router needs to be hidden. The location is modified to reflect hiding all siblings
     const location: IInputLocation = router.siblings.reduce(
         (acc, s) => {
@@ -52,7 +52,7 @@ const show: RouterActionFn = (options, oldLocation, router, ctx) => {
     return location;
 };
 
-const hide: RouterActionFn = (_options, oldLocation, router, _ctx) => {
+const hide: TemplateAction = (_options, oldLocation, router, _ctx) => {
     const location = {...oldLocation};
 
     if (router.isPathRouter) {

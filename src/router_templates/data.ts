@@ -1,4 +1,4 @@
-import {RouterActionFn, IRouterTemplate, TemplateReducer} from '../types';
+import {TemplateAction, TemplateReducer, IRouterTemplate} from '../types';
 
 /**
  * A data router will display data as the routeKey in either the pathname or query params
@@ -10,7 +10,12 @@ import {RouterActionFn, IRouterTemplate, TemplateReducer} from '../types';
  *    2. Checking if the router is a path router or not
  *    3. Adding the scene router to either the path or query params
  */
-const show: RouterActionFn = (options, oldLocation, router, ctx) => {
+const show: TemplateAction<CustomState, CustomActionNames> = (
+    options,
+    oldLocation,
+    router,
+    ctx
+) => {
     const location = {...oldLocation};
 
     const data = options && options.data ? options.data : router.state.data;
@@ -33,7 +38,12 @@ const show: RouterActionFn = (options, oldLocation, router, ctx) => {
     return location;
 };
 
-const hide: RouterActionFn = (_options, oldLocation, router, _ctx) => {
+const hide: TemplateAction<CustomState, CustomActionNames> = (
+    _options,
+    oldLocation,
+    router,
+    _ctx
+) => {
     const location = {...oldLocation};
 
     if (router.isPathRouter) {
@@ -45,7 +55,12 @@ const hide: RouterActionFn = (_options, oldLocation, router, _ctx) => {
     return location;
 };
 
-const setData: RouterActionFn = (options, location, router, ctx) => {
+const setData: TemplateAction<CustomState, CustomActionNames> = (
+    options,
+    location,
+    router,
+    ctx
+) => {
     return router.show(options, location, router, ctx);
 };
 
@@ -72,8 +87,11 @@ const reducer: TemplateReducer<string, 'setData'> = (location, router, _ctx) => 
     };
 };
 
-// type Template = ;
-const template: IRouterTemplate<string, 'setData'> = {
+type CustomState = string;
+// TemplateAction<CustomState, CustomActionNames>
+// TemplateReducer<CustomState, CustomActionNames>
+type CustomActionNames = 'setData';
+const template: IRouterTemplate<CustomState, CustomActionNames> = {
     actions: {show, hide, setData},
     reducer,
     config: {canBePathRouter: true, isPathRouter: false}

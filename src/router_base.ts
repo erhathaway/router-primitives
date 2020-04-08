@@ -88,11 +88,9 @@ export default class RouterBase<
         // Since actions come from the template and are decorated by the manager, we need to bind them
         // to the router instance where they live
         (actions || []).forEach(actionName => {
-            if ((this as RouterInstance<CustomTemplates, RouterTypeName>)[actionName]) {
+            if ((this as Record<any, any>)[actionName]) {
                 // eslint-disable-next-line
-                (this as RouterInstance<CustomTemplates, RouterTypeName>)[
-                    actionName
-                ] = (this as any)[actionName].bind(this);
+                (this as any)[actionName] = (this as any)[actionName].bind(this);
             }
         });
         // this._state = this._state.bind(this);
