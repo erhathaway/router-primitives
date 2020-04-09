@@ -214,7 +214,7 @@ const toBack: TemplateAction<CustomState, CustomActionNames> = (
 
 const reducer: TemplateReducer<CustomState, CustomActionNames> = (location, router, _ctx) => {
     const value = location.search[router.routeKey] as number;
-    router.toFront({data: 0}); // test remove me
+    // router.toFront({data: 0}); // test remove me
     if (value) {
         return {
             visible: true,

@@ -781,7 +781,8 @@ export type NeighborsOfType<
         >;
     }[Exclude<keyof AllTemplates<CustomTemplates>, N>]
 >;
-// type neighborsOfTypeTest = NeighborsOfType<DefaultTemplates, 'scene'>;
+type neighborsOfTypeTestScene = NeighborsOfType<DefaultTemplates, 'scene'>;
+type neighborsOfTypeTestStack = NeighborsOfType<DefaultTemplates, 'data'>;
 
 /**
  * -------------------------------------------------

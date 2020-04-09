@@ -37,11 +37,6 @@ import {objKeys} from './utilities';
 import createActionExecutor from './action_executor';
 import {IRouterCache} from './types/router_cache';
 import DefaultRouterCache from './all_router_cache';
-// import {DefaultTemplates} from './types/router_templates';
-// import {DefaultTemplates} from './types/router_templates';
-// import {DefaultTemplates} from './types/router_templates';
-// import {DefaultTemplates} from './types/router_templates';
-// import {DefaultTemplates} from './types/router_templates';
 
 // extend router base for specific type
 const createRouterFromTemplate = <
@@ -650,7 +645,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
     }
 }
 
-// const manager = new Manager<{jsonRouter: DefaultTemplates['data']}>({} as any);
+// const manager = new Manager<{jsonRouter: DefaultTemplates['data']}>({});
 // const myRouter = manager.routers['my_router']; // a union of all routers
 // const myRouterState = myRouter.state; // a union of all states
 // const myRouterReducer = myRouter.reducer;
@@ -661,12 +656,20 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
 // const myRouterChildrenStackReducer = myRouterChildrenStack.reducer;
 // const myRouterChildrenStackState = myRouterChildrenStack.state;
 // const myRouterChildrenStackManager = myRouterChildrenStack.manager;
+// const myRouterChildrenStackSiblings = myRouterChildrenStack.siblings;
+// const myRouterChildrenStackNeighbors = myRouterChildrenStack.getNeighbors();
 
 // const myRouterChildrenJsonRouter = myRouter.routers.jsonRouter[0];
 // const myRouterChildrenJsonRouterAction = myRouterChildrenJsonRouter.setData;
 // const myRouterChildrenJsonRouterReducer = myRouterChildrenJsonRouter.reducer;
 // const myRouterChildrenJsonRouterState = myRouterChildrenJsonRouter.state;
 // const myRouterChildrenJsonRouterManager = myRouterChildrenJsonRouter.manager;
+// const myRouterChildrenJsonRouterSiblings = myRouterChildrenJsonRouter.siblings;
+// const myRouterChildrenJsonRouterNeighbors = myRouterChildrenJsonRouter.getNeighbors();
+// const myRouterChildrenJsonRouterType = myRouterChildrenJsonRouter.type;
+// const myRouterChildrenJsonRouterName = myRouterChildrenJsonRouter.name;
+// const myRouterChildrenJsonRouterHistory = myRouterChildrenJsonRouter.history;
+// const myRouterChildrenJsonRouterSubscribe = myRouterChildrenJsonRouter.subscribe;
 
 // const root = manager.rootRouter;
 // const rootAction = root.show;
@@ -678,6 +681,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
 // const jsonRouterInstanceAction = jsonRouterInstance.setData;
 // const jsonRouterInstanceReducer = jsonRouterInstance.reducer;
 // const jsonRouterInstanceState = jsonRouterInstance.state;
+// const jsonRouterInstanceSiblings = jsonRouterInstance.siblings;
 
 // const stackRouterClass = manager.routerTypes.stack;
 // const stackRouterInstance = new stackRouterClass({} as any);
@@ -689,3 +693,4 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
 //     'b' as any,
 //     'c' as any
 // );
+// const stackRouterInstanceSiblings = stackRouterInstance.siblings;

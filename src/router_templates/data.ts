@@ -70,7 +70,7 @@ const reducer: TemplateReducer<string, 'setData'> = (location, router, _ctx) => 
     // TODO change this to ValueOf<IInputSearch> when data supports more than just `string` types
     let routerData: string;
     if (router.isPathRouter) {
-        routerData = location.pathname[router.pathLocation] as string;
+        routerData = location.pathname[router.pathLocation];
     } else {
         routerData = location.search[router.routeKey] as string;
     }
