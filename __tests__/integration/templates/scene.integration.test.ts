@@ -254,13 +254,11 @@ describe('Integration', () => {
                                                     scene: [
                                                         {
                                                             name: 'side-tools-menu-scene',
-                                                            // defaultAction: ['hide'],
                                                             disableCaching: false, // enable caching
                                                             routers: {
                                                                 scene: [
                                                                     {
                                                                         name: 'final-router'
-                                                                        // defaultAction: ['hide']
                                                                     }
                                                                 ]
                                                             }
@@ -278,9 +276,10 @@ describe('Integration', () => {
                 stack: [{name: 'notification-modal', routeKey: 'short'}]
             }
         };
-        const manager = new Manager({routerTree: routerTreeForCacheTest});
 
         it('Caching of children on hide', () => {
+            const manager = new Manager({routerTree: routerTreeForCacheTest});
+
             // caches children but avoids children between disable cache levels
             expect(manager.routerCache.cache['side-tools']).toBe(undefined);
             expect(manager.routerCache.cache['side-tools-menu']).toBe(undefined);
@@ -309,9 +308,9 @@ describe('Integration', () => {
             manager.routers['toolbar'].hide();
 
             // has cache
-            expect(manager.routerCache.cache['side-tools'].visible).toBe(true); // disables cache
-            expect(manager.routerCache.cache['side-tools-menu']).toBe(undefined);
-            expect(manager.routerCache.cache['side-tools-menu-scene']).toBe(undefined); // enables cache
+            expect(manager.routerCache.cache['side-tools']).toBe(undefined); // disables cache
+            expect(manager.routerCache.cache['side-tools-menu']).toBe(undefined); // inherits disabled cache
+            expect(manager.routerCache.cache['side-tools-menu-scene'].visible).toBe(true); // enables cache
             expect(manager.routerCache.cache['final-router'].visible).toBe(true);
 
             expect(manager.routers['side-tools'].state.visible).toBe(false);
@@ -321,18 +320,20 @@ describe('Integration', () => {
 
             manager.routers['toolbar'].show();
 
-            expect(manager.routers['side-tools'].state.visible).toBe(true);
+            expect(manager.routers['side-tools'].state.visible).toBe(true); // b/c default action
             expect(manager.routers['side-tools-menu'].state.visible).toBe(true); // b/c default action
-            expect(manager.routers['side-tools-menu-scene'].state.visible).toBe(false);
-            expect(manager.routers['final-router'].state.visible).toBe(false);
+            expect(manager.routers['side-tools-menu-scene'].state.visible).toBe(true); // b/c cache
+            expect(manager.routers['final-router'].state.visible).toBe(true); // b/c cache
         });
 
         it('uses cache to restore visibility', () => {
+            const manager = new Manager({routerTree: routerTreeForCacheTest});
+
             manager.routers['final-router'].show();
 
-            expect(manager.routers['side-tools-menu'].state.visible).toBe(true);
-            expect(manager.routers['side-tools-menu-scene'].state.visible).toBe(true);
-            expect(manager.routers['final-router'].state.visible).toBe(true);
+            expect(manager.routers['side-tools-menu'].state.visible).toBe(true); // child was shown
+            expect(manager.routers['side-tools-menu-scene'].state.visible).toBe(true); // child was shown
+            expect(manager.routers['final-router'].state.visible).toBe(true); // caller of show action
 
             expect(manager.routerCache.cache['side-tools-menu']).toBe(undefined);
             expect(manager.routerCache.cache['side-tools-menu-scene']).toBe(undefined);
@@ -340,21 +341,35 @@ describe('Integration', () => {
 
             manager.routers['side-tools-menu'].hide();
 
-            expect(manager.routerCache.cache['side-tools-menu'].visible).toBe(false);
-            expect(manager.routerCache.cache['side-tools-menu-scene']).toBe(undefined);
-            expect(manager.routerCache.cache['final-router'].visible).toBe(true);
+            expect(manager.routerCache.cache['side-tools-menu']).toBe(undefined); // inherits disabled cache
+            expect(manager.routerCache.cache['side-tools-menu-scene'].visible).toBe(true); // enables cache
+            expect(manager.routerCache.cache['final-router'].visible).toBe(true); // inherits enabled cache
 
             manager.routers['side-tools'].hide();
 
-            // TODO validate the remaining of this
-            expect(manager.routerCache.cache['side-tools'].visible).toBe(false);
-            expect(manager.routerCache.cache['side-tools-menu'].visible).toBe(false);
-            expect(manager.routerCache.cache['side-tools-menu-scene']).toBe(undefined);
-            expect(manager.routerCache.cache['final-router'].visible).toBe(true);
+            expect(manager.routerCache.cache['side-tools']).toBe(undefined); // disables cache
+            expect(manager.routerCache.cache['side-tools-menu']).toBe(undefined); // inherits disabled cache
+            expect(manager.routerCache.cache['side-tools-menu-scene'].visible).toBe(true); // enables cache and was previously visible
+            expect(manager.routerCache.cache['final-router'].visible).toBe(true); // inherits enabled cache and was previously visible
 
             manager.routers['side-tools'].show();
 
-            expect(manager.routers['side-tools-menu'].state.visible).toBe(false);
+            expect(manager.routers['side-tools-menu'].state.visible).toBe(true);
+            expect(manager.routers['side-tools-menu-scene'].state.visible).toBe(true);
+            expect(manager.routers['final-router'].state.visible).toBe(true);
+
+            manager.routers['side-tools-menu-scene'].hide();
+
+            expect(manager.routerCache.cache['side-tools']).toBe(undefined); // disables cache
+            expect(manager.routerCache.cache['side-tools-menu']).toBe(undefined); // inherits disabled cache
+            expect(manager.routerCache.cache['side-tools-menu-scene'].visible).toBe(false); // enables cache and was previously visible
+            expect(manager.routerCache.cache['final-router'].visible).toBe(true); // inherits enabled cache and was previously visible
+
+            manager.routers['side-tools'].show();
+
+            expect(manager.routers['side-tools-menu'].state.visible).toBe(true); // default action
+            expect(manager.routers['side-tools-menu-scene'].state.visible).toBe(false); // was last directly hidden
+            expect(manager.routers['final-router'].state.visible).toBe(false); // parent was hidden
         });
     });
 });

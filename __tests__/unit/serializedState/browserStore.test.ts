@@ -81,8 +81,7 @@ describe('Browser Serialized State', () => {
             store.subscribeToStateChanges(subscriptionOne);
             const stateOne = {
                 pathname: ['newState'],
-                search: {param1: '2', param2: 'testparam'},
-                options: {}
+                search: {param1: '2', param2: 'testparam'}
             };
 
             window.location.search = '?param1=2&param2=testparam';
@@ -92,8 +91,7 @@ describe('Browser Serialized State', () => {
             store.subscribeToStateChanges(subscriptionTwo);
             const stateTwo = {
                 pathname: ['newStateOther'],
-                search: {param1: '3', param2: undefined},
-                options: {}
+                search: {param1: '3', param2: undefined}
             };
 
             window.location.search = '?param1=3';

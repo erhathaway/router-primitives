@@ -82,8 +82,8 @@ describe('Integration', () => {
 
                 expect(welcomeRouter.isPathRouter).toBe(false);
                 expect(welcomeObserver.mock.calls[1][0]).toEqual({
-                    current: {order: '1', visible: true},
-                    historical: [{order: undefined, visible: false}]
+                    current: {data: '1', visible: true},
+                    historical: [{data: undefined, visible: false}]
                 });
 
                 welcomeRouter.show();
@@ -103,10 +103,10 @@ describe('Integration', () => {
 
                 expect(welcomeRouter.isPathRouter).toBe(false);
                 expect(welcomeObserver.mock.calls[2][0]).toEqual({
-                    current: {order: undefined, visible: false},
+                    current: {data: undefined, visible: false},
                     historical: [
-                        {order: '1', visible: true},
-                        {order: undefined, visible: false}
+                        {data: '1', visible: true},
+                        {data: undefined, visible: false}
                     ]
                 });
 
@@ -134,16 +134,16 @@ describe('Integration', () => {
                 welcomeRouter.show();
                 cookiesRouter.show();
 
-                expect(dataObserver.mock.calls[1][0].current).toEqual({order: '1', visible: true});
-                expect(dataObserver.mock.calls[2][0].current).toEqual({order: '2', visible: true});
-                expect(dataObserver.mock.calls[3][0].current).toEqual({order: '3', visible: true});
+                expect(dataObserver.mock.calls[1][0].current).toEqual({data: '1', visible: true});
+                expect(dataObserver.mock.calls[2][0].current).toEqual({data: '2', visible: true});
+                expect(dataObserver.mock.calls[3][0].current).toEqual({data: '3', visible: true});
 
                 expect(welcomeObserver.mock.calls[2][0].current).toEqual({
-                    order: '2',
+                    data: '2',
                     visible: true
                 });
                 expect(cookiesObserver.mock.calls[1][0].current).toEqual({
-                    order: '1',
+                    data: '1',
                     visible: true
                 });
 
@@ -155,29 +155,29 @@ describe('Integration', () => {
                 welcomeRouter.show();
 
                 expect(welcomeObserver.mock.calls[3][0].current).toEqual({
-                    order: '1',
+                    data: '1',
                     visible: true
                 });
                 expect(cookiesObserver.mock.calls[2][0].current).toEqual({
-                    order: '2',
+                    data: '2',
                     visible: true
                 });
 
                 // hasn't changed state even though the ordering of the other two routers have
                 expect(dataObserver.mock.calls[4]).toBe(undefined);
-                expect(dataObserver.mock.calls[3][0].current).toEqual({order: '3', visible: true});
+                expect(dataObserver.mock.calls[3][0].current).toEqual({data: '3', visible: true});
 
                 welcomeRouter.hide();
 
                 expect(welcomeObserver.mock.calls[4][0].current).toEqual({
-                    order: undefined,
+                    data: undefined,
                     visible: false
                 });
                 expect(cookiesObserver.mock.calls[3][0].current).toEqual({
-                    order: '1',
+                    data: '1',
                     visible: true
                 });
-                expect(dataObserver.mock.calls[4][0].current).toEqual({order: '2', visible: true});
+                expect(dataObserver.mock.calls[4][0].current).toEqual({data: '2', visible: true});
             });
 
             it('Movement actions work - forward, backwards, toFront, toBack', () => {
@@ -206,76 +206,76 @@ describe('Integration', () => {
                 welcomeRouter.toFront();
                 cookiesRouter.toFront();
 
-                expect(dataObserver.mock.calls[1][0].current).toEqual({order: '1', visible: true});
-                expect(dataObserver.mock.calls[2][0].current).toEqual({order: '2', visible: true});
-                expect(dataObserver.mock.calls[3][0].current).toEqual({order: '3', visible: true});
+                expect(dataObserver.mock.calls[1][0].current).toEqual({data: '1', visible: true});
+                expect(dataObserver.mock.calls[2][0].current).toEqual({data: '2', visible: true});
+                expect(dataObserver.mock.calls[3][0].current).toEqual({data: '3', visible: true});
 
                 expect(welcomeObserver.mock.calls[2][0].current).toEqual({
-                    order: '2',
+                    data: '2',
                     visible: true
                 });
                 expect(cookiesObserver.mock.calls[1][0].current).toEqual({
-                    order: '1',
+                    data: '1',
                     visible: true
                 });
 
                 dataRouter.toFront();
 
-                expect(dataObserver.mock.calls[4][0].current).toEqual({order: '1', visible: true});
+                expect(dataObserver.mock.calls[4][0].current).toEqual({data: '1', visible: true});
                 expect(welcomeObserver.mock.calls[3][0].current).toEqual({
-                    order: '3',
+                    data: '3',
                     visible: true
                 });
                 expect(cookiesObserver.mock.calls[2][0].current).toEqual({
-                    order: '2',
+                    data: '2',
                     visible: true
                 });
 
                 dataRouter.toBack();
 
-                expect(dataObserver.mock.calls[5][0].current).toEqual({order: '3', visible: true});
+                expect(dataObserver.mock.calls[5][0].current).toEqual({data: '3', visible: true});
                 expect(welcomeObserver.mock.calls[4][0].current).toEqual({
-                    order: '2',
+                    data: '2',
                     visible: true
                 });
                 expect(cookiesObserver.mock.calls[3][0].current).toEqual({
-                    order: '1',
+                    data: '1',
                     visible: true
                 });
 
                 welcomeRouter.toBack();
 
-                expect(dataObserver.mock.calls[6][0].current).toEqual({order: '2', visible: true});
+                expect(dataObserver.mock.calls[6][0].current).toEqual({data: '2', visible: true});
                 expect(welcomeObserver.mock.calls[5][0].current).toEqual({
-                    order: '3',
+                    data: '3',
                     visible: true
                 });
                 expect(cookiesObserver.mock.calls[4]).toBe(undefined);
 
                 welcomeRouter.forward();
 
-                expect(dataObserver.mock.calls[7][0].current).toEqual({order: '3', visible: true});
+                expect(dataObserver.mock.calls[7][0].current).toEqual({data: '3', visible: true});
                 expect(welcomeObserver.mock.calls[6][0].current).toEqual({
-                    order: '2',
+                    data: '2',
                     visible: true
                 });
                 expect(cookiesObserver.mock.calls[4]).toBe(undefined);
 
                 welcomeRouter.backward();
 
-                expect(dataObserver.mock.calls[8][0].current).toEqual({order: '2', visible: true});
+                expect(dataObserver.mock.calls[8][0].current).toEqual({data: '2', visible: true});
                 expect(welcomeObserver.mock.calls[7][0].current).toEqual({
-                    order: '3',
+                    data: '3',
                     visible: true
                 });
                 expect(cookiesObserver.mock.calls[4]).toBe(undefined);
 
                 cookiesRouter.backward();
 
-                expect(dataObserver.mock.calls[9][0].current).toEqual({order: '1', visible: true});
+                expect(dataObserver.mock.calls[9][0].current).toEqual({data: '1', visible: true});
                 expect(welcomeObserver.mock.calls[8]).toBe(undefined);
                 expect(cookiesObserver.mock.calls[4][0].current).toEqual({
-                    order: '2',
+                    data: '2',
                     visible: true
                 });
             });
