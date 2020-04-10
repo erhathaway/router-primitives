@@ -21,7 +21,7 @@ const DEFAULT_CONFIG = {
 
 type RouterArgs<
     RouterType extends 'scene' | 'stack' | 'data' | 'feature' | 'root'
-> = IRouterInitArgs<AllTemplates, RouterType, IManager>;
+> = IRouterInitArgs<AllTemplates, RouterType>;
 
 const generateMockInit = <RouterType extends 'scene' | 'stack' | 'data' | 'feature' | 'root'>(
     requiredInits: Partial<RouterArgs<RouterType>> = {},
@@ -29,7 +29,7 @@ const generateMockInit = <RouterType extends 'scene' | 'stack' | 'data' | 'featu
 ): RouterArgs<RouterType> => {
     return {
         name: requiredInits.name || 'test',
-        config: requiredInits.config || ({} as IRouterConfig),
+        config: requiredInits.config || ({} as IRouterConfig<any>),
         type: requiredInits.type || ('scene' as RouterType),
         manager: (requiredInits.manager || jest.fn()) as IManager,
         root: {} as Root<AllTemplates>,
@@ -52,10 +52,8 @@ describe('Router', () => {
         });
 
         it('Can set routeKey', () => {
-            const mockInit = generateMockInit<'scene'>(
-                {},
-                {config: {...DEFAULT_CONFIG, routeKey: 'hi'}}
-            );
+            const config = {...DEFAULT_CONFIG, routeKey: 'hi'} as IRouterConfig<any>;
+            const mockInit = generateMockInit<'scene'>({}, {config});
             const router = new Router<AllTemplates, 'scene'>(mockInit);
             expect(router.routeKey).toBe('hi');
         });
@@ -65,7 +63,7 @@ describe('Router', () => {
         it('Can be set', () => {
             const mockInit = generateMockInit<'scene'>(
                 {},
-                {config: {...DEFAULT_CONFIG, defaultAction: ['show']}}
+                {config: {...DEFAULT_CONFIG, defaultAction: ['show'] as [string]}}
             );
             const router = new Router<AllTemplates, 'scene'>(mockInit);
             expect(router.config.defaultAction).toEqual(['show']);
@@ -74,10 +72,9 @@ describe('Router', () => {
 
     describe('Caching', () => {
         it('Can be disabled', () => {
-            const mockInit = generateMockInit<'scene'>(
-                {},
-                {config: {...DEFAULT_CONFIG, disableCaching: true}}
-            );
+            const config = {...DEFAULT_CONFIG, disableCaching: true} as IRouterConfig<any>;
+
+            const mockInit = generateMockInit<'scene'>({}, {config});
             const router = new Router<AllTemplates, 'scene'>(mockInit);
             expect(router.config.disableCaching).toBe(true);
         });
@@ -92,8 +89,10 @@ describe('Router', () => {
             });
 
             it('Config explicitly sets path router flag', () => {
+                const config = {...DEFAULT_CONFIG, isPathRouter: true} as IRouterConfig<any>;
+
                 const mockInit = generateMockInit<'scene'>({
-                    config: {...DEFAULT_CONFIG, isPathRouter: true}
+                    config
                 });
                 const router = new Router<AllTemplates, 'scene'>(mockInit);
                 expect(router.isPathRouter).toBe(true);
@@ -103,10 +102,9 @@ describe('Router', () => {
                 const parent = ({
                     isPathRouter: true
                 } as unknown) as RouterInstance<AllTemplates, 'scene'>;
-                const mockInit = generateMockInit<'scene'>(
-                    {config: {...DEFAULT_CONFIG, isPathRouter: true}},
-                    {parent}
-                );
+                const config = {...DEFAULT_CONFIG, isPathRouter: true} as IRouterConfig<any>;
+
+                const mockInit = generateMockInit<'scene'>({config}, {parent});
                 const router = new Router<AllTemplates, 'scene'>(mockInit);
                 expect(router.isPathRouter).toBe(true);
             });
@@ -282,11 +280,13 @@ describe('Router', () => {
         });
 
         it('Returns the route key if one was set during initialization', () => {
+            const config = {...DEFAULT_CONFIG, routeKey: 'hello'} as IRouterConfig<any>;
+
             const dataRouterOne = new Router<AllTemplates, 'data'>(
                 generateMockInit({
                     name: 'data1',
                     type: 'data',
-                    config: {...DEFAULT_CONFIG, routeKey: 'hello'}
+                    config
                 })
             );
             expect(dataRouterOne.routeKey).toBe('hello');

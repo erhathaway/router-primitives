@@ -231,7 +231,7 @@ describe('Integration', () => {
     });
 
     describe('Caching', () => {
-        const routerTreeForCacheTest = {
+        const routerTreeForCacheTest: IRouterDeclaration<AllTemplates> = {
             name: 'root',
             routers: {
                 scene: [{name: 'user'}],

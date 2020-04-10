@@ -3,11 +3,13 @@ import {
     isMemorySerializedStateStore,
     NativeSerializedStore,
     ISerializedStateStore,
-    isStackRouter
+    isStackRouter,
+    AllTemplates,
+    IRouterDeclaration
 } from '../../../src';
 
 describe('Integration', () => {
-    const routerTree = {
+    const routerTree: IRouterDeclaration<AllTemplates> = {
         name: 'root',
         routers: {
             scene: [

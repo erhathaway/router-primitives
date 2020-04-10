@@ -27,8 +27,8 @@ describe('Serializer', () => {
         const newLocation = {pathname: ['good', 'day'], search: {param1: '25'}};
 
         const serialized = serializer(
-            {pathname: [], search: {}, options: {}, ...newLocation},
-            {pathname: [], search: {}, options: {}, ...oldLocation}
+            {pathname: [], search: {}, ...newLocation},
+            {pathname: [], search: {}, ...oldLocation}
         );
         expect(serialized.location).toEqual('/good/day?param1=25&param2=hello');
     });
@@ -38,8 +38,8 @@ describe('Serializer', () => {
         const newLocation = {pathname: ['good', 'day'], search: {param1: '25', param2: undefined}};
 
         const serialized = serializer(
-            {pathname: [], search: {}, options: {}, ...newLocation},
-            {pathname: [], search: {}, options: {}, ...oldLocation}
+            {pathname: [], search: {}, ...newLocation},
+            {pathname: [], search: {}, ...oldLocation}
         );
         expect(serialized.location).toEqual('/good/day?param1=25');
     });
@@ -49,8 +49,8 @@ describe('Serializer', () => {
         const newLocation = {pathname: ['good', 'day'], search: {param1: '25', param2: null}};
 
         const serialized = serializer(
-            {pathname: [], search: {}, options: {}, ...newLocation},
-            {pathname: [], search: {}, options: {}, ...oldLocation}
+            {pathname: [], search: {}, ...newLocation},
+            {pathname: [], search: {}, ...oldLocation}
         );
         expect(serialized.location).toEqual('/good/day?param1=25');
     });

@@ -673,7 +673,7 @@ export interface IRouterDeclaration<Templates extends IRouterTemplates<unknown>>
     isPathRouter?: boolean;
     shouldInverselyActivate?: boolean; // TODO rename to canBeActivatedByNeighbors
     disableCaching?: boolean;
-    defaultAction?: [string, RouterCustomStateFromTemplates<Templates>] | [];
+    defaultAction?: [string] | [string, RouterCustomStateFromTemplates<Templates>] | [];
 }
 
 /**
@@ -743,7 +743,7 @@ export interface IRouterConfig<CustomState> {
     isPathRouter: boolean;
     shouldInverselyActivate: boolean;
     disableCaching: boolean; // optional b/c the default is to use the parents
-    defaultAction: [string, CustomState] | [];
+    defaultAction: [string, CustomState] | [string] | [];
     shouldParentTryToActivateSiblings: boolean;
 }
 
