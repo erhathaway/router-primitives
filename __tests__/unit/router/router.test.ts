@@ -63,7 +63,13 @@ describe('Router', () => {
         it('Can be set', () => {
             const mockInit = generateMockInit<'scene'>(
                 {},
-                {config: {...DEFAULT_CONFIG, defaultAction: ['show'] as [string]}}
+                {
+                    config: {
+                        ...DEFAULT_CONFIG,
+                        defaultAction: ['show'] as [string],
+                        isDependentOnExternalData: false
+                    }
+                }
             );
             const router = new Router<AllTemplates, 'scene'>(mockInit);
             expect(router.config.defaultAction).toEqual(['show']);
