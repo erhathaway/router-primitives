@@ -55,6 +55,8 @@ export interface IRouterBase<
 
     siblings: RouterInstance<CustomTemplates, RouterTypeName>[];
 
+    data: ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>;
+
     /**
      * Returns all neighbors of a certain router type. This could include the same router type of this router if desired.
      */

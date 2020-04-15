@@ -35,6 +35,8 @@ export interface IManager<CustomTemplates extends IRouterTemplates<unknown> = nu
     cacheKey: string;
     removeCacheAfterRehydration: boolean;
 
+    errorWhenMissingData: boolean;
+
     incrementActionCount: () => void;
     /**
      * Adds the initial routers defined during initialization

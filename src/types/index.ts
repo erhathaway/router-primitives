@@ -39,13 +39,13 @@ export interface IOutputSearch {
     [key: string]: string | string[] | number | number[] | boolean | undefined;
 }
 
-// at the moment these should be the same
 export interface ILocationOptions {
     replaceLocation?: boolean; // used to replace history location in URL
 }
 
 export interface IRouterActionOptions<CustomState> {
     data?: CustomState;
+    pathData?: Record<string, unknown>; // TODO replace this with a union of all possible data types from all templates
     disableCaching?: boolean; // the setting will only persist for the router
     replaceLocation?: boolean; // used to replace history location in URL
     dryRun?: boolean; // will prevent cache from being updated or the new location state from being stored
@@ -84,6 +84,8 @@ export interface ILocationActionContext<
     actionName: string;
     actionFn?: RouterActionFn<CustomTemplates, Name>;
     dryRun?: boolean;
+    pathData?: Record<string, unknown>;
+    routerIsMissingData?: string[];
 }
 
 export type ReducerContext<
@@ -550,6 +552,7 @@ export interface IRouterTemplateConfig {
     shouldInverselyActivate?: boolean;
     disableCaching?: boolean;
     shouldParentTryToActivateSiblings?: boolean;
+    isDependentOnExternalData?: boolean;
 }
 
 // type B<V> = V extends {[infer T]: any} ? T : undefined;
@@ -703,6 +706,7 @@ export interface IRouterInitArgs<
     ) => void;
     actions: (keyof AllTemplates<CustomTemplates>[RouterTypeName]['actions'])[]; // the router actions derived from the template. Usually 'show' and 'hide';
     // cache?: CacheClass<IRouterCache>;
+    // isDependentOnExternalData: boolean;
 }
 // type iRouterInitArgsTest = IRouterInitArgs<DefaultTemplates, 'scene'>;
 // type iRouterInitArgsTestType = iRouterInitArgsTest['type'];
@@ -745,6 +749,7 @@ export interface IRouterConfig<CustomState> {
     disableCaching: boolean; // optional b/c the default is to use the parents
     defaultAction: [string, CustomState] | [string] | [];
     shouldParentTryToActivateSiblings: boolean;
+    isDependentOnExternalData: boolean;
 }
 
 /**
@@ -888,6 +893,7 @@ export interface IManagerInit<CustomTemplates extends IRouterTemplates<unknown>>
     >;
     cacheKey?: string;
     removeCacheAfterRehydration?: boolean;
+    errorWhenMissingData?: boolean;
 }
 
 /**

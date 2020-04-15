@@ -17,7 +17,7 @@ const attemptToRemoveRouterCache: ActionStep = (options, existingLocation, route
                 ctx.tracer && ctx.tracer.logStep('Setting wasVisible to false in router cache');
                 routerInstance.manager.routerCache.setCache(routerInstance.name, {
                     visible: false,
-                    data: options.data
+                    data: routerInstance.data
                 });
             } else {
                 ctx.tracer &&

@@ -60,6 +60,7 @@ export default class RouterBase<
             getState,
             subscribe,
             actions
+            // isDependentOnExternalData
         } = init;
 
         // required
@@ -93,7 +94,6 @@ export default class RouterBase<
                 (this as any)[actionName] = (this as any)[actionName].bind(this);
             }
         });
-        // this._state = this._state.bind(this);
     }
 
     get lastDefinedParentsDisableChildCacheState(): boolean {
@@ -110,6 +110,14 @@ export default class RouterBase<
 
     get routeKey(): string {
         return this.config.routeKey || this.name;
+    }
+
+    get data(): ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]> {
+        return this.state.data
+            ? this.state.data
+            : this.manager.routerCache.cache[this.name]
+            ? this.manager.routerCache.cache[this.name].data
+            : undefined;
     }
 
     get siblings(): RouterInstance<CustomTemplates, RouterTypeName>[] {

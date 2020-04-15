@@ -81,11 +81,7 @@ const createRouterFromTemplate = <
             });
         }
     };
-    return (MixedInClass as unknown) as RouterClass<
-        CustomTemplates,
-        RouterTypeName
-        // IManager<CustomTemplates>
-    >;
+    return (MixedInClass as unknown) as RouterClass<CustomTemplates, RouterTypeName>;
 };
 
 // implements IManager<CustomTemplates>
@@ -112,6 +108,13 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
 
     public cacheKey: string;
     public removeCacheAfterRehydration: boolean;
+
+    /**
+     * Either:
+     * (A) Throw an error when a data dependent router is missing data
+     * (B) Resolve to a path shorter than the missing data router
+     */
+    public errorWhenMissingData: boolean;
 
     constructor(
         initArgs: IManagerInit<CustomTemplates> = {},
@@ -153,7 +156,8 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         routerCacheClass,
         printTraceResults,
         cacheKey,
-        removeCacheAfterRehydration
+        removeCacheAfterRehydration,
+        errorWhenMissingData
     }: // defaultTemplates
     IManagerInit<CustomTemplates>): void {
         this.printTracerResults = printTraceResults || false;
@@ -178,6 +182,10 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
             this.routerCache = new DefaultRouterCache();
         }
 
+        // check if should error when navigating to a router with a router missing data
+        // or if should resolve to a subset of the path not including the router
+        this.errorWhenMissingData = errorWhenMissingData || false;
+
         // router types
         this.templates = ({
             ...defaultRouterTemplates,
@@ -197,10 +205,8 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
             // const createActionExecutor = this.createActionExecutor;
             // create router class from the template
             const RouterFromTemplate = createRouterFromTemplate(
-                templateName as NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>,
-                selectedTemplate as AllTemplates<CustomTemplates>[NarrowRouterTypeName<
-                    keyof AllTemplates<CustomTemplates>
-                >],
+                templateName,
+                selectedTemplate,
                 BaseRouter,
                 this.actionFnDecorator,
                 {printerTracerResults: this.printTracerResults}
@@ -209,7 +215,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
             // add new Router type to accumulator
             acc[templateName] = RouterFromTemplate;
 
-            return acc;
+            return {...acc};
         }, {} as ManagerRouterTypes<CustomTemplates>);
 
         // add initial routers
@@ -447,6 +453,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
                 : templateConfig.disableCaching;
         const shouldParentTryToActivateSiblings =
             templateConfig.shouldParentTryToActivateSiblings || true;
+        const isDependentOnExternalData = templateConfig.isDependentOnExternalData || false;
 
         return {
             routeKey: routerDeclaration.routeKey || routerDeclaration.name,
@@ -455,7 +462,8 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
             shouldInverselyActivate: shouldParentTryToActivateNeighbors,
             disableCaching: isSetToDisableCaching,
             defaultAction: routerDeclaration.defaultAction || [],
-            shouldParentTryToActivateSiblings
+            shouldParentTryToActivateSiblings,
+            isDependentOnExternalData
         };
     }
 
