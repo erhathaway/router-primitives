@@ -2,7 +2,7 @@ import {ActionStep} from '../types';
 
 const validateExistenceOfData: ActionStep = (_options, location, router, ctx) => {
     if (ctx.actionName === 'show' && router.config.isDependentOnExternalData) {
-        const hasData = ctx.pathData && ctx.pathData[router.name];
+        const hasData = (ctx.pathData && ctx.pathData[router.name]) || router.data;
         if (!hasData) {
             if (router.manager.errorWhenMissingData) {
                 throw new Error(

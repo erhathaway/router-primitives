@@ -2,7 +2,7 @@ import {ActionStep} from '../types';
 
 const bindDefaultActionDataToContext: ActionStep = (options, location, router, ctx) => {
     if (options.pathData || options.data) {
-        ctx.tracer.logStep(`Binding pathData to the context`);
+        ctx.tracer.logStep(`Pathdata exists not - binding default action to the context`);
 
         const pathData = {
             [router.name]: options.data,

@@ -66,7 +66,6 @@ const createActionExecutor = <
     actionFnDecorator?: ActionWraperFnDecorator<CustomTemplates, Name>,
     actionExecutorOptions?: {printerTracerResults?: boolean}
 ): RouterActionFn<CustomTemplates, Name> => {
-    // <Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>
     function actionWrapper(
         options: IRouterActionOptions<
             RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>

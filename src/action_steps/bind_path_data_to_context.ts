@@ -7,7 +7,7 @@ const bindPathDataToContext: ActionStep = (options, location, router, ctx) => {
             ...options.pathData
         };
 
-        ctx.tracer.logStep(`Binding pathData to the context`, pathData);
+        ctx.tracer.logStep(`Binding pathData to the context`);
 
         return {location: {...location}, ctx: {...ctx, pathData}};
     } else if (

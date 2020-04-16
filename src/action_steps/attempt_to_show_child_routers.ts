@@ -1,21 +1,6 @@
-import {
-    ILocationActionContext,
-    DefaultRouterActions,
-    ActionStep,
-    RouterInstance
-    // NarrowRouterTypeName
-} from '../types';
+import {ILocationActionContext, DefaultRouterActions, ActionStep} from '../types';
 import {objKeys} from '../utilities';
 
-type InferCustomTemplatesFromRouter<T extends RouterInstance<any>> = T extends RouterInstance<
-    infer S
->
-    ? S
-    : never;
-
-type InferNameFromRouter<T extends RouterInstance<any>> = T extends RouterInstance<any, infer S>
-    ? S
-    : never;
 const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) => {
     const newLocation = objKeys(router.routers).reduce((newLocationFromAllRouters, routerType) => {
         // skip routers that called the parent router
