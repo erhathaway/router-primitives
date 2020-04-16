@@ -1,6 +1,5 @@
 import {
     TemplateAction,
-    // RouterReducerFn,
     RouterCurrentState,
     IRouterTemplate,
     IInputLocation,
@@ -31,17 +30,6 @@ const show: TemplateAction = (options, oldLocation, router, ctx) => {
     ) as IInputLocation;
 
     if (router.isPathRouter) {
-        // const {parent} = router;
-
-        // If we are not adding defaults or the parent is not visible, use the existing location
-        // This can happen when a router is called randomly. We don't want a router to become visible if it's
-        //   parent isn't visible.
-        // TODO check why this was added
-        // currently disabled b/c it interferes with a scene calling parents that are not showing
-        // if (!ctx.addingDefaults) { // } && (!parent || (!parent.state.visible && !parent.isRootRouter))) {
-        //     return location;
-        // }
-
         location.pathname[router.pathLocation] = router.routeKey;
         // Drop pathname after this pathLocation
         location.pathname = location.pathname.slice(0, router.pathLocation + 1);

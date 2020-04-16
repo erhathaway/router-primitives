@@ -45,7 +45,7 @@ export default class DefaultRouterCacheStore<CustomState> implements IRouterCach
     }
 
     /**
-     * Remove the cached visiblity state.
+     * Remove the cached visibility state.
      */
     public removeCache(routerName: string): void {
         if (this.isTransactionRunning) {

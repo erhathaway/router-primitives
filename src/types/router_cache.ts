@@ -45,7 +45,3 @@ export interface IRouterCache<CustomState> {
 
     setCacheFromSerialized: (serializedCache: string) => void;
 }
-
-type RouterCacheTestAllTemplates = IRouterCache<
-    ExtractCustomStateFromTemplate<RouterTemplateUnion<AllTemplates<{}>>>
->;

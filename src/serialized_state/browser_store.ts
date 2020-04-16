@@ -10,7 +10,7 @@ import {
 
 /**
  * The store that the router manager uses to write and read from the serialized state
- * The serialized state store is what, on the web, holds the URL - aka the serilaized state of the router tree
+ * The serialized state store is what, on the web, holds the URL - aka the serialized state of the router tree
  * The default serialized state is the URL for this store
  */
 export default class BrowserStore implements ISerializedStateStore {
@@ -70,7 +70,6 @@ export default class BrowserStore implements ISerializedStateStore {
         return this.deserializer(pathnameString + searchString);
     }
 
-    // is a BehaviorSubject
     public subscribeToStateChanges(fn: StateObserver): void {
         this.observers.push(fn);
 

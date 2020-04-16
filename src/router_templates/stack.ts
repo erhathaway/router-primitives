@@ -214,7 +214,7 @@ const toBack: TemplateAction<CustomState, CustomActionNames> = (
 
 const reducer: TemplateReducer<CustomState, CustomActionNames> = (location, router, _ctx) => {
     const value = location.search[router.routeKey] as number;
-    // router.toFront({data: 0}); // test remove me
+
     if (value) {
         return {
             visible: true,
@@ -229,14 +229,11 @@ const reducer: TemplateReducer<CustomState, CustomActionNames> = (location, rout
 };
 
 type CustomState = number;
-// TemplateAction<CustomState, CustomActionNames>
-// TemplateReducer<CustomState, CustomActionNames>
 type CustomActionNames = 'forward' | 'backward' | 'toFront' | 'toBack';
+
 const template: IRouterTemplate<CustomState, CustomActionNames> = {
     actions: {show, hide, forward, backward, toFront, toBack},
     reducer,
     config: {canBePathRouter: false}
 };
 export default template;
-
-// template.actions.forward(a, b)

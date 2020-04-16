@@ -20,7 +20,7 @@ interface ISetStateOptions {
 
 /**
  * The store that the router manager uses to write and read from the serialized state
- * The serialized state store is what, on the web, holds the URL - aka the serilaized state of the router tree
+ * The serialized state store is what, on the web, holds the URL - aka the serialized state of the router tree
  * For non web, or when manager.config.serializedStateStore === 'native' this store is used
  * The default serialized state is a string for this store
  */
@@ -95,7 +95,6 @@ export default class NativeStore implements ISerializedStateStore {
     public unsubscribeFromStateChanges(fn: StateObserver): void {
         this.observers = this.observers.filter(existingFn => existingFn !== fn);
     }
-    // unsubscribeToStateChanges // TODO fill me in!
 
     public back(): void {
         this.go(-1);
@@ -110,7 +109,7 @@ export default class NativeStore implements ISerializedStateStore {
             throw new Error('No history size change specified');
         }
 
-        // calcuate request history location
+        // calculate request history location
         const newLocation = this.currentLocationInHistory - historyChange;
 
         // if within the range of recorded history, set as the new history location

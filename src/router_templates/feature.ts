@@ -25,11 +25,6 @@ const reducer: TemplateReducer = (location, router, _ctx) => {
     return newState as RouterCurrentState;
 };
 
-// type CustomState = number;
-// TemplateAction<CustomState, CustomActionNames>
-// TemplateReducer<CustomState, CustomActionNames>
-// type CustomActionNames = 'forward' | 'backward' | 'toFront' | 'toBack';
-
 const template: IRouterTemplate = {
     actions: {show, hide},
     reducer,

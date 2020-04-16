@@ -12,9 +12,7 @@ const serializer: SerializedStateSerializer = (
     const newSearchObj = newLocation.search || {};
 
     const oldSearchObj = oldLocation.search || {};
-    // TODO validate if this can be done. We might need to merge the oldSearch in the router that calls an update
     const combinedSearchObj = {...oldSearchObj, ...newSearchObj} as {[key: string]: string};
-    // const combinedSearchObj = {...newSearchObj};
 
     Object.keys(combinedSearchObj).forEach(
         key => combinedSearchObj[key] == null && delete combinedSearchObj[key]
