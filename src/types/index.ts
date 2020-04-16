@@ -39,13 +39,13 @@ export interface IOutputSearch {
     [key: string]: string | string[] | number | number[] | boolean | undefined;
 }
 
-// at the moment these should be the same
 export interface ILocationOptions {
     replaceLocation?: boolean; // used to replace history location in URL
 }
 
 export interface IRouterActionOptions<CustomState> {
     data?: CustomState;
+    pathData?: Record<string, unknown>; // TODO replace this with a union of all possible data types from all templates
     disableCaching?: boolean; // the setting will only persist for the router
     replaceLocation?: boolean; // used to replace history location in URL
     dryRun?: boolean; // will prevent cache from being updated or the new location state from being stored
@@ -71,7 +71,10 @@ export interface IInputLocation {
     options?: ILocationOptions;
 }
 
-export interface ILocationActionContext {
+export interface ILocationActionContext<
+    CustomTemplates extends IRouterTemplates,
+    Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+> {
     disableCaching?: boolean; // the setting will persist for all routers in the update cycle
     addingDefaults?: boolean;
     // inverseActivation?: boolean;
@@ -79,11 +82,16 @@ export interface ILocationActionContext {
     activatedByChildType?: string;
     tracer?: ITracerThing;
     actionName: string;
-    actionFn?: RouterActionFn;
+    actionFn?: RouterActionFn<CustomTemplates, Name>;
     dryRun?: boolean;
+    pathData?: Record<string, unknown>;
+    routerIsMissingData?: string[];
 }
 
-export type ReducerContext = Omit<ILocationActionContext, 'actionName' | 'actionFn'>;
+export type ReducerContext<
+    CustomTemplates extends IRouterTemplates,
+    Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+> = Omit<ILocationActionContext<CustomTemplates, Name>, 'actionName' | 'actionFn'>;
 
 /**
  * -------------------------------------------------
@@ -98,8 +106,8 @@ export type ActionStep = <
     _options: IRouterActionOptions<RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>>,
     existingLocation: IInputLocation,
     routerInstance: RouterInstance<CustomTemplates, Name>,
-    ctx: ILocationActionContext
-) => {location: IInputLocation; ctx: ILocationActionContext};
+    ctx: ILocationActionContext<CustomTemplates, Name>
+) => {location: IInputLocation; ctx: ILocationActionContext<CustomTemplates, Name>};
 
 /**
  * A utility function to intersect unioned actions together
@@ -114,20 +122,26 @@ export type ActionStep = <
 /**
  * The default actions all routers should have regardless of what template are based off of
  */
-export interface DefaultRouterActions {
-    show: RouterActionFn;
-    hide: RouterActionFn;
+export interface DefaultRouterActions<
+    CustomTemplates extends IRouterTemplates<undefined>,
+    RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+> {
+    show: RouterActionFn<CustomTemplates, RouterTypeName>;
+    hide: RouterActionFn<CustomTemplates, RouterTypeName>;
 }
 
 /**
  * A utility function to intersect unioned actions together
  */
-// eslint-disable-next-line
-export type IntersectUnionedActions<T> = (T extends any
+export type IntersectUnionedActions<
+    T,
+    CustomTemplates extends IRouterTemplates<undefined>,
+    RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+> = (T extends any // eslint-disable-line
   ? (x: T) => 0
   : never) extends (x: infer R) => 0
     ? R
-    : DefaultRouterActions;
+    : DefaultRouterActions<CustomTemplates, RouterTypeName>;
 
 /**
  * A convience object used for defining the shape of a router.
@@ -140,16 +154,25 @@ export type IntersectUnionedActions<T> = (T extends any
 //     ? DefaultRouterActions
 //     : { [actionName in CustomActionNames]: RouterActionFn } & DefaultRouterActions;
 
-export type Actions<CustomActionNames extends string | null = null> = IntersectUnionedActions<
-    ActionsWithCustomUnioned<CustomActionNames>
+export type Actions<
+    CustomActionNames extends string | null,
+    CustomTemplates extends IRouterTemplates<undefined>,
+    RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+> = IntersectUnionedActions<
+    ActionsWithCustomUnioned<CustomActionNames, CustomTemplates, RouterTypeName>,
+    CustomTemplates,
+    RouterTypeName
 > &
-    DefaultRouterActions;
+    DefaultRouterActions<CustomTemplates, RouterTypeName>;
 
 export type ActionsWithCustomUnioned<
-    CustomActionNames extends string | null = null
+    CustomActionNames extends string | null,
+    CustomTemplates extends IRouterTemplates<undefined>,
+    RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
 > = CustomActionNames extends null
-    ? DefaultRouterActions
-    : {[actionName in CustomActionNames]: RouterActionFn} & DefaultRouterActions;
+    ? DefaultRouterActions<CustomTemplates, RouterTypeName>
+    : {[actionName in CustomActionNames]: RouterActionFn<CustomTemplates, RouterTypeName>} &
+          DefaultRouterActions<CustomTemplates, RouterTypeName>;
 
 // export type CustomActions<
 //     CustomActionNames extends string | null = null
@@ -157,9 +180,10 @@ export type ActionsWithCustomUnioned<
 //     ? DefaultRouterActions
 //     : { [actionName in CustomActionNames]: RouterActionFn } & DefaultRouterActions;
 
-type actionsTest = Actions<'hello' | 'goodbye'>;
-type actionsTestA = Actions;
-type actionsTestB = Actions<null>;
+type actionsTest = Actions<'hello' | 'goodbye', {}, 'scene'>;
+type actionsTestAction = actionsTest['hello'];
+// type actionsTestA = Actions;
+// type actionsTestB = Actions<null>;
 
 /**
  * A convience object used for defining the shape of a router.
@@ -177,15 +201,15 @@ export type Reducer<
  * The function that defines alterations on the router location.
  * Actions take the existing location and return a new location.
  */
-export type RouterActionFn = <
+export type RouterActionFn<
     CustomTemplates extends IRouterTemplates,
     RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
->(
+> = (
     options?: IRouterActionOptions<RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>>,
     existingLocation?: IOutputLocation,
 
     routerInstance?: RouterInstance<CustomTemplates, RouterTypeName>,
-    ctx?: ILocationActionContext
+    ctx?: ILocationActionContext<CustomTemplates, RouterTypeName>
 ) => IInputLocation;
 
 // <Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>
@@ -201,7 +225,7 @@ export type RouterReducerFn<
 > = (
     location: IInputLocation,
     router: RouterInstance<CustomTemplates, RouterTypeName>,
-    ctx: ReducerContext
+    ctx: ReducerContext<CustomTemplates, RouterTypeName>
 ) => RouterCurrentState<
     ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>
 >;
@@ -214,16 +238,34 @@ export type TemplateReducer<
     CustomActionNames extends string = undefined
 > = (
     location: IInputLocation,
-    router: RouterInstance<{template: IRouterTemplate<CustomState, CustomActionNames>}, 'template'>,
-    ctx: ReducerContext // eslint-disable-line
+    router: TemplateRouter<CustomState, CustomActionNames>,
+    ctx: ReducerContext<any, any> // eslint-disable-line
 ) => RouterCurrentState<CustomState>;
 
-type RItesttt = RI<{template: IRouterTemplate<string, 'hello' | 'world'>}, 'template'>;
+// type RItesttt = RI<{template: IRouterTemplate<string, 'hello' | 'world'>}, 'template'>;
 
 type RouterReducerFnTestString = TemplateReducer<string>;
 type RouterReducerFnTestStringActions = TemplateReducer<string, 'what' | 'how'>;
 type RouterReducerFnTestStringReturn = ReturnType<TemplateReducer<string>>;
 
+export type TemplateAction<
+    CustomState = undefined,
+    CustomActionNames extends string = undefined
+> = (
+    options?: IRouterActionOptions<CustomState>,
+    existingLocation?: IOutputLocation,
+    routerInstance?: TemplateRouter<CustomState, CustomActionNames>,
+    ctx?: ILocationActionContext<any, any>
+) => IInputLocation;
+
+type RouterActionFnTestString = TemplateAction<string>;
+type RouterActionFnTestStringActions = TemplateAction<string, 'what' | 'how'>;
+type RouterActionFnTestStringReturn = ReturnType<TemplateAction<string>>;
+
+export type TemplateRouter<
+    CustomState = undefined,
+    CustomActionNames extends string = undefined
+> = RouterInstance<{template: IRouterTemplate<CustomState, CustomActionNames>}, 'template'>;
 /**
  * -------------------------------------------------
  * Router utilities
@@ -345,25 +387,31 @@ export type RouterInstance<
         | NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
         | string = NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
 > = RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
-    ? Actions<ExtractCustomActionNamesFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>> &
+    ? Actions<
+          ExtractCustomActionNamesFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>,
+          CustomTemplates,
+          RouterTypeName
+      > &
           Reducer<CustomTemplates, RouterTypeName> &
           IRouterBase<CustomTemplates, RouterTypeName>
     : {
           [rType in NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>]: Actions<
-              ExtractCustomActionNamesFromTemplate<AllTemplates<CustomTemplates>[rType]>
+              ExtractCustomActionNamesFromTemplate<AllTemplates<CustomTemplates>[rType]>,
+              CustomTemplates,
+              rType
           > &
               Reducer<CustomTemplates, rType> &
               IRouterBase<CustomTemplates, rType>;
       }[NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>];
 
-export type RI<
-    CustomTemplates extends IRouterTemplates<unknown>, // eslint-disable-line
-    RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
-> = Actions<ExtractCustomActionNamesFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>> &
-    Reducer<CustomTemplates, RouterTypeName> &
-    IRouterBase<CustomTemplates, RouterTypeName>;
+// export type RI<
+//     CustomTemplates extends IRouterTemplates<unknown>, // eslint-disable-line
+//     RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+// > = Actions<ExtractCustomActionNamesFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>> &
+//     Reducer<CustomTemplates, RouterTypeName> &
+//     IRouterBase<CustomTemplates, RouterTypeName>;
 
-type RItest = RI<{template: IRouterTemplate<string, 'hello' | 'world'>}, 'template'>;
+// type RItest = RI<{template: IRouterTemplate<string, 'hello' | 'world'>}, 'template'>;
 // export type RouterInstance<
 //     Templates extends IRouterTemplates, // eslint-disable-line
 //     RouterTypeName extends NarrowRouterTypeName<keyof Templates> | string = NarrowRouterTypeName<
@@ -459,7 +507,11 @@ type iRouterTemplatesNoGenerics = IRouterTemplates;
  * The template that defines a specific router type
  */
 export interface IRouterTemplate<CustomState = undefined, CustomActionNames extends string = null> {
-    actions: Actions<CustomActionNames>;
+    actions: Actions<
+        CustomActionNames,
+        {template: IRouterTemplate<CustomState, CustomActionNames>},
+        'template'
+    >;
     reducer: RouterReducerFn<
         {template: IRouterTemplate<CustomState, CustomActionNames>},
         'template'
@@ -500,6 +552,7 @@ export interface IRouterTemplateConfig {
     shouldInverselyActivate?: boolean;
     disableCaching?: boolean;
     shouldParentTryToActivateSiblings?: boolean;
+    isDependentOnExternalData?: boolean;
 }
 
 // type B<V> = V extends {[infer T]: any} ? T : undefined;
@@ -623,7 +676,7 @@ export interface IRouterDeclaration<Templates extends IRouterTemplates<unknown>>
     isPathRouter?: boolean;
     shouldInverselyActivate?: boolean; // TODO rename to canBeActivatedByNeighbors
     disableCaching?: boolean;
-    defaultAction?: [string, RouterCustomStateFromTemplates<Templates>] | [];
+    defaultAction?: [string] | [string, RouterCustomStateFromTemplates<Templates>] | [];
 }
 
 /**
@@ -653,6 +706,7 @@ export interface IRouterInitArgs<
     ) => void;
     actions: (keyof AllTemplates<CustomTemplates>[RouterTypeName]['actions'])[]; // the router actions derived from the template. Usually 'show' and 'hide';
     // cache?: CacheClass<IRouterCache>;
+    // isDependentOnExternalData: boolean;
 }
 // type iRouterInitArgsTest = IRouterInitArgs<DefaultTemplates, 'scene'>;
 // type iRouterInitArgsTestType = iRouterInitArgsTest['type'];
@@ -693,8 +747,9 @@ export interface IRouterConfig<CustomState> {
     isPathRouter: boolean;
     shouldInverselyActivate: boolean;
     disableCaching: boolean; // optional b/c the default is to use the parents
-    defaultAction: [string, CustomState] | [];
+    defaultAction: [string, CustomState] | [string] | [];
     shouldParentTryToActivateSiblings: boolean;
+    isDependentOnExternalData: boolean;
 }
 
 /**
@@ -731,7 +786,8 @@ export type NeighborsOfType<
         >;
     }[Exclude<keyof AllTemplates<CustomTemplates>, N>]
 >;
-// type neighborsOfTypeTest = NeighborsOfType<DefaultTemplates, 'scene'>;
+type neighborsOfTypeTestScene = NeighborsOfType<DefaultTemplates, 'scene'>;
+type neighborsOfTypeTestStack = NeighborsOfType<DefaultTemplates, 'data'>;
 
 /**
  * -------------------------------------------------
@@ -774,7 +830,10 @@ export type NeighborsOfType<
 /**
  * A decorator to apply to action functions when they are mixed into router classes.
  */
-export type ActionWraperFnDecorator = <Fn extends RouterActionFn>(fn: Fn) => Fn;
+export type ActionWraperFnDecorator<
+    CustomTemplates extends IRouterTemplates,
+    Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+> = (fn: RouterActionFn<CustomTemplates, Name>) => RouterActionFn<CustomTemplates, Name>;
 
 /**
  * A map of all templates.
@@ -824,7 +883,6 @@ export interface IManagerInit<CustomTemplates extends IRouterTemplates<unknown>>
     router?: RouterClass<
         CustomTemplates,
         NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
-        // IManager<CustomTemplates>
     >;
     customTemplates?: CustomTemplates;
     routerCacheClass?: CacheClass<
@@ -834,6 +892,7 @@ export interface IManagerInit<CustomTemplates extends IRouterTemplates<unknown>>
     >;
     cacheKey?: string;
     removeCacheAfterRehydration?: boolean;
+    errorWhenMissingData?: boolean;
 }
 
 /**

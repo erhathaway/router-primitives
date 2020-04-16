@@ -1,12 +1,6 @@
 import Router from '../../../src/router_base';
 import Manager from '../../../src/manager';
-import {
-    IRouterInitArgs,
-    AllTemplates,
-    Root,
-    IRouterConfig,
-    RouterInstance
-} from '../../../src/types';
+import {IRouterInitArgs, Root, IRouterConfig, RouterInstance} from '../../../src/types';
 import {IManager} from '../../../src/types/manager';
 import {IRouterBase} from '../../../src/types/router_base';
 
@@ -17,11 +11,11 @@ const DEFAULT_CONFIG = {
     disableCaching: false, // optional b/c the default is to use the parents
     defaultAction: [],
     shouldParentTryToActivateSiblings: true
-};
+} as IRouterConfig<any>;
 
 type RouterArgs<
     RouterType extends 'scene' | 'stack' | 'data' | 'feature' | 'root'
-> = IRouterInitArgs<AllTemplates, RouterType, IManager>;
+> = IRouterInitArgs<null, RouterType>;
 
 const generateMockInit = <RouterType extends 'scene' | 'stack' | 'data' | 'feature' | 'root'>(
     requiredInits: Partial<RouterArgs<RouterType>> = {},
@@ -29,10 +23,10 @@ const generateMockInit = <RouterType extends 'scene' | 'stack' | 'data' | 'featu
 ): RouterArgs<RouterType> => {
     return {
         name: requiredInits.name || 'test',
-        config: requiredInits.config || ({} as IRouterConfig),
+        config: requiredInits.config || ({} as IRouterConfig<any>),
         type: requiredInits.type || ('scene' as RouterType),
         manager: (requiredInits.manager || jest.fn()) as IManager,
-        root: {} as Root<AllTemplates>,
+        root: {} as Root<null>,
         actions: ['show', 'hide'],
         ...optionalInits
     };
@@ -41,22 +35,20 @@ const generateMockInit = <RouterType extends 'scene' | 'stack' | 'data' | 'featu
 describe('Router', () => {
     describe('Initialization', () => {
         it('Has required kwargs', () => {
-            const initializeWrong = (): IRouterBase<AllTemplates, 'scene'> =>
-                new Router<AllTemplates, 'scene'>({} as RouterArgs<'scene'>);
+            const initializeWrong = (): IRouterBase<null, 'scene'> =>
+                new Router<null, 'scene'>({} as RouterArgs<'scene'>);
             expect(initializeWrong).toThrow(Error);
 
             const mockInit = generateMockInit<'scene'>();
-            const initializeRight = (): IRouterBase<AllTemplates, 'scene'> =>
-                new Router<AllTemplates, 'scene'>(mockInit);
+            const initializeRight = (): IRouterBase<null, 'scene'> =>
+                new Router<null, 'scene'>(mockInit);
             expect(initializeRight).not.toThrow(Error);
         });
 
         it('Can set routeKey', () => {
-            const mockInit = generateMockInit<'scene'>(
-                {},
-                {config: {...DEFAULT_CONFIG, routeKey: 'hi'}}
-            );
-            const router = new Router<AllTemplates, 'scene'>(mockInit);
+            const config = {...DEFAULT_CONFIG, routeKey: 'hi'} as IRouterConfig<any>;
+            const mockInit = generateMockInit<'scene'>({}, {config});
+            const router = new Router<null, 'scene'>(mockInit);
             expect(router.routeKey).toBe('hi');
         });
     });
@@ -65,20 +57,25 @@ describe('Router', () => {
         it('Can be set', () => {
             const mockInit = generateMockInit<'scene'>(
                 {},
-                {config: {...DEFAULT_CONFIG, defaultAction: ['show']}}
+                {
+                    config: {
+                        ...DEFAULT_CONFIG,
+                        defaultAction: ['show'] as [string],
+                        isDependentOnExternalData: false
+                    }
+                }
             );
-            const router = new Router<AllTemplates, 'scene'>(mockInit);
+            const router = new Router<null, 'scene'>(mockInit);
             expect(router.config.defaultAction).toEqual(['show']);
         });
     });
 
     describe('Caching', () => {
         it('Can be disabled', () => {
-            const mockInit = generateMockInit<'scene'>(
-                {},
-                {config: {...DEFAULT_CONFIG, disableCaching: true}}
-            );
-            const router = new Router<AllTemplates, 'scene'>(mockInit);
+            const config = {...DEFAULT_CONFIG, disableCaching: true} as IRouterConfig<any>;
+
+            const mockInit = generateMockInit<'scene'>({}, {config});
+            const router = new Router<null, 'scene'>(mockInit);
             expect(router.config.disableCaching).toBe(true);
         });
     });
@@ -87,27 +84,28 @@ describe('Router', () => {
         describe('True', () => {
             it('Has no parent', () => {
                 const mockInit = generateMockInit<'scene'>();
-                const router = new Router<AllTemplates, 'scene'>(mockInit);
+                const router = new Router<null, 'scene'>(mockInit);
                 expect(router.isPathRouter).toBe(true);
             });
 
             it('Config explicitly sets path router flag', () => {
+                const config = {...DEFAULT_CONFIG, isPathRouter: true} as IRouterConfig<any>;
+
                 const mockInit = generateMockInit<'scene'>({
-                    config: {...DEFAULT_CONFIG, isPathRouter: true}
+                    config
                 });
-                const router = new Router<AllTemplates, 'scene'>(mockInit);
+                const router = new Router<null, 'scene'>(mockInit);
                 expect(router.isPathRouter).toBe(true);
             });
 
             it('Parent is a path router and config option "isPathRouter" set to true', () => {
                 const parent = ({
                     isPathRouter: true
-                } as unknown) as RouterInstance<AllTemplates, 'scene'>;
-                const mockInit = generateMockInit<'scene'>(
-                    {config: {...DEFAULT_CONFIG, isPathRouter: true}},
-                    {parent}
-                );
-                const router = new Router<AllTemplates, 'scene'>(mockInit);
+                } as unknown) as RouterInstance<null, 'scene'>;
+                const config = {...DEFAULT_CONFIG, isPathRouter: true} as IRouterConfig<any>;
+
+                const mockInit = generateMockInit<'scene'>({config}, {parent});
+                const router = new Router<null, 'scene'>(mockInit);
                 expect(router.isPathRouter).toBe(true);
             });
 
@@ -275,18 +273,20 @@ describe('Router', () => {
 
     describe('Route key', () => {
         it('Returns the name if no route key is set during initialization', () => {
-            const dataRouterOne = new Router<AllTemplates, 'data'>(
+            const dataRouterOne = new Router<null, 'data'>(
                 generateMockInit({name: 'data1', type: 'data'})
             );
             expect(dataRouterOne.routeKey).toBe('data1');
         });
 
         it('Returns the route key if one was set during initialization', () => {
-            const dataRouterOne = new Router<AllTemplates, 'data'>(
+            const config = {...DEFAULT_CONFIG, routeKey: 'hello'} as IRouterConfig<any>;
+
+            const dataRouterOne = new Router<null, 'data'>(
                 generateMockInit({
                     name: 'data1',
                     type: 'data',
-                    config: {...DEFAULT_CONFIG, routeKey: 'hello'}
+                    config
                 })
             );
             expect(dataRouterOne.routeKey).toBe('hello');

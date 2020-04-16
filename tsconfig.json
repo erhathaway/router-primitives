@@ -13,6 +13,6 @@
         "sourceMap": true,
         "lib": ["es2015", "es2017", "dom"]
     },
-    "include": ["src/**/*"],
+    "include": ["src/**/*", "__tests__/**/*"],
     "exclude": ["node_modules"]
 }

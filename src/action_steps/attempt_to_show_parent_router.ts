@@ -16,7 +16,7 @@ const attemptToShowParentRouter: ActionStep = (_options, location, routerInstanc
 
         // data routers dont have a visibility state by default. TODO FIX THIS
         const locationFromShowingParent = routerInstance.parent.show(
-            {},
+            {}, // dont pass options to other routers b/c we don't want them propagating. only context propagates to other routers
             {...location},
             routerInstance.parent,
             {

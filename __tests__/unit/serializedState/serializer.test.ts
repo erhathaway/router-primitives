@@ -1,4 +1,5 @@
 import {serializer} from '../../../src/serialized_state';
+import {IInputLocation} from '../../../src';
 
 describe('Serializer', () => {
     it('serializes pathname', () => {
@@ -27,30 +28,36 @@ describe('Serializer', () => {
         const newLocation = {pathname: ['good', 'day'], search: {param1: '25'}};
 
         const serialized = serializer(
-            {pathname: [], search: {}, options: {}, ...newLocation},
-            {pathname: [], search: {}, options: {}, ...oldLocation}
+            {pathname: [], search: {}, ...newLocation},
+            {pathname: [], search: {}, ...oldLocation}
         );
         expect(serialized.location).toEqual('/good/day?param1=25&param2=hello');
     });
 
     it('removes previous queryParam keys that are set to "undefined"', () => {
         const oldLocation = {pathname: ['hi', 'there'], search: {param1: '1', param2: 'hello'}};
-        const newLocation = {pathname: ['good', 'day'], search: {param1: '25', param2: undefined}};
+        const newLocation = {
+            pathname: ['good', 'day'],
+            search: {param1: '25', param2: undefined}
+        } as IInputLocation;
 
         const serialized = serializer(
-            {pathname: [], search: {}, options: {}, ...newLocation},
-            {pathname: [], search: {}, options: {}, ...oldLocation}
+            {pathname: [], search: {}, ...newLocation},
+            {pathname: [], search: {}, ...oldLocation}
         );
         expect(serialized.location).toEqual('/good/day?param1=25');
     });
 
     it('removes previous queryParam keys that are set to "null"', () => {
         const oldLocation = {pathname: ['hi', 'there'], search: {param1: '1', param2: 'hello'}};
-        const newLocation = {pathname: ['good', 'day'], search: {param1: '25', param2: null}};
+        const newLocation = {
+            pathname: ['good', 'day'],
+            search: {param1: '25', param2: null}
+        } as IInputLocation;
 
         const serialized = serializer(
-            {pathname: [], search: {}, options: {}, ...newLocation},
-            {pathname: [], search: {}, options: {}, ...oldLocation}
+            {pathname: [], search: {}, ...newLocation},
+            {pathname: [], search: {}, ...oldLocation}
         );
         expect(serialized.location).toEqual('/good/day?param1=25');
     });

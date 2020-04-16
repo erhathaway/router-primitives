@@ -1,18 +1,18 @@
 import {NativeSerializedStore} from '../../../src/serialized_state';
+import {IInputLocation} from '../../../src';
 
 describe('Native Serialized State', () => {
     describe('Store state', () => {
         test('Uses a default string for state', () => {
             const adapter = new NativeSerializedStore();
-            expect(adapter.getState()).toEqual({pathname: [], search: {}, options: {}});
+            expect(adapter.getState()).toEqual({pathname: [], search: {}});
         });
 
         test('Can write to store', () => {
             const adapter = new NativeSerializedStore();
             const location = {
                 pathname: ['test'],
-                search: {param1: '2', param2: 'testparam'},
-                options: {}
+                search: {param1: '2', param2: 'testparam'}
             };
             adapter.setState(location);
 
@@ -28,8 +28,7 @@ describe('Native Serialized State', () => {
             adapter.subscribeToStateChanges(subscriptionOne);
             const stateOne = {
                 pathname: ['newState'],
-                search: {param1: '2', param2: 'testparam'},
-                options: {}
+                search: {param1: '2', param2: 'testparam'}
             };
             adapter.setState(stateOne);
 
@@ -37,9 +36,8 @@ describe('Native Serialized State', () => {
 
             const stateTwo = {
                 pathname: ['newStateOther'],
-                search: {param1: '3', param2: undefined},
-                options: {}
-            };
+                search: {param1: '3', param2: undefined}
+            } as IInputLocation;
             adapter.setState(stateTwo);
             expect(subscriptionOne.mock.calls).toHaveLength(3);
             expect(subscriptionOne.mock.calls[1][0]).toEqual(stateOne);
@@ -83,40 +81,35 @@ describe('Native Serialized State', () => {
 
             const stateOne = {
                 pathname: ['here/newState'],
-                search: {param1: '2', param2: 'testparam'},
-                options: {}
+                search: {param1: '2', param2: 'testparam'}
             };
             adapter.setState(stateOne);
 
-            const stateTwo = {pathname: ['there'], search: {param1: '3'}, options: {}};
+            const stateTwo = {pathname: ['there'], search: {param1: '3'}};
             adapter.setState(stateTwo);
 
             expect(subscription.mock.calls[1][0]).toEqual({
                 pathname: ['here', 'newState'],
-                search: {param1: '2', param2: 'testparam'},
-                options: {}
+                search: {param1: '2', param2: 'testparam'}
             });
             expect(subscription.mock.calls[2][0]).toEqual({
                 pathname: ['there'],
-                search: {param1: '3', param2: 'testparam'},
-                options: {}
+                search: {param1: '3', param2: 'testparam'}
             });
         });
     });
 
     describe('Store history', () => {
-        const locationOne = {pathname: ['home'], search: {}, options: {}};
-        const locationTwo = {pathname: ['user', '22'], search: {showNav: 'true'}, options: {}};
+        const locationOne = {pathname: ['home'], search: {}};
+        const locationTwo = {pathname: ['user', '22'], search: {showNav: 'true'}};
         const locationThree = {
             pathname: ['docs', 'about'],
-            search: {showNav: undefined, docId: '2'},
-            options: {}
-        };
+            search: {showNav: undefined, docId: '2'}
+        } as IInputLocation;
         const locationFour = {
             pathname: ['admin'],
-            search: {queryMenu: 'open', docId: undefined},
-            options: {}
-        };
+            search: {queryMenu: 'open', docId: undefined}
+        } as IInputLocation;
 
         it('Can move backward in history', () => {
             const adapter = new NativeSerializedStore();

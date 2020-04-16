@@ -5,15 +5,13 @@ describe('deserializer', () => {
         const stateOne = 'hello/world?';
         expect(deserializer(stateOne)).toEqual({
             pathname: ['hello', 'world'],
-            search: {},
-            options: {}
+            search: {}
         });
 
         const stateTwo = 'other/world';
         expect(deserializer(stateTwo)).toEqual({
             pathname: ['other', 'world'],
-            search: {},
-            options: {}
+            search: {}
         });
     });
 
@@ -21,15 +19,13 @@ describe('deserializer', () => {
         const stateOne = '/?hello=world&test=1';
         expect(deserializer(stateOne)).toEqual({
             pathname: [],
-            search: {hello: 'world', test: '1'},
-            options: {}
+            search: {hello: 'world', test: '1'}
         });
 
         const stateTwo = '?hello=universe&test=2';
         expect(deserializer(stateTwo)).toEqual({
             pathname: [],
-            search: {hello: 'universe', test: '2'},
-            options: {}
+            search: {hello: 'universe', test: '2'}
         });
     });
 
@@ -37,15 +33,13 @@ describe('deserializer', () => {
         const stateOne = 'is/a/test?hello=world&test=1';
         expect(deserializer(stateOne)).toEqual({
             pathname: ['is', 'a', 'test'],
-            search: {hello: 'world', test: '1'},
-            options: {}
+            search: {hello: 'world', test: '1'}
         });
 
         const stateTwo = 'is/not/a/test/?hello=planet&test=25';
         expect(deserializer(stateTwo)).toEqual({
             pathname: ['is', 'not', 'a', 'test'],
-            search: {hello: 'planet', test: '25'},
-            options: {}
+            search: {hello: 'planet', test: '25'}
         });
     });
 });

@@ -1,16 +1,15 @@
 import {
-    RouterActionFn,
+    TemplateAction,
     IRouterTemplate,
-    RouterInstance,
     IInputLocation,
-    IRouterTemplates,
     RouterCurrentState,
-    TemplateReducer
+    TemplateReducer,
+    TemplateRouter
 } from '../types';
 
 // returns the routeKey names of visible routers based on the ordering of their 'order' state
-const getRouteKeyOrderings = <Router extends RouterInstance<IRouterTemplates, string>>(
-    router: Router,
+const getRouteKeyOrderings = (
+    router: TemplateRouter<CustomState, CustomActionNames>,
     location: IInputLocation
 ): string[] => {
     // creates an object of { [visible router routeKey]: order }
@@ -47,12 +46,12 @@ const getRouteKeyOrderings = <Router extends RouterInstance<IRouterTemplates, st
     return sortedKeys;
 };
 
-const show: RouterActionFn = (_options, location, router, _ctx) => {
+const show: TemplateAction<CustomState, CustomActionNames> = (_options, location, router, _ctx) => {
     if (!router.parent) {
         return location;
     }
 
-    const sortedKeys = getRouteKeyOrderings(router as RouterInstance<IRouterTemplates>, location);
+    const sortedKeys = getRouteKeyOrderings(router, location);
 
     // find index of this routers routeKey
     const index = sortedKeys.indexOf(router.routeKey);
@@ -74,12 +73,12 @@ const show: RouterActionFn = (_options, location, router, _ctx) => {
     return location;
 };
 
-const hide: RouterActionFn = (_options, location, router, _ctx) => {
+const hide: TemplateAction<CustomState, CustomActionNames> = (_options, location, router, _ctx) => {
     if (!router.parent) {
         return location;
     }
 
-    const sortedKeys = getRouteKeyOrderings(router as RouterInstance<IRouterTemplates>, location);
+    const sortedKeys = getRouteKeyOrderings(router, location);
 
     // find index of this routers routeKey
     const index = sortedKeys.indexOf(router.routeKey);
@@ -103,12 +102,17 @@ const hide: RouterActionFn = (_options, location, router, _ctx) => {
     return newLocation;
 };
 
-const forward: RouterActionFn = (_options, location, router, _ctx) => {
+const forward: TemplateAction<CustomState, CustomActionNames> = (
+    _options,
+    location,
+    router,
+    _ctx
+) => {
     if (!router.parent) {
         return location;
     }
 
-    const sortedKeys = getRouteKeyOrderings(router as RouterInstance<IRouterTemplates>, location);
+    const sortedKeys = getRouteKeyOrderings(router, location);
 
     // find index of this routers routeKey
     const index = sortedKeys.indexOf(router.routeKey);
@@ -132,12 +136,17 @@ const forward: RouterActionFn = (_options, location, router, _ctx) => {
     return location;
 };
 
-const backward: RouterActionFn = (_options, location, router, _ctx) => {
+const backward: TemplateAction<CustomState, CustomActionNames> = (
+    _options,
+    location,
+    router,
+    _ctx
+) => {
     if (!router.parent) {
         return location;
     }
 
-    const sortedKeys = getRouteKeyOrderings(router as RouterInstance<IRouterTemplates>, location);
+    const sortedKeys = getRouteKeyOrderings(router, location);
 
     // find index of this routers routeKey
     const index = sortedKeys.indexOf(router.routeKey);
@@ -161,16 +170,26 @@ const backward: RouterActionFn = (_options, location, router, _ctx) => {
     return location;
 };
 
-const toFront: RouterActionFn = (options, location, router, ctx) => {
+const toFront: TemplateAction<CustomState, CustomActionNames> = (
+    options,
+    location,
+    router,
+    ctx
+) => {
     return router.show(options, location, router, ctx);
 };
 
-const toBack: RouterActionFn = (_options, location, router, _ctx) => {
+const toBack: TemplateAction<CustomState, CustomActionNames> = (
+    _options,
+    location,
+    router,
+    _ctx
+) => {
     if (!router.parent) {
         return location;
     }
 
-    const sortedKeys = getRouteKeyOrderings(router as RouterInstance<IRouterTemplates>, location);
+    const sortedKeys = getRouteKeyOrderings(router, location);
 
     // find index of this routers routeKey
     const index = sortedKeys.indexOf(router.routeKey);
@@ -193,11 +212,7 @@ const toBack: RouterActionFn = (_options, location, router, _ctx) => {
     return location;
 };
 
-const reducer: TemplateReducer<number, 'forward' | 'backward' | 'toFront' | 'toBack'> = (
-    location,
-    router,
-    _ctx
-) => {
+const reducer: TemplateReducer<CustomState, CustomActionNames> = (location, router, _ctx) => {
     const value = location.search[router.routeKey] as number;
     // router.toFront({data: 0}); // test remove me
     if (value) {
@@ -213,7 +228,11 @@ const reducer: TemplateReducer<number, 'forward' | 'backward' | 'toFront' | 'toB
     };
 };
 
-const template: IRouterTemplate<number, 'forward' | 'backward' | 'toFront' | 'toBack'> = {
+type CustomState = number;
+// TemplateAction<CustomState, CustomActionNames>
+// TemplateReducer<CustomState, CustomActionNames>
+type CustomActionNames = 'forward' | 'backward' | 'toFront' | 'toBack';
+const template: IRouterTemplate<CustomState, CustomActionNames> = {
     actions: {show, hide, forward, backward, toFront, toBack},
     reducer,
     config: {canBePathRouter: false}

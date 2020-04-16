@@ -32,6 +32,10 @@ import {
     stopRouterCacheTransaction,
     addRouterCacheToLocation
 } from './action_steps';
+import bindPathDataToContext from './action_steps/bind_path_data_to_context';
+import addReplaceLocationOptionToLocation from './action_steps/add_replace_location_option_to_location';
+import bindDefaultActionDataToContext from './action_steps/bind_default_action_data_to_context';
+import validateExistenceOfData from './action_steps/validate_existence_of_data';
 
 const createActionStepReducer = <
     CustomTemplates extends IRouterTemplates,
@@ -53,19 +57,22 @@ const createActionStepReducer = <
  * @param actionName name of the action. Usually `show` or `hide` but can be any custom action defined in a template
  *
  */
-const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
-    actionFn: RouterActionFn,
+const createActionExecutor = <
+    CustomTemplates extends IRouterTemplates,
+    Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+>(
+    actionFn: RouterActionFn<CustomTemplates, Name>,
     actionName: string,
-    actionFnDecorator?: ActionWraperFnDecorator,
+    actionFnDecorator?: ActionWraperFnDecorator<CustomTemplates, Name>,
     actionExecutorOptions?: {printerTracerResults?: boolean}
-): RouterActionFn => {
-    function actionWrapper<Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>(
+): RouterActionFn<CustomTemplates, Name> => {
+    function actionWrapper(
         options: IRouterActionOptions<
             RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>
         > = {},
         existingLocation?: IOutputLocation,
         routerInstance: RouterInstance<CustomTemplates, Name> = this,
-        inputCtx: ILocationActionContext = {actionName}
+        inputCtx: ILocationActionContext<CustomTemplates, Name> = {actionName}
     ): IInputLocation {
         const actionStepReducer = createActionStepReducer(options, routerInstance);
 
@@ -82,8 +89,11 @@ const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
         if (existingLocation) {
             const {location: updatedLocation} = [
                 logTracerStep('Called indirectly (from neighboring router)'),
-                attemptToHideChildRouters,
+                bindDefaultActionDataToContext,
+                bindPathDataToContext,
                 attemptToShowParentRouter,
+                attemptToHideChildRouters,
+                validateExistenceOfData,
                 callActionFn,
                 attemptToShowChildRouters,
                 endTracerThing
@@ -96,19 +106,27 @@ const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
             actionExecutorOptions && actionExecutorOptions.printerTracerResults === true
                 ? [printTracerSessionResults]
                 : [];
-        // If called direclty by a user
+
+        // If called directly by a user
         const {location: finalLocation} = [
             logTracerStep('Called directly'),
             startRouterCacheTransaction,
             fetchExistingLocation,
+            addReplaceLocationOptionToLocation,
+            bindPathDataToContext,
+            bindDefaultActionDataToContext,
             attemptToShowParentRouter,
             attemptToHideChildRouters,
+            validateExistenceOfData,
+            /**
+             * All action options should have been added to the context.
+             */
             callActionFn,
             /**
              * If can have a catch state, record that this
-             * router was directly hidden. We want a cache state of 'wasVisble = false'
+             * router was directly hidden. We want a cache state of 'wasVisible = false'
              * b/c if we just removed the cache, any 'show' actions could trigger 'defaultAction's
-             * and we only want a defaultAction to run when the router hasnt been touched yet or
+             * and we only want a defaultAction to run when the router hasn't been touched yet or
              * if it has no cache
              */
             attemptToRemoveRouterCache,
@@ -131,9 +149,9 @@ const createActionExecutor = <CustomTemplates extends IRouterTemplates>(
     }
 
     if (actionFnDecorator) {
-        return actionFnDecorator(actionWrapper as RouterActionFn);
+        return actionFnDecorator(actionWrapper);
     }
-    return actionWrapper as RouterActionFn;
+    return actionWrapper;
 };
 
 export default createActionExecutor;

@@ -18,8 +18,8 @@ export const addRealDisableCacheFlagToContext = <
     Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
 >(
     router: RouterInstance<CustomTemplates, Name>,
-    ctx: ILocationActionContext
-): ILocationActionContext => {
+    ctx: ILocationActionContext<CustomTemplates, Name>
+): ILocationActionContext<CustomTemplates, Name> => {
     // Figure out if caching should occur:
     // If the user hasn't set anything, we should fall back to the
     // context object and inherit the setting from the parent.
@@ -46,8 +46,11 @@ export const addRealDisableCacheFlagToContext = <
     return {...ctx, disableCaching};
 };
 
-export const calculateIfShouldUseCache = (
-    ctx: ILocationActionContext,
+export const calculateIfShouldUseCache = <
+    CustomTemplates extends IRouterTemplates,
+    Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
+>(
+    ctx: ILocationActionContext<CustomTemplates, Name>,
     _options: ILocationOptions
 ): boolean => {
     // TODO why was this needed previously?

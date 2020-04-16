@@ -32,6 +32,7 @@ const attemptToHideChildRouters: ActionStep = (options, existingLocation, router
 
                 if (child.state.visible) {
                     childTracer.logStep(`Calling actionFn: 'hide'`);
+                    // don't pass options b/c we don't want them propagating to other routers. only context propagates to other routers
                     return child.hide({}, locationFromSpecificChildAcc, child, newCtx);
                 } else {
                     childTracer.logStep(`Not calling 'hide' b/c its hidden already`);
@@ -59,8 +60,11 @@ const attemptToHideChildRouters: ActionStep = (options, existingLocation, router
             ctx.tracer.logStep(`Not caching state because 'dryRun' is enabled`);
         } else {
             ctx.tracer.logStep(`Caching state`, {shouldCache});
-
-            router.manager.routerCache.setCache(router.name, {visible, data: options.data});
+            // console.log('caching router name: ', router.name, options, ctx, router.data);
+            router.manager.routerCache.setCache(router.name, {
+                visible,
+                data: router.data // ctx.pathData ? (ctx.pathData[router.name] as any) : undefined
+            });
         }
     } else {
         ctx.tracer.logStep(`Not Caching state`, {shouldCache});

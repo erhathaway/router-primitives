@@ -26,7 +26,11 @@ const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) =
                 return newLocationForSpecificChild;
             }
 
-            const newContext: ILocationActionContext = {
+            const newContext: ILocationActionContext<
+                any,
+                any // InferCustomTemplatesFromRouter<typeof router>,
+                // NarrowRouterTypeName<InferNameFromRouter<typeof router>>
+            > = {
                 ...ctx,
                 addingDefaults: true,
                 activatedByChildType: undefined,
@@ -51,7 +55,7 @@ const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) =
                     {...options, data: child.manager.routerCache.previousData(child.name)},
                     newLocationForSpecificChild,
                     child,
-                    newContext
+                    newContext // pass a modified context down but dont let children share context
                 );
             }
 
@@ -72,7 +76,7 @@ const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) =
                         `No cached state found for ${child.name}, but default action found. Applying default action: ${action} for ${child.name}`
                     );
 
-                return child[action as keyof DefaultRouterActions](
+                return child[action as keyof DefaultRouterActions<any, any>](
                     {...options, data: args[0]}, // TODO pass more than just the first arg
                     newLocationForSpecificChild,
                     child,
@@ -94,6 +98,17 @@ const attemptToShowChildRoutersMain: ActionStep = (options, location, routerInst
             false
         );
     if (ctx.actionName === 'show' && hasChildren) {
+        // if a parent or the current router is missing data we don't want to apply
+        // location changes for the router or any of its children
+        if (ctx.routerIsMissingData) {
+            ctx.tracer &&
+                ctx.tracer.logStep(
+                    `Not calling 'attemptToShowChildRouters' because the current router or a parent is missing data`
+                );
+
+            return {location, ctx};
+        }
+
         ctx.tracer && ctx.tracer.logStep(`Calling 'attemptToShowChildRouters'`);
 
         // add location defaults from children
