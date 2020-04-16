@@ -1,4 +1,5 @@
 import {NativeSerializedStore} from '../../../src/serialized_state';
+import {IInputLocation} from '../../../src';
 
 describe('Native Serialized State', () => {
     describe('Store state', () => {
@@ -36,7 +37,7 @@ describe('Native Serialized State', () => {
             const stateTwo = {
                 pathname: ['newStateOther'],
                 search: {param1: '3', param2: undefined}
-            };
+            } as IInputLocation;
             adapter.setState(stateTwo);
             expect(subscriptionOne.mock.calls).toHaveLength(3);
             expect(subscriptionOne.mock.calls[1][0]).toEqual(stateOne);
@@ -104,11 +105,11 @@ describe('Native Serialized State', () => {
         const locationThree = {
             pathname: ['docs', 'about'],
             search: {showNav: undefined, docId: '2'}
-        };
+        } as IInputLocation;
         const locationFour = {
             pathname: ['admin'],
             search: {queryMenu: 'open', docId: undefined}
-        };
+        } as IInputLocation;
 
         it('Can move backward in history', () => {
             const adapter = new NativeSerializedStore();

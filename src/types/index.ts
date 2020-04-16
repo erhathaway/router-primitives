@@ -883,7 +883,6 @@ export interface IManagerInit<CustomTemplates extends IRouterTemplates<unknown>>
     router?: RouterClass<
         CustomTemplates,
         NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
-        // IManager<CustomTemplates>
     >;
     customTemplates?: CustomTemplates;
     routerCacheClass?: CacheClass<

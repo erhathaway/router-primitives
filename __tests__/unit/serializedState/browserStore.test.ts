@@ -1,4 +1,5 @@
 import {BrowserSerializedStore} from '../../../src/serialized_state';
+import {IOutputLocation} from '../../../src';
 
 declare global {
     // eslint-disable-next-line
@@ -92,7 +93,7 @@ describe('Browser Serialized State', () => {
             const stateTwo = {
                 pathname: ['newStateOther'],
                 search: {param1: '3', param2: undefined}
-            };
+            } as IOutputLocation;
 
             window.location.search = '?param1=3';
             window.location.pathname = 'newStateOther';
