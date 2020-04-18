@@ -53,8 +53,5 @@ export const calculateIfShouldUseCache = <
     ctx: ILocationActionContext<CustomTemplates, Name>,
     _options: ILocationOptions
 ): boolean => {
-    // TODO why was this needed previously?
-    // return !ctx.disableCaching && !(options.disableCaching || false);
-
     return !ctx.disableCaching;
 };

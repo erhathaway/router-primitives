@@ -1,4 +1,5 @@
 import {performance} from 'perf_hooks';
+
 /**
  * Tracking one or more TracerSessions.
  *
@@ -120,7 +121,6 @@ class TracerThing implements ITracerThing {
 
     public end(): void {
         if (this.isActive) {
-            // console.log('ENDING THING TRACER:', this.name);
             this.endTime = performance.now();
             this.isActive = false;
             this.session.notifySubscribersOfThingUpdate(this.name);
@@ -193,17 +193,13 @@ export class TracerSession implements ITracerSession {
     }
 
     public end(): void {
-        // console.log('ENDING TRACER SESSION'); // tslint:disable-line
-        // console.log('hi')
         if (this.isActive) {
-            // console.log('ENDING AGAIN');
             Object.keys(this.tracerThings).forEach(thingName => {
                 this.tracerThings[thingName].end();
             });
             this.endTime = performance.now();
             this.isActive = false;
             this.manager._moveSessionToFinishedStorage(this);
-            // console.log(this); // tslint:disable-line
         }
     }
 }

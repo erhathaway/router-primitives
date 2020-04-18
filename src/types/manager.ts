@@ -12,13 +12,11 @@ import {
     ManagerRouterTypes,
     IManagerInit,
     IRouterTemplates,
-    // ManagerRouters,
     RouterInstance,
     AllTemplates,
     RouterCurrentStateFromTemplates,
     RouterCustomStateFromTemplates
 } from '../types';
-import {DefaultTemplates} from './router_templates';
 import {IRouterCache} from './router_cache';
 
 export interface IManager<CustomTemplates extends IRouterTemplates<unknown> = null> {
@@ -113,7 +111,6 @@ export interface IManager<CustomTemplates extends IRouterTemplates<unknown> = nu
     }: IRouterCreationInfo<CustomTemplates, NarrowRouterTypeName<Name>>) => IRouterInitArgs<
         CustomTemplates,
         NarrowRouterTypeName<Name>
-        // IManager<CustomTemplates>
     >;
     /**
      * Create a router instance
@@ -157,9 +154,3 @@ export interface IManager<CustomTemplates extends IRouterTemplates<unknown> = nu
         Name
     >;
 }
-
-type IManagerTestA = IManager<{custom: DefaultTemplates['stack']}>;
-type A = IManagerTestA['routerTypes'];
-
-type IManagerTestB = IManager;
-type B = IManagerTestB['routerTypes'];

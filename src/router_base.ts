@@ -1,3 +1,5 @@
+import {objKeys} from './utilities';
+
 import {
     IRouterDeclaration,
     ISerializeOptions,
@@ -18,8 +20,6 @@ import {
     AllTemplates
 } from './types';
 import {IRouterBase} from './types/router_base';
-// import {IManager} from './types/manager';
-import {objKeys} from './utilities';
 
 export interface IInternalState {
     isActive?: boolean;
@@ -31,11 +31,7 @@ export default class RouterBase<
     InitArgs extends IRouterInitArgs<
         CustomTemplates,
         NarrowRouterTypeName<RouterTypeName>
-    > = IRouterInitArgs<
-        CustomTemplates,
-        NarrowRouterTypeName<RouterTypeName>
-        // IManager
-    >
+    > = IRouterInitArgs<CustomTemplates, NarrowRouterTypeName<RouterTypeName>>
 > implements IRouterBase<CustomTemplates, RouterTypeName, InitArgs> {
     public name: InitArgs['name'];
     public type: InitArgs['type'];
@@ -60,7 +56,6 @@ export default class RouterBase<
             getState,
             subscribe,
             actions
-            // isDependentOnExternalData
         } = init;
 
         // required
@@ -89,6 +84,7 @@ export default class RouterBase<
         // Since actions come from the template and are decorated by the manager, we need to bind them
         // to the router instance where they live
         (actions || []).forEach(actionName => {
+            // eslint-disable-next-line
             if ((this as Record<any, any>)[actionName]) {
                 // eslint-disable-next-line
                 (this as any)[actionName] = (this as any)[actionName].bind(this);
@@ -121,9 +117,7 @@ export default class RouterBase<
     }
 
     get siblings(): RouterInstance<CustomTemplates, RouterTypeName>[] {
-        // TODO fix this any
-        // eslint-disable-next-line
-        return this.parent.routers[this.type].filter(r => r.name !== this.name) as any;
+        return this.parent.routers[this.type].filter(r => r.name !== this.name);
     }
 
     /**
@@ -262,7 +256,7 @@ export default class RouterBase<
         // It is impossible to construct a path if all the parents are also not path routers
         if (this.config.isPathRouter) {
             throw new Error(`${this.type} router: ${this.name} is explicitly set to modify the pathname
-            	but one of its parent routers doesnt have this permission.
+            	but one of its parent routers doesn't have this permission.
             	Make sure all parents have 'isPathRouter' attribute set to 'true' in the router config OR
             	Make sure all parents are of router type 'scene' or 'data'.
             	If the routers parents have siblings of both 'scene' and 'data' the 'scene' router will always be used for the pathname
@@ -307,15 +301,3 @@ export default class RouterBase<
         return historical || [];
     };
 }
-
-// const managerTest = new Manager();
-// const baseTest = new RouterBase<typeof defaultTemplates, 'scene'>({} as any); // eslint-disable-line
-
-// const s = baseTest.routers['stack'];
-// s[0].show;
-
-// baseTest.parent.routers['stack'];
-// baseTest.root.routers['stack'];
-// const nbt = baseTest.getNeighborsByType('stack').forEach(r => r);
-
-// const baseTest2 = new RouterBase<{}, string>({} as any);

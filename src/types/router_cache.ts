@@ -1,14 +1,4 @@
-// export type CacheState = {
-//     visible: boolean;
-//     data?: string;
-// };
-
-import {
-    RouterCurrentState,
-    ExtractCustomStateFromTemplate,
-    RouterTemplateUnion,
-    AllTemplates
-} from './index';
+import {RouterCurrentState} from './index';
 
 /**
  * A store for a routers previous visibliity state.
@@ -45,7 +35,3 @@ export interface IRouterCache<CustomState> {
 
     setCacheFromSerialized: (serializedCache: string) => void;
 }
-
-type RouterCacheTestAllTemplates = IRouterCache<
-    ExtractCustomStateFromTemplate<RouterTemplateUnion<AllTemplates<{}>>>
->;
