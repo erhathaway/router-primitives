@@ -17,7 +17,6 @@ import {
     RouterCurrentStateFromTemplates,
     RouterCustomStateFromTemplates
 } from '../types';
-import {DefaultTemplates} from './router_templates';
 import {IRouterCache} from './router_cache';
 
 export interface IManager<CustomTemplates extends IRouterTemplates<unknown> = null> {
