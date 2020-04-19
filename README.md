@@ -2,22 +2,20 @@
 
 [![npm](https://img.shields.io/npm/v/router-primitives.svg?label=&color=0080FF)](https://github.com/erhathaway/router-primitives/releases/latest)
 
-Router Primitives is a **layout primitives** paradigm for application routing. Instead of focusing on pattern matching path names and query params, you describe the layout of your application in terms of router primitives, and then use a simple declarative API to control routing actions and add complex animations.
+Router Primitives is a **layout primitives** paradigm for application routing. Instead of focusing on pattern matching path names and query params, you describe the layout of your application in terms of router primitives. Primitives are composable and provide a simple declarative API to control routing actions and add complex animations.
 
 # About
 
 #### Documentation
 
 -   **[About](#about)** :point_left:
--   [Examples](#examples)
 -   [Usage](#usage)
 -   [API](#api)
 -   [Primitives](#primitives)
 -   [Router Actions](#router-actions)
 -   [Router Links](#router-links)
--   [Router State Predicates](#router-hooks)
--   [Architecture](#architecture)
--   [Custom Primitives](#extensions)
+-   [Router State Predicates](#router-state-predicates)
+-   [Custom Primitives](#custom-primitives)
 
 ## TL;DR
 
@@ -34,17 +32,17 @@ Current router primitives are `scene`, `stack`, `feature`, and `data`, but you c
 
 Normally, with application routers, you define how path names and query params map to various elements of your application via pattern matching. When a match is found, you execute logic to show, hide, or move the element.
 
-With `Router Primitives`, you don't need to think about pattern matching at all! You simply describe how your app is layed out in terms of scenes, stacks, features, data, and other **layout primitives**.
+With `Router Primitives`, you don't need to think about pattern matching at all! You simply describe how your app is layed out in terms of scenes, stacks, features, data, and other router primitives.
 
 The hierarchial arrangement of these layout primitives, in a `router declaration` object, generates routers that automatically construct the URL based on triggered actions (`show`, `hide`, etc...). Routers handle all layout level routing logic without need for additional code. This means that you don't need to write code to show, hide, or move elements with respect to one another.
 
 For instance, sibling Scene routers automatically hide all other scenes when one of them becomes visible. This is similar to React Routers `switch` component. Or, as another example, Stack routers keep track of a position. If one sibling stack router jumps to the first position, the other siblings decrement their position accordingly. These are useful if you have multiple modals, toast notifications, or other components that you want to register in the URL and be ordered.
 
-Router Primitives is written as a high level abstraction to free developers from having to write the same routing logic over and over again. It's designed to have a simple, small, and declarative API with sensible ways to do complex and deterministic animations based on current router state, historical router state, sibling router state.
+Router Primitives is written as a high level abstraction to free developers from having to write the same routing logic over and over again. It's designed to have a simple, small, and declarative API with sensible ways to do complex and deterministic animations based on current router state, historical router state, and sibling router state.
 
 If you work on a platform where there is no concept of a URL, you can still use this library. The URL is simply managed serialized state - which is platform aware and configurable!
 
-The core library that builds the router primitives is platform agnostic. This means that you can use the same router code for various frameworks and platforms. Currently, bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)**, and **[React](https://github.com/erhathaway/recursive-router-react)**.
+Finally, Router Primitives is platform agnostic. This means that you can use the same router code for various frameworks and platforms. Currently, bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)**, and **[React](https://github.com/erhathaway/recursive-router-react)**.
 
 ## Key Features
 
@@ -78,35 +76,18 @@ For example, a router can be 'visible' when other routers are 'hidden'. This typ
 
 Should the existing router primitives not be enough, this library provides you with a way to create your own routers! See [Router templates](#extensions)
 
-# Examples
-
-#### Documentation
-
--   [About](#about)
--   **[Examples](#examples)** :point_left:
--   [Usage](#usage)
--   [API](#api)
--   [Primitives](#primitives)
--   [Router Actions](#router-actions)
--   [Router Links](#router-links)
--   [Router State Predicates](#router-hooks)
--   [Architecture](#architecture)
--   [Custom Primitives](#extensions)
-
 # Usage
 
 #### Documentation
 
 -   [About](#about)
--   [Examples](#examples)
 -   **[Usage](#usage)** :point_left:
 -   [API](#api)
 -   [Primitives](#primitives)
 -   [Router Actions](#router-actions)
 -   [Router Links](#router-links)
--   [Router State Predicates](#router-hooks)
--   [Architecture](#architecture)
--   [Custom Primitives](#extensions)
+-   [Router State Predicates](#router-state-predicates)
+-   [Custom Primitives](#custom-primitives)
 
 ## 1. Declare the layout of your app in terms of router primitives
 
@@ -203,15 +184,13 @@ This section contains minimial API documentation to get you started. For the ext
 #### Documentation
 
 -   [About](#about)
--   [Examples](#examples)
 -   [Usage](#usage)
 -   **[API](#api)** :point_left:
 -   [Primitives](#primitives)
 -   [Router Actions](#router-actions)
 -   [Router Links](#router-links)
--   [Router State Predicates](#router-hooks)
--   [Architecture](#architecture)
--   [Custom Primitives](#extensions)
+-   [Router State Predicates](#router-state-predicates)
+-   [Custom Primitives](#custom-primitives)
 
 ## API: Manager
 
@@ -285,15 +264,13 @@ Additional methods may exist depending on the particular router primitive. For e
 #### Documentation
 
 -   [About](#about)
--   [Examples](#examples)
 -   [Usage](#usage)
 -   [API](#api)
 -   **[Primitives](#primitives)** :point_left:
 -   [Router Links](#router-links)
 -   [Router Actions](#router-actions)
--   [Router State Predicates](#router-hooks)
--   [Architecture](#architecture)
--   [Custom Primitives](#extensions)
+-   [Router State Predicates](#router-state-predicates)
+-   [Custom Primitives](#custom-primitives)
 
 For the most part, you'll be able to express the route-able layout of your app in terms of the 4 predefined primitives: `Stack`, `Scene`, `Feature`, and `Data`.
 
@@ -391,15 +368,13 @@ Example URLs are:
 #### Documentation
 
 -   [About](#about)
--   [Examples](#examples)
 -   [Usage](#usage)
 -   [API](#api)
 -   [Primitives](#primitives)
 -   **[Router Actions](#router-actions)** :point_left:
 -   [Router Links](#router-links)
--   [Router State Predicates](#router-hooks)
--   [Architecture](#architecture)
--   [Custom Primitives](#extensions)
+-   [Router State Predicates](#router-state-predicates)
+-   [Custom Primitives](#custom-primitives)
 
 Router actions are methods that do work. They allow you to change route location and set data. All routers have the actions `show` and `hide`. Routers can also have custom actions. For example, Data primitives have the `setData` action, and Stack primitives have the actions `toFront`, `toBack`, `forward`, and `backwards`.
 
@@ -444,15 +419,13 @@ export interface IRouterActionOptions<CustomState> {
 #### Documentation
 
 -   [About](#about)
--   [Examples](#examples)
 -   [Usage](#usage)
 -   [API](#api)
 -   [Primitives](#primitives)
 -   [Router Actions](#router-actions)
 -   **[Router Links](#router-links)** :point_left:
--   [Router State Predicates](#router-hooks)
--   [Architecture](#architecture)
--   [Custom Primitives](#extensions)
+-   [Router State Predicates](#router-state-predicates)
+-   [Custom Primitives](#custom-primitives)
 
 Often times, you'll want a link rather than calling an location action directly. The `link` method allows you to create such a link. It is essentially calling the action with the `dryRun` option.
 
@@ -472,32 +445,85 @@ export interface ILinkOptions<CustomState> {
 }
 ```
 
-# Architecture
+# Router State Predicates
 
 -   [About](#about)
--   [Examples](#examples)
 -   [Usage](#usage)
 -   [API](#api)
 -   [Primitives](#primitives)
 -   [Router Actions](#router-actions)
 -   [Router Links](#router-links)
--   [Router State Predicates](#router-hooks)
--   **[Architecture](#architecture)** :point_left:
--   [Custom Primitives](#extensions)
+-   **[Router State Predicates](#router-state-predicates)** :point_left:
+-   [Custom Primitives](#custom-primitives)
 
-TODO
+Arguably one of the hardest problems with routing is adding in complex animations / transitions. Router Primitives aims to make this easy by providing state predicates that can tell you if a particular state transition has occurred.
 
-# Extensions
+State predicates derive information off of the router passed into them. If you'd like to make your own check out [src/state_predicates.ts](/src/state_predicates.ts) for inspiration.
+
+### Existing predicates
+
+| Predicate                       | Explanation                                                                |
+| ------------------------------- | -------------------------------------------------------------------------- |
+| isVisible                       | Whether the router is visible                                              |
+| isHidden                        | Whether the router is hidden                                               |
+| isJustHidden                    | Whether the scene was just hidden in the last action                       |
+| isJustShown                     | Whether the scene was just shown in the last action                        |
+| stack.isIncreasing              | Whether the order position is getting larger (to the back)                 |
+| stack.isDecreasing              | Whether the order position is getting smaller (to the front)               |
+| stack.isAtFront                 | Whether the order position is = 0                                          |
+| stack.isAtBack                  | Whether the order position is the largest out of all sibling stack routers |
+| stack.isPositionSameAsLastShown | Whether the order position is the same as the last time it was shown       |
+
+### Example state predicate usage
+
+Lets look at how these can be used with a popular animation library like [Anime.js](https://github.com/juliangarnier/anime)
+
+```typescript
+import {statePredicates} from 'router-primitives';
+
+const myRouterOfInterest = manager.routers.myRouterOfInterest;
+const {isIncreasing} = statePredicates.stack;
+
+if (isIncreasing(myRouterOfInterest)) {
+    anime({
+        targets: 'MyComponentId',
+        translateX: 250
+    });
+}
+```
+
+Bindings to various view frameworks, like React, explicitly implement an API to make this even cleaner. For example:
+
+```jsx
+import anime from 'animejs';
+import {statePredicates} from 'router-primitives';
+import {when, and, createRouterComponents} from 'router-primitives-react';
+
+const {
+    isJustHidden,
+    isJustShown,
+    stack: {isIncreasing}
+} = statePredicates;
+
+const StackRouter = createRouterComponents(manager.routers).myRouterOfInterest;
+
+<StackRouter
+    onChange={[
+        when(and(isIncreasing, isJustShown), uuid => anime({target: uuid, translateX: 250})),
+        when(isJustHidden, uuid => anime({target: uuid, translateX: -250}))
+    ]}
+>
+    {({uuid}) => <MyComponent id={uuid} />}
+</StackRouter>;
+```
+
+# Custom Primitives
 
 -   [About](#about)
--   [Examples](#examples)
 -   [Usage](#usage)
 -   [API](#api)
 -   [Primitives](#primitives)
 -   [Router Actions](#router-actions)
 -   [Router Links](#router-links)
--   [Router State Predicates](#router-hooks)
--   [Architecture](#architecture)
--   **[Custom Primitives](#extensions)** :point_left:
-
-TODO
+-   [Router State Predicates](#router-state-predicates)
+-   **[Custom Primitives](#custom-primitives)** :point_left:
