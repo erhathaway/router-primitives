@@ -462,17 +462,20 @@ State predicates derive information off of the router passed into them. If you'd
 
 ### Existing predicates
 
-| Predicate                       | Explanation                                                                |
-| ------------------------------- | -------------------------------------------------------------------------- |
-| isVisible                       | Whether the router is visible                                              |
-| isHidden                        | Whether the router is hidden                                               |
-| isJustHidden                    | Whether the scene was just hidden in the last action                       |
-| isJustShown                     | Whether the scene was just shown in the last action                        |
-| stack.isIncreasing              | Whether the order position is getting larger (to the back)                 |
-| stack.isDecreasing              | Whether the order position is getting smaller (to the front)               |
-| stack.isAtFront                 | Whether the order position is = 0                                          |
-| stack.isAtBack                  | Whether the order position is the largest out of all sibling stack routers |
-| stack.isPositionSameAsLastShown | Whether the order position is the same as the last time it was shown       |
+| Predicate                                 | Explanation                                                                |
+| ----------------------------------------- | -------------------------------------------------------------------------- |
+| isVisible                                 | Whether the router is visible                                              |
+| isHidden                                  | Whether the router is hidden                                               |
+| isJustHidden                              | Whether the scene was just hidden in the last action                       |
+| isJustShown                               | Whether the scene was just shown in the last action                        |
+| hasEverBeenShown                          | Whether the router was ever shown in its past                              |
+| scene.visibleSiblingIsFirstTimeBeingShown | Whether the now visible sibling router is the first time being shown       |
+| scene.visibleSiblingHasBeenShownBefore    | Whether the now visible sibling has been visible before                    |
+| stack.isIncreasing                        | Whether the order position is getting larger (to the back)                 |
+| stack.isDecreasing                        | Whether the order position is getting smaller (to the front)               |
+| stack.isAtFront                           | Whether the order position is = 0                                          |
+| stack.isAtBack                            | Whether the order position is the largest out of all sibling stack routers |
+| stack.isPositionSameAsLastShown           | Whether the order position is the same as the last time it was shown       |
 
 ### Example state predicate usage
 
@@ -527,3 +530,81 @@ const StackRouter = createRouterComponents(manager.routers).myRouterOfInterest;
 -   [Router Links](#router-links)
 -   [Router State Predicates](#router-state-predicates)
 -   **[Custom Primitives](#custom-primitives)** :point_left:
+
+Making custom primitives allows you to define new types of routing for your layout!
+
+> It might be helpful to look at the [templates for `scene`, `stack`, `feature`, `data` primitives as a guide](/src/types/router_templates.ts)
+
+## Router Primitive Type Signature
+
+A layout primitive is defined by a template which has the type type signature:
+
+```typescript
+type RouterTemplate = {
+    actions: ActionFunction[];
+    reducer: (newLocation: Location) => NewState;
+    options: {
+        canBePathRouter?: boolean;
+        isPathRouter?: boolean;
+        shouldInverselyActivate?: boolean;
+        disableCaching?: boolean;
+        shouldParentTryToActivateSiblings?: boolean;
+        isDependentOnExternalData?: boolean;
+    };
+};
+
+type ActionFunction = (
+    options?: ActionOptions // Same options object that is talked about in the Router Actions section. These are set by the user to get specific action functionality.
+    existingLocation?: Location, // The existing URL
+
+    routerInstance?: Router, // The router that this function is a method on.
+    ctx?: ActionContext // A context object that is passed to every action function in the chain of action functions that is kicked off by the users action call.
+) => Location;
+
+type Location = {
+  path: string[], // the components that form the path part of the URL
+  search: {}, // the components that form the query params pat of the URL
+}
+
+type NewState = {
+  visible: boolean,
+  data?: unknown // this type varies on a router by router basis. You define the type with a generic when making the template.
+  actionNumber: number // the action number that this state is associated with. Each action call increments the actionNumber by 1.
+}
+
+```
+
+### Overview of writing a template
+
+#### Template Actions
+
+When you write a template you need to define, at a minimum, the `show` and `hide` actions. You can add as many actions as you like as long as the name doesn't conflict with a method name defined in [router_base.ts](/src/router_base.ts).
+
+The goal of an action is to take the existing `location` and return a `new location`. The template should only modify the location state of the router in the `routerInstance` param of the action function type. Additionally, in an action you may call sibling router actions.
+
+#### Template Reducer
+
+The goal of a reducer is to take the `final location` from the action call chain that a user initiated and reduce it down to a state specific to this router. The final reduction may modify the `visible` and `data` keys of the state object, but it should not touch the `actionNumber` part.
+
+#### Template Options
+
+The template options do the following:
+
+| Option                            | Purpose                                                                                                                                                                                                                                                                        | Default |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| canBePathRouter                   | Whether the primitive can occupy the pathname part of the URL                                                                                                                                                                                                                  | false   |
+| isPathRouter                      | Whether it will occupy the pathname part of the URL by default                                                                                                                                                                                                                 | false   |
+| isDependentOnExternalData         | Whether it is dependent on external (user) data                                                                                                                                                                                                                                | false   |
+| shouldParentTryToActivateSiblings | Whether the parent of the primitive should check if it should be shown from the cache when a sibling primitive was activated                                                                                                                                                   | true    |
+| disableCaching                    | Whether caching should occur for the primitive. Caching allows you to navigate to a different route and then come back to find the same cache state. For example, if you opened a menu, navigated away, and came back you could find the same menu open when cache is enabled. | false   |
+| shouldInverselyActivate           | TODO                                                                                                                                                                                                                                                                           | TODO    |
+
+### Using templates
+
+```typescript
+type CustomTemplates = {
+    myTemplateName: myTemplate;
+};
+
+const manager = new Manager<CustomTemplates>({customTemplates, routerDeclaration});
+```
