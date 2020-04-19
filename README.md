@@ -462,20 +462,21 @@ State predicates derive information off of the router passed into them. If you'd
 
 ### Existing predicates
 
-| Predicate                                 | Explanation                                                                |
-| ----------------------------------------- | -------------------------------------------------------------------------- |
-| isVisible                                 | Whether the router is visible                                              |
-| isHidden                                  | Whether the router is hidden                                               |
-| isJustHidden                              | Whether the scene was just hidden in the last action                       |
-| isJustShown                               | Whether the scene was just shown in the last action                        |
-| hasEverBeenShown                          | Whether the router was ever shown in its past                              |
-| scene.visibleSiblingIsFirstTimeBeingShown | Whether the now visible sibling router is the first time being shown       |
-| scene.visibleSiblingHasBeenShownBefore    | Whether the now visible sibling has been visible before                    |
-| stack.isIncreasing                        | Whether the order position is getting larger (to the back)                 |
-| stack.isDecreasing                        | Whether the order position is getting smaller (to the front)               |
-| stack.isAtFront                           | Whether the order position is = 0                                          |
-| stack.isAtBack                            | Whether the order position is the largest out of all sibling stack routers |
-| stack.isPositionSameAsLastShown           | Whether the order position is the same as the last time it was shown       |
+| Predicate                                  | Explanation                                                                |
+| ------------------------------------------ | -------------------------------------------------------------------------- |
+| isVisible                                  | Whether the router is visible                                              |
+| isHidden                                   | Whether the router is hidden                                               |
+| isJustHidden                               | Whether the scene was just hidden in the last action                       |
+| isJustShown                                | Whether the scene was just shown in the last action                        |
+| isFirstTimeBeingShown                      | Whether the router is being shown for the first time                       |
+| hasBeenShownBefore                         | Whether the router was ever shown in its past                              |
+| scene.isVisibleSiblingsFirstTimeBeingShown | Whether the now visible sibling router is the first time being shown       |
+| scene.hasVisibleSiblingBeenShownBefore     | Whether the now visible sibling has been visible before                    |
+| stack.isIncreasing                         | Whether the order position is getting larger (to the back)                 |
+| stack.isDecreasing                         | Whether the order position is getting smaller (to the front)               |
+| stack.isAtFront                            | Whether the order position is = 0                                          |
+| stack.isAtBack                             | Whether the order position is the largest out of all sibling stack routers |
+| stack.isPositionSameAsLastShown            | Whether the order position is the same as the last time it was shown       |
 
 ### Example state predicate usage
 
