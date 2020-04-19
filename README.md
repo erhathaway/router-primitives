@@ -2,161 +2,69 @@
 
 [![npm](https://img.shields.io/npm/v/router-primitives.svg?label=&color=0080FF)](https://github.com/erhathaway/router-primitives/releases/latest)
 
-Router Primitives is a different take on application routing.
-
-Location:
-
-to remove a query param from the location, set it to `undefined`. The serialized state store merges previous locations with the current one. Undefined values are used to make sure the previous version doesn't show up. These values are then filtered out before the merged state is set.
-
-Settings:
-
-#### isPathRouter
-
-A path router makes up the path part of a url. Determining which routers make up the path is done by looking for the path of visible routers with the option `isPathRouter: true` that branch off the root router. To qualify a router to be part of the path when visible, you should use a `scene` router or a`data` router with the option `isPathRouter` set to `true`. Additionally, all of the routers that you want to be part of the path need a parent that is also part of the path.
-
-##### isPathRouter usage in templates
-
-You can make a pathRouter in a template by returning the option `canBePathRouter: true`. Realize that in order to have a deterministic calculation of the path part of a url, you need to make sure your router template only allows a single path to occur at once.
-
-For example, a `scene` router template will return `{canBePathRouter: true, isPathRouter: true}`, which implies that every scene router is part of the path if it is visible. However, only 1 sibling scene can be shown at once, thus you will never have a path divergence at the scene routers. As another example, a `data` router template will return `{canBePathRouter: true, isPathRouter: false}`. This mean's that a visible data router can be part of the path but only if a user sets the `isPathRouter: true` in the router config. Additionally, during router instantiation if any sibling data routers are set to `isPathRouter: true` an error will be thrown.
-
-#### inverseActivation
-
-A `hidden` router that is called to be `shown` will trigger `show` actions on all of its parents to make itself visible. When a parent is called to be `shown` it can trigger all of its children to rehydrate from their visibility state `cache` and potentially become visible too (if they were last visible when the parent was visible). This process is known as `inverseActivation`. `InverseActivation` is to off by default but you can turn it on by setting the option `shouldInverselyActivate: true` during router instantiation.
-
-##### inverseActivation usage in templates
-
-You can return the option ``shouldInverselyActivate: true`to make`inverseActivation` the default setting for your custom router type.
-
-#### disableChildCache
-
-With Router Primitives, routing logic is defined through the hierarchical arrangement of router primitives (`Scene`, `Stack`, `Feature`, `Data`)! Simply:
-
-1. Compose router primitives together and make a router declaration object
-2. Subscribe to individual router state changes
-3. Dispatch router actions that update the router state tree and trigger observer updates.
-
-Usage of router primitives looks something like:
-
-React:
-
-> Note: Using both children control flag and children as a function patterns
-
-```jsx
-<LandingPageRouter showChildrenIfVisible>
-  <Form>
-    {({text}) => (
-      <FormDataRouter data={text} />
-   )}
-  </Form>
-  <div>
-    <WelcomeModalRouter showChildrenIfVisible>
-      <WelcomeModal>
-    </WelcomeModalRouter>
-  ...scene JSX elements
-  </div>
-</LandingPageRouter>
-<UserPageRouter>
-  {({state: {visible}}) => (
-     <WelcomeModalRouter>
-       {({show}) => (
-         <ShowWelcomeModalAgainButton onClick={show} />
-       )}
-    </WelcomeModalRouter>
-  )}
-</UserPageRouter>
-```
-
-VanillaJS
-
-```javascript
-welcomeModalRouter.subscribe(({visible}) => {
-    const el = document.getElementById('welcome-modal');
-    if (visible) {
-        el.style.visibility = 'visible';
-    } else {
-        el.style.visibility = 'hidden';
-    }
-});
-
-welcomeModalRouter.show();
-```
-
-...But, how do we create the actual Routers? Simple! With a router declaration object and composable primitives:
-
-```
-import manager from 'router-primitives'
-
-const routerTree = {
-  name: 'root',
-  routers: {
-    scene: [
-      { name: 'LandingPageRouter' },
-      { name: 'UserPageRouter' }
-    ],
-    stack: [{ name: 'WelcomeModalRouter' }]
-  }
-}
-
-const manager = new Manager({routerTree});
-
-const {welcomeModalRouter} = manager.routers;
-```
-
-How do primitives define your app layout?
-
--   **Scene** primitives allow you to implement layout items that take the place of one another
-
--   **Stack** primitives allow you to implement layout items that have an ordering to them
-
--   **Feature** primitives allow you to implement layout items that seamlessly coexist with one another
-
--   **Data** primitives allow you to markup the layout with arbitrary data or record data in the URL that isn't visible in the UI
-
-Primitives aren't limited to just these four. You can create your own using the extension API!
-
----
-
-If you work on a platform where there is no concept of a URL, you can still use this library. The URL is simply managed serialized state - which is platform aware and configurable!
-
-Bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)**, and **[React](https://github.com/erhathaway/recursive-router-react)**.
-
-|     | Summary                                                                                       |
-| --- | --------------------------------------------------------------------------------------------- |
-| 😎  | View library agnostic - with bindings for React                                               |
-| ✨  | Router state as a direct function of location (URL)                                           |
-| ⏱   | Built in history - Previous router state can be derived                                       |
-| 🔀  | One way data flow. Location -> Router State tree -> App                                       |
-| 🔗  | Trivial Deep linking - Use the URL to generate an identical router state tree on any platform |
-| 😱  | Opinionated and automatic URL construction                                                    |
-| 🚀  | Reactive - Subscribe to the state of any router in the router state tree                      |
-| 👌  | Simple - Declare the route tree using a small but expressive syntax set                       |
+Router Primitives is a **layout primitives** paradigm for application routing. Instead of focusing on pattern matching path names and query params, you describe the layout of your application in terms of router primitives. Primitives are composable and provide a simple declarative API to control routing actions and add complex animations.
 
 # About
 
 #### Documentation
 
 -   **[About](#about)** :point_left:
--   [Examples](#examples)
+-   [Usage](#usage)
 -   [API](#api)
 -   [Primitives](#primitives)
--   [Configuration](#configuration)
--   [Architecture](#architecture)
--   [Extensions](#extensions)
+-   [Router Actions](#router-actions)
+-   [Router Links](#router-links)
+-   [Router State Predicates](#router-state-predicates)
+-   [Custom Primitives](#custom-primitives)
 
-#### TL;DR
+## TL;DR
 
-Describe the layout of your app in terms of `scene`, `stack`, `feature`, and `data` routers
+Describe the routing of your app in terms of **layout primitives**.
 
-### Paradigm
+Current router primitives are `scene`, `stack`, `feature`, and `data`, but you can easily define custom ones using simple template objects.
+
+-   Scene: sibling routers take the place of one another.
+-   Stack: sibling routers have an order with respect to one another.
+-   Feature: don't affect other routers. They are either visible or not.
+-   Data: add data to the url.
+
+## Overview
+
+Normally, with application routers, you define how path names and query params map to various elements of your application via pattern matching. When a match is found, you execute logic to show, hide, or move the element.
+
+With `Router Primitives`, you don't need to think about pattern matching at all! You simply describe how your app is layed out in terms of scenes, stacks, features, data, and other router primitives.
+
+The hierarchial arrangement of these layout primitives, in a `router declaration` object, generates routers that automatically construct the URL based on triggered actions (`show`, `hide`, etc...). Routers handle all layout level routing logic without need for additional code. This means that you don't need to write code to show, hide, or move elements with respect to one another.
+
+For instance, sibling Scene routers automatically hide all other scenes when one of them becomes visible. This is similar to React Routers `switch` component. Or, as another example, Stack routers keep track of a position. If one sibling stack router jumps to the first position, the other siblings decrement their position accordingly. These are useful if you have multiple modals, toast notifications, or other components that you want to register in the URL and be ordered.
+
+Router Primitives is written as a high level abstraction to free developers from having to write the same routing logic over and over again. It's designed to have a simple, small, and declarative API with sensible ways to do complex and deterministic animations based on current router state, historical router state, and sibling router state.
+
+If you work on a platform where there is no concept of a URL, you can still use this library. The URL is simply managed serialized state - which is platform aware and configurable!
+
+Finally, Router Primitives is platform agnostic. This means that you can use the same router code for various frameworks and platforms. Currently, bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)**, and **[React](https://github.com/erhathaway/recursive-router-react)**.
+
+## Key Features
+
+|     |                                                                                          |
+| --- | ---------------------------------------------------------------------------------------- |
+| 😎  | View library agnostic - with bindings for React and Mobx                                 |
+| ✨  | Router state as a direct function of location (URL)                                      |
+| ⏱   | Built in history - Previous router state is tracked                                      |
+| 🔀  | One way data flow. Location -> Router State tree -> App                                  |
+| 🔗  | Trivial linking - Use the URL to generate an identical router state tree on any platform |
+| 😱  | Best practice opinionated and automatic URL construction                                 |
+| 🚀  | Reactive - Subscribe to the state of any router in the router state tree                 |
+| 👌  | Simple - Declare the route tree using a small but expressive syntax set                  |
+| 💃  | State predicate functions for making **complex animations easy**                         |
+
+## Paradigm
 
 In the context of this library, a router should be thought of as a feature of your application that responds to actions of other application features.
 
 For example, a router can be 'visible' when other routers are 'hidden'. This type of logic is what a scene router uses. Or, as another example, a router can be 'in front of' or 'behind' other routers. This type of logic is what a stack router uses. By defining your application in terms of visual elements like `scene` or `stack` (along with `feature` and `data`) you can implement variations of complex application routing.
 
-You can use this library directly in an app or web page, however there also exist bindings to React and Mobx.
-
-### How it works
+## How it works
 
 1. Router Primitives treats the URL as a namespace for the storage of a state tree representing `all routable state`™.
 2. Writing to the URL is handled by the router and via direct user modification.
@@ -164,273 +72,177 @@ You can use this library directly in an app or web page, however there also exis
 4. Various types of routers in the router state tree exist. The differences are used to control how their state will get updated when the URL changes.
 5. Once the router state tree has been updated, observers of only updated routers are notified.
 
-### Custom Router Primitives
+## Custom Router Primitives
 
 Should the existing router primitives not be enough, this library provides you with a way to create your own routers! See [Router templates](#extensions)
 
-# Examples
+# Usage
 
 #### Documentation
 
 -   [About](#about)
--   **[Examples](#examples)** :point_left:
+-   **[Usage](#usage)** :point_left:
 -   [API](#api)
 -   [Primitives](#primitives)
--   [Configuration](#configuration)
--   [Architecture](#architecture)
--   [Extensions](#extensions)
+-   [Router Actions](#router-actions)
+-   [Router Links](#router-links)
+-   [Router State Predicates](#router-state-predicates)
+-   [Custom Primitives](#custom-primitives)
 
-#### Mobx Example
+## 1. Declare the layout of your app in terms of router primitives
 
-Router logic is defined in typescript and JSX land
+```typescript
+import {IRouterDeclaration, AllTemplates} from 'router-primitives';
 
-`Note: The mobx bindings are required for this to work.`
+const routerDeclaration: IRouterDeclaration<AllTemplates> = {
+    name: 'root',
+    children: {
+        scene: [
+            {
+                name: 'user',
+                children: {
+                    data: [{name: 'userId', isPathRouter: true}]
+                }
+            },
+            {name: 'home', defaultAction: ['show']},
+            {
+                name: 'options',
+                children: {
+                    scene: [{name: 'appOptions', defaultAction: ['show']}, {name: 'userOptions'}]
+                }
+            }
+        ],
+        features: [{name: 'sideNav', routeKey: 'nav'}]
+    }
+};
+```
+
+The above router declaration would generate the following paths:
+
+```
+/user
+/user&nav
+
+/user/:userId
+/user/:userId&nav
+
+/home
+/home&nav
+
+/options
+/options&nav
+
+/options/appOptions
+/options/appOptions&nav
+
+/options/userOptions
+/options/userOptions&nav
+```
+
+## 2. Build routers using the declaration object
 
 ```typescript
 import {Manager} from 'router-primitives';
 
-const routerTree = {
-    name: 'root',
-    routers: {
-        scene: [
-            {name: 'user'},
-            {
-                name: 'docs',
-                routers: {
-                    feature: [{name: 'doc-nav'}],
-                    scene: [{name: 'doc-intro'}, {name: 'doc-help'}]
-                }
-            }
-        ]
-    }
-};
+const manager = new Manager({routerDeclaration});
 
-const manager = new Manager({routerTree});
-const routers = manager.routers;
+const {routers} = manager;
 ```
 
-```html
-<App>
-  <NavBar>
-    <Button onClick={routers['user'].show} />
-    <Button onClick={routers['docs'].show} />
-  </NavBar>
-  <Scenes>
-    <Docs visible={routers['docs'].visible}>
-      <DocsNav visible={routers['doc-nav'].visible} onClickHelp={routers['doc-help'].show} />
-      <MainContainer>
-        { routers['doc-intro'].visible ? <DocsIntro /> : <HelloMessage /> }
-      </MainContainer>
-      <DocsHelp visible={routers['doc-help'].visible} />
-    </Docs>
-    <User visible={routers['user'].visible} />
-  </Scenes>
-</App>
+## 3. Use the routers to navigate
+
+```typescript
+routers.sideNav.subscribe(({visible}) => {
+    console.log(`Side nav is changing state. Visible: ${visible}`);
+});
+
+routers.userId.subscribe(({data}) => {
+    console.log(`The current userId is ${userId}`);
+});
+
+// the URL starts off at /home because the 'home' router has a default action of 'show'
+
+routers.appOptions.show(); // transitions URL to /options/appOptions
+
+routers.sideNav.show(); // transitions URL to /options/appOptions&nav
+
+routers.userId.show({data: 1}); // transitions URL to /user/1&nav
+
+routers.sideNav.hide(); // transitions URL to /user/1
+
+routers.userOptions.link('show'); // generates the URL string for a link to this location
 ```
 
-#### React Example
+## 4. Use in React
 
-All router logic is defined in JSX land
-
-`Note: The react bindings are required for this to work.`
-
-```html
-<App>
-    <NavBar>
-        <Router name="user">{router => <button onClick="{router.show}" />}</Router>
-        <Router name="docs">{router => <button onClick="{router.show}" />}</Router>
-    </NavBar>
-    <Scenes>
-        <Router name="docs" parent="root" type="scene">
-            {docsRouter => docsRouter.visible && (
-            <Docs>
-                <Router name="docs-nav" parent="docs" defaultShow="{true}" type="feature">
-                    {docNavRouter => docNavRouter.visible && (
-                    <Router name="docs-help">
-                        {docHelpRouter => (
-                        <DocsNav onClickHelp="{docHelpRouter.show}" />
-                        )}
-                    </Router>
-                    ) }
-                </Router>
-                <MainContainer>
-                    <Router name="docs-intro" parent="docs" defaultShow="{true}" type="scene">
-                        {docIntroRouter => ( docIntroRouter.visible ? <DocsIntro /> :
-                        <HelloMessage />
-                        )}
-                    </Router>
-                </MainContainer>
-                <Router name="docs-help" parent="docs" type="scene">
-                    {docHelpRouter => docHelpRouter.visible && <DocsHelp />}
-                </Router>
-            </Docs>
-            ) }
-        </Router>
-        <Router name="user" parent="root" defaultShow="{true}" type="scene">
-            {router => router.visible && <User />}
-        </Router>
-    </Scenes> </App
->;
-```
+TODO
 
 # API
+
+This section contains minimial API documentation to get you started. For the extensive API docs see the [docs website](TODO).
 
 #### Documentation
 
 -   [About](#about)
--   [Examples](#examples)
+-   [Usage](#usage)
 -   **[API](#api)** :point_left:
 -   [Primitives](#primitives)
--   [Configuration](#configuration)
--   [Architecture](#architecture)
--   [Extensions](#extensions)
-
-## API Overview
-
-The API consists of 3 classes: `manager`, `router`, `serializedStateStore`, and 1 configuration object, a `routerDeclaration`.
-
-#### `manager` class:
-
-The manager ties all the `routers` together. It is how you add, remove, and list routers.
-
-```typescript
-const myRouter = manager.routers['myRouterName'];
-```
-
-```typescript
-manager.removeRouter('myRouterName');
-```
-
-#### `router` class:
-
-Routers are created when `routerDeclaration` objects are passed to the manager. Routers all have a unique name and can be one of the 4 primitive types (`scene`, `stack`, `data`, and `feature`).
-
-```typescript
-const routerTree = {
-    name: 'myNewRouter',
-    routers: {
-        feature: [{name: 'myFeatureRouter'}]
-    }
-};
-const manager = new Manager({routerTree});
-```
-
-```typescript
-const routerTree = {
-    type: 'stack',
-    parent: 'myNewRouter',
-    name: 'myThirdRouter',
-    routers: {
-        scene: [{name: 'mySceneRouter'}],
-        stack: [{name: 'myStackRouter'}, {name: 'mySecondStackRouter'}]
-    }
-};
-const manager = manager.addRouter(routerTree);
-```
-
-#### `serializedStateStore` class
-
-The serialized state of all routers is stored in this store. If your app runs in a web browser, this store is a wrapper around the native History API. The store changes to work with different platforms. You can use the serialized state store to move the app `forward` or `backwards` through history.
-
-```typescript
-const {serializedStateStore} = manager;
-```
-
-#### `routerDeclaration` config:
-
-Simply an object that is used to specify how a router should be made. On `Manager` initialization, you can specify a tree of `routerDeclaration` objects. Or, once the Manager is initialized, you can add them to the Manager one by one.
-
-```typescript
-const routerTree = {
-    name: 'root',
-    routers: {
-        scene: [{name: 'myFirstScene'}, {name: 'mySecondScene'}]
-    }
-};
-
-const manager = new Manager({routerTree});
-
-const myNewRouter = {
-    name: 'newRouter',
-    type: 'scene',
-    parent: 'root'
-};
-
-manager.addRouter(myNewRouter);
-```
+-   [Router Actions](#router-actions)
+-   [Router Links](#router-links)
+-   [Router State Predicates](#router-state-predicates)
+-   [Custom Primitives](#custom-primitives)
 
 ## API: Manager
-
-### Constructor
-
-```typescript
-import {Manager} from 'router-primitives'
-
-const routerTree = {
-  name: 'root'
-  routers: {
-    scene: [{ name: 'home' }, { name: 'users' }, { name: 'settings }],
-    feature: [{ name: 'side-nav' }]
-  }
-}
-
-const manager = new Manager({ routerTree })
-```
 
 ### Manager Methods
 
 | Method         | Signature                                                                    | Description                                                    |
 | -------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | `addRouters`   | `(router: IRouterDeclaration, type: RouterType, parentName: string) => void` | Add one router or an entire tree of router declaration objects |
-| `addRouter`    | `(router: IRouterDeclaration) => void`                                       | Add a single router                                            |
 | `removeRouter` | `(routerName: string) => void`                                               | Remove a router                                                |
 
 ### Manager Attributes
 
-| Attribute          | Type                                          | Description                                                                                                                  |
-| ------------------ | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `routers`          | `{ [routerName: string]: IRouter }`           | All of the routers the manager currently manages                                                                             |
-| `rootRouter`       | `IRouter`                                     | the root router                                                                                                              |
-| `routerStateStore` | `IRouterStateStore`                           | The store used to store the serialized router tree state. This is likely a wrapper over the web history api if in a browser. |
-| `primitives`       | `{ [primitiveName: string]: RouterTemplate }` | The router primitives that exist. If you add a custom primitive you should see it here.                                      |
+| Attribute | Type                                | Description                                      |
+| --------- | ----------------------------------- | ------------------------------------------------ |
+| `routers` | `{ [routerName: string]: IRouter }` | All of the routers the manager currently manages |
 
 ## API: Router
-
-Once you have have added a router to the manager, using a router declaration object or tree of router declaration objects (see above), the manager will have created router instances to represent each node in the tee. These router instances are the main way you will control routing in your app.
 
 ### Router Common Methods
 
 All router instances have the following methods:
 
-| Method            | Signature                                                          | Description                                                                                                                                                                                                                               |
-| ----------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `show`            | `(options: IRouterOptions) => void`                                | Makes the router visible. This will update the router state tree and add the router `key` to the location                                                                                                                                 |
-| `hide`            | `(options: IRouterOptions) => void`                                | Makes the router invisible. This will update the router state tree and remove the router `key` from the location                                                                                                                          |
-| `getState`        | `() => { current: IRouterState, historical: Array<IRouterState> }` | Gets the router state from the `routerStateStore`. This includes both the current state and the previous states. The history is configured to record a set number of previous states. This can be adjusted during manager initialization. |
-| `neighborsOfType` | `() => Array<IRouter>`                                             | Gets routers that have the same parent but are not of the same type                                                                                                                                                                       |
-| `subscribe`       | `(fn: (newState) => any) => void`                                  | Subscribe to router state changes                                                                                                                                                                                                         |
+| Method            | Signature                                                   | Description                                                                                                      |
+| ----------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `show`            | `(options: IRouterOptions) => void`                         | Makes the router visible. This will update the router state tree and add the router `key` to the location        |
+| `hide`            | `(options: IRouterOptions) => void`                         | Makes the router invisible. This will update the router state tree and remove the router `key` from the location |
+| `neighborsOfType` | `() => Array<IRouter>`                                      | Gets routers that have the same parent but are not of the same type                                              |
+| `subscribe`       | `(fn: (newState) => any) => void`                           | Subscribe to router state changes                                                                                |
+| `link`            | `(actionName: string, options: IRouterOptions) => location` | generates a link that mimics what this action will do when pasted into the URL                                   |
 
 ### Router Common Attributes
 
 All router instances have the following attributes:
 
-| Attribute      | Type                                      | Description                                                                       |
-| -------------- | ----------------------------------------- | --------------------------------------------------------------------------------- |
-| `name`         | `string`                                  | router name                                                                       |
-| `type`         | `'scene' | 'stack' | 'feature' | 'data'`  | primitive type                                                                    |
-| `manager`      | `IManager`                                | the manager controlling the router                                                |
-| `parent`       | `IParent`                                 | the parent of the router, if any                                                  |
-| `routers`      | `{ [routerType: string]: Array<IRouter>}` | the routers children                                                              |
-| `root`         | `IRouter`                                 | the root router of the router tree                                                |
-| `config`       | `IRouterConfig`                           | the config options set during initialization that customize the router's behavior |
-| `isPathRouter` | `boolean`                                 | whether the router will appear in the pathname or query part of the location      |
-| `siblings`     | `IRouter[]`                               | routers of the same primitive type who share the same parent                      |
-| `state`        | `IRouterState`                            | the current state of the router                                                   |
-| `history`      | `IRouterState[]`                          | previous states of the router                                                     |
+| Attribute      | Type                                          | Description                                                                       |
+| -------------- | --------------------------------------------- | --------------------------------------------------------------------------------- |
+| `name`         | `string`                                      | router name                                                                       |
+| `type`         | `string literal` - the name of a primitive    | primitive type                                                                    |
+| `manager`      | `Manager`                                     | the manager controlling the router                                                |
+| `parent`       | `Router` - union of all possible router types | the parent of the router, if any                                                  |
+| `children`     | `{ [routerType: string]: Array<IRouter>}`     | the children routers of this router children                                      |
+| `root`         | `Router`                                      | the root router of the entire router tree tree                                    |
+| `config`       | `IRouterConfig`                               | the config options set during initialization that customize the router's behavior |
+| `isPathRouter` | `boolean`                                     | whether the router will appear in the pathname or query part of the location      |
+| `siblings`     | `Router[]`                                    | routers of the same primitive type who share the same parent                      |
+| `state`        | `RouterState`                                 | the current state of the router                                                   |
+| `history`      | `RouterState[]`                               | previous states of the router                                                     |
+| `data`         | `any` - depending on the template             | the data the router has                                                           |
 
 ### Primitive Specific Methods
 
-Additional methods may exist depending on the particular router primitive. For example, `stack` routers also have the methods `forward`, `backward`, `toFront`, `toBack`. Also, `data` routers has the method `setData`.
+Additional methods may exist depending on the particular router primitive. For example, `stack` routers also have the methods `forward`, `backward`, `toFront`, `toBack`. Likewise, `data` routers has the method `setData`.
 
 #### Data Router
 
@@ -452,82 +264,48 @@ Additional methods may exist depending on the particular router primitive. For e
 #### Documentation
 
 -   [About](#about)
--   [Examples](#examples)
+-   [Usage](#usage)
 -   [API](#api)
 -   **[Primitives](#primitives)** :point_left:
--   [Configuration](#configuration)
--   [Architecture](#architecture)
--   [Extensions](#extensions)
+-   [Router Links](#router-links)
+-   [Router Actions](#router-actions)
+-   [Router State Predicates](#router-state-predicates)
+-   [Custom Primitives](#custom-primitives)
 
-Almost all apps can be expressed in terms of 4 predefined router types: `Stack`, `Scene`, `Feature`, and `Data`. The following will section surveying the types of primitives will help you understand how each router primitive can play a role in your app. Routers can be mixed and composed to give way to complex and easily maintainable dynamically routed apps.
+For the most part, you'll be able to express the route-able layout of your app in terms of the 4 predefined primitives: `Stack`, `Scene`, `Feature`, and `Data`.
+
+-   Scene: sibling routers take the place of one another.
+-   Stack: sibling routers have an order with respect to one another.
+-   Feature: don't affect other routers. They are either visible or not.
+-   Data: add data to the url.
+
+The are 4 important configuration options each primitive has that you should take note of:
+
+-   **show**: How it affects it's sibling(s)
+-   **canBePathRouter**: Whether it can occupy the pathname part of the URL
+-   **isPathRouterByDefault**: Whether it will occupy the pathname part of the URL by default
+-   **isDependentOnExternalData**: Whether it is dependent on external (user) data
+
+Lets walk through the different primitives and look at each consideration.
 
 ## Scene
-
-```
-+--------------------------------+                  +----------------------------------------------+
-|                                |                  |                                              |
-|                                |                  |                        *                     |
-|            _=,_                |                  |                 *  _+_                       |
-|         o_/6 /#\               |                  |                 .+' * '+. *                  |
-|         \__ +##/               |                  |                /       * \                   |
-|          ='+-+\                |                  |             *  <^^^^+^^^^>                   |
-|            /   #'+.            |   <---------->   |                 .~. |  .~.                   |
-|            \#+_   _'+. /       |                  |                / ^ \+ / ^ \                  |
-|             +/ \_( # +"        |                  |               (+   +J/+   +)                 |
-|     snd    C/ ,++___/          |                  |               '\   /`"\   /`                 |
-|                                |                  |     ++ '' +'+'  ^`^    ^`^  ++ '' +'+' mic   |
-|                                |                  |                                              |
-+--------------------------------+                  +----------------------------------------------+
-```
 
 **Scene primitives allow you to implement layout items that take the place of one another**
 
 The scene router's purpose is to represent layouts where you only want 1 item in a certain view at a time. For example, you may want a `users` scene, a `info` scene, and a `product` scene, all with the same parent. Because these are all sibling scenes, only one of them will be visible at a time. Furthermore, because they are all `scene` primitives, they will occupy the same space in the location (URL) store. This allows you to have three URLs like: `mysite.com/users`, `mysite.com/info` and `mysite.com/product`.
 
-#### Serialized state (URL)
-
-The scene router primitive will store its state in the `pathname` or `query` part of the `serialized state store`, which will likely be the `URL` if you use the primitive in web browser app.
-
-Some example URLs are:
-
--   `http://<something>/sceneA/2/sceneB`
-
--   `http://<something>/sceneA?sceneC`
-
-By default, a scene router will appear in the `pathname` part of the URL if:
-
-1.  All of its parents are `scene` routers
-
-or
-
-2.  All of its parents are `scene` or `data` routers as long as the `data` has no scene routers in its neighborhood (its immediate parent) or has the option `isPathRouter` set to `true` in the router declaration object.
+| Option                        | Configuration                                                                                                                       |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **show**                      | Hides all sibling routers and makes router visible.                                                                                 |
+| **canBePathRouter**           | Yes. As long as all parents are also path routers                                                                                   |
+| **isPathRouterByDefault**     | Yes. As long as all parents are also path routers. Can be turned off by setting `isPathRouter` to `false` in the router declaration |
+| **isDependentOnExternalData** | No.                                                                                                                                 |
 
 ## Stack
-
-```
-
-+--------------+
-|  _~          |
-|   _~ )_)_~   |
-|   )_))_))_)  |
-|   _!__!__!_  |
-|   \______t/  |
-| ~~~ @+-------+--------+
-|     |                 |
-+-----+      |\_/|      +-------+
-      |      `o.o'      |       |
-      |      =(_)=      |  /.)  |
-      |        U        | /)\|  |
-      |                 |/ /    |
-      +------------+----+" "    |
-                   +------------+
-```
 
 **Stack primitives allow you to implement layout items that have an ordering to them.**
 
 The stack router's purpose is to represent layouts where have multiple items that are visible but they need to have some order about them. For example, you may have a bunch of modals that you want to display only on a certain page. You could make a bunch of stack routers such they they all have the page router as their parent. You could then control the ordering of the modals via their `order` state.
-
-#### Serialized state (URL)
 
 The stack router primitive will store its state in only the `query` part of the `serialized state store` (URL). The store keys are `router.routeKey` and the values are the ordering of sibling routers with respect to one another.
 
@@ -535,31 +313,20 @@ An example URL is:
 
 -   `http://<something>?stack1=0&stack2=1`
 
-Note the order of `stack` is `0`, and the order of `stack2` is `1`
+Note the order of `stack1` is `0`, and the order of `stack2` is `1`
+
+| Option                        | Configuration                                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **show**                      | Moves the router to the first position and makes it visible. All sibling router positions are decremented. |
+| **canBePathRouter**           | No.                                                                                                        |
+| **isPathRouterByDefault**     | No.                                                                                                        |
+| **isDependentOnExternalData** | No.                                                                                                        |
 
 ## Feature
-
-```
-             +--------------------------------+
-             |                                |
-             |                                |
-+---------+  | ---.____    ,/k.               |  +---------+
-|  |\_/|  |  |  ___,---'  /  ih,__,-----.___  |  |    /.)  |
-|  `o.o'  |  |         ,-' ,  `:7b----.__---` |  |   /)\|  |
-|  =(_)=  |  |     _.-/   '  /b.`.4p,         |  |  // /   |
-|    U    |  |  --"  ,    ,-' ^6x, `."^=._    |  | /'" "   |
-+---------+  |                                |  +---------+
-     ?       |                                |     pils
-             |                                |
-             +--------------------------------+
-                           itz
-```
 
 **Feature primitives allow you to implement layout items that seamlessly coexist with one another**
 
 The feature router's purpose is to coexist seamlessly with other routers of the same parent. Sibling feature routers (routers with the same parent) will not affect the presence of one another. For example, you could use a feature router to control whether a menu bar is opened or closed.
-
-#### Serialized state (URL)
 
 The feature router primitive will store its state in only the `query` part of the `serialized state store` (URL).
 
@@ -567,26 +334,14 @@ An example URL is:
 
 -   `http://<something>?feature1&feature2`
 
-### `Data`
+| Option                        | Configuration                                               |
+| ----------------------------- | ----------------------------------------------------------- |
+| **show**                      | Makes the router visible. Has no affect on sibling routers. |
+| **canBePathRouter**           | No.                                                         |
+| **isPathRouterByDefault**     | No.                                                         |
+| **isDependentOnExternalData** | No.                                                         |
 
-```
-+-------+
-|       |              ,/\,           _
-|  Sun  | +------>    <(())>         /"\   _
-|       |              '\/`          +"+  /"\
-+-------+                        _   |"|  +"+
-                                /"\  |"|  +"+              +-----------+
-                                +"+  |"+__/"/              |           |
-                                |"|  |" ___/        <----+ |  Cactus   |
-                                +"+  |"+                   |           |
-                                \"\__+"|                   +-----------+
-                                 \___ "|
-                                     +"|
-                                     |"|
-                       (\__/)    ____+_+___
-                      __(oo)__,+/          \+,___
-
-```
+## Data
 
 **Data primitives allow you to markup the layout with arbitrary data**
 
@@ -596,190 +351,260 @@ The data router's purpose is to allow you to store data in the URL. This makes i
 
 The data router primitive will store its state in both the `query` and `path` part of the `serialized state store` (URL).
 
-By default the data router will store its state in the `query` part of the store unless:
-
--   no sibling scene routers exist
-
-or
-
--   the is `isPathRouter` option is set to true in the router declaration object for the data router
-
 Example URLs are:
 
 -   `http://<something>?data1&data2`
 -   `http://<something>/data3/?data1&data2`
 
-# Configuration
+| Option                        | Configuration                                                                                                                                                                                                                                                                                                                              |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **show**                      | Makes the router visible. Has no affect on sibling routers. Uses whatever data it has and sets it in the URL                                                                                                                                                                                                                               |
+| **canBePathRouter**           | Yes. As long as all parent routers are also path routers _AND there are no other neighboring routers that are also path routers_                                                                                                                                                                                                           |
+| **isPathRouterByDefault**     | No.                                                                                                                                                                                                                                                                                                                                        |
+| **isDependentOnExternalData** | Yes. Data needs to be added via A. the `defaultAction` during the router declaration, B. the `data` option when calling the action (ex: `myDataRouter.show({data: 'somedata'})`), or in the `pathData` option when calling another router with this router in the path (ex: `mySceneRouter.show({pathData: {myDataRouter: 'someData'}})`)) |
+
+# Router Actions
 
 #### Documentation
 
 -   [About](#about)
--   [Examples](#examples)
+-   [Usage](#usage)
 -   [API](#api)
 -   [Primitives](#primitives)
--   **[Configuration](#configuration)** :point_left:
--   [Architecture](#architecture)
--   [Extensions](#extensions)
+-   **[Router Actions](#router-actions)** :point_left:
+-   [Router Links](#router-links)
+-   [Router State Predicates](#router-state-predicates)
+-   [Custom Primitives](#custom-primitives)
 
-## Default Visibility
+Router actions are methods that do work. They allow you to change route location and set data. All routers have the actions `show` and `hide`. Routers can also have custom actions. For example, Data primitives have the `setData` action, and Stack primitives have the actions `toFront`, `toBack`, `forward`, and `backwards`.
 
-By default, all routers are hidden - aka `visible: false`.
-
-To have certain routers become visible when their immediate parent is visible, you can set the `defaultVisible` key to `true` in your router declaration object.
+## Calling a router action
 
 ```typescript
-{
-  name: my-router
-  routers: {
-    scene: [<child-scene-router>, <other-child-scene-router>],
-    data: [<child-data-router>],
-  },
-  defaultVisible: true,
+<myRouter>.<action>(<options>)
+```
+
+Example:
+
+```typescript
+myRouter.show({replaceLocation: true});
+```
+
+## Router action options
+
+All actions take the same option type.
+
+```typescript
+export interface IRouterActionOptions<CustomState> {
+    data?: CustomState;
+    pathData?: Record<string, unknown>;
+    disableCaching?: boolean; // the setting will only persist for the router
+    replaceLocation?: boolean; // used to replace location in history rather than append to history
+    dryRun?: boolean; // will prevent cache from being updated or the new location state from being stored
+    addCacheToLocation?: boolean; // serializes the current router cache into the location. Useful for rehydrating exact router state.
 }
 ```
 
-## URL Construction
+| Option             | Explanation                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| data               | If this router is dependent on external data, this will set that data. Data routers can have their data set via this option                                                                                                                                                                                                                                               |
+| pathData           | If this router isn't dependent on external data, but another router in the path that the action will render is, data can be set for that router with this option. For example: `myRouter.show({pathData:{myDataRouter: 'somedata'}})`                                                                                                                                     |
+| disableCaching     | Router state is cached by default. If you want to disable caching for this router during this action run you can set it to `true`                                                                                                                                                                                                                                         |
+| replaceLocation    | Every location change via an action is added to the platforms location history. However, sometimes you don't want to add to this history but rather replace the current location. You can do that by setting `replaceLocation: true`                                                                                                                                      |
+| dryRun             | This will run the action executor but never use the new location (it won't be set to the history or URL). Instead, the location is returned. Internally, this option is how links are created via the `myRouter.link` method.                                                                                                                                             |
+| addCacheToLocation | Internally router actions are cached. This gives the impression that you can navigate to where you left off rather than have the default actions run every time. However, this information is not existent in the URL. If you want to add it to the URL so that pasting it into another browser creates an identical router experience, this option will do that for you. |
 
-URL construction is automatically handled for you based on the router hierarchy you define.
+# Router Links
 
-The URL represents the routing state of an app, known as the `location`. The location consists of two parts, the pathname and query params. The ordering of names in the pathname can be configured, and the names of keys that make up the pathname and query params can be set.
-
-URL breakdown:
-
-`https://github.com/ <pathname-part1> / <pathname-part2> ? <query-params>`
-
-#### Pathname precedence
-
-The pathname part of a url is the union of router names that make up the longest visibile path of `Scene` and `Data` routers from the root router.
-
-If there are both `Scene` and `Data` routers as neighbors (same level in router tree) in a path, the `Scene` router is always used for the pathname, unless the `Data` router explicitly sets the config option `isPathRouter = true`
-
-```typescript
-{
-  name="my-router",
-  routers: <Routers Obj>,
-  config: { isPathRouter: true }
-}
-```
-
-Example using [React bindings](https://github.com/erhathaway/recursive-router-react):
-
-```html
-<Router type="scene" name="user">
-    <Router type="feature" name="admin-tray" />
-    <Router type="data" name="user-id">
-        <Router type="data" name="content-date" isPathRouter="{true}" />
-        <Router type="scene" name="content-overview" />
-        <Router type="scene" name="content-details" />
-    </Router>
-    <Router type="scene" name="user-options" />
-</Router>
-<Router></Router>
-```
-
-In this example, the viable paths are:
-
-```
-/user
-/user?admin-tray=true
-```
-
-```
-/user/:user-id
-/user/:user-id?admin-tray=true
-```
-
-```
-/user/:user-id/:content-date
-/user/:user-id/:content-date?admin-tray=true
-/user/:user-id/:content-date?admin-tray=true&user-options=true
-/user/:user-id/:content-date?user-options=true
-```
-
-```
-/user/:user-id/:content-date/content-overview
-/user/:user-id/:content-date/content-overview?admin-tray=true
-/user/:user-id/:content-date/content-overview?admin-tray=true&user-options=true
-/user/:user-id/:content-date/content-overview?user-options=true
-```
-
-```
-/user/:user-id/:content-date/content-details
-/user/:user-id/:content-date/content-details?admin-tray=true
-/user/:user-id/:content-date/content-details?admin-tray=true&user-options=true
-/user/:user-id/:content-date/content-details?user-options=true
-```
-
-Notice two things:
-
--   `user-id` is a `Data` router and is part of the pathname but **doesn't** have `isPathRouter=true`. This is because, explicitly setting `isPathRouter` is not not needed if the data router has no `Scene` routers as neighbors.
-
--   `user-options` is a `Scene` router but isn't being used in the pathname. This is because it has a `Data` router as a neighbor that is explicitly set with `isPathRouter=true`.
-
-## Naming of router state in the URL
-
-The `routeKey` option allows you to alias router names to another value used in the URL (location).
-
-For example, setting the `routeKey` could allow you to transform:
-
-`https://github.com/scene1RouteKey/scene2RouteKey?queryRouteKey1=1&queryRouteKey2=some-random-value`
-
-to
-
-`https://github.com/a/b?c=1&d=some-random-value`
-
-You can set the route key with the `routeKey` parameter:
-
-```typescript
-{
-  name='my-router',
-  routers: <Routers Obj>,
-  routeKey: 'a',
-}
-```
-
-With the [React bindings](https://github.com/erhathaway/recursive-router-react), this would look like:
-
-```html
-<Router name="my-router" type="scene" routeKey="a" />
-```
-
-## Rehydration of state after visibility change
-
-All routers will, by default, rehydrate children routers back to how the children were when the parent state changed. The exception to this is: if a parent is hidden and it's child has it's state changed, the parent's other children will not rehydrate. This setting can be overridden on a case-by-case basis during the router tree declaration.
-
-# Architecture
+#### Documentation
 
 -   [About](#about)
--   [Examples](#examples)
+-   [Usage](#usage)
 -   [API](#api)
 -   [Primitives](#primitives)
--   [Configuration](#configuration)
--   **[Architecture](#architecture)** :point_left:
--   [Extensions](#extensions)
+-   [Router Actions](#router-actions)
+-   **[Router Links](#router-links)** :point_left:
+-   [Router State Predicates](#router-state-predicates)
+-   [Custom Primitives](#custom-primitives)
 
-TODO
+Often times, you'll want a link rather than calling an location action directly. The `link` method allows you to create such a link. It is essentially calling the action with the `dryRun` option.
 
-# Extensions
+Example usage:
+
+```typescript
+myRouter.link('show', linkOptions);
+```
+
+The options available to the link method are a subset of the `action options`. See [router action options](#router-action-options) for an overview.
+
+```typescript
+export interface ILinkOptions<CustomState> {
+    data?: CustomState;
+    pathData?: Record<string, unknown>;
+    addCacheToLocation?: boolean; // serializes the current router cache into the location. Useful for rehydrating exact router state.
+}
+```
+
+# Router State Predicates
 
 -   [About](#about)
--   [Examples](#examples)
+-   [Usage](#usage)
 -   [API](#api)
 -   [Primitives](#primitives)
--   [Configuration](#configuration)
--   [Architecture](#architecture)
--   **[Extensions](#extensions)** :point_left:
+-   [Router Actions](#router-actions)
+-   [Router Links](#router-links)
+-   **[Router State Predicates](#router-state-predicates)** :point_left:
+-   [Custom Primitives](#custom-primitives)
 
-The extensions API is currently unstable. Certain behavior (caching of child state, setting initialization defaults, and rehydrating router tree from new URLs) is implicit and needs to be changed so there is a public API.
+Arguably one of the hardest problems with routing is adding in complex animations / transitions. Router Primitives aims to make this easy by providing state predicates that can tell you if a particular state transition has occurred.
 
-In the mean time, if you still need a custom router and don't care about breaking changes, you should look at `src/router/template` for inspiration.
+State predicates derive information off of the router passed into them. If you'd like to make your own check out [src/state_predicates.ts](/src/state_predicates.ts) for inspiration.
 
-TODO
+### Existing predicates
 
-## V1 Roadmap
+| Predicate                                 | Explanation                                                                |
+| ----------------------------------------- | -------------------------------------------------------------------------- |
+| isVisible                                 | Whether the router is visible                                              |
+| isHidden                                  | Whether the router is hidden                                               |
+| isJustHidden                              | Whether the scene was just hidden in the last action                       |
+| isJustShown                               | Whether the scene was just shown in the last action                        |
+| hasEverBeenShown                          | Whether the router was ever shown in its past                              |
+| scene.visibleSiblingIsFirstTimeBeingShown | Whether the now visible sibling router is the first time being shown       |
+| scene.visibleSiblingHasBeenShownBefore    | Whether the now visible sibling has been visible before                    |
+| stack.isIncreasing                        | Whether the order position is getting larger (to the back)                 |
+| stack.isDecreasing                        | Whether the order position is getting smaller (to the front)               |
+| stack.isAtFront                           | Whether the order position is = 0                                          |
+| stack.isAtBack                            | Whether the order position is the largest out of all sibling stack routers |
+| stack.isPositionSameAsLastShown           | Whether the order position is the same as the last time it was shown       |
 
--   [ ] Snapshot integration tests
--   [ ] Templates validations
--   [ ] Add CI
--   [ ] Add react bindings
--   [ ] Demo apps built with `recursive-router`
+### Example state predicate usage
+
+Lets look at how these can be used with a popular animation library like [Anime.js](https://github.com/juliangarnier/anime)
+
+```typescript
+import {statePredicates} from 'router-primitives';
+
+const myRouterOfInterest = manager.routers.myRouterOfInterest;
+const {isIncreasing} = statePredicates.stack;
+
+if (isIncreasing(myRouterOfInterest)) {
+    anime({
+        targets: 'MyComponentId',
+        translateX: 250
+    });
+}
+```
+
+Bindings to various view frameworks, like React, explicitly implement an API to make this even cleaner. For example:
+
+```jsx
+import anime from 'animejs';
+import {statePredicates} from 'router-primitives';
+import {when, and, createRouterComponents} from 'router-primitives-react';
+
+const {
+    isJustHidden,
+    isJustShown,
+    stack: {isIncreasing}
+} = statePredicates;
+
+const StackRouter = createRouterComponents(manager.routers).myRouterOfInterest;
+
+<StackRouter
+    onChange={[
+        when(and(isIncreasing, isJustShown), uuid => anime({target: uuid, translateX: 250})),
+        when(isJustHidden, uuid => anime({target: uuid, translateX: -250}))
+    ]}
+>
+    {({uuid}) => <MyComponent id={uuid} />}
+</StackRouter>;
+```
+
+# Custom Primitives
+
+-   [About](#about)
+-   [Usage](#usage)
+-   [API](#api)
+-   [Primitives](#primitives)
+-   [Router Actions](#router-actions)
+-   [Router Links](#router-links)
+-   [Router State Predicates](#router-state-predicates)
+-   **[Custom Primitives](#custom-primitives)** :point_left:
+
+Making custom primitives allows you to define new types of routing for your layout!
+
+> It might be helpful to look at the [templates for `scene`, `stack`, `feature`, `data` primitives as a guide](/src/types/router_templates.ts)
+
+## Router Primitive Type Signature
+
+A layout primitive is defined by a template which has the type type signature:
+
+```typescript
+type RouterTemplate = {
+    actions: ActionFunction[];
+    reducer: (newLocation: Location) => NewState;
+    options: {
+        canBePathRouter?: boolean;
+        isPathRouter?: boolean;
+        shouldInverselyActivate?: boolean;
+        disableCaching?: boolean;
+        shouldParentTryToActivateSiblings?: boolean;
+        isDependentOnExternalData?: boolean;
+    };
+};
+
+type ActionFunction = (
+    options?: ActionOptions // Same options object that is talked about in the Router Actions section. These are set by the user to get specific action functionality.
+    existingLocation?: Location, // The existing URL
+
+    routerInstance?: Router, // The router that this function is a method on.
+    ctx?: ActionContext // A context object that is passed to every action function in the chain of action functions that is kicked off by the users action call.
+) => Location;
+
+type Location = {
+  path: string[], // the components that form the path part of the URL
+  search: {}, // the components that form the query params pat of the URL
+}
+
+type NewState = {
+  visible: boolean,
+  data?: unknown // this type varies on a router by router basis. You define the type with a generic when making the template.
+  actionNumber: number // the action number that this state is associated with. Each action call increments the actionNumber by 1.
+}
+
+```
+
+### Overview of writing a template
+
+#### Template Actions
+
+When you write a template you need to define, at a minimum, the `show` and `hide` actions. You can add as many actions as you like as long as the name doesn't conflict with a method name defined in [router_base.ts](/src/router_base.ts).
+
+The goal of an action is to take the existing `location` and return a `new location`. The template should only modify the location state of the router in the `routerInstance` param of the action function type. Additionally, in an action you may call sibling router actions.
+
+#### Template Reducer
+
+The goal of a reducer is to take the `final location` from the action call chain that a user initiated and reduce it down to a state specific to this router. The final reduction may modify the `visible` and `data` keys of the state object, but it should not touch the `actionNumber` part.
+
+#### Template Options
+
+The template options do the following:
+
+| Option                            | Purpose                                                                                                                                                                                                                                                                        | Default |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| canBePathRouter                   | Whether the primitive can occupy the pathname part of the URL                                                                                                                                                                                                                  | false   |
+| isPathRouter                      | Whether it will occupy the pathname part of the URL by default                                                                                                                                                                                                                 | false   |
+| isDependentOnExternalData         | Whether it is dependent on external (user) data                                                                                                                                                                                                                                | false   |
+| shouldParentTryToActivateSiblings | Whether the parent of the primitive should check if it should be shown from the cache when a sibling primitive was activated                                                                                                                                                   | true    |
+| disableCaching                    | Whether caching should occur for the primitive. Caching allows you to navigate to a different route and then come back to find the same cache state. For example, if you opened a menu, navigated away, and came back you could find the same menu open when cache is enabled. | false   |
+| shouldInverselyActivate           | TODO                                                                                                                                                                                                                                                                           | TODO    |
+
+### Using templates
+
+```typescript
+type CustomTemplates = {
+    myTemplateName: myTemplate;
+};
+
+const manager = new Manager<CustomTemplates>({customTemplates, routerDeclaration});
+```

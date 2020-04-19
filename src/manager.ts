@@ -76,7 +76,6 @@ const createRouterFromTemplate = <
     return (MixedInClass as unknown) as RouterClass<CustomTemplates, RouterTypeName>;
 };
 
-// implements IManager<CustomTemplates>
 export default class Manager<CustomTemplates extends IRouterTemplates<unknown> = {}>
     implements IManager<CustomTemplates> {
     /**
