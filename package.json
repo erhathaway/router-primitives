@@ -1,6 +1,6 @@
 {
     "name": "router-primitives",
-    "version": "1.0.0-beta.0",
+    "version": "1.0.0-beta.2",
     "description": "A cross-platform application router. Declarative routing by way of layout primitives",
     "main": "./dist/index.cjs.js",
     "module": "./dist/index.es.js",
@@ -27,11 +27,14 @@
     },
     "keywords": [
         "router",
+        "routing",
+        "router primitives",
         "router state",
         "router management",
         "application routing",
         "primitives",
-        "declarative routing"
+        "declarative routing",
+        "layout primitives"
     ],
     "author": "Ethan Hathaway",
     "license": "MIT",
@@ -57,10 +60,9 @@
         "rollup-plugin-typescript2": "^0.26.0",
         "rollup-watch": "^4.3.1",
         "ts-jest": "^23.10.5",
-        "typescript": "^3.8.2"
-    },
-    "dependencies": {
+        "typescript": "^3.8.2",
         "query-string": "^6.8.3"
     },
+    "dependencies": {},
     "peerDependencies": {}
 }
