@@ -53,7 +53,7 @@ describe('Integration', () => {
                                 });
                                 const routerA = manager.routers['a'];
 
-                                expect(isVisible(routerA)).toBeTruthy();
+                                expect(isVisible(routerA as any)).toBeTruthy();
                             });
 
                             it('is true when visible', () => {
@@ -68,7 +68,7 @@ describe('Integration', () => {
                                     routerB.show();
                                 }
 
-                                expect(isVisible(routerB)).toBeTruthy();
+                                expect(isVisible(routerB as any)).toBeTruthy();
                             });
 
                             it('is false when hidden', () => {
@@ -87,7 +87,7 @@ describe('Integration', () => {
                                 routerB.hide();
                                 routerC.hide();
 
-                                expect(isVisible(routerB)).toBeFalsy();
+                                expect(isVisible(routerB as any)).toBeFalsy();
                             });
                         });
                         describe('isHidden', () => {
@@ -104,7 +104,7 @@ describe('Integration', () => {
                                 });
                                 const routerA = manager.routers['a'];
 
-                                expect(isHidden(routerA)).toBeFalsy();
+                                expect(isHidden(routerA as any)).toBeFalsy();
                             });
 
                             it('is false when visible', () => {
@@ -119,7 +119,7 @@ describe('Integration', () => {
                                     routerB.show();
                                 }
 
-                                expect(isHidden(routerB)).toBeFalsy();
+                                expect(isHidden(routerB as any)).toBeFalsy();
                             });
 
                             it('is true when hidden', () => {
@@ -138,7 +138,7 @@ describe('Integration', () => {
                                 routerB.hide();
                                 routerC.hide();
 
-                                expect(isHidden(routerB)).toBeTruthy();
+                                expect(isHidden(routerB as any)).toBeTruthy();
                             });
                         });
 
@@ -156,7 +156,7 @@ describe('Integration', () => {
                                 });
                                 const routerA = manager.routers['a'];
 
-                                expect(isJustHidden(routerA)).toBeFalsy();
+                                expect(isJustHidden(routerA as any)).toBeFalsy();
                             });
 
                             it('is false when visible', () => {
@@ -171,7 +171,7 @@ describe('Integration', () => {
                                     routerB.show();
                                 }
 
-                                expect(isJustHidden(routerB)).toBeFalsy();
+                                expect(isJustHidden(routerB as any)).toBeFalsy();
                             });
 
                             it('is false when hidden but not just hidden', () => {
@@ -190,7 +190,7 @@ describe('Integration', () => {
                                 routerB.hide();
                                 routerA.hide();
 
-                                expect(isJustHidden(routerB)).toBeFalsy();
+                                expect(isJustHidden(routerB as any)).toBeFalsy();
                             });
 
                             it('is true when just hidden', () => {
@@ -207,7 +207,7 @@ describe('Integration', () => {
                                 }
                                 routerB.hide();
 
-                                expect(isJustHidden(routerB)).toBeTruthy();
+                                expect(isJustHidden(routerB as any)).toBeTruthy();
                             });
                         });
 
@@ -225,7 +225,7 @@ describe('Integration', () => {
                                 });
                                 const routerA = manager.routers['a'];
 
-                                expect(isJustShown(routerA)).toBeTruthy();
+                                expect(isJustShown(routerA as any)).toBeTruthy();
                             });
 
                             it('is false when hidden', () => {
@@ -242,7 +242,7 @@ describe('Integration', () => {
 
                                 routerB.hide();
 
-                                expect(isJustShown(routerB)).toBeFalsy();
+                                expect(isJustShown(routerB as any)).toBeFalsy();
                             });
 
                             // TODO figure out test for this
@@ -263,7 +263,7 @@ describe('Integration', () => {
                                     routerB.show();
                                 }
 
-                                expect(isJustShown(routerB)).toBeTruthy();
+                                expect(isJustShown(routerB as any)).toBeTruthy();
                             });
                         });
 
@@ -281,7 +281,7 @@ describe('Integration', () => {
                                 });
                                 const routerA = manager.routers['a'];
 
-                                expect(isFirstTimeBeingShown(routerA)).toBeTruthy();
+                                expect(isFirstTimeBeingShown(routerA as any)).toBeTruthy();
                             });
 
                             it('is false if shown before', () => {
@@ -300,7 +300,7 @@ describe('Integration', () => {
                                 routerA.hide();
                                 routerA.show();
 
-                                expect(isFirstTimeBeingShown(routerA)).toBeFalsy();
+                                expect(isFirstTimeBeingShown(routerA as any)).toBeFalsy();
                             });
 
                             it('is false if hidden', () => {
@@ -316,7 +316,7 @@ describe('Integration', () => {
                                 });
                                 const routerB = manager.routers['b'];
 
-                                expect(isFirstTimeBeingShown(routerB)).toBeFalsy();
+                                expect(isFirstTimeBeingShown(routerB as any)).toBeFalsy();
                             });
                         });
 
@@ -334,7 +334,7 @@ describe('Integration', () => {
                                 });
                                 const routerA = manager.routers['a'];
 
-                                expect(hasBeenShownBefore(routerA)).toBeFalsy();
+                                expect(hasBeenShownBefore(routerA as any)).toBeFalsy();
                             });
 
                             it('is true if shown before', () => {
@@ -353,7 +353,7 @@ describe('Integration', () => {
                                 routerA.hide();
                                 routerA.show();
 
-                                expect(hasBeenShownBefore(routerA)).toBeTruthy();
+                                expect(hasBeenShownBefore(routerA as any)).toBeTruthy();
                             });
 
                             it('is false if hidden', () => {
@@ -369,7 +369,7 @@ describe('Integration', () => {
                                 });
                                 const routerB = manager.routers['b'];
 
-                                expect(hasBeenShownBefore(routerB)).toBeFalsy();
+                                expect(hasBeenShownBefore(routerB as any)).toBeFalsy();
                             });
                         });
                     });

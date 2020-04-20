@@ -305,7 +305,7 @@ The scene router's purpose is to represent layouts where you only want 1 item in
 
 **Stack primitives allow you to implement layout items that have an ordering to them.**
 
-> Note: Stack routers have the orders 1+. O is not used.
+> Note: Stack routers have the orders 1, 2, 3... . 0 index is not used.
 
 The stack router's purpose is to represent layouts where have multiple items that are visible but they need to have some order about them. For example, you may have a bunch of modals that you want to display only on a certain page. You could make a bunch of stack routers such they they all have the page router as their parent. You could then control the ordering of the modals via their `order` state.
 
