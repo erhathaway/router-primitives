@@ -38,7 +38,7 @@ describe('Integration', () => {
         }
     };
 
-    describe('Scene template', () => {
+    describe('Stack template', () => {
         describe('Actions', () => {
             it('Can have replace location action option set', () => {
                 const manager = new Manager({routerTree});
@@ -82,8 +82,8 @@ describe('Integration', () => {
 
                 expect(welcomeRouter.isPathRouter).toBe(false);
                 expect(welcomeObserver.mock.calls[1][0]).toEqual({
-                    current: {data: '1', visible: true},
-                    historical: [{data: undefined, visible: false}]
+                    current: {data: 1, visible: true, actionCount: 3},
+                    historical: [{data: undefined, visible: false, actionCount: 1}]
                 });
 
                 welcomeRouter.show();
@@ -103,10 +103,10 @@ describe('Integration', () => {
 
                 expect(welcomeRouter.isPathRouter).toBe(false);
                 expect(welcomeObserver.mock.calls[2][0]).toEqual({
-                    current: {data: undefined, visible: false},
+                    current: {data: undefined, visible: false, actionCount: 4},
                     historical: [
-                        {data: '1', visible: true},
-                        {data: undefined, visible: false}
+                        {data: 1, visible: true, actionCount: 3},
+                        {data: undefined, visible: false, actionCount: 1}
                     ]
                 });
 
@@ -134,17 +134,31 @@ describe('Integration', () => {
                 welcomeRouter.show();
                 cookiesRouter.show();
 
-                expect(dataObserver.mock.calls[1][0].current).toEqual({data: '1', visible: true});
-                expect(dataObserver.mock.calls[2][0].current).toEqual({data: '2', visible: true});
-                expect(dataObserver.mock.calls[3][0].current).toEqual({data: '3', visible: true});
+                expect(dataObserver.mock.calls[1][0].current).toEqual({
+                    data: 1,
+                    visible: true,
+                    actionCount: 3
+                });
+                expect(dataObserver.mock.calls[2][0].current).toEqual({
+                    data: 2,
+                    visible: true,
+                    actionCount: 4
+                });
+                expect(dataObserver.mock.calls[3][0].current).toEqual({
+                    data: 3,
+                    visible: true,
+                    actionCount: 5
+                });
 
                 expect(welcomeObserver.mock.calls[2][0].current).toEqual({
-                    data: '2',
-                    visible: true
+                    data: 2,
+                    visible: true,
+                    actionCount: 5
                 });
                 expect(cookiesObserver.mock.calls[1][0].current).toEqual({
-                    data: '1',
-                    visible: true
+                    data: 1,
+                    visible: true,
+                    actionCount: 5
                 });
 
                 cookiesRouter.show();
@@ -155,29 +169,41 @@ describe('Integration', () => {
                 welcomeRouter.show();
 
                 expect(welcomeObserver.mock.calls[3][0].current).toEqual({
-                    data: '1',
-                    visible: true
+                    data: 1,
+                    visible: true,
+                    actionCount: 7
                 });
                 expect(cookiesObserver.mock.calls[2][0].current).toEqual({
-                    data: '2',
-                    visible: true
+                    data: 2,
+                    visible: true,
+                    actionCount: 7
                 });
 
                 // hasn't changed state even though the ordering of the other two routers have
                 expect(dataObserver.mock.calls[4]).toBe(undefined);
-                expect(dataObserver.mock.calls[3][0].current).toEqual({data: '3', visible: true});
+                expect(dataObserver.mock.calls[3][0].current).toEqual({
+                    data: 3,
+                    visible: true,
+                    actionCount: 5
+                });
 
                 welcomeRouter.hide();
 
                 expect(welcomeObserver.mock.calls[4][0].current).toEqual({
                     data: undefined,
-                    visible: false
+                    visible: false,
+                    actionCount: 8
                 });
                 expect(cookiesObserver.mock.calls[3][0].current).toEqual({
-                    data: '1',
-                    visible: true
+                    data: 1,
+                    visible: true,
+                    actionCount: 8
                 });
-                expect(dataObserver.mock.calls[4][0].current).toEqual({data: '2', visible: true});
+                expect(dataObserver.mock.calls[4][0].current).toEqual({
+                    data: 2,
+                    visible: true,
+                    actionCount: 8
+                });
             });
 
             it('Movement actions work - forward, backwards, toFront, toBack', () => {
@@ -206,77 +232,123 @@ describe('Integration', () => {
                 welcomeRouter.toFront();
                 cookiesRouter.toFront();
 
-                expect(dataObserver.mock.calls[1][0].current).toEqual({data: '1', visible: true});
-                expect(dataObserver.mock.calls[2][0].current).toEqual({data: '2', visible: true});
-                expect(dataObserver.mock.calls[3][0].current).toEqual({data: '3', visible: true});
+                expect(dataObserver.mock.calls[1][0].current).toEqual({
+                    data: 1,
+                    visible: true,
+                    actionCount: 3
+                });
+                expect(dataObserver.mock.calls[2][0].current).toEqual({
+                    data: 2,
+                    visible: true,
+                    actionCount: 4
+                });
+                expect(dataObserver.mock.calls[3][0].current).toEqual({
+                    data: 3,
+                    visible: true,
+                    actionCount: 5
+                });
 
                 expect(welcomeObserver.mock.calls[2][0].current).toEqual({
-                    data: '2',
-                    visible: true
+                    data: 2,
+                    visible: true,
+                    actionCount: 5
                 });
                 expect(cookiesObserver.mock.calls[1][0].current).toEqual({
-                    data: '1',
-                    visible: true
+                    data: 1,
+                    visible: true,
+                    actionCount: 5
                 });
 
                 dataRouter.toFront();
 
-                expect(dataObserver.mock.calls[4][0].current).toEqual({data: '1', visible: true});
+                expect(dataObserver.mock.calls[4][0].current).toEqual({
+                    data: 1,
+                    visible: true,
+                    actionCount: 6
+                });
                 expect(welcomeObserver.mock.calls[3][0].current).toEqual({
-                    data: '3',
-                    visible: true
+                    data: 3,
+                    visible: true,
+                    actionCount: 6
                 });
                 expect(cookiesObserver.mock.calls[2][0].current).toEqual({
-                    data: '2',
-                    visible: true
+                    data: 2,
+                    visible: true,
+                    actionCount: 6
                 });
 
                 dataRouter.toBack();
 
-                expect(dataObserver.mock.calls[5][0].current).toEqual({data: '3', visible: true});
+                expect(dataObserver.mock.calls[5][0].current).toEqual({
+                    data: 3,
+                    visible: true,
+                    actionCount: 7
+                });
                 expect(welcomeObserver.mock.calls[4][0].current).toEqual({
-                    data: '2',
-                    visible: true
+                    data: 2,
+                    visible: true,
+                    actionCount: 7
                 });
                 expect(cookiesObserver.mock.calls[3][0].current).toEqual({
-                    data: '1',
-                    visible: true
+                    data: 1,
+                    visible: true,
+                    actionCount: 7
                 });
 
                 welcomeRouter.toBack();
 
-                expect(dataObserver.mock.calls[6][0].current).toEqual({data: '2', visible: true});
+                expect(dataObserver.mock.calls[6][0].current).toEqual({
+                    data: 2,
+                    visible: true,
+                    actionCount: 8
+                });
                 expect(welcomeObserver.mock.calls[5][0].current).toEqual({
-                    data: '3',
-                    visible: true
+                    data: 3,
+                    visible: true,
+                    actionCount: 8
                 });
                 expect(cookiesObserver.mock.calls[4]).toBe(undefined);
 
                 welcomeRouter.forward();
 
-                expect(dataObserver.mock.calls[7][0].current).toEqual({data: '3', visible: true});
+                expect(dataObserver.mock.calls[7][0].current).toEqual({
+                    data: 3,
+                    visible: true,
+                    actionCount: 9
+                });
                 expect(welcomeObserver.mock.calls[6][0].current).toEqual({
-                    data: '2',
-                    visible: true
+                    data: 2,
+                    visible: true,
+                    actionCount: 9
                 });
                 expect(cookiesObserver.mock.calls[4]).toBe(undefined);
 
                 welcomeRouter.backward();
 
-                expect(dataObserver.mock.calls[8][0].current).toEqual({data: '2', visible: true});
+                expect(dataObserver.mock.calls[8][0].current).toEqual({
+                    data: 2,
+                    visible: true,
+                    actionCount: 10
+                });
                 expect(welcomeObserver.mock.calls[7][0].current).toEqual({
-                    data: '3',
-                    visible: true
+                    data: 3,
+                    visible: true,
+                    actionCount: 10
                 });
                 expect(cookiesObserver.mock.calls[4]).toBe(undefined);
 
                 cookiesRouter.backward();
 
-                expect(dataObserver.mock.calls[9][0].current).toEqual({data: '1', visible: true});
+                expect(dataObserver.mock.calls[9][0].current).toEqual({
+                    data: 1,
+                    visible: true,
+                    actionCount: 11
+                });
                 expect(welcomeObserver.mock.calls[8]).toBe(undefined);
                 expect(cookiesObserver.mock.calls[4][0].current).toEqual({
-                    data: '2',
-                    visible: true
+                    data: 2,
+                    visible: true,
+                    actionCount: 11
                 });
             });
         });
