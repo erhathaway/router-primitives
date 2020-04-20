@@ -179,8 +179,6 @@ TODO
 
 # API
 
-This section contains minimial API documentation to get you started. For the extensive API docs see the [docs website](TODO).
-
 #### Documentation
 
 -   [About](#about)
@@ -191,6 +189,8 @@ This section contains minimial API documentation to get you started. For the ext
 -   [Router Links](#router-links)
 -   [Router State Predicates](#router-state-predicates)
 -   [Custom Primitives](#custom-primitives)
+
+This section contains minimal API documentation to get you started. For the extensive API docs see the [docs website](TODO).
 
 ## API: Manager
 
@@ -449,6 +449,8 @@ export interface ILinkOptions<CustomState> {
 
 # Router State Predicates
 
+#### Documentation
+
 -   [About](#about)
 -   [Usage](#usage)
 -   [API](#api)
@@ -525,6 +527,8 @@ const StackRouter = createRouterComponents(manager.routers).myRouterOfInterest;
 ```
 
 # Custom Primitives
+
+#### Documentation
 
 -   [About](#about)
 -   [Usage](#usage)
