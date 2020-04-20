@@ -121,22 +121,22 @@ The above router declaration would generate the following paths:
 
 ```
 /user
-/user&nav
+/user?nav=true
 
 /user/:userId
-/user/:userId&nav
+/user/:userId?nav=true
 
 /home
-/home&nav
+/home?nav=true
 
 /options
-/options&nav
+/options?nav=true
 
 /options/appOptions
-/options/appOptions&nav
+/options/appOptions?nav=true
 
 /options/userOptions
-/options/userOptions&nav
+/options/userOptions?nav=true
 ```
 
 ## 2. Build routers using the declaration object
