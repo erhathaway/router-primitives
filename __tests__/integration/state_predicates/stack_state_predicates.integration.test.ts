@@ -337,27 +337,3 @@ describe('Integration', () => {
         });
     });
 });
-
-// console.log(routerA.state, '------', routerA.history, '----', routerA.manager.actionCount);
-
-// routerA.toFront();
-// // routerB.show();
-
-// const orders = routerA.siblings.map(s => ({name: s.name, order: s.state.data}));
-
-// orders.push({name: routerA.name, order: routerA.state.data});
-// console.log(orders);
-// // console.log(
-// //     routerA.state,
-// //     '------',
-// //     routerA.history,
-// //     '----',
-// //     routerA.manager.actionCount
-// // );
-
-// const orders = routerA.siblings
-//     .filter(s => s.state.visible === true)
-//     .map(s => ({name: s.name, order: s.state.data}));
-
-// orders.push({name: routerA.name, order: routerA.state.data});
-// console.log(orders);

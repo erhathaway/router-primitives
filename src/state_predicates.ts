@@ -56,7 +56,41 @@ const scene = {
     }
 };
 
+const common = {
+    isVisible: (router: RouterInstance<AllTemplates>) => {
+        return router.state.visible === true;
+    },
+    isHidden: (router: RouterInstance<AllTemplates>) => {
+        return router.state.visible !== true;
+    },
+    isJustHidden: (router: RouterInstance<AllTemplates>) => {
+        return (
+            router.state.actionCount === router.manager.actionCount && router.state.visible !== true
+        );
+    },
+    isJustShown: (router: RouterInstance<AllTemplates>) => {
+        return (
+            router.state.actionCount === router.manager.actionCount && router.state.visible === true
+        );
+    },
+    isFirstTimeBeingShown: (router: RouterInstance<AllTemplates>) => {
+        return (
+            router.state.actionCount === router.manager.actionCount &&
+            router.state.visible === true &&
+            router.history.find(h => h.visible === true) === undefined
+        );
+    },
+    hasBeenShownBefore: (router: RouterInstance<AllTemplates>) => {
+        return (
+            router.state.actionCount === router.manager.actionCount &&
+            router.state.visible === true &&
+            router.history.find(h => h.visible === true) !== undefined
+        );
+    }
+};
+
 export default {
     stack,
-    scene
+    scene,
+    ...common
 };
