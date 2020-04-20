@@ -267,8 +267,8 @@ Additional methods may exist depending on the particular router primitive. For e
 -   [Usage](#usage)
 -   [API](#api)
 -   **[Primitives](#primitives)** :point_left:
--   [Router Links](#router-links)
 -   [Router Actions](#router-actions)
+-   [Router Links](#router-links)
 -   [Router State Predicates](#router-state-predicates)
 -   [Custom Primitives](#custom-primitives)
 
@@ -537,7 +537,7 @@ const StackRouter = createRouterComponents(manager.routers).myRouterOfInterest;
 
 Making custom primitives allows you to define new types of routing for your layout!
 
-> It might be helpful to look at the [templates for `scene`, `stack`, `feature`, `data` primitives as a guide](/src/types/router_templates.ts)
+> It might be helpful to look at the [templates for `scene`, `stack`, `feature`, `data` primitives as a guide](/src/router_templates)
 
 ## Router Primitive Type Signature
 
