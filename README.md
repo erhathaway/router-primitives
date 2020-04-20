@@ -491,9 +491,9 @@ Lets look at how these can be used with a popular animation library like [Anime.
 import {statePredicates} from 'router-primitives';
 
 const myRouterOfInterest = manager.routers.myRouterOfInterest;
-const {isIncreasing} = statePredicates.stack;
+const {isMovingForward} = statePredicates.stack;
 
-if (isIncreasing(myRouterOfInterest)) {
+if (isMovingForward(myRouterOfInterest)) {
     anime({
         targets: 'MyComponentId',
         translateX: 250
@@ -511,14 +511,14 @@ import {when, and, createRouterComponents} from 'router-primitives-react';
 const {
     isJustHidden,
     isJustShown,
-    stack: {isIncreasing}
+    stack: {isMovingForward}
 } = statePredicates;
 
 const StackRouter = createRouterComponents(manager.routers).myRouterOfInterest;
 
 <StackRouter
     onChange={[
-        when(and(isIncreasing, isJustShown), uuid => anime({target: uuid, translateX: 250})),
+        when(and(isMovingForward, isJustShown), uuid => anime({target: uuid, translateX: 250})),
         when(isJustHidden, uuid => anime({target: uuid, translateX: -250}))
     ]}
 >
