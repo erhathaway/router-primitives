@@ -29,7 +29,7 @@ export default class DefaultRoutersStateStore<CustomState extends {}>
 
     constructor(store?: RouterStateStoreStore<CustomState>, config?: IRouterStateStoreConfig) {
         this.store = store || {};
-        this.config = {historySize: 2, ...config};
+        this.config = {historySize: 4, ...config};
         this.observers = {}; // key is routerName
     }
 
@@ -51,8 +51,10 @@ export default class DefaultRoutersStateStore<CustomState extends {}>
                 const newCurrent = desiredRouterStates[routerName];
 
                 // skip routers who haven't been updated
-                // TODO test performance of this JSON.stringify comparison
-                if (JSON.stringify(newCurrent) === JSON.stringify(prevCurrent)) {
+                if (
+                    newCurrent.visible === prevCurrent.visible &&
+                    newCurrent.data === prevCurrent.data
+                ) {
                     return routerStates;
                 }
 

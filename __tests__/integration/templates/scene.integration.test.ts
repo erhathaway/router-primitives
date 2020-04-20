@@ -96,14 +96,14 @@ describe('Integration', () => {
 
                     // subscribing returns the initial state
                     expect(userObserver.mock.calls[0][0]).toEqual({
-                        current: {visible: false},
+                        current: {visible: false, actionCount: 1},
                         historical: []
                     });
 
                     // showing makes the router visible
                     expect(userObserver.mock.calls[1][0]).toEqual({
-                        current: {visible: true},
-                        historical: [{visible: false}]
+                        current: {visible: true, actionCount: 3},
+                        historical: [{visible: false, actionCount: 1}]
                     });
 
                     // second action call should do nothing since its identical to the first
@@ -119,14 +119,14 @@ describe('Integration', () => {
 
                     // subscribing returns the initial state
                     expect(userObserver.mock.calls[0][0]).toEqual({
-                        current: {visible: false},
+                        current: {visible: false, actionCount: 1},
                         historical: []
                     });
 
                     // showing makes the router visible
                     expect(mainToolsObserver.mock.calls[1][0]).toEqual({
-                        current: {visible: true},
-                        historical: [{visible: false}]
+                        current: {visible: true, actionCount: 6},
+                        historical: [{visible: false, actionCount: 1}]
                     });
 
                     // only two state update should have been made for this router
@@ -159,8 +159,11 @@ describe('Integration', () => {
 
                     expect(userRouter.state.visible).toBe(false);
                     expect(userObserver.mock.calls[2][0]).toEqual({
-                        current: {visible: false},
-                        historical: [{visible: true}, {visible: false}]
+                        current: {visible: false, actionCount: 4},
+                        historical: [
+                            {visible: true, actionCount: 3},
+                            {visible: false, actionCount: 1}
+                        ]
                     });
                 });
 
@@ -174,8 +177,11 @@ describe('Integration', () => {
 
                     expect(mainToolsRouter.state.visible).toBe(false);
                     expect(mainToolsObserver.mock.calls[2][0]).toEqual({
-                        current: {visible: false},
-                        historical: [{visible: true}, {visible: false}]
+                        current: {visible: false, actionCount: 6},
+                        historical: [
+                            {visible: true, actionCount: 5},
+                            {visible: false, actionCount: 1}
+                        ]
                     });
                 });
             });
@@ -194,15 +200,18 @@ describe('Integration', () => {
             const eventsRouter = manager.routers['events'];
             eventsRouter.subscribe(eventsObserver);
 
-            expect(eventsObserver.mock.calls[0][0].current).toEqual({visible: false});
+            expect(eventsObserver.mock.calls[0][0].current).toEqual({
+                visible: false,
+                actionCount: 1
+            });
 
             userRouter.show();
 
             expect(manager.routers['info'].state.visible).toBe(false);
             expect(manager.routers['events'].state.visible).toBe(true);
             expect(eventsObserver.mock.calls[1][0]).toEqual({
-                current: {visible: true},
-                historical: [{visible: false}]
+                current: {visible: true, actionCount: 3},
+                historical: [{visible: false, actionCount: 1}]
             });
         });
 
@@ -225,8 +234,14 @@ describe('Integration', () => {
             toolbarRouter.show();
 
             expect(manager.routers['main-tools'].state.visible).toBe(false);
-            expect(sideToolsObserver.mock.calls[1][0].current).toEqual({visible: true});
-            expect(sideToolsMenuObserver.mock.calls[1][0].current).toEqual({visible: true});
+            expect(sideToolsObserver.mock.calls[1][0].current).toEqual({
+                visible: true,
+                actionCount: 4
+            });
+            expect(sideToolsMenuObserver.mock.calls[1][0].current).toEqual({
+                visible: true,
+                actionCount: 4
+            });
         });
     });
 

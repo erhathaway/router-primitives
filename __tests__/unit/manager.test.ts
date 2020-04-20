@@ -259,8 +259,8 @@ describe('Router Manager', () => {
 
                 // expect to have a historical state from not being visible on startup
                 expect(userObserverFn.mock.calls[1][0]).toEqual({
-                    current: {visible: true},
-                    historical: [{visible: false}]
+                    current: {visible: true, actionCount: 3},
+                    historical: [{visible: false, actionCount: 1}]
                 });
 
                 const nextLocation = {
@@ -271,14 +271,20 @@ describe('Router Manager', () => {
                 manager.serializedStateStore.setState(nextLocation);
 
                 expect(userObserverFn.mock.calls[2][0]).toEqual({
-                    current: {visible: false},
-                    historical: [{visible: true}, {visible: false}]
+                    current: {visible: false, actionCount: 4},
+                    historical: [
+                        {visible: true, actionCount: 3},
+                        {visible: false, actionCount: 1}
+                    ]
                 });
                 expect(userObserverFn.mock.calls).toHaveLength(3);
 
                 expect(secondUserObserverFn.mock.calls[1][0]).toEqual({
-                    current: {visible: false},
-                    historical: [{visible: true}, {visible: false}]
+                    current: {visible: false, actionCount: 4},
+                    historical: [
+                        {visible: true, actionCount: 3},
+                        {visible: false, actionCount: 1}
+                    ]
                 });
                 expect(secondUserObserverFn.mock.calls).toHaveLength(2);
 
@@ -293,14 +299,14 @@ describe('Router Manager', () => {
             it('returns the state for only the router', () => {
                 const initialRoutersState = {
                     user: {visible: false},
-                    root: {visible: true, order: 22},
-                    'notification-modal': {visible: false, order: 1}
+                    root: {visible: true, data: 22},
+                    'notification-modal': {visible: false, data: 1}
                 };
 
                 manager.routerStateStore.setState(initialRoutersState);
 
                 expect(manager.routers['user'].getState()).toEqual({
-                    current: {visible: false},
+                    current: {visible: false, actionCount: 1},
                     historical: []
                 });
 
@@ -308,8 +314,8 @@ describe('Router Manager', () => {
                 // whereas on startup, the order was implicitly undefined b/c no defaultAction
                 // gave it an order
                 expect(manager.routers['notification-modal'].getState()).toEqual({
-                    current: {visible: false, order: 1},
-                    historical: [{visible: false, order: undefined}]
+                    current: {visible: false, data: 1},
+                    historical: [{visible: false, data: undefined, actionCount: 1}]
                 });
             });
         });

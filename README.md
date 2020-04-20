@@ -36,7 +36,7 @@ With `Router Primitives`, you don't need to think about pattern matching at all!
 
 The hierarchial arrangement of these layout primitives, in a `router declaration` object, generates routers that automatically construct the URL based on triggered actions (`show`, `hide`, etc...). Routers handle all layout level routing logic without need for additional code. This means that you don't need to write code to show, hide, or move elements with respect to one another.
 
-For instance, sibling Scene routers automatically hide all other scenes when one of them becomes visible. This is similar to React Routers `switch` component. Or, as another example, Stack routers keep track of a position. If one sibling stack router jumps to the first position, the other siblings decrement their position accordingly. These are useful if you have multiple modals, toast notifications, or other components that you want to register in the URL and be ordered.
+For instance, sibling Scene routers automatically hide all other scenes when one of them becomes visible. This is similar to React Routers `switch` component. Or, as another example, Stack routers keep track of a position. If one sibling stack router jumps to the first position, the other siblings increment their position accordingly. These are useful if you have multiple modals, toast notifications, or other components that you want to register in the URL and be ordered.
 
 Router Primitives is written as a high level abstraction to free developers from having to write the same routing logic over and over again. It's designed to have a simple, small, and declarative API with sensible ways to do complex and deterministic animations based on current router state, historical router state, and sibling router state.
 
@@ -254,8 +254,8 @@ Additional methods may exist depending on the particular router primitive. For e
 
 | Method     | Signature                           | Description                                         |
 | ---------- | ----------------------------------- | --------------------------------------------------- |
-| `forward`  | `(options: IRouterOptions) => void` | increments the router position forward by 1         |
-| `backward` | `(options: IRouterOptions) => void` | decrements the router position forward by 1         |
+| `forward`  | `(options: IRouterOptions) => void` | decrement the router position forward by 1          |
+| `backward` | `(options: IRouterOptions) => void` | increments the router position forward by 1         |
 | `toFront`  | `(options: IRouterOptions) => void` | sets the router position to 0                       |
 | `toBack`   | `(options: IRouterOptions) => void` | sets the router position to largest position number |
 
@@ -305,6 +305,8 @@ The scene router's purpose is to represent layouts where you only want 1 item in
 
 **Stack primitives allow you to implement layout items that have an ordering to them.**
 
+> Note: Stack routers have the orders 1, 2, 3... . 0 index is not used.
+
 The stack router's purpose is to represent layouts where have multiple items that are visible but they need to have some order about them. For example, you may have a bunch of modals that you want to display only on a certain page. You could make a bunch of stack routers such they they all have the page router as their parent. You could then control the ordering of the modals via their `order` state.
 
 The stack router primitive will store its state in only the `query` part of the `serialized state store` (URL). The store keys are `router.routeKey` and the values are the ordering of sibling routers with respect to one another.
@@ -313,11 +315,11 @@ An example URL is:
 
 -   `http://<something>?stack1=0&stack2=1`
 
-Note the order of `stack1` is `0`, and the order of `stack2` is `1`
+Note the order of `stack1` is `1`, and the order of `stack2` is `2`
 
 | Option                        | Configuration                                                                                              |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| **show**                      | Moves the router to the first position and makes it visible. All sibling router positions are decremented. |
+| **show**                      | Moves the router to the first position and makes it visible. All sibling router positions are incremented. |
 | **canBePathRouter**           | No.                                                                                                        |
 | **isPathRouterByDefault**     | No.                                                                                                        |
 | **isDependentOnExternalData** | No.                                                                                                        |
@@ -472,9 +474,10 @@ State predicates derive information off of the router passed into them. If you'd
 | hasBeenShownBefore                         | Whether the router was ever shown in its past                              |
 | scene.isVisibleSiblingsFirstTimeBeingShown | Whether the now visible sibling router is the first time being shown       |
 | scene.hasVisibleSiblingBeenShownBefore     | Whether the now visible sibling has been visible before                    |
-| stack.isIncreasing                         | Whether the order position is getting larger (to the back)                 |
-| stack.isDecreasing                         | Whether the order position is getting smaller (to the front)               |
-| stack.isAtFront                            | Whether the order position is = 0                                          |
+| stack.isMovingForward                      | Whether the order position is getting smaller (to the front)               |
+| stack.isMovingBackward                     | Whether the order position is getting larger (to the back)                 |
+| stack.isAtFront                            | Whether the order position is = 1                                          |
+|                                            |
 | stack.isAtBack                             | Whether the order position is the largest out of all sibling stack routers |
 | stack.isPositionSameAsLastShown            | Whether the order position is the same as the last time it was shown       |
 
@@ -570,7 +573,7 @@ type Location = {
 type NewState = {
   visible: boolean,
   data?: unknown // this type varies on a router by router basis. You define the type with a generic when making the template.
-  actionNumber: number // the action number that this state is associated with. Each action call increments the actionNumber by 1.
+  actionCount: number // the action number that this state is associated with. Each action call increments the actionCount by 1.
 }
 
 ```
@@ -585,7 +588,7 @@ The goal of an action is to take the existing `location` and return a `new locat
 
 #### Template Reducer
 
-The goal of a reducer is to take the `final location` from the action call chain that a user initiated and reduce it down to a state specific to this router. The final reduction may modify the `visible` and `data` keys of the state object, but it should not touch the `actionNumber` part.
+The goal of a reducer is to take the `final location` from the action call chain that a user initiated and reduce it down to a state specific to this router. The final reduction may modify the `visible` and `data` keys of the state object, but it should not touch the `actionCount` part.
 
 #### Template Options
 

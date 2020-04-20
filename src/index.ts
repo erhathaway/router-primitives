@@ -3,6 +3,7 @@ import RouterStore from './all_router_state';
 import Router, {IInternalState} from './router_base';
 import RouterCache from './all_router_cache';
 import defaultTemplates from './router_templates';
+import statePredicates from './state_predicates';
 
 export * from './types';
 export * from './types/manager';
@@ -35,5 +36,6 @@ export {
     deserializer,
     IInternalState,
     isMemorySerializedStateStore,
-    isBrowserSerializedStateStore
+    isBrowserSerializedStateStore,
+    statePredicates
 };

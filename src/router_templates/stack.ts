@@ -218,7 +218,7 @@ const reducer: TemplateReducer<CustomState, CustomActionNames> = (location, rout
     if (value) {
         return {
             visible: true,
-            data: value
+            data: +value
         };
     }
 

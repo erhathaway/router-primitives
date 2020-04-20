@@ -156,20 +156,20 @@ describe('Router State', () => {
             const defaultState = {};
             const store = new RouterStateStore(defaultState, {historySize: 3});
 
-            [1, 2, 3, 4, 5, 6].forEach(order => {
-                store.setState({root: {visible: true, order}} as Record<
+            [1, 2, 3, 4, 5, 6].forEach(data => {
+                store.setState({root: {visible: true, data}} as Record<
                     string,
-                    RouterCurrentState<{order: number}>
+                    RouterCurrentState<number>
                 >);
             });
 
             expect(store.getState()).toEqual({
                 root: {
-                    current: {visible: true, order: 6},
+                    current: {visible: true, data: 6},
                     historical: [
-                        {visible: true, order: 5},
-                        {visible: true, order: 4},
-                        {visible: true, order: 3}
+                        {visible: true, data: 5},
+                        {visible: true, data: 4},
+                        {visible: true, data: 3}
                     ]
                 }
             });
