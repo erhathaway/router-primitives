@@ -29,7 +29,7 @@ export default class DefaultRoutersStateStore<CustomState extends {}>
 
     constructor(store?: RouterStateStoreStore<CustomState>, config?: IRouterStateStoreConfig) {
         this.store = store || {};
-        this.config = {historySize: 2, ...config};
+        this.config = {historySize: 4, ...config};
         this.observers = {}; // key is routerName
     }
 

@@ -142,8 +142,6 @@ const createActionExecutor = <
             saveNewLocation
         ].reduce(actionStepReducer, initialSetup);
 
-        routerInstance.manager.incrementActionCount();
-
         // Return location so the function signature of the action is the same
         return {...finalLocation};
     }

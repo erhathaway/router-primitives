@@ -515,6 +515,7 @@ export type ExtractCustomActionNamesFromTemplate<
 export type RouterCurrentState<CustomState = undefined> = {
     visible: boolean;
     data?: CustomState;
+    actionCount?: number; // The action this state is associated with. Each action call chain increments the count
 };
 
 type currentStateTestOne = RouterCurrentState;

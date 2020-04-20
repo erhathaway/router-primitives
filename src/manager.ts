@@ -183,7 +183,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
      * This provides an easy way for an individual router to know how its history relates to its siblings.
      */
     public incrementActionCount(): void {
-        this.actionCount = this.actionCount + 1;
+        this.actionCount = (this.actionCount || 0) + 1;
     }
 
     /**
@@ -202,6 +202,8 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         removeCacheAfterRehydration,
         errorWhenMissingData
     }: IManagerInit<CustomTemplates>): void {
+        this.actionCount = 0;
+
         this.printTracerResults = printTraceResults || false;
         this.cacheKey = cacheKey || '__cache';
         this.removeCacheAfterRehydration = removeCacheAfterRehydration || true;
@@ -447,6 +449,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
 
         // Call the routers reducer to calculate its state from the new location
         const currentRouterState = router.reducer(location, router, ctx);
+        const actionCount = {actionCount: this.actionCount};
 
         // Recursively call all children to add their state to the `newState` object
         return objKeys(router.routers).reduce(
@@ -457,7 +460,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
                 }, acc);
                 return {...acc, ...newStatesForType};
             },
-            {...newState, [router.name]: currentRouterState}
+            {...newState, [router.name]: {...currentRouterState, ...actionCount}}
         );
     }
 
@@ -653,6 +656,8 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         if (!this.rootRouter) {
             return;
         }
+
+        this.incrementActionCount();
 
         const newState = this.calcNewRouterState(
             location,
