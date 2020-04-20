@@ -37,6 +37,26 @@ const stack = {
     }
 };
 
+const scene = {
+    isVisibleSiblingsFirstTimeBeingShown: (router: RouterInstance<AllTemplates, 'scene'>) => {
+        const visibleSibling = router.siblings.find(s => s.state.visible === true);
+        return (
+            router.state.visible === false &&
+            visibleSibling &&
+            visibleSibling.history.find(h => h.visible === true) === undefined
+        );
+    },
+    hasVisibleSiblingBeenShownBefore: (router: RouterInstance<AllTemplates, 'scene'>) => {
+        const visibleSibling = router.siblings.find(s => s.state.visible === true);
+        return (
+            router.state.visible === false &&
+            visibleSibling &&
+            visibleSibling.history.find(h => h.visible === true) !== undefined
+        );
+    }
+};
+
 export default {
-    stack
+    stack,
+    scene
 };
