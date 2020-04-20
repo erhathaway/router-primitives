@@ -1,201 +1,356 @@
-import Manager from '../../../src/manager';
+import {
+    Manager,
+    isMemorySerializedStateStore,
+    NativeSerializedStore,
+    ISerializedStateStore,
+    isStackRouter,
+    AllTemplates,
+    IRouterDeclaration
+} from '../../../src';
 
 describe('Integration', () => {
-  const routerTree = {
-    name: 'root',
-    routers: {
-      scene: [
-        { name: 'user', // pathRouter scene
-          routers: {
-            scene: [{ name: 'events' }, { name: 'details' }],
-          },
-        },
-        { name: 'info' }],
-      stack: [
-        { name: 'welcome-modal', 
-          routers: {
-            stack: [{ name: 'cookies-popup', routeKey: 'short' }],
+    const routerTree: IRouterDeclaration<AllTemplates> = {
+        name: 'root',
+        routers: {
             scene: [
-              { name: 'welcome-main' }, // non-pathRouter scene
-              { name: 'welcome-end' },
+                {
+                    name: 'user', // pathRouter scene
+                    routers: {
+                        scene: [{name: 'events'}, {name: 'details'}]
+                    }
+                },
+                {name: 'info'}
             ],
-          },
-        },
-        { name: 'cookies-modal' },
-        { name: 'data-modal' },
-      ],
-    }
-  };
+            stack: [
+                {
+                    name: 'welcome-modal',
+                    routers: {
+                        stack: [{name: 'cookies-popup', routeKey: 'short'}],
+                        scene: [
+                            {name: 'welcome-main'}, // non-pathRouter scene
+                            {name: 'welcome-end'}
+                        ]
+                    }
+                },
+                {name: 'cookies-modal'},
+                {name: 'data-modal'}
+            ]
+        }
+    };
 
-  describe('Scene template', () => {
-    describe('Actions', () => {  
-      it('Can have replace location action option set', () => {
-        const manager = new Manager({ routerTree });
-        const welcomeModalRouter = manager.routers['welcome-modal'];
-        const cookiesModalRouter = manager.routers['cookies-modal'];
+    describe('Stack template', () => {
+        describe('Actions', () => {
+            it('Can have replace location action option set', () => {
+                const manager = new Manager({routerTree});
+                const welcomeModalRouter = manager.routers['welcome-modal'];
+                const cookiesModalRouter = manager.routers['cookies-modal'];
 
-        welcomeModalRouter.show();
-        expect(manager.serializedStateStore.history.length).toBe(1);
+                const serializedStateStore = manager.serializedStateStore as NativeSerializedStore;
 
-        cookiesModalRouter.show({ replaceLocation: true })
+                if (!isMemorySerializedStateStore(serializedStateStore)) {
+                    throw Error(
+                        `Wrong store type: ${(serializedStateStore as ISerializedStateStore).kind}`
+                    );
+                }
+                welcomeModalRouter.show();
+                expect(serializedStateStore.history).toHaveLength(2);
 
-        expect(manager.serializedStateStore.history.length).toBe(1);
+                cookiesModalRouter.show({replaceLocation: true});
 
-        cookiesModalRouter.hide({ replaceLocation: true })
+                expect(serializedStateStore.history).toHaveLength(2);
 
-        expect(manager.serializedStateStore.history.length).toBe(1);
+                cookiesModalRouter.hide({replaceLocation: true});
 
-        cookiesModalRouter.show();
+                expect(serializedStateStore.history).toHaveLength(2);
 
-        expect(manager.serializedStateStore.history.length).toBe(2);
+                cookiesModalRouter.show();
 
-        cookiesModalRouter.hide({ replaceLocation: false })
+                expect(serializedStateStore.history).toHaveLength(3);
 
-        expect(manager.serializedStateStore.history.length).toBe(3);
-      });
+                cookiesModalRouter.hide({replaceLocation: false});
 
-      it('Show sets order to 1 if the only stack router', () => {
-        const manager = new Manager({ routerTree });
-        const welcomeObserver = jest.fn();
-        const welcomeRouter = manager.routers['welcome-modal'];
-        welcomeRouter.subscribe(welcomeObserver);
+                expect(serializedStateStore.history).toHaveLength(4);
+            });
 
-        welcomeRouter.show();
+            it('Show sets order to 1 if the only stack router', () => {
+                const manager = new Manager({routerTree});
+                const welcomeObserver = jest.fn();
+                const welcomeRouter = manager.routers['welcome-modal'];
+                welcomeRouter.subscribe(welcomeObserver);
 
-        expect(welcomeRouter.isPathRouter).toBe(false);
-        expect(welcomeObserver.mock.calls[0][0]).toEqual({ current: { order: '1', visible: true }, historical: [] });
+                welcomeRouter.show();
 
-        welcomeRouter.show();
+                expect(welcomeRouter.isPathRouter).toBe(false);
+                expect(welcomeObserver.mock.calls[1][0]).toEqual({
+                    current: {data: 1, visible: true, actionCount: 3},
+                    historical: [{data: undefined, visible: false, actionCount: 1}]
+                });
 
-        // second action call should do nothing since its idential to the first
-        expect(welcomeObserver.mock.calls[1]).toBe(undefined);
-      });
+                welcomeRouter.show();
 
-      it('Hide sets order to undefined if the only stack router', () => {
-        const manager = new Manager({ routerTree });
-        const welcomeObserver = jest.fn();
-        const welcomeRouter = manager.routers['welcome-modal'];
-        welcomeRouter.subscribe(welcomeObserver);
+                // second action call should do nothing since its identical to the first
+                expect(welcomeObserver.mock.calls[2]).toBe(undefined);
+            });
 
-        welcomeRouter.show();
-        welcomeRouter.hide();
+            it('Hide sets order to undefined if the only stack router', () => {
+                const manager = new Manager({routerTree});
+                const welcomeObserver = jest.fn();
+                const welcomeRouter = manager.routers['welcome-modal'];
+                welcomeRouter.subscribe(welcomeObserver);
 
-        expect(welcomeRouter.isPathRouter).toBe(false);
-        expect(welcomeObserver.mock.calls[1][0]).toEqual({ current: { order: undefined, visible: false }, historical: [{ order: '1', visible: true}] });
+                welcomeRouter.show();
+                welcomeRouter.hide();
 
-        welcomeRouter.hide();
+                expect(welcomeRouter.isPathRouter).toBe(false);
+                expect(welcomeObserver.mock.calls[2][0]).toEqual({
+                    current: {data: undefined, visible: false, actionCount: 4},
+                    historical: [
+                        {data: 1, visible: true, actionCount: 3},
+                        {data: undefined, visible: false, actionCount: 1}
+                    ]
+                });
 
-        // second action call should do nothing since its idential to the first
-        expect(welcomeObserver.mock.calls[2]).toBe(undefined);
-      });
+                welcomeRouter.hide();
 
-      it('"Show" and "Hide" with existing stacks change ordering', () => {
-        const manager = new Manager({ routerTree });
-        const welcomeObserver = jest.fn();
-        const cookiesObserver = jest.fn();
-        const dataObserver = jest.fn();
+                // second action call should do nothing since its identical to the first
+                expect(welcomeObserver.mock.calls[3]).toBe(undefined);
+            });
 
-        const welcomeRouter = manager.routers['welcome-modal'];
-        const cookiesRouter = manager.routers['cookies-modal'];
-        const dataRouter = manager.routers['data-modal'];
+            it('"Show" and "Hide" with existing stacks change ordering', () => {
+                const manager = new Manager({routerTree});
+                const welcomeObserver = jest.fn();
+                const cookiesObserver = jest.fn();
+                const dataObserver = jest.fn();
 
-        welcomeRouter.subscribe(welcomeObserver);
-        cookiesRouter.subscribe(cookiesObserver);
-        dataRouter.subscribe(dataObserver);
+                const welcomeRouter = manager.routers['welcome-modal'];
+                const cookiesRouter = manager.routers['cookies-modal'];
+                const dataRouter = manager.routers['data-modal'];
 
-        dataRouter.show();
-        welcomeRouter.show();
-        cookiesRouter.show();
+                welcomeRouter.subscribe(welcomeObserver);
+                cookiesRouter.subscribe(cookiesObserver);
+                dataRouter.subscribe(dataObserver);
 
-        expect(dataObserver.mock.calls[0][0].current).toEqual({ order: '1', visible: true });
-        expect(dataObserver.mock.calls[1][0].current).toEqual({ order: '2', visible: true });
-        expect(dataObserver.mock.calls[2][0].current).toEqual({ order: '3', visible: true });
+                dataRouter.show();
+                welcomeRouter.show();
+                cookiesRouter.show();
 
-        expect(welcomeObserver.mock.calls[2][0].current).toEqual({ order: '2', visible: true });
-        expect(cookiesObserver.mock.calls[1][0].current).toEqual({ order: '1', visible: true });
+                expect(dataObserver.mock.calls[1][0].current).toEqual({
+                    data: 1,
+                    visible: true,
+                    actionCount: 3
+                });
+                expect(dataObserver.mock.calls[2][0].current).toEqual({
+                    data: 2,
+                    visible: true,
+                    actionCount: 4
+                });
+                expect(dataObserver.mock.calls[3][0].current).toEqual({
+                    data: 3,
+                    visible: true,
+                    actionCount: 5
+                });
 
-        cookiesRouter.show();
+                expect(welcomeObserver.mock.calls[2][0].current).toEqual({
+                    data: 2,
+                    visible: true,
+                    actionCount: 5
+                });
+                expect(cookiesObserver.mock.calls[1][0].current).toEqual({
+                    data: 1,
+                    visible: true,
+                    actionCount: 5
+                });
 
-        // second action call should do nothing since its idential to the first
-        expect(cookiesObserver.mock.calls[2]).toBe(undefined);
+                cookiesRouter.show();
 
-        welcomeRouter.show();
+                // second action call should do nothing since its identical to the first
+                expect(cookiesObserver.mock.calls[2]).toBe(undefined);
 
-        expect(welcomeObserver.mock.calls[3][0].current).toEqual({ order: '1', visible: true });
-        expect(cookiesObserver.mock.calls[2][0].current).toEqual({ order: '2', visible: true });
+                welcomeRouter.show();
 
-        // hasn't changed state even though the ordering of the other two routers have
-        expect(dataObserver.mock.calls[3]).toBe(undefined);
-        expect(dataObserver.mock.calls[2][0].current).toEqual({ order: '3', visible: true });
+                expect(welcomeObserver.mock.calls[3][0].current).toEqual({
+                    data: 1,
+                    visible: true,
+                    actionCount: 7
+                });
+                expect(cookiesObserver.mock.calls[2][0].current).toEqual({
+                    data: 2,
+                    visible: true,
+                    actionCount: 7
+                });
 
-        welcomeRouter.hide();
+                // hasn't changed state even though the ordering of the other two routers have
+                expect(dataObserver.mock.calls[4]).toBe(undefined);
+                expect(dataObserver.mock.calls[3][0].current).toEqual({
+                    data: 3,
+                    visible: true,
+                    actionCount: 5
+                });
 
-        expect(welcomeObserver.mock.calls[4][0].current).toEqual({ order: undefined, visible: false });
-        expect(cookiesObserver.mock.calls[3][0].current).toEqual({ order: '1', visible: true });
-        expect(dataObserver.mock.calls[3][0].current).toEqual({ order: '2', visible: true });
-      });
+                welcomeRouter.hide();
 
-      it('Movement actions work - forward, backwards, toFront, toBack', () => {
-        const manager = new Manager({ routerTree });
-        const welcomeObserver = jest.fn();
-        const cookiesObserver = jest.fn();
-        const dataObserver = jest.fn();
+                expect(welcomeObserver.mock.calls[4][0].current).toEqual({
+                    data: undefined,
+                    visible: false,
+                    actionCount: 8
+                });
+                expect(cookiesObserver.mock.calls[3][0].current).toEqual({
+                    data: 1,
+                    visible: true,
+                    actionCount: 8
+                });
+                expect(dataObserver.mock.calls[4][0].current).toEqual({
+                    data: 2,
+                    visible: true,
+                    actionCount: 8
+                });
+            });
 
-        const welcomeRouter = manager.routers['welcome-modal'];
-        const cookiesRouter = manager.routers['cookies-modal'];
-        const dataRouter = manager.routers['data-modal'];
+            it('Movement actions work - forward, backwards, toFront, toBack', () => {
+                const manager = new Manager({routerTree});
+                const welcomeObserver = jest.fn();
+                const cookiesObserver = jest.fn();
+                const dataObserver = jest.fn();
 
-        welcomeRouter.subscribe(welcomeObserver);
-        cookiesRouter.subscribe(cookiesObserver);
-        dataRouter.subscribe(dataObserver);
+                const welcomeRouter = manager.routers['welcome-modal'];
+                const cookiesRouter = manager.routers['cookies-modal'];
+                const dataRouter = manager.routers['data-modal'];
 
-        dataRouter.show();
-        (welcomeRouter as any).toFront();
-        (cookiesRouter as any).toFront();
+                welcomeRouter.subscribe(welcomeObserver);
+                cookiesRouter.subscribe(cookiesObserver);
+                dataRouter.subscribe(dataObserver);
 
-        expect(dataObserver.mock.calls[0][0].current).toEqual({ order: '1', visible: true });
-        expect(dataObserver.mock.calls[1][0].current).toEqual({ order: '2', visible: true });
-        expect(dataObserver.mock.calls[2][0].current).toEqual({ order: '3', visible: true });
+                if (
+                    !isStackRouter(welcomeRouter) ||
+                    !isStackRouter(cookiesRouter) ||
+                    !isStackRouter(dataRouter)
+                ) {
+                    throw new Error('router is not stack router');
+                }
 
-        expect(welcomeObserver.mock.calls[2][0].current).toEqual({ order: '2', visible: true });
-        expect(cookiesObserver.mock.calls[1][0].current).toEqual({ order: '1', visible: true });
+                dataRouter.show();
+                welcomeRouter.toFront();
+                cookiesRouter.toFront();
 
-        (dataRouter as any).toFront();
+                expect(dataObserver.mock.calls[1][0].current).toEqual({
+                    data: 1,
+                    visible: true,
+                    actionCount: 3
+                });
+                expect(dataObserver.mock.calls[2][0].current).toEqual({
+                    data: 2,
+                    visible: true,
+                    actionCount: 4
+                });
+                expect(dataObserver.mock.calls[3][0].current).toEqual({
+                    data: 3,
+                    visible: true,
+                    actionCount: 5
+                });
 
-        expect(dataObserver.mock.calls[3][0].current).toEqual({ order: '1', visible: true });
-        expect(welcomeObserver.mock.calls[3][0].current).toEqual({ order: '3', visible: true });
-        expect(cookiesObserver.mock.calls[2][0].current).toEqual({ order: '2', visible: true });
+                expect(welcomeObserver.mock.calls[2][0].current).toEqual({
+                    data: 2,
+                    visible: true,
+                    actionCount: 5
+                });
+                expect(cookiesObserver.mock.calls[1][0].current).toEqual({
+                    data: 1,
+                    visible: true,
+                    actionCount: 5
+                });
 
-        (dataRouter as any).toBack();
+                dataRouter.toFront();
 
-        expect(dataObserver.mock.calls[4][0].current).toEqual({ order: '3', visible: true });
-        expect(welcomeObserver.mock.calls[4][0].current).toEqual({ order: '2', visible: true });
-        expect(cookiesObserver.mock.calls[3][0].current).toEqual({ order: '1', visible: true });
+                expect(dataObserver.mock.calls[4][0].current).toEqual({
+                    data: 1,
+                    visible: true,
+                    actionCount: 6
+                });
+                expect(welcomeObserver.mock.calls[3][0].current).toEqual({
+                    data: 3,
+                    visible: true,
+                    actionCount: 6
+                });
+                expect(cookiesObserver.mock.calls[2][0].current).toEqual({
+                    data: 2,
+                    visible: true,
+                    actionCount: 6
+                });
 
-        (welcomeRouter as any).toBack();
+                dataRouter.toBack();
 
-        expect(dataObserver.mock.calls[5][0].current).toEqual({ order: '2', visible: true });
-        expect(welcomeObserver.mock.calls[5][0].current).toEqual({ order: '3', visible: true });
-        expect(cookiesObserver.mock.calls[4]).toBe(undefined);
+                expect(dataObserver.mock.calls[5][0].current).toEqual({
+                    data: 3,
+                    visible: true,
+                    actionCount: 7
+                });
+                expect(welcomeObserver.mock.calls[4][0].current).toEqual({
+                    data: 2,
+                    visible: true,
+                    actionCount: 7
+                });
+                expect(cookiesObserver.mock.calls[3][0].current).toEqual({
+                    data: 1,
+                    visible: true,
+                    actionCount: 7
+                });
 
-        (welcomeRouter as any).forward();
+                welcomeRouter.toBack();
 
-        expect(dataObserver.mock.calls[6][0].current).toEqual({ order: '3', visible: true });
-        expect(welcomeObserver.mock.calls[6][0].current).toEqual({ order: '2', visible: true });
-        expect(cookiesObserver.mock.calls[4]).toBe(undefined);
+                expect(dataObserver.mock.calls[6][0].current).toEqual({
+                    data: 2,
+                    visible: true,
+                    actionCount: 8
+                });
+                expect(welcomeObserver.mock.calls[5][0].current).toEqual({
+                    data: 3,
+                    visible: true,
+                    actionCount: 8
+                });
+                expect(cookiesObserver.mock.calls[4]).toBe(undefined);
 
-        (welcomeRouter as any).backward();
+                welcomeRouter.forward();
 
-        expect(dataObserver.mock.calls[7][0].current).toEqual({ order: '2', visible: true });
-        expect(welcomeObserver.mock.calls[7][0].current).toEqual({ order: '3', visible: true });
-        expect(cookiesObserver.mock.calls[4]).toBe(undefined);
+                expect(dataObserver.mock.calls[7][0].current).toEqual({
+                    data: 3,
+                    visible: true,
+                    actionCount: 9
+                });
+                expect(welcomeObserver.mock.calls[6][0].current).toEqual({
+                    data: 2,
+                    visible: true,
+                    actionCount: 9
+                });
+                expect(cookiesObserver.mock.calls[4]).toBe(undefined);
 
-        (cookiesRouter as any).backward();
+                welcomeRouter.backward();
 
-        expect(dataObserver.mock.calls[8][0].current).toEqual({ order: '1', visible: true });
-        expect(welcomeObserver.mock.calls[8]).toBe(undefined);
-        expect(cookiesObserver.mock.calls[4][0].current).toEqual({ order: '2', visible: true });
-      });
+                expect(dataObserver.mock.calls[8][0].current).toEqual({
+                    data: 2,
+                    visible: true,
+                    actionCount: 10
+                });
+                expect(welcomeObserver.mock.calls[7][0].current).toEqual({
+                    data: 3,
+                    visible: true,
+                    actionCount: 10
+                });
+                expect(cookiesObserver.mock.calls[4]).toBe(undefined);
+
+                cookiesRouter.backward();
+
+                expect(dataObserver.mock.calls[9][0].current).toEqual({
+                    data: 1,
+                    visible: true,
+                    actionCount: 11
+                });
+                expect(welcomeObserver.mock.calls[8]).toBe(undefined);
+                expect(cookiesObserver.mock.calls[4][0].current).toEqual({
+                    data: 2,
+                    visible: true,
+                    actionCount: 11
+                });
+            });
+        });
     });
-  });
 });
