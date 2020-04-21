@@ -12,7 +12,7 @@ const createRouterDeclaration = (
     defaultShowData?: any // eslint-disable-line
 ): IRouterDeclaration<AllTemplates> => ({
     name: 'root',
-    routers: {
+    children: {
         [routerType]: [
             {name: 'a', defaultAction: defaultShowData ? ['show', defaultShowData] : ['show']},
             {name: 'b'},

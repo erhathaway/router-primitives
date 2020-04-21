@@ -10,11 +10,11 @@ import {
 describe('Integration', () => {
     const routerTreeForDefaultShowTest: IRouterDeclaration<AllTemplates> = {
         name: 'root',
-        routers: {
+        children: {
             scene: [
                 {
                     name: 'user', // pathRouter scene
-                    routers: {
+                    children: {
                         scene: [{name: 'events', defaultAction: ['show']}, {name: 'details'}]
                     }
                 },
@@ -23,13 +23,13 @@ describe('Integration', () => {
             feature: [
                 {
                     name: 'toolbar',
-                    routers: {
+                    children: {
                         scene: [
                             {name: 'main-tools'}, // non-pathRouter scene
                             {
                                 name: 'side-tools',
                                 defaultAction: ['show'],
-                                routers: {
+                                children: {
                                     feature: [{name: 'side-tools-menu', defaultAction: ['show']}]
                                 }
                             }
@@ -248,29 +248,29 @@ describe('Integration', () => {
     describe('Caching', () => {
         const routerTreeForCacheTest: IRouterDeclaration<AllTemplates> = {
             name: 'root',
-            routers: {
+            children: {
                 scene: [{name: 'user'}],
                 feature: [
                     {
                         name: 'toolbar',
-                        routers: {
+                        children: {
                             scene: [
                                 {name: 'main-tools'}, // non-pathRouter scene
                                 {
                                     name: 'side-tools',
                                     defaultAction: ['show'],
                                     disableCaching: true, // disable caching
-                                    routers: {
+                                    children: {
                                         feature: [
                                             {
                                                 name: 'side-tools-menu',
                                                 defaultAction: ['show'],
-                                                routers: {
+                                                children: {
                                                     scene: [
                                                         {
                                                             name: 'side-tools-menu-scene',
                                                             disableCaching: false, // enable caching
-                                                            routers: {
+                                                            children: {
                                                                 scene: [
                                                                     {
                                                                         name: 'final-router'

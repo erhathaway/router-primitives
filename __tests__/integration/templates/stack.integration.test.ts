@@ -11,11 +11,11 @@ import {
 describe('Integration', () => {
     const routerDeclaration: IRouterDeclaration<AllTemplates> = {
         name: 'root',
-        routers: {
+        children: {
             scene: [
                 {
                     name: 'user', // pathRouter scene
-                    routers: {
+                    children: {
                         scene: [{name: 'events'}, {name: 'details'}]
                     }
                 },
@@ -24,7 +24,7 @@ describe('Integration', () => {
             stack: [
                 {
                     name: 'welcome-modal',
-                    routers: {
+                    children: {
                         stack: [{name: 'cookies-popup', routeKey: 'short'}],
                         scene: [
                             {name: 'welcome-main'}, // non-pathRouter scene

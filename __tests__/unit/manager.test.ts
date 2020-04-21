@@ -1,7 +1,7 @@
 import Manager from '../../src/manager';
 import {NativeSerializedStore, BrowserSerializedStore} from '../../src/serialized_state';
 import RouterStore from '../../src/all_router_state';
-import {IRouterDeclaration} from '../../src/types';
+import {IRouterDeclaration, AllTemplates} from '../../src/types';
 import {DefaultTemplates} from '../../src/types/router_templates';
 
 declare global {
@@ -21,13 +21,13 @@ declare global {
 
 describe('Router Manager', () => {
     test('Requires all router names to be unique', () => {
-        const tree = {
+        const tree: IRouterDeclaration<AllTemplates> = {
             name: 'root',
-            routers: {
+            children: {
                 scene: [
                     {
                         name: 'user',
-                        routers: {
+                        children: {
                             scene: [{name: 'user'}]
                         }
                     }
@@ -38,14 +38,14 @@ describe('Router Manager', () => {
     });
 
     test('Requires all router routeKeys to be unique', () => {
-        const tree = {
+        const tree: IRouterDeclaration<AllTemplates> = {
             name: 'root',
-            routers: {
+            children: {
                 scene: [
                     {
                         name: 'user',
                         routeKey: 'hello',
-                        routers: {
+                        children: {
                             scene: [{name: 'nextScene', routeKey: 'hello'}]
                         }
                     }
@@ -55,13 +55,13 @@ describe('Router Manager', () => {
         expect(() => new Manager({routerDeclaration: tree})).toThrow();
     });
 
-    const routerDeclaration = {
+    const routerDeclaration: IRouterDeclaration<AllTemplates> = {
         name: 'root',
-        routers: {
+        children: {
             scene: [
                 {
                     name: 'user',
-                    routers: {
+                    children: {
                         scene: [{name: 'events'}, {name: 'details'}]
                     }
                 },

@@ -564,7 +564,7 @@ export interface ISerializeOptions {
  */
 export interface IRouterDeclaration<Templates extends IRouterTemplates<unknown>> {
     name: string;
-    routers?: Record<string, IRouterDeclaration<Templates>[]>;
+    children?: Record<string, IRouterDeclaration<Templates>[]>;
     routeKey?: string;
     type?: NarrowRouterTypeName<keyof Templates>;
     parentName?: string;

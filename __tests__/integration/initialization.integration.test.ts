@@ -4,11 +4,11 @@ import {AllTemplates, IRouterDeclaration} from '../../src';
 describe('Integration', () => {
     const routerDeclaration: IRouterDeclaration<AllTemplates> = {
         name: 'root',
-        routers: {
+        children: {
             scene: [
                 {
                     name: 'user', // pathRouter scene
-                    routers: {
+                    children: {
                         scene: [{name: 'events'}, {name: 'details'}]
                     }
                 },
@@ -17,7 +17,7 @@ describe('Integration', () => {
             feature: [
                 {
                     name: 'toolbar',
-                    routers: {
+                    children: {
                         scene: [
                             {name: 'main-tools'}, // non-pathRouter scene
                             {name: 'side-tools'}

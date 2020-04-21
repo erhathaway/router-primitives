@@ -7,7 +7,7 @@ import {
 } from '../../../src';
 const routerDeclaration: IRouterDeclaration<AllTemplates> = {
     name: 'root',
-    routers: {
+    children: {
         scene: [{name: 'a', defaultAction: ['show']}, {name: 'b'}, {name: 'c'}, {name: 'd'}]
     }
 };

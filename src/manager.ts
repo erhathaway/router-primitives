@@ -328,7 +328,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         //   Or has none, as is the case with the root router in essence
         //   Below, we are deriving the type and calling the add function recursively by type
         this.addRouter({...router, type, parentName});
-        const childRouters = router.routers || {};
+        const childRouters = router.children || {};
         objKeys(childRouters).forEach(childType => {
             childRouters[childType].forEach(child =>
                 this.addRouters(

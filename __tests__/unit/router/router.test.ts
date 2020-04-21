@@ -114,7 +114,7 @@ describe('Router', () => {
                     routerDeclaration: {
                         name: 'root',
                         type: 'root',
-                        routers: {
+                        children: {
                             scene: [{name: 'scene1'}]
                         }
                     }
@@ -128,7 +128,7 @@ describe('Router', () => {
                     routerDeclaration: {
                         name: 'root',
                         type: 'root',
-                        routers: {
+                        children: {
                             data: [{name: 'data1', isPathRouter: false}, {name: 'data2'}],
                             scene: [{name: 'scene1'}]
                         }
@@ -145,7 +145,7 @@ describe('Router', () => {
                     routerDeclaration: {
                         name: 'root',
                         type: 'root',
-                        routers: {
+                        children: {
                             data: [
                                 {name: 'data1', isPathRouter: false},
                                 {name: 'data2', isPathRouter: true}
@@ -166,7 +166,7 @@ describe('Router', () => {
                     routerDeclaration: {
                         name: 'root',
                         type: 'root',
-                        routers: {
+                        children: {
                             data: [
                                 {name: 'data1', isPathRouter: true},
                                 {name: 'data2', isPathRouter: false}
@@ -190,7 +190,7 @@ describe('Router', () => {
                             name: 'root',
                             type: 'root',
                             isPathRouter: false,
-                            routers: {
+                            children: {
                                 data: [
                                     {name: 'data1', isPathRouter: true},
                                     {name: 'data2', isPathRouter: false}
@@ -210,7 +210,7 @@ describe('Router', () => {
                     routerDeclaration: {
                         name: 'root',
                         type: 'root',
-                        routers: {
+                        children: {
                             data: [
                                 {name: 'data1', isPathRouter: true},
                                 {name: 'data2', isPathRouter: true}
@@ -232,7 +232,7 @@ describe('Router', () => {
                 routerDeclaration: {
                     name: 'root',
                     type: 'root',
-                    routers: {
+                    children: {
                         data: [
                             {name: 'data1', isPathRouter: true},
                             {name: 'data2', isPathRouter: false}
@@ -255,7 +255,7 @@ describe('Router', () => {
                     name: 'root',
                     type: 'root',
                     isPathRouter: false,
-                    routers: {
+                    children: {
                         data: [
                             {name: 'data1', isPathRouter: true},
                             {name: 'data2', isPathRouter: false}

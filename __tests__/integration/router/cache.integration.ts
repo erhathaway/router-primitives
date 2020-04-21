@@ -2,30 +2,30 @@ import {IRouterDeclaration, AllTemplates, Manager, defaultTemplates} from '../..
 import {objKeys} from '../../../src/utilities';
 const createRouterTree = (routerType: string): IRouterDeclaration<AllTemplates> => ({
     name: 'root',
-    routers: {
+    children: {
         [routerType]: [
             {
                 name: 'level1',
                 disableCaching: true,
                 defaultAction: ['show'],
                 isPathRouter: false,
-                routers: {
+                children: {
                     [routerType]: [
                         {
                             name: 'level2',
                             defaultAction: ['show'],
-                            routers: {
+                            children: {
                                 [routerType]: [
                                     {
                                         name: 'level3',
                                         disableCaching: false,
                                         defaultAction: ['show'],
-                                        routers: {
+                                        children: {
                                             [routerType]: [
                                                 {
                                                     name: 'level4',
                                                     defaultAction: ['show'],
-                                                    routers: {
+                                                    children: {
                                                         [routerType]: [{name: 'level5'}]
                                                     }
                                                 }
