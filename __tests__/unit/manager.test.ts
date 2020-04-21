@@ -87,7 +87,7 @@ describe('Router Manager', () => {
             expect(manager.rootRouter.name).toBe('root');
             expect(manager.routers['info'].name).toBe('info');
             expect(manager.routers['events'].parent.name).toBe('user');
-            expect(manager.routers['root'].routers['scene']).toHaveLength(2);
+            expect(manager.routers['root'].children['scene']).toHaveLength(2);
         });
 
         describe('Serialized Store defaults', () => {
@@ -137,7 +137,7 @@ describe('Router Manager', () => {
                 manager.addRouter(newRouter);
 
                 expect(Object.keys(manager.routers)).toHaveLength(8);
-                expect(manager.routers['user'].routers.scene).toHaveLength(3);
+                expect(manager.routers['user'].children.scene).toHaveLength(3);
                 expect(manager.routers['admin'].name).toBe('admin');
                 expect(manager.routers['admin'].parent).toBe(manager.routers['user']);
             });
@@ -146,7 +146,7 @@ describe('Router Manager', () => {
                 manager.removeRouter('admin');
 
                 expect(Object.keys(manager.routers)).toHaveLength(7);
-                expect(manager.routers['user'].routers.scene).toHaveLength(2);
+                expect(manager.routers['user'].children.scene).toHaveLength(2);
                 expect(manager.routers['admin']).toBe(undefined);
             });
 
@@ -236,7 +236,7 @@ describe('Router Manager', () => {
                 manager.addRouter(newRouter);
 
                 expect(Object.keys(manager.routers)).toHaveLength(2);
-                expect(manager.routers['admin'].routers.feature).toHaveLength(1);
+                expect(manager.routers['admin'].children.feature).toHaveLength(1);
                 expect(manager.routers['admin-tools'].name).toBe('admin-tools');
                 expect(manager.routers['admin-tools'].parent).toBe(manager.routers['admin']);
             });
