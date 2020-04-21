@@ -190,7 +190,6 @@ TODO
 -   [Router State Predicates](#router-state-predicates)
 -   [Custom Primitives](#custom-primitives)
 
-This section contains minimal API documentation to get you started. For the extensive API docs see the [docs website](TODO).
 
 ## API: Manager
 
