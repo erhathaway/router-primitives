@@ -28,7 +28,7 @@ describe('Integration', () => {
                         throw new Error('Wrong router type');
                     }
 
-                    expect(scene.isVisibleSiblingsFirstTimeBeingShown(routerA)).toBeFalsy();
+                    expect(scene.isVisibleSiblingsFirstTimeBeingShown(routerA as any)).toBeFalsy();
                 });
                 it('is false if sibling has been shown before', () => {
                     const manager = new Manager({
@@ -46,7 +46,7 @@ describe('Integration', () => {
                     routerA.show();
                     routerB.show();
 
-                    expect(scene.isVisibleSiblingsFirstTimeBeingShown(routerA)).toBeFalsy();
+                    expect(scene.isVisibleSiblingsFirstTimeBeingShown(routerA as any)).toBeFalsy();
                 });
                 it('is true if sibling has never been shown before', () => {
                     const manager = new Manager({
@@ -62,7 +62,7 @@ describe('Integration', () => {
 
                     routerB.show();
 
-                    expect(scene.isVisibleSiblingsFirstTimeBeingShown(routerA)).toBeTruthy();
+                    expect(scene.isVisibleSiblingsFirstTimeBeingShown(routerA as any)).toBeTruthy();
                 });
             });
             describe('hasVisibleSiblingBeenShownBefore', () => {
@@ -76,7 +76,7 @@ describe('Integration', () => {
                         throw new Error('Wrong router type');
                     }
 
-                    expect(scene.hasVisibleSiblingBeenShownBefore(routerA)).toBeFalsy();
+                    expect(scene.hasVisibleSiblingBeenShownBefore(routerA as any)).toBeFalsy();
                 });
                 it('is true if sibling has been shown before', () => {
                     const manager = new Manager({
@@ -94,7 +94,7 @@ describe('Integration', () => {
                     routerA.show();
                     routerB.show();
 
-                    expect(scene.hasVisibleSiblingBeenShownBefore(routerA)).toBeTruthy();
+                    expect(scene.hasVisibleSiblingBeenShownBefore(routerA as any)).toBeTruthy();
                 });
                 it('is false if sibling has never been shown before', () => {
                     const manager = new Manager({
@@ -110,7 +110,7 @@ describe('Integration', () => {
 
                     routerB.show();
 
-                    expect(scene.hasVisibleSiblingBeenShownBefore(routerA)).toBeFalsy();
+                    expect(scene.hasVisibleSiblingBeenShownBefore(routerA as any)).toBeFalsy();
                 });
             });
         });
