@@ -20,7 +20,7 @@ describe('Integration', () => {
             describe('isMovingForward', () => {
                 it('is false on defaultActions', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -32,7 +32,7 @@ describe('Integration', () => {
                 });
                 it('is false on hiding', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -45,7 +45,7 @@ describe('Integration', () => {
                 });
                 it('is true when decrementing (moving forward)', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -62,7 +62,7 @@ describe('Integration', () => {
                 });
                 it('is false when incrementing (moving backwards)', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -82,7 +82,7 @@ describe('Integration', () => {
             describe('isMovingBackward', () => {
                 it('is false on defaultActions', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -94,7 +94,7 @@ describe('Integration', () => {
                 });
                 it('is false on hiding', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -107,7 +107,7 @@ describe('Integration', () => {
                 });
                 it('is false when decrementing (moving forward)', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -124,7 +124,7 @@ describe('Integration', () => {
                 });
                 it('is true when incrementing (moving backwards)', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -144,7 +144,7 @@ describe('Integration', () => {
             describe('isAtFront', () => {
                 it('is false when in the middle', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -166,7 +166,7 @@ describe('Integration', () => {
                 });
                 it('is false when in the back', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -182,7 +182,7 @@ describe('Integration', () => {
                 });
                 it('is true when in the front', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -202,7 +202,7 @@ describe('Integration', () => {
             describe('isAtBack', () => {
                 it('is false when in the middle', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -224,7 +224,7 @@ describe('Integration', () => {
                 });
                 it('is false when in the front', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -238,7 +238,7 @@ describe('Integration', () => {
                 });
                 it('is true when in the back', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -265,7 +265,7 @@ describe('Integration', () => {
             describe('isPositionSameAsLastTimeShown', () => {
                 it('is false when showing in a different position', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -288,7 +288,7 @@ describe('Integration', () => {
                 });
                 it('is false when show is by a default action', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -307,7 +307,7 @@ describe('Integration', () => {
                 });
                 it('is true when showing in the same position as last time visible', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];

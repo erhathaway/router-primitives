@@ -191,7 +191,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
      * This is used instead of direct instantiation in the constructor to allow better compatibility to bindings that use MobX and such.
      */
     public initializeManager({
-        routerTree,
+        routerDeclaration,
         serializedStateStore,
         routerStateStore,
         router,
@@ -259,7 +259,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
 
         // add initial routers
         this._routers = {};
-        this.addRouters(routerTree);
+        this.addRouters(routerDeclaration);
 
         // Subscribe to URL changes and update the router state when this happens.
         // The subject will notify the observer of its existing state.

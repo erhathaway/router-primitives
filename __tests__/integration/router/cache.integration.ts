@@ -51,7 +51,7 @@ describe('Integration', () => {
                     describe(`${templateName}`, () => {
                         it('Cache settings are inherited from parent if not explicitly set', () => {
                             const manager = new Manager({
-                                routerTree: createRouterTree(templateName),
+                                routerDeclaration: createRouterTree(templateName),
                                 errorWhenMissingData: false
                             });
                             manager.routers['level1'].hide();
@@ -66,7 +66,7 @@ describe('Integration', () => {
 
                         it('Explicitly set cache settings override inherited ones', () => {
                             const manager = new Manager({
-                                routerTree: createRouterTree(templateName),
+                                routerDeclaration: createRouterTree(templateName),
                                 errorWhenMissingData: false
                             });
                             manager.routers['level1'].hide();

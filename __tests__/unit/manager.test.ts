@@ -34,7 +34,7 @@ describe('Router Manager', () => {
                 ]
             }
         };
-        expect(() => new Manager({routerTree: tree})).toThrow();
+        expect(() => new Manager({routerDeclaration: tree})).toThrow();
     });
 
     test('Requires all router routeKeys to be unique', () => {
@@ -52,10 +52,10 @@ describe('Router Manager', () => {
                 ]
             }
         };
-        expect(() => new Manager({routerTree: tree})).toThrow();
+        expect(() => new Manager({routerDeclaration: tree})).toThrow();
     });
 
-    const routerTree = {
+    const routerDeclaration = {
         name: 'root',
         routers: {
             scene: [
@@ -81,7 +81,7 @@ describe('Router Manager', () => {
         });
 
         test('Can add a router tree', () => {
-            const manager = new Manager({routerTree});
+            const manager = new Manager({routerDeclaration});
 
             expect(Object.keys(manager.routers)).toHaveLength(7);
             expect(manager.rootRouter.name).toBe('root');
@@ -93,7 +93,7 @@ describe('Router Manager', () => {
         describe('Serialized Store defaults', () => {
             describe('No window object (Non browser env)', () => {
                 it('uses nativeStore', () => {
-                    const manager = new Manager({routerTree});
+                    const manager = new Manager({routerDeclaration});
 
                     expect(manager.serializedStateStore).toBeInstanceOf(NativeSerializedStore);
                 });
@@ -108,7 +108,7 @@ describe('Router Manager', () => {
                         history: {pushState: jest.fn(), replaceState: jest.fn()},
                         location: {}
                     };
-                    const manager = new Manager({routerTree});
+                    const manager = new Manager({routerDeclaration});
                     setIntervalFn();
                     expect(manager.serializedStateStore).toBeInstanceOf(BrowserSerializedStore);
 
@@ -125,7 +125,7 @@ describe('Router Manager', () => {
 
     describe('Adding and removing routers', () => {
         describe('Initialized with routers', () => {
-            const manager = new Manager({routerTree});
+            const manager = new Manager({routerDeclaration});
 
             it('then had a router added', () => {
                 const newRouter: IRouterDeclaration<DefaultTemplates> = {
@@ -165,7 +165,7 @@ describe('Router Manager', () => {
 
         describe('Removing a router with state observers', () => {
             it('cleans up observers', () => {
-                const manager = new Manager({routerTree});
+                const manager = new Manager({routerDeclaration});
                 const newRouter: IRouterDeclaration<DefaultTemplates> = {
                     name: 'admin',
                     type: 'scene',
@@ -243,7 +243,7 @@ describe('Router Manager', () => {
         });
 
         describe('Subscribing to a routers state', () => {
-            const manager = new Manager({routerTree});
+            const manager = new Manager({routerDeclaration});
 
             it('issues state updates', () => {
                 const userObserverFn = jest.fn();
@@ -294,7 +294,7 @@ describe('Router Manager', () => {
         });
 
         describe('Fetching a routers state', () => {
-            const manager = new Manager({routerTree});
+            const manager = new Manager({routerDeclaration});
 
             it('returns the state for only the router', () => {
                 const initialRoutersState = {

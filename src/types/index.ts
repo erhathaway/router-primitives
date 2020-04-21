@@ -736,7 +736,7 @@ type allTemplatesTestOverrideInstanceAll = RouterInstance<allTemplatesTestOverri
  */
 export interface IManagerInit<CustomTemplates extends IRouterTemplates<unknown>> {
     printTraceResults?: boolean;
-    routerTree?: IRouterDeclaration<AllTemplates<CustomTemplates>>;
+    routerDeclaration?: IRouterDeclaration<AllTemplates<CustomTemplates>>;
     serializedStateStore?: ISerializedStateStore;
     routerStateStore?: IRouterStateStore<
         RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>

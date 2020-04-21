@@ -20,7 +20,7 @@ describe('Integration', () => {
             describe('isVisibleSiblingsFirstTimeBeingShown', () => {
                 it('is false on defaultActions', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -32,7 +32,7 @@ describe('Integration', () => {
                 });
                 it('is false if sibling has been shown before', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -50,7 +50,7 @@ describe('Integration', () => {
                 });
                 it('is true if sibling has never been shown before', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -68,7 +68,7 @@ describe('Integration', () => {
             describe('hasVisibleSiblingBeenShownBefore', () => {
                 it('is false on defaultActions', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -80,7 +80,7 @@ describe('Integration', () => {
                 });
                 it('is true if sibling has been shown before', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -98,7 +98,7 @@ describe('Integration', () => {
                 });
                 it('is false if sibling has never been shown before', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];

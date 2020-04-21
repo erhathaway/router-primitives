@@ -2,7 +2,7 @@ import Manager from '../../src/manager';
 import {AllTemplates, IRouterDeclaration} from '../../src';
 
 describe('Integration', () => {
-    const routerTree: IRouterDeclaration<AllTemplates> = {
+    const routerDeclaration: IRouterDeclaration<AllTemplates> = {
         name: 'root',
         routers: {
             scene: [
@@ -30,7 +30,7 @@ describe('Integration', () => {
     };
 
     describe('Initialization', () => {
-        const manager = new Manager({routerTree});
+        const manager = new Manager({routerDeclaration});
 
         it('Initializes manager', () => {
             expect(manager).toBeInstanceOf(Manager);

@@ -44,7 +44,7 @@ describe('Integration', () => {
     describe('Scene template', () => {
         describe('Actions', () => {
             it('Can have replace location action option set', () => {
-                const manager = new Manager({routerTree: routerTreeForDefaultShowTest});
+                const manager = new Manager({routerDeclaration: routerTreeForDefaultShowTest});
                 const serializedStateStore = manager.serializedStateStore as NativeSerializedStore;
                 if (!isMemorySerializedStateStore(serializedStateStore)) {
                     throw Error(
@@ -74,7 +74,7 @@ describe('Integration', () => {
                 expect(serializedStateStore.history).toHaveLength(4);
             });
             describe('Show', () => {
-                const manager = new Manager({routerTree: routerTreeForDefaultShowTest});
+                const manager = new Manager({routerDeclaration: routerTreeForDefaultShowTest});
 
                 const userObserver = jest.fn();
                 const userRouter = manager.routers['user'];
@@ -135,7 +135,7 @@ describe('Integration', () => {
             });
 
             describe('Hide', () => {
-                const manager = new Manager({routerTree: routerTreeForDefaultShowTest});
+                const manager = new Manager({routerDeclaration: routerTreeForDefaultShowTest});
 
                 const userObserver = jest.fn();
                 const userRouter = manager.routers['user'];
@@ -189,7 +189,7 @@ describe('Integration', () => {
     });
 
     describe('View Defaults', () => {
-        const manager = new Manager({routerTree: routerTreeForDefaultShowTest});
+        const manager = new Manager({routerDeclaration: routerTreeForDefaultShowTest});
 
         it('Are set when a parent router is called', () => {
             const userObserver = jest.fn();
@@ -293,7 +293,7 @@ describe('Integration', () => {
         };
 
         it('Caching of children on hide', () => {
-            const manager = new Manager({routerTree: routerTreeForCacheTest});
+            const manager = new Manager({routerDeclaration: routerTreeForCacheTest});
 
             // caches children but avoids children between disable cache levels
             expect(manager.routerCache.cache['side-tools']).toBe(undefined);
@@ -342,7 +342,7 @@ describe('Integration', () => {
         });
 
         it('uses cache to restore visibility', () => {
-            const manager = new Manager({routerTree: routerTreeForCacheTest});
+            const manager = new Manager({routerDeclaration: routerTreeForCacheTest});
 
             manager.routers['final-router'].show();
 
