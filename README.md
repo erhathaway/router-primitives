@@ -44,7 +44,7 @@ If you work on a platform where there is no concept of a URL, you can still use 
 
 Also, if you find that you want to a new type of primitive, you can easily define one using a [template](#custom-primitives). In essence, a template describes how you serialize data to the URL, and how serialized data from the URL (namespaced to a router instance) affects the state of a router.
 
-Finally, Router Primitives is platform agnostic. This means that you can use the same router code for various frameworks and platforms. Currently, bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)**, and **[React](https://github.com/erhathaway/recursive-router-react)**.
+Finally, Router Primitives is platform agnostic. This means that you can use the same router code for various frameworks and platforms. Currently, bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)**, and **[React](https://github.com/erhathaway/recursive-router-react)**. [WIP]
 
 ## Key Features
 
