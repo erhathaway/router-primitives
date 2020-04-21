@@ -191,7 +191,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
      * This is used instead of direct instantiation in the constructor to allow better compatibility to bindings that use MobX and such.
      */
     public initializeManager({
-        routerTree,
+        routerDeclaration,
         serializedStateStore,
         routerStateStore,
         router,
@@ -259,7 +259,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
 
         // add initial routers
         this._routers = {};
-        this.addRouters(routerTree);
+        this.addRouters(routerDeclaration);
 
         // Subscribe to URL changes and update the router state when this happens.
         // The subject will notify the observer of its existing state.
@@ -328,7 +328,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         //   Or has none, as is the case with the root router in essence
         //   Below, we are deriving the type and calling the add function recursively by type
         this.addRouter({...router, type, parentName});
-        const childRouters = router.routers || {};
+        const childRouters = router.children || {};
         objKeys(childRouters).forEach(childType => {
             childRouters[childType].forEach(child =>
                 this.addRouters(
@@ -375,9 +375,9 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
             router.parent = parent;
 
             // Add ref of new router to the parent
-            const siblingTypes = parent.routers[type] || [];
+            const siblingTypes = parent.children[type] || [];
             siblingTypes.push(router);
-            parent.routers[type] = siblingTypes;
+            parent.children[type] = siblingTypes;
         }
 
         // Add ref of new router to manager
@@ -394,18 +394,18 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
      */
     public removeRouter = (name: string): void => {
         const router = this.routers[name];
-        const {parent, routers, type} = router;
+        const {parent, children, type} = router;
 
         // Delete the reference to this router the parent has.
         if (parent) {
-            const routersToKeep = parent.routers[type].filter(child => child.name !== name);
-            parent.routers[type] = routersToKeep;
+            const routersToKeep = parent.children[type].filter(child => child.name !== name);
+            parent.children[type] = routersToKeep;
         }
 
         // Delete all children routers by recursively calling this method.
-        const childrenTypes = objKeys(routers);
+        const childrenTypes = objKeys(children);
         childrenTypes.forEach(childType => {
-            routers[childType].forEach(childRouter => this.removeRouter(childRouter.name));
+            children[childType].forEach(childRouter => this.removeRouter(childRouter.name));
         });
 
         // Remove router related state subscribers.
@@ -452,9 +452,9 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         const actionCount = {actionCount: this.actionCount};
 
         // Recursively call all children to add their state to the `newState` object
-        return objKeys(router.routers).reduce(
+        return objKeys(router.children).reduce(
             (acc, type) => {
-                const newStatesForType = router.routers[type].reduce((accc, childRouter) => {
+                const newStatesForType = router.children[type].reduce((accc, childRouter) => {
                     const state = this.calcNewRouterState(location, childRouter, ctx, accc);
                     return {...acc, ...state};
                 }, acc);
@@ -580,7 +580,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
             config: {...config},
             type,
             parent,
-            routers: {},
+            children: {},
             // TODO fix this type
             // CustomTemplatesFromAllTemplates should overlap with CustomTemplates
             // IManager<CustomTemplates> should work and not need a casting to `unknown`

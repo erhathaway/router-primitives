@@ -12,7 +12,7 @@ const createRouterDeclaration = (
     defaultShowData?: any // eslint-disable-line
 ): IRouterDeclaration<AllTemplates> => ({
     name: 'root',
-    routers: {
+    children: {
         [routerType]: [
             {name: 'a', defaultAction: defaultShowData ? ['show', defaultShowData] : ['show']},
             {name: 'b'},
@@ -48,7 +48,7 @@ describe('Integration', () => {
                                     );
                                 }
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerA = manager.routers['a'];
@@ -58,7 +58,7 @@ describe('Integration', () => {
 
                             it('is true when visible', () => {
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerB = manager.routers['b'];
@@ -73,7 +73,7 @@ describe('Integration', () => {
 
                             it('is false when hidden', () => {
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerB = manager.routers['b'];
@@ -99,7 +99,7 @@ describe('Integration', () => {
                                     );
                                 }
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerA = manager.routers['a'];
@@ -109,7 +109,7 @@ describe('Integration', () => {
 
                             it('is false when visible', () => {
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerB = manager.routers['b'];
@@ -124,7 +124,7 @@ describe('Integration', () => {
 
                             it('is true when hidden', () => {
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerB = manager.routers['b'];
@@ -151,7 +151,7 @@ describe('Integration', () => {
                                     );
                                 }
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerA = manager.routers['a'];
@@ -161,7 +161,7 @@ describe('Integration', () => {
 
                             it('is false when visible', () => {
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerB = manager.routers['b'];
@@ -176,7 +176,7 @@ describe('Integration', () => {
 
                             it('is false when hidden but not just hidden', () => {
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerB = manager.routers['b'];
@@ -195,7 +195,7 @@ describe('Integration', () => {
 
                             it('is true when just hidden', () => {
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerB = manager.routers['b'];
@@ -220,7 +220,7 @@ describe('Integration', () => {
                                     );
                                 }
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerA = manager.routers['a'];
@@ -230,7 +230,7 @@ describe('Integration', () => {
 
                             it('is false when hidden', () => {
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerB = manager.routers['b'];
@@ -250,7 +250,7 @@ describe('Integration', () => {
 
                             it('is true when just shown', () => {
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerB = manager.routers['b'];
@@ -276,7 +276,7 @@ describe('Integration', () => {
                                     );
                                 }
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerA = manager.routers['a'];
@@ -292,7 +292,7 @@ describe('Integration', () => {
                                     );
                                 }
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerA = manager.routers['a'];
@@ -311,7 +311,7 @@ describe('Integration', () => {
                                     );
                                 }
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerB = manager.routers['b'];
@@ -329,7 +329,7 @@ describe('Integration', () => {
                                     );
                                 }
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerA = manager.routers['a'];
@@ -345,7 +345,7 @@ describe('Integration', () => {
                                     );
                                 }
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerA = manager.routers['a'];
@@ -364,7 +364,7 @@ describe('Integration', () => {
                                     );
                                 }
                                 const manager = new Manager({
-                                    routerTree: routerDeclaration,
+                                    routerDeclaration: routerDeclaration,
                                     errorWhenMissingData: false
                                 });
                                 const routerB = manager.routers['b'];

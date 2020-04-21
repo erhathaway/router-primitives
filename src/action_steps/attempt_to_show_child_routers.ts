@@ -2,7 +2,7 @@ import {ILocationActionContext, DefaultRouterActions, ActionStep} from '../types
 import {objKeys} from '../utilities';
 
 const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) => {
-    const newLocation = objKeys(router.routers).reduce((newLocationFromAllRouters, routerType) => {
+    const newLocation = objKeys(router.children).reduce((newLocationFromAllRouters, routerType) => {
         // skip routers that called the parent router
         if (
             routerType === ctx.activatedByChildType &&
@@ -16,7 +16,7 @@ const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) =
             return newLocationFromAllRouters;
         }
 
-        return router.routers[routerType].reduce((newLocationForSpecificChild, child) => {
+        return router.children[routerType].reduce((newLocationForSpecificChild, child) => {
             // prevent inverse activation if it is turned off
             if (ctx.callDirection === 'up' && child.config.shouldInverselyActivate === false) {
                 ctx &&
@@ -92,8 +92,8 @@ const attemptToShowChildRouters: ActionStep = (options, location, router, ctx) =
 
 const attemptToShowChildRoutersMain: ActionStep = (options, location, routerInstance, ctx) => {
     const hasChildren =
-        routerInstance.routers &&
-        Object.values(routerInstance.routers).reduce(
+        routerInstance.children &&
+        Object.values(routerInstance.children).reduce(
             (childrenExist, children) => (children.length && children.length > 0) || childrenExist,
             false
         );

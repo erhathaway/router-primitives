@@ -23,9 +23,9 @@ const attemptToHideChildRouters: ActionStep = (options, existingLocation, router
     const newCtx = addRealDisableCacheFlagToContext(router, ctx);
 
     // Iterate over children, hiding visible children and caching the fact that they were previously visible.
-    const locationFromChildren = objKeys(router.routers).reduce(
+    const locationFromChildren = objKeys(router.children).reduce(
         (locationFromChildrenAcc, routerType) => {
-            return router.routers[routerType].reduce((locationFromSpecificChildAcc, child) => {
+            return router.children[routerType].reduce((locationFromSpecificChildAcc, child) => {
                 // Call location 'hide' action if the child is visible
                 const childTracer = router.manager.tracerSession.tracerThing(child.name);
                 ctx.tracer.logStep(`Looking at child: ${child.name}`);

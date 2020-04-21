@@ -7,7 +7,7 @@ import {
 } from '../../../src';
 const routerDeclaration: IRouterDeclaration<AllTemplates> = {
     name: 'root',
-    routers: {
+    children: {
         stack: [{name: 'a', defaultAction: ['show']}, {name: 'b'}, {name: 'c'}, {name: 'd'}]
     }
 };
@@ -20,7 +20,7 @@ describe('Integration', () => {
             describe('isMovingForward', () => {
                 it('is false on defaultActions', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -28,11 +28,11 @@ describe('Integration', () => {
                         throw new Error('Wrong router type');
                     }
 
-                    expect(stack.isMovingForward(routerA)).toBeFalsy();
+                    expect(stack.isMovingForward(routerA as any)).toBeFalsy();
                 });
                 it('is false on hiding', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -41,11 +41,11 @@ describe('Integration', () => {
                     }
                     routerA.hide();
 
-                    expect(stack.isMovingForward(routerA)).toBeFalsy();
+                    expect(stack.isMovingForward(routerA as any)).toBeFalsy();
                 });
                 it('is true when decrementing (moving forward)', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -58,11 +58,11 @@ describe('Integration', () => {
                     routerB.show();
                     routerA.toFront();
 
-                    expect(stack.isMovingForward(routerA)).toBeTruthy();
+                    expect(stack.isMovingForward(routerA as any)).toBeTruthy();
                 });
                 it('is false when incrementing (moving backwards)', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -76,13 +76,13 @@ describe('Integration', () => {
                     routerA.toFront();
                     routerA.backward();
 
-                    expect(stack.isMovingForward(routerA)).toBeFalsy();
+                    expect(stack.isMovingForward(routerA as any)).toBeFalsy();
                 });
             });
             describe('isMovingBackward', () => {
                 it('is false on defaultActions', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -90,11 +90,11 @@ describe('Integration', () => {
                         throw new Error('Wrong router type');
                     }
 
-                    expect(stack.isMovingBackward(routerA)).toBeFalsy();
+                    expect(stack.isMovingBackward(routerA as any)).toBeFalsy();
                 });
                 it('is false on hiding', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -103,11 +103,11 @@ describe('Integration', () => {
                     }
                     routerA.hide();
 
-                    expect(stack.isMovingBackward(routerA)).toBeFalsy();
+                    expect(stack.isMovingBackward(routerA as any)).toBeFalsy();
                 });
                 it('is false when decrementing (moving forward)', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -120,11 +120,11 @@ describe('Integration', () => {
                     routerB.show();
                     routerA.toFront();
 
-                    expect(stack.isMovingBackward(routerA)).toBeFalsy();
+                    expect(stack.isMovingBackward(routerA as any)).toBeFalsy();
                 });
                 it('is true when incrementing (moving backwards)', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -138,13 +138,13 @@ describe('Integration', () => {
                     routerA.toFront();
                     routerA.backward();
 
-                    expect(stack.isMovingBackward(routerA)).toBeTruthy();
+                    expect(stack.isMovingBackward(routerA as any)).toBeTruthy();
                 });
             });
             describe('isAtFront', () => {
                 it('is false when in the middle', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -162,11 +162,11 @@ describe('Integration', () => {
                     routerB.show();
                     routerC.toBack();
 
-                    expect(stack.isAtFront(routerA)).toBeFalsy();
+                    expect(stack.isAtFront(routerA as any)).toBeFalsy();
                 });
                 it('is false when in the back', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -178,11 +178,11 @@ describe('Integration', () => {
 
                     routerB.show();
 
-                    expect(stack.isAtFront(routerA)).toBeFalsy();
+                    expect(stack.isAtFront(routerA as any)).toBeFalsy();
                 });
                 it('is true when in the front', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -192,17 +192,17 @@ describe('Integration', () => {
                         throw new Error('Wrong router type');
                     }
 
-                    expect(stack.isAtFront(routerA)).toBeTruthy();
+                    expect(stack.isAtFront(routerA as any)).toBeTruthy();
 
                     routerB.show();
 
-                    expect(stack.isAtFront(routerB)).toBeTruthy();
+                    expect(stack.isAtFront(routerB as any)).toBeTruthy();
                 });
             });
             describe('isAtBack', () => {
                 it('is false when in the middle', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -220,11 +220,11 @@ describe('Integration', () => {
                     routerB.show();
                     routerC.toBack();
 
-                    expect(stack.isAtBack(routerA)).toBeFalsy();
+                    expect(stack.isAtBack(routerA as any)).toBeFalsy();
                 });
                 it('is false when in the front', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -234,11 +234,11 @@ describe('Integration', () => {
                         throw new Error('Wrong router type');
                     }
 
-                    expect(stack.isAtBack(routerA)).toBeFalsy();
+                    expect(stack.isAtBack(routerA as any)).toBeFalsy();
                 });
                 it('is true when in the back', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -255,17 +255,17 @@ describe('Integration', () => {
 
                     routerB.show();
 
-                    expect(stack.isAtBack(routerA)).toBeTruthy();
+                    expect(stack.isAtBack(routerA as any)).toBeTruthy();
 
                     routerC.show();
 
-                    expect(stack.isAtBack(routerA)).toBeTruthy();
+                    expect(stack.isAtBack(routerA as any)).toBeTruthy();
                 });
             });
             describe('isPositionSameAsLastTimeShown', () => {
                 it('is false when showing in a different position', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -284,11 +284,11 @@ describe('Integration', () => {
                     routerB.show();
                     routerA.toBack();
 
-                    expect(stack.isPositionSameAsLastTimeShown(routerA)).toBeFalsy();
+                    expect(stack.isPositionSameAsLastTimeShown(routerA as any)).toBeFalsy();
                 });
                 it('is false when show is by a default action', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -303,11 +303,11 @@ describe('Integration', () => {
                         throw new Error('Wrong router type');
                     }
 
-                    expect(stack.isPositionSameAsLastTimeShown(routerA)).toBeFalsy();
+                    expect(stack.isPositionSameAsLastTimeShown(routerA as any)).toBeFalsy();
                 });
                 it('is true when showing in the same position as last time visible', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -325,13 +325,13 @@ describe('Integration', () => {
                     routerA.hide();
                     routerA.show();
 
-                    expect(stack.isPositionSameAsLastTimeShown(routerA)).toBeTruthy();
+                    expect(stack.isPositionSameAsLastTimeShown(routerA as any)).toBeTruthy();
 
                     routerB.show();
                     routerA.hide();
                     routerA.toBack();
 
-                    expect(stack.isPositionSameAsLastTimeShown(routerA)).toBeTruthy();
+                    expect(stack.isPositionSameAsLastTimeShown(routerA as any)).toBeTruthy();
                 });
             });
         });

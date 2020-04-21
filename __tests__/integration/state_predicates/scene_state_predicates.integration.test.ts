@@ -7,7 +7,7 @@ import {
 } from '../../../src';
 const routerDeclaration: IRouterDeclaration<AllTemplates> = {
     name: 'root',
-    routers: {
+    children: {
         scene: [{name: 'a', defaultAction: ['show']}, {name: 'b'}, {name: 'c'}, {name: 'd'}]
     }
 };
@@ -20,7 +20,7 @@ describe('Integration', () => {
             describe('isVisibleSiblingsFirstTimeBeingShown', () => {
                 it('is false on defaultActions', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -28,11 +28,11 @@ describe('Integration', () => {
                         throw new Error('Wrong router type');
                     }
 
-                    expect(scene.isVisibleSiblingsFirstTimeBeingShown(routerA)).toBeFalsy();
+                    expect(scene.isVisibleSiblingsFirstTimeBeingShown(routerA as any)).toBeFalsy();
                 });
                 it('is false if sibling has been shown before', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -46,11 +46,11 @@ describe('Integration', () => {
                     routerA.show();
                     routerB.show();
 
-                    expect(scene.isVisibleSiblingsFirstTimeBeingShown(routerA)).toBeFalsy();
+                    expect(scene.isVisibleSiblingsFirstTimeBeingShown(routerA as any)).toBeFalsy();
                 });
                 it('is true if sibling has never been shown before', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -62,13 +62,13 @@ describe('Integration', () => {
 
                     routerB.show();
 
-                    expect(scene.isVisibleSiblingsFirstTimeBeingShown(routerA)).toBeTruthy();
+                    expect(scene.isVisibleSiblingsFirstTimeBeingShown(routerA as any)).toBeTruthy();
                 });
             });
             describe('hasVisibleSiblingBeenShownBefore', () => {
                 it('is false on defaultActions', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -76,11 +76,11 @@ describe('Integration', () => {
                         throw new Error('Wrong router type');
                     }
 
-                    expect(scene.hasVisibleSiblingBeenShownBefore(routerA)).toBeFalsy();
+                    expect(scene.hasVisibleSiblingBeenShownBefore(routerA as any)).toBeFalsy();
                 });
                 it('is true if sibling has been shown before', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -94,11 +94,11 @@ describe('Integration', () => {
                     routerA.show();
                     routerB.show();
 
-                    expect(scene.hasVisibleSiblingBeenShownBefore(routerA)).toBeTruthy();
+                    expect(scene.hasVisibleSiblingBeenShownBefore(routerA as any)).toBeTruthy();
                 });
                 it('is false if sibling has never been shown before', () => {
                     const manager = new Manager({
-                        routerTree: routerDeclaration,
+                        routerDeclaration: routerDeclaration,
                         errorWhenMissingData: false
                     });
                     const routerA = manager.routers['a'];
@@ -110,7 +110,7 @@ describe('Integration', () => {
 
                     routerB.show();
 
-                    expect(scene.hasVisibleSiblingBeenShownBefore(routerA)).toBeFalsy();
+                    expect(scene.hasVisibleSiblingBeenShownBefore(routerA as any)).toBeFalsy();
                 });
             });
         });

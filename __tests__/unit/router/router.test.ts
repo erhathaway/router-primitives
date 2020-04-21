@@ -111,10 +111,10 @@ describe('Router', () => {
 
             it('Parent is a path router and type is "scene" with no neighbors', () => {
                 const manager = new Manager({
-                    routerTree: {
+                    routerDeclaration: {
                         name: 'root',
                         type: 'root',
-                        routers: {
+                        children: {
                             scene: [{name: 'scene1'}]
                         }
                     }
@@ -125,10 +125,10 @@ describe('Router', () => {
 
             it('Parent is a path router and type is "scene" with a data neighbor NOT set to be a path router', () => {
                 const manager = new Manager({
-                    routerTree: {
+                    routerDeclaration: {
                         name: 'root',
                         type: 'root',
-                        routers: {
+                        children: {
                             data: [{name: 'data1', isPathRouter: false}, {name: 'data2'}],
                             scene: [{name: 'scene1'}]
                         }
@@ -142,10 +142,10 @@ describe('Router', () => {
 
             it('Parent is a path router and type is "data" with no scene neighbors', () => {
                 const manager = new Manager({
-                    routerTree: {
+                    routerDeclaration: {
                         name: 'root',
                         type: 'root',
-                        routers: {
+                        children: {
                             data: [
                                 {name: 'data1', isPathRouter: false},
                                 {name: 'data2', isPathRouter: true}
@@ -163,10 +163,10 @@ describe('Router', () => {
         describe('False', () => {
             it('Parent is a path router and type is "scene" with a data neighbor set to be a path router', () => {
                 const manager = new Manager({
-                    routerTree: {
+                    routerDeclaration: {
                         name: 'root',
                         type: 'root',
-                        routers: {
+                        children: {
                             data: [
                                 {name: 'data1', isPathRouter: true},
                                 {name: 'data2', isPathRouter: false}
@@ -186,11 +186,11 @@ describe('Router', () => {
             it('Parent is not a path router and config option "isPathRouter" set to true', () => {
                 const init = (): IManager =>
                     new Manager({
-                        routerTree: {
+                        routerDeclaration: {
                             name: 'root',
                             type: 'root',
                             isPathRouter: false,
-                            routers: {
+                            children: {
                                 data: [
                                     {name: 'data1', isPathRouter: true},
                                     {name: 'data2', isPathRouter: false}
@@ -207,10 +207,10 @@ describe('Router', () => {
             // eslint-disable-next-line
             it.skip('Parent is a path router and both siblings are able to be visible and are path routers', () => {
                 const manager = new Manager({
-                    routerTree: {
+                    routerDeclaration: {
                         name: 'root',
                         type: 'root',
-                        routers: {
+                        children: {
                             data: [
                                 {name: 'data1', isPathRouter: true},
                                 {name: 'data2', isPathRouter: true}
@@ -229,10 +229,10 @@ describe('Router', () => {
     describe('Siblings', () => {
         it('Returns all siblings, not including itself', () => {
             const manager = new Manager({
-                routerTree: {
+                routerDeclaration: {
                     name: 'root',
                     type: 'root',
-                    routers: {
+                    children: {
                         data: [
                             {name: 'data1', isPathRouter: true},
                             {name: 'data2', isPathRouter: false}
@@ -251,11 +251,11 @@ describe('Router', () => {
     describe('Neighbors', () => {
         it('Returns all neighbors of type', () => {
             const manager = new Manager({
-                routerTree: {
+                routerDeclaration: {
                     name: 'root',
                     type: 'root',
                     isPathRouter: false,
-                    routers: {
+                    children: {
                         data: [
                             {name: 'data1', isPathRouter: true},
                             {name: 'data2', isPathRouter: false}

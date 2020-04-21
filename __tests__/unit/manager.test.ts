@@ -1,7 +1,7 @@
 import Manager from '../../src/manager';
 import {NativeSerializedStore, BrowserSerializedStore} from '../../src/serialized_state';
 import RouterStore from '../../src/all_router_state';
-import {IRouterDeclaration} from '../../src/types';
+import {IRouterDeclaration, AllTemplates} from '../../src/types';
 import {DefaultTemplates} from '../../src/types/router_templates';
 
 declare global {
@@ -21,47 +21,47 @@ declare global {
 
 describe('Router Manager', () => {
     test('Requires all router names to be unique', () => {
-        const tree = {
+        const tree: IRouterDeclaration<AllTemplates> = {
             name: 'root',
-            routers: {
+            children: {
                 scene: [
                     {
                         name: 'user',
-                        routers: {
+                        children: {
                             scene: [{name: 'user'}]
                         }
                     }
                 ]
             }
         };
-        expect(() => new Manager({routerTree: tree})).toThrow();
+        expect(() => new Manager({routerDeclaration: tree})).toThrow();
     });
 
     test('Requires all router routeKeys to be unique', () => {
-        const tree = {
+        const tree: IRouterDeclaration<AllTemplates> = {
             name: 'root',
-            routers: {
+            children: {
                 scene: [
                     {
                         name: 'user',
                         routeKey: 'hello',
-                        routers: {
+                        children: {
                             scene: [{name: 'nextScene', routeKey: 'hello'}]
                         }
                     }
                 ]
             }
         };
-        expect(() => new Manager({routerTree: tree})).toThrow();
+        expect(() => new Manager({routerDeclaration: tree})).toThrow();
     });
 
-    const routerTree = {
+    const routerDeclaration: IRouterDeclaration<AllTemplates> = {
         name: 'root',
-        routers: {
+        children: {
             scene: [
                 {
                     name: 'user',
-                    routers: {
+                    children: {
                         scene: [{name: 'events'}, {name: 'details'}]
                     }
                 },
@@ -81,19 +81,19 @@ describe('Router Manager', () => {
         });
 
         test('Can add a router tree', () => {
-            const manager = new Manager({routerTree});
+            const manager = new Manager({routerDeclaration});
 
             expect(Object.keys(manager.routers)).toHaveLength(7);
             expect(manager.rootRouter.name).toBe('root');
             expect(manager.routers['info'].name).toBe('info');
             expect(manager.routers['events'].parent.name).toBe('user');
-            expect(manager.routers['root'].routers['scene']).toHaveLength(2);
+            expect(manager.routers['root'].children['scene']).toHaveLength(2);
         });
 
         describe('Serialized Store defaults', () => {
             describe('No window object (Non browser env)', () => {
                 it('uses nativeStore', () => {
-                    const manager = new Manager({routerTree});
+                    const manager = new Manager({routerDeclaration});
 
                     expect(manager.serializedStateStore).toBeInstanceOf(NativeSerializedStore);
                 });
@@ -108,7 +108,7 @@ describe('Router Manager', () => {
                         history: {pushState: jest.fn(), replaceState: jest.fn()},
                         location: {}
                     };
-                    const manager = new Manager({routerTree});
+                    const manager = new Manager({routerDeclaration});
                     setIntervalFn();
                     expect(manager.serializedStateStore).toBeInstanceOf(BrowserSerializedStore);
 
@@ -125,7 +125,7 @@ describe('Router Manager', () => {
 
     describe('Adding and removing routers', () => {
         describe('Initialized with routers', () => {
-            const manager = new Manager({routerTree});
+            const manager = new Manager({routerDeclaration});
 
             it('then had a router added', () => {
                 const newRouter: IRouterDeclaration<DefaultTemplates> = {
@@ -137,7 +137,7 @@ describe('Router Manager', () => {
                 manager.addRouter(newRouter);
 
                 expect(Object.keys(manager.routers)).toHaveLength(8);
-                expect(manager.routers['user'].routers.scene).toHaveLength(3);
+                expect(manager.routers['user'].children.scene).toHaveLength(3);
                 expect(manager.routers['admin'].name).toBe('admin');
                 expect(manager.routers['admin'].parent).toBe(manager.routers['user']);
             });
@@ -146,7 +146,7 @@ describe('Router Manager', () => {
                 manager.removeRouter('admin');
 
                 expect(Object.keys(manager.routers)).toHaveLength(7);
-                expect(manager.routers['user'].routers.scene).toHaveLength(2);
+                expect(manager.routers['user'].children.scene).toHaveLength(2);
                 expect(manager.routers['admin']).toBe(undefined);
             });
 
@@ -165,7 +165,7 @@ describe('Router Manager', () => {
 
         describe('Removing a router with state observers', () => {
             it('cleans up observers', () => {
-                const manager = new Manager({routerTree});
+                const manager = new Manager({routerDeclaration});
                 const newRouter: IRouterDeclaration<DefaultTemplates> = {
                     name: 'admin',
                     type: 'scene',
@@ -236,14 +236,14 @@ describe('Router Manager', () => {
                 manager.addRouter(newRouter);
 
                 expect(Object.keys(manager.routers)).toHaveLength(2);
-                expect(manager.routers['admin'].routers.feature).toHaveLength(1);
+                expect(manager.routers['admin'].children.feature).toHaveLength(1);
                 expect(manager.routers['admin-tools'].name).toBe('admin-tools');
                 expect(manager.routers['admin-tools'].parent).toBe(manager.routers['admin']);
             });
         });
 
         describe('Subscribing to a routers state', () => {
-            const manager = new Manager({routerTree});
+            const manager = new Manager({routerDeclaration});
 
             it('issues state updates', () => {
                 const userObserverFn = jest.fn();
@@ -294,7 +294,7 @@ describe('Router Manager', () => {
         });
 
         describe('Fetching a routers state', () => {
-            const manager = new Manager({routerTree});
+            const manager = new Manager({routerDeclaration});
 
             it('returns the state for only the router', () => {
                 const initialRoutersState = {

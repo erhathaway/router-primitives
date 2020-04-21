@@ -390,7 +390,7 @@ type routerInstanceTestUnion = RouterInstance<
 type routerInstanceTestUnionSuccess = routerInstanceTestUnion['show']; // <--- should not error
 type routerInstanceTestUnionParent = routerInstanceTestUnion['parent']['show'];
 type routerInstanceTestUnionRoot = routerInstanceTestUnion['root']['show'];
-type routerInstanceTestUnionChildren = routerInstanceTestUnion['routers'];
+type routerInstanceTestUnionChildren = routerInstanceTestUnion['children'];
 
 /**
  * The router class.
@@ -564,7 +564,7 @@ export interface ISerializeOptions {
  */
 export interface IRouterDeclaration<Templates extends IRouterTemplates<unknown>> {
     name: string;
-    routers?: Record<string, IRouterDeclaration<Templates>[]>;
+    children?: Record<string, IRouterDeclaration<Templates>[]>;
     routeKey?: string;
     type?: NarrowRouterTypeName<keyof Templates>;
     parentName?: string;
@@ -589,7 +589,7 @@ export interface IRouterInitArgs<
         ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>
     >;
     parent?: Parent<CustomTemplates>;
-    routers?: Childs<CustomTemplates>;
+    children?: Childs<CustomTemplates>;
     root: Root<CustomTemplates>;
     getState?: () => IRouterCurrentAndHistoricalState<
         ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>
@@ -736,7 +736,7 @@ type allTemplatesTestOverrideInstanceAll = RouterInstance<allTemplatesTestOverri
  */
 export interface IManagerInit<CustomTemplates extends IRouterTemplates<unknown>> {
     printTraceResults?: boolean;
-    routerTree?: IRouterDeclaration<AllTemplates<CustomTemplates>>;
+    routerDeclaration?: IRouterDeclaration<AllTemplates<CustomTemplates>>;
     serializedStateStore?: ISerializedStateStore;
     routerStateStore?: IRouterStateStore<
         RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>

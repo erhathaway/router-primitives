@@ -34,7 +34,7 @@ export interface IRouterBase<
     type: InitArgs['type'];
     manager: InitArgs['manager'];
     parent?: Parent<CustomTemplates>;
-    routers: Childs<CustomTemplates>;
+    children: Childs<CustomTemplates>;
     root: Root<CustomTemplates>;
     getState?: InitArgs['getState'];
     subscribe?: InitArgs['subscribe'];

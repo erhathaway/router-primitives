@@ -9,13 +9,13 @@ import {
 } from '../../../src';
 
 describe('Integration', () => {
-    const routerTree: IRouterDeclaration<AllTemplates> = {
+    const routerDeclaration: IRouterDeclaration<AllTemplates> = {
         name: 'root',
-        routers: {
+        children: {
             scene: [
                 {
                     name: 'user', // pathRouter scene
-                    routers: {
+                    children: {
                         scene: [{name: 'events'}, {name: 'details'}]
                     }
                 },
@@ -24,7 +24,7 @@ describe('Integration', () => {
             stack: [
                 {
                     name: 'welcome-modal',
-                    routers: {
+                    children: {
                         stack: [{name: 'cookies-popup', routeKey: 'short'}],
                         scene: [
                             {name: 'welcome-main'}, // non-pathRouter scene
@@ -41,7 +41,7 @@ describe('Integration', () => {
     describe('Stack template', () => {
         describe('Actions', () => {
             it('Can have replace location action option set', () => {
-                const manager = new Manager({routerTree});
+                const manager = new Manager({routerDeclaration});
                 const welcomeModalRouter = manager.routers['welcome-modal'];
                 const cookiesModalRouter = manager.routers['cookies-modal'];
 
@@ -73,7 +73,7 @@ describe('Integration', () => {
             });
 
             it('Show sets order to 1 if the only stack router', () => {
-                const manager = new Manager({routerTree});
+                const manager = new Manager({routerDeclaration});
                 const welcomeObserver = jest.fn();
                 const welcomeRouter = manager.routers['welcome-modal'];
                 welcomeRouter.subscribe(welcomeObserver);
@@ -93,7 +93,7 @@ describe('Integration', () => {
             });
 
             it('Hide sets order to undefined if the only stack router', () => {
-                const manager = new Manager({routerTree});
+                const manager = new Manager({routerDeclaration});
                 const welcomeObserver = jest.fn();
                 const welcomeRouter = manager.routers['welcome-modal'];
                 welcomeRouter.subscribe(welcomeObserver);
@@ -117,7 +117,7 @@ describe('Integration', () => {
             });
 
             it('"Show" and "Hide" with existing stacks change ordering', () => {
-                const manager = new Manager({routerTree});
+                const manager = new Manager({routerDeclaration});
                 const welcomeObserver = jest.fn();
                 const cookiesObserver = jest.fn();
                 const dataObserver = jest.fn();
@@ -207,7 +207,7 @@ describe('Integration', () => {
             });
 
             it('Movement actions work - forward, backwards, toFront, toBack', () => {
-                const manager = new Manager({routerTree});
+                const manager = new Manager({routerDeclaration});
                 const welcomeObserver = jest.fn();
                 const cookiesObserver = jest.fn();
                 const dataObserver = jest.fn();

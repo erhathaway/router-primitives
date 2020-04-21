@@ -1,7 +1,7 @@
-import {RouterInstance, AllTemplates} from './types';
+import {RouterInstance} from './types';
 
 const stack = {
-    isMovingForward: (router: RouterInstance<AllTemplates, 'stack'>) => {
+    isMovingForward: (router: RouterInstance<{}, 'stack'>) => {
         return (
             router.state.actionCount === router.manager.actionCount &&
             router.history.length > 0 &&
@@ -10,7 +10,7 @@ const stack = {
             router.state.visible
         );
     },
-    isMovingBackward: (router: RouterInstance<AllTemplates, 'stack'>) => {
+    isMovingBackward: (router: RouterInstance<{}, 'stack'>) => {
         return (
             router.state.actionCount === router.manager.actionCount &&
             router.history.length > 0 &&
@@ -19,17 +19,17 @@ const stack = {
             router.state.visible
         );
     },
-    isAtFront: (router: RouterInstance<AllTemplates, 'stack'>) => {
+    isAtFront: (router: RouterInstance<{}, 'stack'>) => {
         return router.state.data === 1 && router.state.visible;
     },
-    isAtBack: (router: RouterInstance<AllTemplates, 'stack'>) => {
+    isAtBack: (router: RouterInstance<{}, 'stack'>) => {
         return (
             router.state.visible &&
             router.siblings.filter(s => s.state.visible === true).length > 0 && // when there are other stacks being shown
             router.state.data === router.siblings.filter(s => s.state.visible === true).length + 1 // add 1 to include this router since siblings are 'all but this'
         );
     },
-    isPositionSameAsLastTimeShown: (router: RouterInstance<AllTemplates, 'stack'>) => {
+    isPositionSameAsLastTimeShown: (router: RouterInstance<{}, 'stack'>) => {
         return (
             router.state.visible &&
             router.state.data === (router.history.find(s => s.visible === true) || {}).data
@@ -38,7 +38,7 @@ const stack = {
 };
 
 const scene = {
-    isVisibleSiblingsFirstTimeBeingShown: (router: RouterInstance<AllTemplates, 'scene'>) => {
+    isVisibleSiblingsFirstTimeBeingShown: (router: RouterInstance<{}, 'scene'>) => {
         const visibleSibling = router.siblings.find(s => s.state.visible === true);
         return (
             router.state.visible === false &&
@@ -46,7 +46,7 @@ const scene = {
             visibleSibling.history.find(h => h.visible === true) === undefined
         );
     },
-    hasVisibleSiblingBeenShownBefore: (router: RouterInstance<AllTemplates, 'scene'>) => {
+    hasVisibleSiblingBeenShownBefore: (router: RouterInstance<{}, 'scene'>) => {
         const visibleSibling = router.siblings.find(s => s.state.visible === true);
         return (
             router.state.visible === false &&
@@ -57,30 +57,30 @@ const scene = {
 };
 
 const common = {
-    isVisible: (router: RouterInstance<AllTemplates>) => {
+    isVisible: (router: RouterInstance<{}>) => {
         return router.state.visible === true;
     },
-    isHidden: (router: RouterInstance<AllTemplates>) => {
+    isHidden: (router: RouterInstance<{}>) => {
         return router.state.visible !== true;
     },
-    isJustHidden: (router: RouterInstance<AllTemplates>) => {
+    isJustHidden: (router: RouterInstance<{}>) => {
         return (
             router.state.actionCount === router.manager.actionCount && router.state.visible !== true
         );
     },
-    isJustShown: (router: RouterInstance<AllTemplates>) => {
+    isJustShown: (router: RouterInstance<{}>) => {
         return (
             router.state.actionCount === router.manager.actionCount && router.state.visible === true
         );
     },
-    isFirstTimeBeingShown: (router: RouterInstance<AllTemplates>) => {
+    isFirstTimeBeingShown: (router: RouterInstance<{}>) => {
         return (
             router.state.actionCount === router.manager.actionCount &&
             router.state.visible === true &&
             router.history.find(h => h.visible === true) === undefined
         );
     },
-    hasBeenShownBefore: (router: RouterInstance<AllTemplates>) => {
+    hasBeenShownBefore: (router: RouterInstance<{}>) => {
         return (
             router.state.actionCount === router.manager.actionCount &&
             router.state.visible === true &&

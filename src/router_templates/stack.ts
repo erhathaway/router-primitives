@@ -13,7 +13,7 @@ const getRouteKeyOrderings = (
     location: IInputLocation
 ): string[] => {
     // creates an object of { [visible router routeKey]: order }
-    const routeKeyOrderObj = router.parent.routers[router.type].reduce((acc, r) => {
+    const routeKeyOrderObj = router.parent.children[router.type].reduce((acc, r) => {
         // check to make sure the stack is in the location and a bulk action affecting multiple siblings
         // hasn't already removed it
         if (r.state.visible === false || location.search[r.routeKey] === undefined) {

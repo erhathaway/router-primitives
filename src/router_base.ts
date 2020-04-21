@@ -37,7 +37,7 @@ export default class RouterBase<
     public type: InitArgs['type'];
     public manager: InitArgs['manager'];
     public parent?: Parent<CustomTemplates>;
-    public routers: Childs<CustomTemplates>;
+    public children: Childs<CustomTemplates>;
     public root: Root<CustomTemplates>;
     public getState?: InitArgs['getState'];
     public subscribe?: InitArgs['subscribe'];
@@ -51,7 +51,7 @@ export default class RouterBase<
             type,
             manager,
             parent,
-            routers,
+            children,
             root,
             getState,
             subscribe,
@@ -70,7 +70,7 @@ export default class RouterBase<
 
         // optional
         this.parent = parent;
-        this.routers = routers || {};
+        this.children = children || {};
         this.root = root;
 
         // methods customized for instance from manager
@@ -117,7 +117,7 @@ export default class RouterBase<
     }
 
     get siblings(): RouterInstance<CustomTemplates, RouterTypeName>[] {
-        return this.parent.routers[this.type].filter(r => r.name !== this.name);
+        return this.parent.children[this.type].filter(r => r.name !== this.name);
     }
 
     /**
@@ -126,8 +126,8 @@ export default class RouterBase<
     public getNeighborsByType<
         DesiredType extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
     >(type: DesiredType): Array<RouterInstance<CustomTemplates, DesiredType>> {
-        if (this.parent && this.parent.routers) {
-            return this.parent.routers[type] || [];
+        if (this.parent && this.parent.children) {
+            return this.parent.children[type] || [];
         }
         return [];
     }
@@ -157,9 +157,9 @@ export default class RouterBase<
         // eslint-disable-next-line
         const flattened = (acc: any[], arr: any[]): any[] => acc.concat(...arr);
 
-        return objKeys(this.parent.routers)
+        return objKeys(this.parent.children)
             .filter(t => t !== this.type)
-            .map(t => this.parent.routers[t])
+            .map(t => this.parent.children[t])
             .reduce(flattened, []);
     }
 
@@ -223,10 +223,10 @@ export default class RouterBase<
         };
 
         // recursively serialize child routers
-        const childRouterTypes = Object.keys(this.routers);
+        const childRouterTypes = Object.keys(this.children);
         const childRouters = childRouterTypes.reduce((acc, type) => {
             // eslint-disable-next-line
-            acc[type] = this.routers[type].map(childRouter => childRouter.serialize(options));
+            acc[type] = this.children[type].map(childRouter => childRouter.serialize(options));
             return acc;
         }, {} as {[routerType: string]: IRouterDeclaration<AllTemplates<CustomTemplates>>[]});
 

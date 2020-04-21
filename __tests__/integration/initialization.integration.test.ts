@@ -2,13 +2,13 @@ import Manager from '../../src/manager';
 import {AllTemplates, IRouterDeclaration} from '../../src';
 
 describe('Integration', () => {
-    const routerTree: IRouterDeclaration<AllTemplates> = {
+    const routerDeclaration: IRouterDeclaration<AllTemplates> = {
         name: 'root',
-        routers: {
+        children: {
             scene: [
                 {
                     name: 'user', // pathRouter scene
-                    routers: {
+                    children: {
                         scene: [{name: 'events'}, {name: 'details'}]
                     }
                 },
@@ -17,7 +17,7 @@ describe('Integration', () => {
             feature: [
                 {
                     name: 'toolbar',
-                    routers: {
+                    children: {
                         scene: [
                             {name: 'main-tools'}, // non-pathRouter scene
                             {name: 'side-tools'}
@@ -30,7 +30,7 @@ describe('Integration', () => {
     };
 
     describe('Initialization', () => {
-        const manager = new Manager({routerTree});
+        const manager = new Manager({routerDeclaration});
 
         it('Initializes manager', () => {
             expect(manager).toBeInstanceOf(Manager);

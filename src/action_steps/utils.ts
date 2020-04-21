@@ -31,8 +31,8 @@ export const addRealDisableCacheFlagToContext = <
             : ctx.disableCaching || router.lastDefinedParentsDisableChildCacheState || false;
 
     const hasChildren =
-        router.routers &&
-        Object.values(router.routers).reduce(
+        router.children &&
+        Object.values(router.children).reduce(
             (childrenExist, children) => (children.length && children.length > 0) || childrenExist,
             false
         );
