@@ -15,7 +15,8 @@ import {
     RouterInstance,
     AllTemplates,
     RouterCurrentStateFromTemplates,
-    RouterCustomStateFromTemplates
+    RouterCustomStateFromTemplates,
+    IRouterActionOptions
 } from '../types';
 import {IRouterCache} from './router_cache';
 
@@ -62,6 +63,15 @@ export interface IManager<CustomTemplates extends IRouterTemplates<unknown> = nu
     registerRouter: (name: string, router: RouterInstance<CustomTemplates>) => void;
 
     unregisterRouter: (name: string) => void;
+
+    linkTo: (
+        routerName: string,
+        actionName: string,
+        actionArgs?: Omit<
+            IRouterActionOptions<RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>>,
+            'dryRun'
+        >
+    ) => string;
 
     calcNewRouterState: <Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>(
         location: IInputLocation,

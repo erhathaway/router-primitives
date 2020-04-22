@@ -50,6 +50,12 @@ export interface IRouterActionOptions<CustomState> {
     addCacheToLocation?: boolean; // serializes the current router cache into the location. Useful for rehydrating exact router state.
 }
 
+export interface LinkOptions<CustomState> {
+    data?: CustomState;
+    pathData?: Record<string, unknown>; // TODO replace this with a union of all possible data types from all templates
+    addCacheToLocation?: boolean; // serializes the current router cache into the location. Useful for rehydrating exact router state.
+}
+
 export type Pathname = string[];
 
 /**
@@ -112,7 +118,7 @@ export type ActionStep = <
  * The default actions all routers should have regardless of what template are based off of
  */
 export interface DefaultRouterActions<
-    CustomTemplates extends IRouterTemplates<undefined>,
+    CustomTemplates extends IRouterTemplates<unknown>,
     RouterTypeName extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>
 > {
     show: RouterActionFn<CustomTemplates, RouterTypeName>;
@@ -501,7 +507,12 @@ export type ExtractCustomActionNamesFromTemplate<
     ? A
     : never;
 // type extractCustomActionsFromTemplateTest = ExtractCustomActionNamesFromTemplate<DefaultTemplates['stack']>;
+// type AllCustomActionNames = ExtractCustomActionNamesFromTemplate<RouterTemplateUnion<AllTemplates>>;
 
+// type C = DefaultRouterActions<RouterTemplateUnion<AllTemplates>>;
+// type ActionNamesWithCustomTemplate<
+//     T extends IRouterTemplate<unknown>
+// > = ExtractCustomActionNamesFromTemplate<T> & DefaultRouterActions<T>;
 /**
  * -------------------------------------------------
  * Router state

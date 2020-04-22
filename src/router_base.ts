@@ -17,7 +17,8 @@ import {
     IInputSearch,
     IInputLocation,
     ValueOf,
-    AllTemplates
+    AllTemplates,
+    LinkOptions
 } from './types';
 import {IRouterBase} from './types/router_base';
 
@@ -91,6 +92,15 @@ export default class RouterBase<
             }
         });
     }
+
+    public link = (
+        actionName: string,
+        options?: LinkOptions<
+            ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>
+        >
+    ): string => {
+        return this.manager.linkTo(this.name, actionName, options);
+    };
 
     get lastDefinedParentsDisableChildCacheState(): boolean {
         if (!this.parent) {
