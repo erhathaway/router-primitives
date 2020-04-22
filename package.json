@@ -1,15 +1,15 @@
 {
     "name": "router-primitives",
-    "version": "1.0.0-beta.4",
+    "version": "1.0.0-beta.5",
     "description": "A cross-platform application router. Declarative routing by way of layout primitives",
     "main": "./dist/index.cjs.js",
     "module": "./dist/index.es.js",
-    "types": "./dist/index.d.ts",
+    "types": "./dist/src/index.d.ts",
     "files": [
         "dist"
     ],
     "scripts": {
-        "clean": "rimraf coverage build tmp",
+        "clean": "rimraf coverage build tmp dist",
         "build": "npm run clean && rollup -c",
         "build:watch": "npm run clean && rollup -cw",
         "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
