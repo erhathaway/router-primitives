@@ -15,7 +15,8 @@ import {
     IInputLocation,
     ValueOf,
     IInputSearch,
-    AllTemplates
+    AllTemplates,
+    LinkOptions
 } from '../types';
 
 export interface IRouterBaseInternalState {
@@ -57,6 +58,13 @@ export interface IRouterBase<
     >(
         type: DesiredType
     ) => Array<RouterInstance<CustomTemplates, DesiredType>>;
+
+    link: (
+        actionName: string,
+        options?: LinkOptions<
+            ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>
+        >
+    ) => string;
 
     /**
      * Returns all neighboring routers. That is, all routers that have the same parent but are not of this router type.

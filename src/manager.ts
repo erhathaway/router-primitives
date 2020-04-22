@@ -28,7 +28,6 @@ import {
     RouterCurrentStateFromTemplates,
     ExtractCustomStateFromTemplate,
     IRouterActionOptions,
-    DefaultRouterActions,
     RouterTemplateUnion,
     ReducerContext
 } from './types';
@@ -282,10 +281,10 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
     /**
      * Method to create URL links.
      */
-    public linkTo = <Name extends NarrowRouterTypeName<keyof AllTemplates<CustomTemplates>>>(
-        routerName: Name,
+    public linkTo = (
+        routerName: string,
         actionName: string,
-        actionArgs: Omit<
+        actionArgs?: Omit<
             IRouterActionOptions<RouterCustomStateFromTemplates<AllTemplates<CustomTemplates>>>,
             'dryRun'
         >
@@ -300,13 +299,11 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
             );
         }
 
-        // TODO change from default router actions to union of actual actions
-        const locationObj = router[actionName as keyof DefaultRouterActions<CustomTemplates, Name>](
-            {
-                ...actionArgs,
-                dryRun: true
-            }
-        );
+        // TODO change 'show' | 'hide' to union of actual actions
+        const locationObj = router[actionName as 'show' | 'hide']({
+            ...(actionArgs || {}),
+            dryRun: true
+        });
 
         return this.serializedStateStore.serializer(locationObj).location;
     };
