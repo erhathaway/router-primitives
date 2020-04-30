@@ -159,7 +159,7 @@ routers.sideNav.subscribe(({visible}) => {
 });
 
 routers.userId.subscribe(({data}) => {
-    console.log(`The current userId is ${userId}`);
+    console.log(`The current userId is ${data}`);
 });
 
 // the URL starts off at /home because the 'home' router has a default action of 'show'
