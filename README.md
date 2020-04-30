@@ -57,7 +57,7 @@ Finally, Router Primitives is platform agnostic. This means that you can use the
 | 🔗  | Trivial linking - Use the URL to generate an identical router state tree on any platform |
 | 😱  | Best practice opinionated and automatic URL construction                                 |
 | 🚀  | Reactive - Subscribe to the state of any router in the router state tree                 |
-| 👌  | Simple - Declare the route tree using a small but expressive syntax set                  |
+| 👌  | Simple - Declare the router tree using a small but expressive syntax set                  |
 | 💃  | State predicate functions for making **complex animations easy**                         |
 
 ## Paradigm
