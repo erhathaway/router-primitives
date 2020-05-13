@@ -1,6 +1,6 @@
 {
     "name": "router-primitives",
-    "version": "1.0.0-beta.5",
+    "version": "1.0.0-beta.6",
     "description": "A cross-platform application router. Declarative routing by way of layout primitives",
     "main": "./dist/index.cjs.js",
     "module": "./dist/index.es.js",
@@ -53,6 +53,7 @@
         "eslint-plugin-jest": "^23.2.0",
         "jest": "^23.1.0",
         "prettier": "^1.18.2",
+        "query-string": "^6.8.3",
         "rimraf": "^3.0.2",
         "rollup": "^2.0.6",
         "rollup-plugin-eslint": "^7.0.0",
@@ -60,8 +61,7 @@
         "rollup-plugin-typescript2": "^0.26.0",
         "rollup-watch": "^4.3.1",
         "ts-jest": "^23.10.5",
-        "typescript": "^3.8.2",
-        "query-string": "^6.8.3"
+        "typescript": "^3.9.0-beta"
     },
     "dependencies": {},
     "peerDependencies": {}

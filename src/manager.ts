@@ -259,7 +259,6 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         // add initial routers
         this._routers = {};
         this.addRouters(routerDeclaration);
-
         // Subscribe to URL changes and update the router state when this happens.
         // The subject will notify the observer of its existing state.
         this.serializedStateStore.subscribeToStateChanges(this.setNewRouterState.bind(this));
@@ -267,7 +266,12 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         if (this.rootRouter) {
             // Replace the current location so the location at startup is a merge of the
             // existing location and default router actions
-            this.rootRouter.show({replaceLocation: true});
+            const {pathname, search} = this.serializedStateStore.getState();
+            if ((pathname && pathname.length > 0) || (search && objKeys(search).length > 0)) {
+                return;
+            } else {
+                this.rootRouter.show({replaceLocation: true});
+            }
         }
     }
 
@@ -324,6 +328,7 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
         // The type is derived by the relationship with the parent.
         //   Or has none, as is the case with the root router in essence
         //   Below, we are deriving the type and calling the add function recursively by type
+
         this.addRouter({...router, type, parentName});
         const childRouters = router.children || {};
         objKeys(childRouters).forEach(childType => {
@@ -345,6 +350,10 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
      */
     public addRouter(routerDeclaration: IRouterDeclaration<AllTemplates<CustomTemplates>>): void {
         const {name, parentName, type} = routerDeclaration;
+
+        if (this.routers[name]) {
+            throw new Error(`A router named ${name} already exists. Specify a different name`);
+        }
         const parent = this.routers[parentName];
 
         // Set the root router type if the router has no parent
@@ -654,6 +663,8 @@ export default class Manager<CustomTemplates extends IRouterTemplates<unknown> =
             return;
         }
 
+        // Subscribing to a serialized state store gets the current state which triggers this method.
+        // This can trigger this method twice for the same serialized state on startup.
         this.incrementActionCount();
 
         const newState = this.calcNewRouterState(

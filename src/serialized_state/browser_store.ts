@@ -18,7 +18,7 @@ export default class BrowserStore implements ISerializedStateStore {
     public serializer: SerializedStateSerializer;
     public deserializer: SerializedStateDeserializer;
     private observers: StateObserver[];
-    private existingLocation: string;
+    private existingLocation: string | undefined;
     private stateWatcher: ReturnType<typeof window.setInterval>;
 
     constructor(config?: ISerializedStateStoreConfig) {
@@ -27,10 +27,11 @@ export default class BrowserStore implements ISerializedStateStore {
         this.deserializer = (config && config.deserializer) || deserializer;
 
         // subscribe to location changes
-        this.existingLocation = '';
+        // this.existingLocation = '';
         this.stateWatcher = global.setInterval(() => {
             this._monitorLocation();
         }, 100);
+        this._monitorLocation();
     }
 
     public cleanUp = (): void => {
@@ -61,7 +62,9 @@ export default class BrowserStore implements ISerializedStateStore {
             window.history.pushState({url: newState}, '', newState);
         }
 
-        this.notifyObservers();
+        // no need to notify observers, b/c we are observing the URL
+        // and will notify observers when that changes
+        // this.notifyObservers();
     }
 
     public getState(): IOutputLocation {
