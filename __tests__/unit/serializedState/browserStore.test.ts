@@ -1,5 +1,4 @@
 import {BrowserSerializedStore} from '../../../src/serialized_state';
-import {IOutputLocation} from '../../../src';
 
 declare global {
     // eslint-disable-next-line
