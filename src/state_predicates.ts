@@ -64,11 +64,13 @@ const common = {
         return router.state.visible !== true;
     },
     isJustHidden: (router: RouterInstance<{}>) => {
+        //any) => {
         return (
             router.state.actionCount === router.manager.actionCount && router.state.visible !== true
         );
     },
     isJustShown: (router: RouterInstance<{}>) => {
+        // any) => {
         return (
             router.state.actionCount === router.manager.actionCount && router.state.visible === true
         );

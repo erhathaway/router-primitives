@@ -119,14 +119,6 @@ export default class BrowserStore implements ISerializedStateStore {
         }
         const newLocation = window.location.href;
         if (this.existingLocation !== newLocation) {
-            // TODO remove me
-            // console.log(
-            //     'FOUND NEW URL LOCATION',
-            //     'existingLocation',
-            //     this.existingLocation,
-            //     'newLocation',
-            //     newLocation
-            // );
             this.existingLocation = newLocation;
             this.notifyObservers();
         }
