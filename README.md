@@ -177,7 +177,90 @@ routers.userOptions.link('show'); // generates the URL string for a link to this
 
 ## 4. Use in React
 
-TODO
+#### A. Instantiate the router manager and generate Router Primitive React components
+
+```typescript
+import {createRouterComponents} from 'router-primitives-react';
+
+const routers = manager.routers;
+const routerComponents = createRouterComponents(routers);
+
+const Root = routerComponents['root'];
+const UserScene = routerComponents['user'];
+const UserIdData = routerComponents['userId'];
+const HomeScene = routerComponents['home'];
+const OptionsScene = routerComponents['options'];
+const AppOptionsScene = routerComponents['appOptions'];
+const UserOptionsScene = routerComponents['userOptionsScene'];
+const SideNavFeature = routerComponents['sideNav'];
+```
+
+#### B. Use the components in your app
+
+```typescript
+import {Animatable} from 'animated-components-react';
+import anime from 'animejs';
+import {predicates} from 'router-primitives';
+
+const app = () => (
+    <Root>
+        <UserScene>
+            <UserIdData>{`The current user id is: ${routers.userId.state.data}`}</UserIdData>
+        </UserScene>
+        <HomeScene>{'Welcome to the app'}</HomeScene>
+        <OptionsScene>
+            <AppOptions.Link action={'show'}>
+                <div>{`Show App Options`}</div>
+            </AppOptions.Link>
+            <UserOptions.Link action={'show'}>
+                <div>{`Show User Options`}</div>
+            </UserOptions.Link>
+            <AppOptions>{'All your app option components'}</AppOptions>
+            <UserOptions>{'All your user option components'}</UserOptions>
+        </OptionsScene>
+        <SideNav.Animate
+            unMountOnHide
+            when={[
+                [
+                    predicates.isJustShown,
+                    ({node}) => anime({targets: `#${node.id}`, translateX: [0, 200]})
+                ][
+                    (predicates.isJustHidden,
+                    ({node}) => anime({targets: `#${node.id}`, translateX: [200, 0]}))
+                ]
+            ]}
+        >
+            <Animatable>
+                <UserScene.Link action={'show'}>
+                    <div>{`Show Home Scene`}</div>
+                </UserScene.Link>
+                <HomeScene.Link action={'show'}>
+                    <div>{`Show Home Scene`}</div>
+                </HomeScene.Link>
+                <OptionsScene.Link action={'show'}>
+                    <div>{`Show Options`}</div>
+                </OptionsScene.Link>
+            </Animatable>
+        </SideNav.Animate>
+        <SideNav
+            uncontrolled
+        >
+            {({state: {visible}}) =>
+                visible ? (
+                    <SideNav.Link action={'hide'}>
+                        <div>{`Hide Side Nav`}</div>
+                    </SideNav.Link>
+                ) : (
+                    <SideNav.Link action={'show'}>
+                        <div>{`Show Side Nav`}</div>
+                    </SideNav.Link>
+                )
+            }
+        </SideNav uncontrolled>
+
+    </Root>
+);
+```
 
 # API
 
