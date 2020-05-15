@@ -244,22 +244,9 @@ const app = () => (
                 </OptionsScene.Link>
             </Animatable>
         </SideNav.Animate>
-        <SideNav
-            uncontrolled
-        >
-            {({state: {visible}}) =>
-                visible ? (
-                    <SideNav.Link action={'hide'}>
-                        <div>{`Hide Side Nav`}</div>
-                    </SideNav.Link>
-                ) : (
-                    <SideNav.Link action={'show'}>
-                        <div>{`Show Side Nav`}</div>
-                    </SideNav.Link>
-                )
-            }
-        </SideNav uncontrolled>
-
+        <SideNav.ToggleLink>
+            <div>{`Toggle Side Nav Visibility`}</div>
+        </SideNav.ToggleLink>
     </Root>
 );
 ```
