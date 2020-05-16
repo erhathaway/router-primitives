@@ -1,4 +1,10 @@
-import {IOutputLocation, IInputLocation, StateObserver, ILocationOptions} from '../types/index';
+import {
+    IOutputLocation,
+    IInputLocation,
+    StateObserver,
+    ILocationOptions,
+    SubscriptionDisposer
+} from '../types/index';
 
 export type SerializedStateDeserializer = (serializedLocation: string) => IOutputLocation;
 export type SerializedStateSerializer = (
@@ -32,9 +38,9 @@ export interface ISerializedStateStore {
     getState: () => IOutputLocation;
 
     // is a BehaviorSubject
-    subscribeToStateChanges: (fn: StateObserver) => void;
+    subscribeToStateChanges: (fn: StateObserver) => SubscriptionDisposer;
 
-    unsubscribeFromStateChanges: (fn: StateObserver) => void;
+    // unsubscribeFromStateChanges: (fn: StateObserver) => void;
     back: () => void;
 
     forward: () => void;

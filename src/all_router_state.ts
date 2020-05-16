@@ -5,7 +5,8 @@ import {
     RouterStateObserver,
     RouterStateObservers,
     IRouterStateStoreConfig,
-    RouterStateStoreStore
+    RouterStateStoreStore,
+    SubscriptionDisposer
 } from './types';
 import {IRouterStateStore} from './types/router_state';
 import {objKeys} from './utilities';
@@ -111,11 +112,14 @@ export default class DefaultRoutersStateStore<CustomState extends {}>
             if (currentState) {
                 fn(currentState);
             }
+            return () => {
+                this.observers[routerName] = this.observers[routerName].filter(o => o !== fn);
+            };
         };
     }
 
     public createRouterStateUnsubscriber(routerName: string): RouterStateObserver<CustomState> {
-        return (fn: Observer<CustomState>) => {
+        return (fn: Observer<CustomState>): SubscriptionDisposer => {
             if (!this.observers[routerName]) {
                 // TODO add to logger
                 // console.warn('No subscribers present to unsubscribe from store');

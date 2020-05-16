@@ -1,6 +1,6 @@
 import deserializer from './deserializer';
 import serializer from './serializer';
-import {IInputLocation, IOutputLocation, StateObserver} from '../types';
+import {IInputLocation, IOutputLocation, StateObserver, SubscriptionDisposer} from '../types';
 import {
     ISerializedStateStore,
     SerializedStateSerializer,
@@ -82,7 +82,7 @@ export default class NativeStore implements ISerializedStateStore {
     }
 
     // is a BehaviorSubject
-    public subscribeToStateChanges(fn: StateObserver): void {
+    public subscribeToStateChanges(fn: StateObserver): SubscriptionDisposer {
         this.observers.push(fn);
 
         // send existing state to observer
@@ -90,11 +90,15 @@ export default class NativeStore implements ISerializedStateStore {
         if (deserializedState) {
             fn(deserializedState);
         }
+        return () => {
+            this.observers = this.observers.filter(o => o !== fn);
+        };
     }
 
-    public unsubscribeFromStateChanges(fn: StateObserver): void {
-        this.observers = this.observers.filter(existingFn => existingFn !== fn);
-    }
+    // public unsubscribeFromStateChanges(fn: StateObserver) {
+    //     this.observers = this.observers.filter(existingFn => existingFn !== fn);
+
+    // }
 
     public back(): void {
         this.go(-1);

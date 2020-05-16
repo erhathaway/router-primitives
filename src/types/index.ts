@@ -587,6 +587,11 @@ export interface IRouterDeclaration<Templates extends IRouterTemplates<unknown>>
 }
 
 /**
+ * A subscription disposer
+ */
+export type SubscriptionDisposer = () => void;
+
+/**
  * The arguments passed into a router constructor (by a manager) to initialize a router.
  */
 export interface IRouterInitArgs<
@@ -609,7 +614,7 @@ export interface IRouterInitArgs<
         observer: Observer<
             ExtractCustomStateFromTemplate<AllTemplates<CustomTemplates>[RouterTypeName]>
         >
-    ) => void;
+    ) => SubscriptionDisposer;
     actions: (keyof AllTemplates<CustomTemplates>[RouterTypeName]['actions'])[]; // the router actions derived from the template. Usually 'show' and 'hide';
 }
 // type iRouterInitArgsTest = IRouterInitArgs<DefaultTemplates, 'scene'>;
@@ -846,7 +851,7 @@ export type Observer<CustomState> = (
 /**
  * A function created that can be used to register observer functions for a specific router that a manager oversees.
  */
-export type RouterStateObserver<CustomState> = (fn: Observer<CustomState>) => void;
+export type RouterStateObserver<CustomState> = (fn: Observer<CustomState>) => SubscriptionDisposer;
 
 /**
  * An object representing all observers of routers keyed on router name

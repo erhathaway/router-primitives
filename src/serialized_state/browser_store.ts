@@ -1,6 +1,6 @@
 import deserializer from './deserializer';
 import serializer from './serializer';
-import {IOutputLocation, IInputLocation, StateObserver} from '../types';
+import {IOutputLocation, IInputLocation, StateObserver, SubscriptionDisposer} from '../types';
 import {
     ISerializedStateStore,
     SerializedStateSerializer,
@@ -73,17 +73,20 @@ export default class BrowserStore implements ISerializedStateStore {
         return this.deserializer(pathnameString + searchString);
     }
 
-    public subscribeToStateChanges(fn: StateObserver): void {
+    public subscribeToStateChanges(fn: StateObserver): SubscriptionDisposer {
         this.observers.push(fn);
 
         // send existing state to observer
         const deserializedState = this.getState();
         fn(deserializedState);
+        return () => {
+            this.observers = this.observers.filter(o => o !== fn);
+        };
     }
 
-    public unsubscribeFromStateChanges(fn: StateObserver): void {
-        this.observers = this.observers.filter(existingFn => existingFn !== fn);
-    }
+    // public unsubscribeFromStateChanges(fn: StateObserver): void {
+    //     this.observers = this.observers.filter(existingFn => existingFn !== fn);
+    // }
 
     public back(): void {
         if (!window || !window.history || !window.history.back) {
