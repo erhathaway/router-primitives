@@ -7,7 +7,7 @@ Router Primitives is a **layout primitives** paradigm for application routing. I
 Through the Router Primitives abstraction, you can write apps that look like this:
 
 ```typescript
-import {Animatable} from 'animated-components-react';
+import {Animatable} from 'router-primitives-react';
 import anime from 'animejs';
 import {predicates} from 'router-primitives';
 
