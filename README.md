@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/router-primitives.svg?label=&color=0080FF)](https://github.com/erhathaway/router-primitives/releases/latest)
 
-Router Primitives is a **layout primitives** paradigm for application routing. Instead of focusing on pattern matching path names and query params, you describe the layout of your application in terms of router primitives. Primitives are composable and provide a simple declarative API to control routing actions and add complex animations.
+Router Primitives is a **layout primitives** paradigm for application routing. Instead of focusing on pattern matching path names and query params, you describe the layout of your application in terms of router primitives. Primitives are composable and provide a simple declarative API to control routing actions and for adding complex animations.
 
 # About
 
