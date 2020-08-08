@@ -4,30 +4,39 @@
 
 Router Primitives is a **layout primitives** paradigm for application routing. Instead of focusing on pattern matching path names and query params, you describe the layout of your application in terms of router primitives. Primitives are composable and provide a simple declarative API to control routing actions and for adding complex animations.
 
-Through the Router Primitives abstraction, you can write apps that look like this:
+With the Router Primitives abstraction, you can write apps that look like this:
 
 ```typescript
-import {Animatable} from 'router-primitives-react';
+import {Animatable, createRouterComponents} from 'router-primitives-react';
 import anime from 'animejs';
-import {predicates} from 'router-primitives';
+import {Manager, predicates} from 'router-primitives';
 
+const layout = {
+...app layout in terms of primitives
+}
+
+const manager = new Manager(layout);
+const Routers = createRouterComponents(manager.routers);
+```
+
+```jsx
 const app = () => (
-    <Root>
-        <UserScene>
-            <UserIdData>{`The current user id is: ${routers.userId.state.data}`}</UserIdData>
-        </UserScene>
-        <HomeScene>{'Welcome to the app'}</HomeScene>
-        <OptionsScene>
-            <AppOptions.Link action={'show'}>
+    <Router.Root>
+        <Router.UserScene>
+            <Router.UserIdData>{`The current user id is: ${routers.userId.state.data}`}</Router.UserIdData>
+        </Router.UserScene>
+        <Router.HomeScene>{'Welcome to the app'}</Router.HomeScene>
+        <Router.OptionsScene>
+            <Router.AppOptions.Link action={'show'}>
                 <div>{`Show App Options`}</div>
-            </AppOptions.Link>
-            <UserOptions.Link action={'show'}>
+            </Router.AppOptions.Link>
+            <Router.UserOptions.Link action={'show'}>
                 <div>{`Show User Options`}</div>
-            </UserOptions.Link>
-            <AppOptions>{'All your app option components'}</AppOptions>
-            <UserOptions>{'All your user option components'}</UserOptions>
-        </OptionsScene>
-        <SideNav.Animate
+            </Router.UserOptions.Link>
+            <Router.AppOptions>{'All your app option components'}</Router.AppOptions>
+            <Router.UserOptions>{'All your user option components'}</Router.UserOptions>
+        </Router.OptionsScene>
+        <Router.SideNav.Animate
             unMountOnHide
             when={[
                 [
@@ -40,21 +49,21 @@ const app = () => (
             ]}
         >
             <Animatable>
-                <UserScene.Link action={'show'}>
+                <Router.UserScene.Link action={'show'}>
                     <div>{`Show Home Scene`}</div>
-                </UserScene.Link>
-                <HomeScene.Link action={'show'}>
+                </Router.UserScene.Link>
+                <Router.HomeScene.Link action={'show'}>
                     <div>{`Show Home Scene`}</div>
-                </HomeScene.Link>
-                <OptionsScene.Link action={'show'}>
+                </Router.HomeScene.Link>
+                <Router.OptionsScene.Link action={'show'}>
                     <div>{`Show Options`}</div>
-                </OptionsScene.Link>
+                </Router.OptionsScene.Link>
             </Animatable>
-        </SideNav.Animate>
-        <SideNav.ToggleLink>
+        </Router.SideNav.Animate>
+        <Router.SideNav.ToggleLink>
             <div>{`Toggle Side Nav Visibility`}</div>
-        </SideNav.ToggleLink>
-    </Root>
+        </Router.SideNav.ToggleLink>
+    </Router.Root>
 );
 ```
 
