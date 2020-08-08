@@ -4,6 +4,60 @@
 
 Router Primitives is a **layout primitives** paradigm for application routing. Instead of focusing on pattern matching path names and query params, you describe the layout of your application in terms of router primitives. Primitives are composable and provide a simple declarative API to control routing actions and for adding complex animations.
 
+Through the Router Primitives abstraction, you can write apps that look like this:
+
+```typescript
+import {Animatable} from 'animated-components-react';
+import anime from 'animejs';
+import {predicates} from 'router-primitives';
+
+const app = () => (
+    <Root>
+        <UserScene>
+            <UserIdData>{`The current user id is: ${routers.userId.state.data}`}</UserIdData>
+        </UserScene>
+        <HomeScene>{'Welcome to the app'}</HomeScene>
+        <OptionsScene>
+            <AppOptions.Link action={'show'}>
+                <div>{`Show App Options`}</div>
+            </AppOptions.Link>
+            <UserOptions.Link action={'show'}>
+                <div>{`Show User Options`}</div>
+            </UserOptions.Link>
+            <AppOptions>{'All your app option components'}</AppOptions>
+            <UserOptions>{'All your user option components'}</UserOptions>
+        </OptionsScene>
+        <SideNav.Animate
+            unMountOnHide
+            when={[
+                [
+                    predicates.isJustShown,
+                    ({node}) => anime({targets: `#${node.id}`, translateX: [0, 200]})
+                ][
+                    (predicates.isJustHidden,
+                    ({node}) => anime({targets: `#${node.id}`, translateX: [200, 0]}))
+                ]
+            ]}
+        >
+            <Animatable>
+                <UserScene.Link action={'show'}>
+                    <div>{`Show Home Scene`}</div>
+                </UserScene.Link>
+                <HomeScene.Link action={'show'}>
+                    <div>{`Show Home Scene`}</div>
+                </HomeScene.Link>
+                <OptionsScene.Link action={'show'}>
+                    <div>{`Show Options`}</div>
+                </OptionsScene.Link>
+            </Animatable>
+        </SideNav.Animate>
+        <SideNav.ToggleLink>
+            <div>{`Toggle Side Nav Visibility`}</div>
+        </SideNav.ToggleLink>
+    </Root>
+);
+```
+
 # About
 
 #### Documentation
@@ -42,7 +96,7 @@ Router Primitives is written as a high level abstraction to free developers from
 
 If you work on a platform where there is no concept of a URL, you can still use this library. The URL is simply managed serialized state - which is platform aware and configurable!
 
-Also, if you find that you want to a new type of primitive, you can easily define one using a [template](#custom-primitives). In essence, a template describes how you serialize data to the URL, and how serialized data from the URL (namespaced to a router instance) affects the state of a router.
+Also, if you find that you want a new type of primitive, you can easily define one using a [template](#custom-primitives). In essence, a template describes how you serialize data to the URL, and how serialized data from the URL (namespaced to a router instance) affects the state of a router.
 
 Finally, Router Primitives is platform agnostic. This means that you can use the same router code for various frameworks and platforms. Currently, bindings exist for **[Mobx](https://github.com/erhathaway/recursive-router-mobx)**, and **[React](https://github.com/erhathaway/router-primitives-react)**. 
 
