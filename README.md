@@ -23,7 +23,7 @@ const Routers = createRouterComponents(manager.routers);
 const app = () => (
     <Router.Root>
         <Router.UserScene>
-            <Router.UserIdData>{`The current user id is: ${routers.userId.state.data}`}</Router.UserIdData>
+            <Router.UserIdData>{({state: {data}}) =>`The current user id is: ${data}`}</Router.UserIdData>
         </Router.UserScene>
         <Router.HomeScene>{'Welcome to the app'}</Router.HomeScene>
         <Router.OptionsScene>
