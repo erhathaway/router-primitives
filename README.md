@@ -681,7 +681,7 @@ Making custom primitives allows you to define new types of routing for your layo
 
 ## Router Primitive Type Signature
 
-A layout primitive is defined by a template which has the type type signature:
+A layout primitive is defined by a template which has the type signature:
 
 ```typescript
 type RouterTemplate = {
