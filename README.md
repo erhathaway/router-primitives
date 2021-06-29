@@ -12,8 +12,26 @@ import anime from 'animejs';
 import {Manager, predicates} from 'router-primitives';
 
 const layout = {
-...app layout in terms of primitives
-}
+    name: 'Root',
+    children: {
+        scene: [
+            {
+                name: 'UserScene',
+                children: {
+                    data: [{name: 'UserId', isPathRouter: true}]
+                }
+            },
+            {name: 'HomeScene', defaultAction: ['show']},
+            {
+                name: 'OptionsScene',
+                children: {
+                    scene: [{name: 'AppOptions', defaultAction: ['show']}, {name: 'UserOptions'}]
+                }
+            }
+        ],
+        features: [{name: 'SideNav', routeKey: 'nav'}]
+    }
+};
 
 const manager = new Manager(layout);
 const Routers = createRouterComponents(manager.routers);
