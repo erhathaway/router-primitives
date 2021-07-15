@@ -157,7 +157,7 @@ For example, a router can be 'visible' when other routers are 'hidden'. This typ
 
 ## Custom Router Primitives
 
-Should the existing router primitives not be enough, this library provides you with a way to create your own routers! See [Router templates](##custom-primitives)
+Should the existing router primitives not be enough, this library provides you with a way to create your own routers! See [Router templates](#custom-primitives)
 
 # Usage
 
