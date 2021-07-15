@@ -247,9 +247,9 @@ routers.userId.subscribe(({data}) => {
 
 routers.appOptions.show(); // transitions URL to /options/appOptions
 
-routers.sideNav.show(); // transitions URL to /options/appOptions&nav
+routers.sideNav.show(); // transitions URL to /options/appOptions?nav
 
-routers.userId.show({data: 1}); // transitions URL to /user/1&nav
+routers.userId.show({data: 1}); // transitions URL to /user/1?nav
 
 routers.sideNav.hide(); // transitions URL to /user/1
 
