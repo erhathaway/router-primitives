@@ -15,18 +15,18 @@ const layout = {
     name: 'Root',
     children: {
         scene: [
-            {
-                name: 'UserScene',
-                children: {
-                    data: [{name: 'UserId', isPathRouter: true}]
-                }
+            { name: 'UserScene',
+              children: {
+                 data: [{name: 'UserId', isPathRouter: true}]
+              }
             },
-            {name: 'HomeScene', defaultAction: ['show']},
-            {
-                name: 'OptionsScene',
-                children: {
-                    scene: [{name: 'AppOptions', defaultAction: ['show']}, {name: 'UserOptions'}]
-                }
+            { name: 'HomeScene',
+              defaultAction: ['show']
+            },
+            { name: 'OptionsScene',
+              children: {
+                scene: [{name: 'AppOptions', defaultAction: ['show']}, {name: 'UserOptions'}]
+              }
             }
         ],
         features: [{name: 'SideNav', routeKey: 'nav'}]
@@ -36,6 +36,34 @@ const layout = {
 const manager = new Manager(layout);
 const Routers = createRouterComponents(manager.routers);
 ```
+
+In yaml, the `layout` object would look like this:
+
+```yaml
+name: Root
+children:
+  scene:
+    - name: UserScene
+      children:
+        data:
+          - name: UserId
+            isPathRouter: true
+    - name: HomeScene
+      defaultAction: 
+        - show
+    - name: OptionsScene
+      children:
+        scene:
+          - name: AppOptions
+            defaultAction:
+              - show
+          - name: UserOptions
+  features:
+    - name: SideNav
+      routeKey: nav
+```
+
+Once you define a layout, you can use the generated router in an app. This example uses the React bindings:
 
 ```jsx
 const app = () => (
