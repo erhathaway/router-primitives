@@ -787,7 +787,7 @@ The template options do the following:
 | isDependentOnExternalData         | Whether it is dependent on external (user) data                                                                                                                                                                                                                                | false   |
 | shouldParentTryToActivateSiblings | Whether the parent of the primitive should check if it should be shown from the cache when a sibling primitive was activated                                                                                                                                                   | true    |
 | disableCaching                    | Whether caching should occur for the primitive. Caching allows you to navigate to a different route and then come back to find the same cache state. For example, if you opened a menu, navigated away, and came back you could find the same menu open when cache is enabled. | false   |
-| shouldInverselyActivate           | Whether activation of a child router should activate the router                                                                                                                                                                                                                                                                        | TODO    |
+| shouldInverselyActivate           | Whether activation of a child router should activate the router    | true    |
 
 ### Using templates
 
